@@ -18,6 +18,9 @@ struct Config {
   /** Should we go fullscreen? */
   bool fullscreen;
   
+  /** Are we dealing with the error? */
+  int active_errors;
+  
   /** Window positions; used when fullscreen is toggled on and off to return window to good position and size */
   int width, height, xpos, ypos;
   
@@ -26,7 +29,7 @@ struct Config {
   std::vector<std::string> tabs;
   
   Config(bool fullscreen_on=false) : io(ImGui::GetIO()),
-  fullscreen(fullscreen_on), width(1280), height(720), xpos(50), ypos(50),
+  fullscreen(fullscreen_on), active_errors(0), width(1280), height(720), xpos(50), ypos(50),
   tabspos(0), tabs({"Main"})
   {
     (void)io;

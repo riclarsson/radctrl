@@ -11,14 +11,16 @@
 
 namespace Instrument {
 namespace Chopper { 
-ENUMCLASS(ChopperPos, unsigned int,
+ENUMCLASS(ChopperPos, unsigned char,
           Cold,
           Hot,
           Antenna,
           Reference
 )
+
 struct GUI {
   bool init;
+  bool error;
   std::string dev;
   int offset;
   double sleeptime;
@@ -30,14 +32,23 @@ void GuiSetup(Chopper& chop, GUI& ctrl, const std::vector<std::string>& devs) {
   ImGui::Text("Chopper control");
   
   bool change=false;
+  bool manual=false;
   if (not ctrl.init) {
-    if (ImGui::Button(" Initialize ")) {
+    if (ImGui::Button(" Manual Init ")) {
       change = true;
+      manual = true;
+      ctrl.init = true;
+    } ImGui::SameLine();
+    if (ImGui::Button(" Automatic Init ")) {
+      change = true;
+      manual = false;
       ctrl.init = true;
     } ImGui::SameLine();
     ImGui::Text(" Close ");
   } else  {
-    ImGui::Text(" Initialize ");
+    ImGui::Text(" Manual Init ");
+    ImGui::SameLine();
+    ImGui::Text(" Automatic Init ");
     ImGui::SameLine();
     if (ImGui::Button(" Close ")) {
       change = true;
@@ -48,9 +59,9 @@ void GuiSetup(Chopper& chop, GUI& ctrl, const std::vector<std::string>& devs) {
   if (change) {
     if (ctrl.init) {
       chop.startup(ctrl.dev, ctrl.offset, ctrl.sleeptime);
-//       chop.init();  // FIXME: Must be here...
+      chop.init(manual);  // FIXME: Must be here...
     } else {
-//      chop.close();  // FIXME: Must be here...
+     chop.close();  // FIXME: Must be here...
     }
   }
   
@@ -92,42 +103,65 @@ void GuiSetup(Chopper& chop, GUI& ctrl, const std::vector<std::string>& devs) {
     ImGui::SliderFloat("Sleeptime [s]", &throwaway, 0, 5);
   }
   
-  if (ctrl.init) {
-    if (ImGui::Button("Cold"))
-      chop.run(ChopperPos::Cold);
-    ImGui::SameLine();
-    if (ImGui::Button("Hot"))
-      chop.run(ChopperPos::Hot);
-    ImGui::SameLine();
-    if (ImGui::Button("Antenna"))
-      chop.run(ChopperPos::Antenna);
-    ImGui::SameLine();
-    if (ImGui::Button("Reference"))
-      chop.run(ChopperPos::Reference);
+  if (ctrl.init and chop.manual_run()) {
+    if (ImGui::BeginTabBar("ChopperPositionSelection")) {
+      if (ImGui::BeginTabItem(" Cold ")) {
+        chop.run(ChopperPos::Cold);
+        ImGui::EndTabItem();
+      }
+      if (ImGui::BeginTabItem(" Hot ")) {
+        chop.run(ChopperPos::Hot);
+        ImGui::EndTabItem();
+      }
+      if (ImGui::BeginTabItem(" Antenna ")) {
+        chop.run(ChopperPos::Antenna);
+        ImGui::EndTabItem();
+      }
+      if (ImGui::BeginTabItem(" Reference ")) {
+        chop.run(ChopperPos::Reference);
+        ImGui::EndTabItem();
+      }
+      ImGui::EndTabBar();
+    }
   } else {
-    ImGui::Text("Cold");
+    ImGui::Text(" Cold ");
     ImGui::SameLine();
-    ImGui::Text("Hot");
+    ImGui::Text(" Hot ");
     ImGui::SameLine();
-    ImGui::Text("Antenna");
+    ImGui::Text(" Antenna ");
     ImGui::SameLine();
-    ImGui::Text("Reference");
+    ImGui::Text(" Reference ");
   }
+  
+  if (chop.has_error()) {
+    ctrl.init = false;
+    ctrl.error = true;
+  } else
+    ctrl.error = false;
 }
 
 class Dummy {
+bool manual;
 ChopperPos pos;
+bool error_found;
+std::string error;
 public:
 using DataType = ChopperPos;
-template <typename ... Whatever> Dummy(Whatever...) : pos(ChopperPos::Cold) {}
+template <typename ... Whatever> constexpr Dummy(Whatever...) : manual(false), pos(ChopperPos::Cold), error_found(false), error("") {}
 void startup(const std::string&, int, double) {}
-void init() {}
+void init(bool manual_press) {manual=manual_press; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
 void close() {}
 void run(ChopperPos x) {pos = x;}
+DataType get_data_raw() {return ChopperPos::FINAL;}
 DataType get_data() {return pos;}
+bool manual_run() {return manual;}
+const std::string& error_string() const {return error;}
+bool has_error() {return error_found;}
+void delete_error() {error_found=false; error = "";}
 };  // Dummy
 
 class __attribute__((visibility("hidden"))) PythonOriginalChopper {
+  bool manual;
   ChopperPos pos;
   
   Python::ClassInterface PyClass;
@@ -139,13 +173,19 @@ class __attribute__((visibility("hidden"))) PythonOriginalChopper {
   Python::Function initfun;
   Python::Function shutdown;
   Python::Function get;
+  
+  bool error_found;
+  std::string error;
 
 public:
   using DataType = ChopperPos;
   
-  PythonOriginalChopper(const std::filesystem::path& path) : pos(ChopperPos::Cold) {
-    if (not std::filesystem::exists(path))
-      throw std::runtime_error("Cannot find Chopper file");
+  PythonOriginalChopper(const std::filesystem::path& path) : manual(false), pos(ChopperPos::Cold), error_found(false), error("")  {
+    if (not std::filesystem::exists(path)) {
+      std::ostringstream os;
+      os << "Cannot find Chopper python file at:\n\t" << path << '\n';
+      throw std::runtime_error(os.str());
+    }
     py::eval_file(path.c_str());
     PyClass = Python::ClassInterface{"chopper"};
   };
@@ -161,8 +201,15 @@ public:
     get = Python::Function{PyInst("get_pos")};
   }
   
-  void init() {
-    initfun();
+  void init(bool manual_press=false) {
+    manual=manual_press;
+    
+    try {
+      initfun();
+    } catch (const std::exception& e) {
+      error = e.what();
+      error_found = true;
+    }
   }
   
   void close() {
@@ -170,21 +217,29 @@ public:
   }
   
   void run(ChopperPos x) {
-    if (x == ChopperPos::Antenna)
-      ant();
-    else if (x == ChopperPos::Reference)
-      ref();
-    else if (x == ChopperPos::Hot)
-      hot();
-    else if (x == ChopperPos::Cold)
-      cold();
+    if (pos not_eq x) {
+      if (x == ChopperPos::Antenna) {
+        ant();
+      } else if (x == ChopperPos::Reference) {
+        ref();
+      } else if (x == ChopperPos::Hot) {
+        hot();
+      } else if (x == ChopperPos::Cold) {
+        cold();
+      }
+    }
     
     pos = x;
   }
   
+  DataType get_data_raw() {return toChopperPos((Python::Object<Python::Type::String>{get()}).toString());}
+  DataType get_data() {return pos;}
   
+  bool manual_run() {return manual;}
   
-  DataType get_data() {return toChopperPos((Python::Object<Python::Type::String>{get()}).toString());}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
 };  // PythonOriginalChopper
 }  // Chopper
 }  // Instrument

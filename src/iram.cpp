@@ -31,7 +31,6 @@ public:
   hk(std::move(h)), chop(std::move(c)), wob(std::move(w)), fr(std::move(f)), ba(std::move(ba)) {}
 };
 
-
 int main () {
   auto py = Python::createPython();  // Must be declared even if unused
 
@@ -41,10 +40,10 @@ int main () {
   GUI::Config config;
   
   // Setup TESTS
-  config.tabs = {"CTS", "XFFTS", "Retrieval"};
+  config.tabs = {" CTS ", " XFFTS ", " Retrieval "};
   config.tabspos = 0;
   Instrument::Chopper::GUI chopper_ctrl;
-  Instrument::Chopper::Dummy chop{"~/Work/radcalc/python/chopper/chopper.py"};
+  Instrument::Chopper::Dummy chop{"/home/richard/Work/radctrl/python/chopper/chopper.py"};
   const std::vector<std::string> devices = File::Devices({"USB", "S", "chopper", "wobbler"});
   
   config.io.FontGlobalScale=1.0f;
@@ -121,6 +120,34 @@ int main () {
   if (GUI::Windows::sub<3, 7, 1, 6, 2, 1>(window, startpos, "CTRL Tool 2")) {
     ImGui::Button("HOWDY");
   } GUI::Windows::end();
+  
+  // Error handling
+  if (config.active_errors == 0) {
+    if (chopper_ctrl.error) {
+      std::cout<< "I am trying to report an error\n"<<chop.error_string()<<'\n';
+      ImGui::OpenPopup("Error");
+      chopper_ctrl.error = false;
+      config.active_errors++;
+    }
+  }
+  
+  // Error popup
+  if (ImGui::BeginPopupModal("Error")) {
+    ImGui::Text("Found %i error(s). These are cleaned up by pressing OK, but they must be fixed\t", config.active_errors);
+    
+    ImGui::TextWrapped("Chopper: %s", chop.error_string().c_str());
+    
+    ImGui::NewLine();
+    if (ImGui::Button(" OK ", {80.0f, 30.0f})) {
+      chop.delete_error();
+      ImGui::CloseCurrentPopup();
+      config.active_errors=0;
+    } ImGui::SameLine();
+    if (ImGui::Button(" Quit ", {80.0f, 30.0f})) {
+      glfwSetWindowShouldClose(window, 1);
+    }
+    ImGui::EndPopup();
+  }
   
   // End of main loop
   EndWhileLoopGUI;
