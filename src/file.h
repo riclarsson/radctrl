@@ -30,7 +30,7 @@ template <class T> std::ostream& operator<<(std::ostream& os, const std::vector<
   if constexpr (std::is_arithmetic<T>::value) {
     for (auto& b: x)
       os << b << ' ';
-  } else if constexpr (not std::is_arithmetic<T>::value) {
+  } else {
     for (auto& b: x)
       os << b << '\n';
   }
@@ -202,7 +202,7 @@ public:
     (Y == Type::Raw or Y == Type::Xml), "Bad file type and operation");
     if constexpr (relative)
       fil.seekg(n, std::ios_base::cur);
-    else if constexpr (not relative)
+    else
       fil.seekg(n);
   }
   

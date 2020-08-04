@@ -1187,8 +1187,8 @@ struct IsotopologueRecord {
 };
 
 template <size_t N>
-constexpr bool check_quantumnumbers(std::array<Quantum::Type, N> data) {
-  if (N) {
+constexpr bool check_quantumnumbers(const std::array<Quantum::Type, N>& data) {
+  if constexpr (N > 1) {
     for (size_t i=0; i<N-1; i++) {
       if (long(data[i]) >= long(data[i+1])){
         return false;
@@ -1257,7 +1257,7 @@ public:
   std::string Name() const noexcept {return toString(S);}
   std::string ShortName() const noexcept {return toShortName(S);}
   
-  bool set_local(std::vector<Quantum::Number>& v, Quantum::Number n, Quantum::Type t) noexcept {
+  bool set_local(std::vector<Quantum::Number>& v, const Quantum::Number& n, Quantum::Type t) noexcept {
     for (size_t i=0; i<data.local.size(); i++) {
       if (data.local[i] == t) {
         v[i] = n;
@@ -1267,7 +1267,7 @@ public:
     return false;
   }
   
-  bool set_global(std::vector<Quantum::Number>& v, Quantum::Number n, Quantum::Type t) noexcept {
+  bool set_global(std::vector<Quantum::Number>& v, const Quantum::Number& n, Quantum::Type t) noexcept {
     for (size_t i=0; i<data.global.size(); i++) {
       if (data.global[i] == t) {
         v[i] = n;
@@ -1523,7 +1523,7 @@ public:
   
   constexpr unsigned char globalQuantumNumberCount() const noexcept {return getGlobalQuantumNumberCount(s);}
   
-  bool set_local(std::vector<Quantum::Number>& v, Quantum::Number n, Quantum::Type t) const noexcept {
+  bool set_local(std::vector<Quantum::Number>& v, const Quantum::Number& n, Quantum::Type t) const noexcept {
     switch(s) {
       case Species::Bath: return false;
       case Species::Water: return Isotopologue<Species::Water>().set_local(v, n, t);
@@ -1580,7 +1580,7 @@ public:
     return {};
   }
   
-  bool set_global(std::vector<Quantum::Number>& v, Quantum::Number n, Quantum::Type t) const noexcept {
+  bool set_global(std::vector<Quantum::Number>& v, const Quantum::Number& n, Quantum::Type t) const noexcept {
     switch(s) {
       case Species::Bath: return false;
       case Species::Water: return Isotopologue<Species::Water>().set_global(v, n, t);

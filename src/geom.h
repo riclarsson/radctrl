@@ -380,7 +380,7 @@ public:
   Nav() noexcept {}
   
   template <PosType P, LosType L>
-  Nav(Pos<P> p0, Los<L> l0, Ellipsoid e) noexcept : pos(p0, e), los(l0, p0, e), ell(e) {}
+  Nav(Pos<P> p0, Los<L> l0, Ellipsoid e) noexcept : pos(p0, e), los(l0, p0, e), ell(std::move(e)) {}
   
   Nav(const Nav& old, Distance<DistanceType::meter> d) noexcept : pos(old.pos), los(old.los), ell(old.ell) {
     double dist = d.value();

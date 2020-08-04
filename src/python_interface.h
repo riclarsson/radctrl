@@ -23,12 +23,12 @@ ENUMCLASS(Type, unsigned char,
           String)
 
 template <Type X=Type::None>
-class __attribute__((visibility("hidden"))) Object {
+class Object {
 public:
   py::object Obj;
   Object() noexcept {}
   Object(py::object && x) noexcept : Obj(std::move(x)) {}
-  Object& operator=(py::object && x) noexcept {Obj(std::move(x));}
+  Object& operator=(py::object && x) noexcept {Obj(std::move(x)); return *this;}
   Object(Object<Type::None> && x) noexcept : Obj(std::move(x.Obj)) {}
   
   std::string toString() const {static_assert(X == Type::String); return Obj.cast<std::string>();}
@@ -37,7 +37,7 @@ public:
   int toBool() const {static_assert(X == Type::Bool); return Obj.cast<bool>();}
 };
   
-class __attribute__((visibility("hidden"))) Function {
+class Function {
   py::object Fun;
 public:
   Function() {}
@@ -61,7 +61,7 @@ public:
   }
 };
 
-class __attribute__((visibility("hidden"))) ClassInstance {
+class ClassInstance {
   py::object Inst;
 public:
   ClassInstance() noexcept {}
@@ -83,7 +83,7 @@ public:
 };
 
 // template <const char * KEY>
-class __attribute__((visibility("hidden"))) ClassInterface {
+class ClassInterface {
   py::object Obj;
 public:
   ClassInterface() {}

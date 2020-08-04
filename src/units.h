@@ -69,7 +69,7 @@ template <PressureType X>
 class Pressure final {
   SCALAR(Pressure)
   void pa2self() noexcept {
-    if constexpr (X == PressureType::Atm) {}
+    if constexpr (X == PressureType::Pa) {}
     if constexpr (X == PressureType::Atm) {val=Conversion::pa2atm(val);}
     if constexpr (X == PressureType::Torr) {val=Conversion::pa2torr(val);}
     if constexpr (X == PressureType::Bar) {val=Conversion::pa2bar(val);}

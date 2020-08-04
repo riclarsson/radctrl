@@ -6,6 +6,7 @@
 #include "gui.h"
 #include "instrument.h"
 #include "python_interface.h"
+#include "wobbler.h"
 
 template <class Wobbler,
           class Chopper,
@@ -43,7 +44,9 @@ int main () {
   config.tabs = {" CTS ", " XFFTS ", " Retrieval "};
   config.tabspos = 0;
   Instrument::Chopper::GUI chopper_ctrl;
-  Instrument::Chopper::Dummy chop{"/home/richard/Work/radctrl/python/chopper/chopper.py"};
+  Instrument::Chopper::Dummy chop{"/home/larsson/Work/radctrl/python/chopper/chopper.py"};
+  Instrument::Wobbler::GUI wobbler_ctrl;
+  Instrument::Wobbler::Dummy wob{"/home/larsson/Work/radctrl/python/wobbler/IRAM.py"};
   const std::vector<std::string> devices = File::Devices({"USB", "S", "chopper", "wobbler"});
   
   config.io.FontGlobalScale=1.0f;
@@ -115,7 +118,18 @@ int main () {
   }
   
   if (GUI::Windows::sub<3, 7, 0, 6, 1, 1>(window, startpos, "CTRL Tool 1")) {
-    Instrument::Chopper::GuiSetup(chop, chopper_ctrl, devices);
+    if (ImGui::BeginTabBar("GUI Control")) {
+      if (ImGui::BeginTabItem(" Chopper ")) {
+        Instrument::Chopper::GuiSetup(chop, chopper_ctrl, devices);
+        ImGui::EndTabItem();
+      }
+      
+      if (ImGui::BeginTabItem(" Wobbler ")) {
+        Instrument::Wobbler::GuiSetup(wob, wobbler_ctrl, devices);
+        ImGui::EndTabItem();
+      }
+      ImGui::EndTabBar();
+    }
   } GUI::Windows::end();
   if (GUI::Windows::sub<3, 7, 1, 6, 2, 1>(window, startpos, "CTRL Tool 2")) {
     ImGui::Button("HOWDY");
@@ -124,9 +138,13 @@ int main () {
   // Error handling
   if (config.active_errors == 0) {
     if (chopper_ctrl.error) {
-      std::cout<< "I am trying to report an error\n"<<chop.error_string()<<'\n';
       ImGui::OpenPopup("Error");
       chopper_ctrl.error = false;
+      config.active_errors++;
+    }
+    if (wobbler_ctrl.error) {
+      ImGui::OpenPopup("Error");
+      wobbler_ctrl.error = false;
       config.active_errors++;
     }
   }
@@ -136,10 +154,12 @@ int main () {
     ImGui::Text("Found %i error(s). These are cleaned up by pressing OK, but they must be fixed\t", config.active_errors);
     
     ImGui::TextWrapped("Chopper: %s", chop.error_string().c_str());
+    ImGui::TextWrapped("Wobbler: %s", wob.error_string().c_str());
     
     ImGui::NewLine();
     if (ImGui::Button(" OK ", {80.0f, 30.0f})) {
       chop.delete_error();
+      wob.delete_error();
       ImGui::CloseCurrentPopup();
       config.active_errors=0;
     } ImGui::SameLine();
