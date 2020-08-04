@@ -18,24 +18,16 @@ import numpy as np
 
 class pc104:
     def __init__(self,
-                 name="pc104",
-                 response_name="MAIN",
-                 frequency=[[1330, 1370]],
-                 f0=None,
                  host="pc104",
+                 frequency=[[1330, 1370]],
                  tcp_port=1725,
                  udp_port=None,
                  channels=[4096],
                  integration_time=1000,
                  blank_time=None,
-                 data_storage_containers=4,
                  reverse_data=False):
         """
         Parameters:
-            name (str):
-                Name of the mahcine (unused, kept as housekeeping)
-            response_name (str):
-                Name the mahcine recognize as host (see its mailboxdefs)
             host (str):
                 Name of the host, IP or DNS
             tcp_port (str):
@@ -48,13 +40,8 @@ class pc104:
                 Time in miliseconds
             blank_time (int):
                 Unused for this spectrometer
-            data_storage_containers (int):
-                Storage containers for keeping data around
         """
-        self.name=name
-        self.response_name=response_name  # FIXME: UNIQUE TO THIS MACHINE!
         self.frequency=frequency
-        self.f0=f0
 
         # Lock-check
         self._initialized=False
@@ -65,7 +52,7 @@ class pc104:
 
         # Constants
         self._channels=channels
-        self._copies_of_vectors=int(data_storage_containers)
+        self._copies_of_vectors=int(4)
 
         # Host information
         self._tcp_port=tcp_port
@@ -82,7 +69,7 @@ class pc104:
             self._data.append(np.zeros((self._channels[0],), dtype=np.float64))
 
         self._soc = self._client_socket()
-        self._send_msg(self.response_name)
+        self._send_msg("MAIN")
         self._send_init()
         self._send_time()
 
@@ -123,10 +110,10 @@ class pc104:
         """ Sets the housekeeping data dictionary.  hk must be dictionary """
         assert self._initialized, "Can set housekeeping when initialized"
 
-        hk['Instrument'][self.name] = {}
-        hk['Instrument'][self.name]['Frequency [MHz]'] = self.frequency
-        hk['Instrument'][self.name]['Channels [#]'] = self._channels
-        hk['Instrument'][self.name]['Integration [s]'] = self._runtime
+        hk['Instrument']["pc104"] = {}
+        hk['Instrument']["pc104"]['Frequency [MHz]'] = self.frequency
+        hk['Instrument']["pc104"]['Channels [#]'] = self._channels
+        hk['Instrument']["pc104"]['Integration [s]'] = self._runtime
 
     def save_data(self, basename="/home/dabrowski/data/test/CTS", file=None,
             binary=True):

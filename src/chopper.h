@@ -141,7 +141,7 @@ class Dummy {
   ChopperPos pos;
   bool error_found;
   std::string error;
-  public:
+public:
   using DataType = ChopperPos;
   template <typename ... Whatever> constexpr Dummy(Whatever...) : manual(false), pos(ChopperPos::Cold), error_found(false), error("") {}
   void startup(const std::string&, int, double) {}

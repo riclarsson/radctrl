@@ -4,33 +4,8 @@
 #include "chopper.h"
 #include "file.h"
 #include "gui.h"
-#include "instrument.h"
 #include "python_interface.h"
 #include "wobbler.h"
-
-template <class Wobbler,
-          class Chopper,
-          class Housekeeping,
-          class Frontend,
-          class Backends>
-class IRAM {
-  static constexpr unsigned BackendN = Backends::N;
-  static_assert(Housekeeping::is_housekeeper);
-  static_assert(Chopper::is_chopping);
-  static_assert(Wobbler::is_wobbling);
-  static_assert(Frontend::is_frontend);
-  static_assert(Backends::is_backend);
-  
-  Housekeeping hk;
-  Chopper chop;
-  Wobbler wob;
-  Frontend fr;
-  Backends ba;
-
-public:
-  IRAM (Housekeeping&& h, Chopper&& c, Wobbler&& w, Frontend&& f, Backends&& b) noexcept :
-  hk(std::move(h)), chop(std::move(c)), wob(std::move(w)), fr(std::move(f)), ba(std::move(ba)) {}
-};
 
 int main () {
   auto py = Python::createPython();  // Must be declared even if unused

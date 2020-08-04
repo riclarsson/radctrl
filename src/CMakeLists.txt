@@ -17,6 +17,7 @@ target_include_directories(gui PUBLIC ../inc/gui/imgui/ ../inc/gui/implot/)
 add_library (math STATIC
              rational.cpp
              )
+target_include_directories(math PUBLIC ../inc/Eigen/)
 ########################################################################################
 
 ########################################################################################
@@ -98,7 +99,7 @@ target_link_libraries(rte PUBLIC species)
 # Python Interface Library:  For calling python code
 set(Python_ADDITIONAL_VERSIONS 3)
 add_library(python STATIC python_interface.cpp)
-target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../inc/pybind11/include/)
+target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../inc/pybind11/include/ ../inc/Eigen/)
 target_link_libraries(python PUBLIC ${PYTHON_LIBRARIES} pybind11::embed)
 ########################################################################################
 

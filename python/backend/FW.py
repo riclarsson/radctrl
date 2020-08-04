@@ -18,17 +18,13 @@ class FW:
     """Connection to fast fourier transform spectrometer
     """
     def __init__(self,
-            library=None,
-            name='AFFTS',
-            frequency=[[0,1500]],
-            f0=None,
             host='localhost',
+            frequency=[[0,1500]],
             tcp_port=25144,
             udp_port=16210,
             channels=np.array([8192,8192]),
             integration_time=1000,
             blank_time=1,
-            data_storage_containers=4,
             reverse_data=False):
         """
         Parameters:
@@ -40,20 +36,13 @@ class FW:
                 Second port to communicate with the FW spectrometer
             channels (array of int):
                 Numbers of channel to **info**
-            name (any):
-                Name of the mahcine (unused, kept as housekeeping)
             integration_time (int):
                 **info**
             blank_time (int):
                 **info**
-            data_storage_containers (int):
-                **info**
         """
         assert isinstance(integration_time,int),"Integration in integers"
         assert integration_time < 5001,"5000 ms integration time is maximum"
-
-        self.name=name
-        self.f0=f0
 
         self._bytes=np.sum(channels)*4
         self._boards=len(channels)
@@ -63,7 +52,7 @@ class FW:
         self._host=host
         self._integration_time=str(int(integration_time//2 * 1000))
         self._blank_time=str(int(blank_time * 1000))
-        self._copies_of_vectors=int(data_storage_containers)
+        self._copies_of_vectors=int(4)
         self.frequency = frequency
         self.reverse=reverse_data
 
@@ -171,31 +160,14 @@ class FW:
         if self.reverse:
             self._data[i] = self._data[i][::-1]
 
-    def save_data(self,basename="/home/waspam/data/test/FW",binary=True):
-        """Saves data to file at basename+filename.
-
-        Uses last access-time to server socket as filename.
-
-        Saves with numpy binary format if binary is true or as ascii otherwise.
-        """
-        assert self._initialized,"No data exists for an uninitialized FFTS"
-        assert len(self._time),"Must call run() succesfully to save data"
-
-        filename=self._time
-
-        if binary: np.save(basename+filename,self._data)
-        else: np.savetxt(basename+filename,self._data)
-
-        self._time=''
-
     def set_housekeeping(self, hk):
         """ Sets the housekeeping data dictionary.  hk must be dictionary """
         assert self._initialized, "Can set housekeeping when initialized"
 
-        hk['Instrument'][self.name] = {}
-        hk['Instrument'][self.name]['Frequency [MHz]'] = self.frequency
-        hk['Instrument'][self.name]['Channels [#]'] = self._channels
-        hk['Instrument'][self.name]['Integration [micro-s]'] = self._integration_time
+        hk['Instrument']["FW"] = {}
+        hk['Instrument']["FW"]['Frequency [MHz]'] = self.frequency
+        hk['Instrument']["FW"]['Channels [#]'] = self._channels
+        hk['Instrument']["FW"]['Integration [micro-s]'] = self._integration_time
 
     def close(self):
         """Disconnect from both servers of the AFFTS and sends stop to AFFTS

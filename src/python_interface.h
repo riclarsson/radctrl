@@ -5,7 +5,10 @@
 #include <iostream>
 #include <iomanip>
 
+#include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
+#include <pybind11/numpy.h>
+#include <pybind11/eigen.h>
 
 #include "enums.h"
 namespace py = pybind11;
@@ -20,7 +23,10 @@ ENUMCLASS(Type, unsigned char,
           Bool,
           Int,
           Double,
-          String)
+          String,
+          List,
+          NumpyVector
+         )
 
 template <Type X=Type::None>
 class Object {
@@ -33,8 +39,15 @@ public:
   
   std::string toString() const {static_assert(X == Type::String); return Obj.cast<std::string>();}
   double toDouble() const {static_assert(X == Type::Double); return Obj.cast<double>();}
+  bool toBool() const {static_assert(X == Type::Bool); return Obj.cast<bool>();}
   int toInt() const {static_assert(X == Type::Int); return Obj.cast<int>();}
-  int toBool() const {static_assert(X == Type::Bool); return Obj.cast<bool>();}
+  
+  template <typename T>
+  std::vector<T> toVector() const {
+    static_assert(X == Type::NumpyVector);
+    py::array_t<T> a(Obj);
+    return {a.data(), a.data()+a.size()};
+  }
 };
   
 class Function {

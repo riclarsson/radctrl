@@ -16,21 +16,16 @@ class rcts104:
 	""" Interactions with CTS functionality
 	"""
 	def __init__(self,
-			name="rcts104",
-			frequency=[[2100-210/2,2100+210/2]],
-			f0=None,
 			host="sofia4",
+			frequency=[[2100-210/2,2100+210/2]],
 			tcp_port=1788,
 			udp_port=None,
 			channels=[7504],
 			integration_time=1000,
 			blank_time=None,
-			data_storage_containers=4,
 			reverse_data=False):
 		"""
 		Parameters:
-			name (any):
-				Name of the mahcine (unused, kept as housekeeping)
 			host (str):
 				Name of the host, IP or DNS
 			tcp_port (str):
@@ -43,12 +38,8 @@ class rcts104:
 				**info**
 			blank_time (int):
 				**info**
-			data_storage_containers (int):
-				**info**
 		"""
-		self.name=name
 		self.frequency=frequency
-		self.f0=f0
 
 		# Lock-check
 		self._initialized=False
@@ -59,7 +50,7 @@ class rcts104:
 
 		# Constants
 		self._channels=channels
-		self._copies_of_vectors=int(data_storage_containers)
+		self._copies_of_vectors=int(4)
 
 		# Host information
 		self._tcp_port=tcp_port
@@ -187,10 +178,10 @@ class rcts104:
 		""" Sets the housekeeping data dictionary.  hk must be dictionary """
 		assert self._initialized, "Can set housekeeping when initialized"
 		
-		hk['Instrument'][self.name] = {}
-		hk['Instrument'][self.name]['Frequency [MHz]'] = self.frequency
-		hk['Instrument'][self.name]['Channels [#]'] = self._channels
-		hk['Instrument'][self.name]['Integration [s]'] = self._runtime
+		hk['Instrument']["rcts104"] = {}
+		hk['Instrument']["rcts104"]['Frequency [MHz]'] = self.frequency
+		hk['Instrument']["rcts104"]['Channels [#]'] = self._channels
+		hk['Instrument']["rcts104"]['Integration [s]'] = self._runtime
 
 	def save_data(self, basename="/home/dabrowski/data/test/CTS", file=None,
 			binary=True):

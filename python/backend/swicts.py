@@ -23,21 +23,16 @@ class swicts:
 			Saves data to file
 	"""
 	def __init__(self,
-			name="SWI_CTS",
-			frequency=[[5500,6500]],
-			f0=6000,
 			host="134.76.235.26",
+			frequency=[[5500,6500]],
 			tcp_port=9900,
 			udp_port=None,
 			channels=[10000],
 			integration_time=1000,
 			blank_time=None,
-			data_storage_containers=4,
 			reverse_data=False):
-
-		self.name=name
+        
 		self.frequency=frequency
-		self.f0=f0
 
 		# Lock-check
 		self._initialized=False
@@ -48,7 +43,7 @@ class swicts:
 
 		# Constants
 		self._channels=channels[0]
-		self._copies_of_vectors=int(data_storage_containers)
+		self._copies_of_vectors=int(4)
 
 		# Host information
 		self._tcp_port=tcp_port

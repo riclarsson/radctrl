@@ -1,13 +1,15 @@
 #include <chrono>
 
+#include <Eigen/Core>
+
 #include "python_interface.h"
 #include "timeclass.h"
 
+// Python must be created and survive until the end of the python calls
+auto pyinterp = Python::createPython();
+
 void test001()
 {
-  // Python must be created and survive until the end of the python calls
-  auto py = Python::createPython();
-  
   // Executes a very simply script importing important libraries and
   // defining some random classes and functions and puts it in main scope
   py::exec(R"(
@@ -61,14 +63,60 @@ void test001()
   help_p2();
   help_p3();
   
-  // Puts a plot on screen and freeze the program until it is quit
-  py::print("Now look at and enjoy this nice plot for your effort (close it to finish the program)");
+  // Puts a plot on screen and freeze the test until it is quit
+  py::print("Now look at and enjoy this nice plot for your effort (close it to finish the test)");
   py::exec(R"(
     plt.plot(np.linspace(0, 6, 101), np.sin(np.linspace(0, 6, 101)))
     plt.show()
   )");
 }
 
+void test002()
+{
+  // Executes a very simply script importing important libraries and
+  // defining some random classes and functions and puts it in main scope
+  py::exec(R"(
+    import numpy as np
+    
+    def mul(arraya, arrayb):
+        arraya*=np.array(arrayb)
+        return 2*arraya
+    
+    def none(a):
+        return a
+    
+    def printy(a):
+        for x in a:
+            for y in x:
+                print(y)
+        
+  )");
+  
+  const Python::Function mul{"mul"};
+  const Python::Function none{"none"};
+  const Python::Function print{"printy"};
+  py::print(mul(1,3.).Obj);
+  
+  std::vector<double> a {1,2,3,4};
+  auto copy = py::array(a.size(), a.data());
+  auto arr = mul(copy, 3.0);
+  py::print(arr.Obj);
+  py::print(copy);
+  auto n = Python::Object<Python::Type::NumpyVector>(none(arr.Obj)).toVector<double>();
+  for (auto i:n)
+    std::cout << i << ' ';
+  std::cout << '\n';
+  
+  Eigen::MatrixXd eigtest;
+  eigtest.resize(2, 2);
+  eigtest << 1, 2, 3, 4;
+  std::cout<<eigtest<<'\n';
+  py::print(mul(Eigen::Ref<Eigen::MatrixXd>(eigtest), 3.).Obj);
+  std::cout<<eigtest<<'\n';
+  print(Eigen::Ref<Eigen::MatrixXd>(eigtest));
+}
+
 int main() {
-  test001();
+//   test001();  // Standard python
+  test002();  // Numpy arrays
 }
