@@ -5,6 +5,7 @@
 #include <string>
 
 #include <imgui.h>
+#include <imgui_stdlib.h>
 #include <implot.h>
 
 #include "gui_macros.h"
@@ -30,7 +31,7 @@ struct Config {
   
   Config(bool fullscreen_on=false) : io(ImGui::GetIO()),
   fullscreen(fullscreen_on), active_errors(0), width(1280), height(720), xpos(50), ypos(50),
-  tabspos(0), tabs({"Main"})
+  tabs(0)
   {
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls

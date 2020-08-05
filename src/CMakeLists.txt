@@ -69,6 +69,14 @@ target_link_libraries(backend PUBLIC gui python)
 ########################################################################################
 
 ########################################################################################
+# Housekeeping library
+add_library (housekeeping STATIC
+             housekeeping.cpp
+             )
+target_link_libraries(housekeeping PUBLIC gui python)
+########################################################################################
+
+########################################################################################
 # Geometry Library:  For equations and classes for computing the path and geometry
 add_library (geom STATIC
              geom.cpp
@@ -113,13 +121,13 @@ target_link_libraries(multithread PUBLIC Threads::Threads)
 ########################################################################################
 # Waspam runtime executable
 add_executable (waspam waspam.cpp)
-target_link_libraries(waspam PUBLIC gui python files chopper wobbler)
+target_link_libraries(waspam PUBLIC gui python files chopper wobbler housekeeping backend)
 ########################################################################################
 
 ########################################################################################
 # IRAM runtime executable
 add_executable (iram iram.cpp)
-target_link_libraries(iram PUBLIC gui python files chopper wobbler)
+target_link_libraries(iram PUBLIC gui python files chopper wobbler housekeeping backend)
 ########################################################################################
 
 ########################################################################################

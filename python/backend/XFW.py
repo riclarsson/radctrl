@@ -19,9 +19,9 @@ class XFW:
     """
     def __init__(self,
             host='localhost',
-            frequency=[[0,2500]],
             tcp_port=25144,
             udp_port=16210,
+            frequency=[[0,2500]],
             channels=np.array([32768]),
             integration_time=1000,
             blank_time=1,

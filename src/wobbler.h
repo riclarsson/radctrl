@@ -55,8 +55,8 @@ void GuiSetup(Wobbler& wob, GUI& ctrl, const std::vector<std::string>& devs) {
     }
   }
   
-  auto dev = ctrl.dev.c_str();
-  if (ImGui::BeginCombo("Device", dev)) {
+  ImGui::PushItemWidth(120.0f);
+  if (auto dev = ctrl.dev.c_str(); ImGui::BeginCombo("Device", dev)) {
     bool newselection=false;
     for (auto& d: devs) {
       auto dev2 = d.c_str();
@@ -66,15 +66,27 @@ void GuiSetup(Wobbler& wob, GUI& ctrl, const std::vector<std::string>& devs) {
         dev = dev2;
       }
     }
-    
     ImGui::EndCombo();
     
-    if (not ctrl.init) {
-      if (newselection) {
-        ctrl.dev = dev;
-      }
-    }
+    if (not ctrl.init and newselection)
+      ctrl.dev = dev;
   }
+  ImGui::PopItemWidth();
+  
+  ImGui::PushItemWidth(30.0f);
+  ImGui::SameLine();
+  if (ctrl.init)
+    ImGui::InputText("Addr", &ctrl.address, 2,  ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_ReadOnly);
+  else
+    ImGui::InputText("Addr", &ctrl.address, 2,  ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll);
+  ImGui::PopItemWidth();
+  ImGui::PushItemWidth(100.0f);
+  ImGui::SameLine();
+  if (ctrl.init)
+    ImGui::InputInt("Baud Rate", &ctrl.baudrate, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_ReadOnly);
+  else
+    ImGui::InputInt("Baud Rate", &ctrl.baudrate, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll);
+  ImGui::PopItemWidth();
   
   if (not ctrl.init) {
     ImGui::SliderInt("Start Position [#]", &ctrl.pos, 0, 40000);
@@ -94,6 +106,11 @@ void GuiSetup(Wobbler& wob, GUI& ctrl, const std::vector<std::string>& devs) {
     ImGui::Text(" Move Back ");
     ImGui::SameLine();
     ImGui::Text(" Move Forward ");
+    ImGui::SameLine();
+    ImGui::PushItemWidth(150.0f);
+    int pos = wob.get_data();
+    ImGui::InputInt("Move", &pos, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
+    ImGui::PopItemWidth();
   } else {
     if (ImGui::Button(" Move Back ")) {
       wob.move(wob.get_data() - ctrl.delta_pos);
@@ -103,8 +120,13 @@ void GuiSetup(Wobbler& wob, GUI& ctrl, const std::vector<std::string>& devs) {
       wob.move(wob.get_data() + ctrl.delta_pos);
     }
     ImGui::SameLine();
-    ImGui::Text("Expected state: %i", wob.get_data());
+    ImGui::PushItemWidth(150.0f);
+    int pos = wob.get_data();
+    ImGui::InputInt("Move", &pos, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
+    wob.move(pos);
+    ImGui::PopItemWidth();
   }
+  
   
   if (wob.has_error()) {
     ctrl.init = false;

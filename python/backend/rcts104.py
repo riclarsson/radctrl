@@ -17,9 +17,9 @@ class rcts104:
 	"""
 	def __init__(self,
 			host="sofia4",
-			frequency=[[2100-210/2,2100+210/2]],
 			tcp_port=1788,
 			udp_port=None,
+			frequency=[[2100-210/2,2100+210/2]],
 			channels=[7504],
 			integration_time=1000,
 			blank_time=None,

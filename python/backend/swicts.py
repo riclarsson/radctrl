@@ -24,9 +24,9 @@ class swicts:
 	"""
 	def __init__(self,
 			host="134.76.235.26",
-			frequency=[[5500,6500]],
 			tcp_port=9900,
 			udp_port=None,
+			frequency=[[5500,6500]],
 			channels=[10000],
 			integration_time=1000,
 			blank_time=None,

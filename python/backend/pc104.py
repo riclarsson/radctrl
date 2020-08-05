@@ -19,9 +19,9 @@ import numpy as np
 class pc104:
     def __init__(self,
                  host="pc104",
-                 frequency=[[1330, 1370]],
                  tcp_port=1725,
                  udp_port=None,
+                 frequency=[[1330, 1370]],
                  channels=[4096],
                  integration_time=1000,
                  blank_time=None,
