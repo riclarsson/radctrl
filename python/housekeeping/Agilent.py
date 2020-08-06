@@ -10,7 +10,6 @@ import serial
 from time import time,sleep,strftime
 from threading import Thread
 from scipy.interpolate import make_interp_spline
-from mpsrad.helper import serialCheck
 
 class Agilent34970A:
 	"""Reads sensors connected to Agilent 34970A multimeter
@@ -60,7 +59,6 @@ class Agilent34970A:
 		Musn't be initialized already.
 		"""
 		assert not self._initialized, "Cannot init initialized multimeter"
-		checkserial=serialCheck.serialcheck()	#make sure to use pyserial
 
 		# Open a serial port
 		self._serial=serial.Serial(self._device,self._baud,xonxoff=True,timeout=2)

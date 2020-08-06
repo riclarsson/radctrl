@@ -2,25 +2,37 @@
 #define wobbler_h
 
 #include <string>
+#include <vector>
 
 #include "gui.h"
 #include "python_interface.h"
+#include "timeclass.h"
 
 namespace Instrument {
 namespace Wobbler {
+
+template <size_t n>
 struct GUI {
+  static constexpr size_t N = n;
+  
   bool init;
   bool error;
+  bool quit;
+  bool run;
+  bool operating;
+  bool waiting;
+  
   std::string dev;
   int baudrate;
   char address;
-  int pos;
-  int delta_pos;
-  GUI() noexcept : init(false), error(false), dev("/dev/wobbler"), baudrate(115200), address('0'), pos(4000), delta_pos(3000) {}
+
+  std::array<int, N> pos;
+  GUI() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false),
+  dev("/dev/wobbler"), baudrate(115200), address('0') {pos.fill(0);}
 };
 
-template <class Wobbler>
-void GuiSetup(Wobbler& wob, GUI& ctrl, const std::vector<std::string>& devs) {
+template <class Wobbler, size_t N>
+void GuiSetup(Wobbler& wob, GUI<N>& ctrl, const std::vector<std::string>& devs) {
   bool change=false;
   bool manual=false;
   if (not ctrl.init) {
@@ -49,7 +61,7 @@ void GuiSetup(Wobbler& wob, GUI& ctrl, const std::vector<std::string>& devs) {
   if (change) {
     if (ctrl.init) {
       wob.startup(ctrl.dev, ctrl.baudrate, ctrl.address);
-      wob.init(ctrl.pos, manual);
+      wob.init(ctrl.pos[0], manual);
     } else {
       wob.close();
     }
@@ -88,45 +100,28 @@ void GuiSetup(Wobbler& wob, GUI& ctrl, const std::vector<std::string>& devs) {
     ImGui::InputInt("Baud Rate", &ctrl.baudrate, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll);
   ImGui::PopItemWidth();
   
-  if (not ctrl.init) {
-    ImGui::SliderInt("Start Position [#]", &ctrl.pos, 0, 40000);
-  } else {
-    int throwaway = ctrl.pos;
-    ImGui::SliderInt("Start Position [#]", &throwaway, 0, 40000);
-  }
-  
-  if (not ctrl.init) {
-    ImGui::SliderInt("Delta Position [#]", &ctrl.delta_pos, -40000, 40000);
-  } else {
-    int throwaway = ctrl.delta_pos;
-    ImGui::SliderInt("Delta Position [#]", &throwaway, -40000, 40000);
-  }
-  
-  if (not ctrl.init) {
-    ImGui::Text(" Move Back ");
-    ImGui::SameLine();
-    ImGui::Text(" Move Forward ");
-    ImGui::SameLine();
-    ImGui::PushItemWidth(150.0f);
-    int pos = wob.get_data();
-    ImGui::InputInt("Move", &pos, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
-    ImGui::PopItemWidth();
-  } else {
-    if (ImGui::Button(" Move Back ")) {
-      wob.move(wob.get_data() - ctrl.delta_pos);
+  ImGui::PushItemWidth(400.f);
+  for (size_t i=0; i<N; i+=4) {
+    if (N-i > 3) {
+      std::string label = std::string{"Items "} + std::to_string(i) + std::string{"-"} + std::to_string(i+3);
+      ImGui::InputInt4(label.c_str(), &ctrl.pos[i], ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
     }
-    ImGui::SameLine();
-    if (ImGui::Button(" Move Forward ")) {
-      wob.move(wob.get_data() + ctrl.delta_pos);
+    else if (N-i > 2) {
+      std::string label = std::string{"Items "} + std::to_string(i) + std::string{"-"} + std::to_string(i+2);
+      ImGui::InputInt3(label.c_str(), &ctrl.pos[i], ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
     }
-    ImGui::SameLine();
-    ImGui::PushItemWidth(150.0f);
-    int pos = wob.get_data();
-    ImGui::InputInt("Move", &pos, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
-    wob.move(pos);
-    ImGui::PopItemWidth();
+    else if (N-i > 1) {
+      std::string label = std::string{"Items "} + std::to_string(i) + std::string{"-"} + std::to_string(i+1);
+      ImGui::InputInt2(label.c_str(), &ctrl.pos[i], ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
+    }
+    else {
+      std::string label = std::string{"Item "} + std::to_string(i);
+      ImGui::InputInt(label.c_str(), &ctrl.pos[i], 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
+    }
   }
+  ImGui::PopItemWidth();
   
+  ImGui::Text("Target Position: %i", wob.get_data()); 
   
   if (wob.has_error()) {
     ctrl.init = false;
@@ -152,6 +147,7 @@ public:
   const std::string& error_string() const {return error;}
   bool has_error() {return error_found;}
   void delete_error() {error_found=false; error = "";}
+  void wait() const {Sleep(0.1);}
   DataType get_data() const {return position;}
 };  // Dummy
 
@@ -166,6 +162,7 @@ class PythonOriginalWASPAM {
   Python::Function initfun;
   Python::Function movefun;
   Python::Function shutdown;
+  Python::Function waitfun;
   Python::Function query;
   
 public:
@@ -186,6 +183,7 @@ public:
     initfun = Python::Function{PyInst("init")};
     movefun = Python::Function{PyInst("move")};
     query = Python::Function{PyInst("getPosition")};
+    waitfun = Python::Function{PyInst("wait")};
     shutdown = Python::Function{PyInst("close")};
   }
   
@@ -209,6 +207,7 @@ public:
   void move(int pos) {movefun(pos); position=pos;}
   
   // Queries
+  void wait() const {waitfun();}
   DataType get_data() const {return position;}
   DataType get_data_raw() const {return Python::Object<Python::Type::Int>(query()).toInt();}
 
@@ -230,6 +229,7 @@ class PythonOriginalIRAM {
   Python::Function initfun;
   Python::Function movefun;
   Python::Function shutdown;
+  Python::Function waitfun;
   Python::Function query;
   
 public:
@@ -250,6 +250,7 @@ public:
     initfun = Python::Function{PyInst("init")};
     movefun = Python::Function{PyInst("move")};
     query = Python::Function{PyInst("query_position")};
+    waitfun = Python::Function{PyInst("wait")};
     shutdown = Python::Function{PyInst("close")};
   }
   
@@ -273,6 +274,7 @@ public:
   void move(int pos) {movefun(pos); position=pos;}
   
   // Queries
+  void wait() const {waitfun();}
   DataType get_data() const {return position;}
   DataType get_data_raw() const {return Python::Object<Python::Type::Int>(query()).toInt();}
   

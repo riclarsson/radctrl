@@ -9,7 +9,7 @@ add_library (gui STATIC
              gui_help.cpp
              )
 target_link_libraries(gui PUBLIC imgui implot)
-target_include_directories(gui PUBLIC ../inc/gui/imgui/ ../inc/gui/implot/)
+target_include_directories(gui PUBLIC ../inc/gui/imgui/ ../inc/gui/implot/ ../inc/gui/imgui-filebrowser/)
 ########################################################################################
 
 ########################################################################################
@@ -121,13 +121,13 @@ target_link_libraries(multithread PUBLIC Threads::Threads)
 ########################################################################################
 # Waspam runtime executable
 add_executable (waspam waspam.cpp)
-target_link_libraries(waspam PUBLIC gui python files chopper wobbler housekeeping backend)
+target_link_libraries(waspam PUBLIC gui python files chopper wobbler housekeeping backend multithread)
 ########################################################################################
 
 ########################################################################################
 # IRAM runtime executable
 add_executable (iram iram.cpp)
-target_link_libraries(iram PUBLIC gui python files chopper wobbler housekeeping backend)
+target_link_libraries(iram PUBLIC gui python files chopper wobbler housekeeping backend multithread)
 ########################################################################################
 
 ########################################################################################

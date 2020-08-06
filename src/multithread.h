@@ -4,11 +4,12 @@
 #include <future>
 
 template <class Function, class ... Args>
-class AsyncThread {
-  std::future<std::invoke_result_t<std::decay_t<Function>, std::decay_t<Args>...>> r;
-public:
-  AsyncThread(Function&& f, Args&&... args) : r(std::async(std::launch::async, f, args...)) {}
-  decltype(r.get()) results() {return r.get();}
-};
+auto AsyncConstRef(Function&& f, const Args&... args) {return std::async(std::launch::async, f, std::cref(args)...);}
+
+template <class Function, class ... Args>
+auto AsyncRef(Function&& f, Args&... args) {return std::async(std::launch::async, f, std::ref(args)...);}
+
+template <class Function, class ... Args>
+auto Async(Function&& f, Args... args) {return std::async(std::launch::async, f, args...);}
 
 #endif  // multithread_h

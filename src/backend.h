@@ -9,6 +9,7 @@
 
 #include "gui.h"
 #include "python_interface.h"
+#include "timeclass.h"
 
 // FIXME:: Move to better position
 std::vector<double> linspace(double s, double e, int count) {
@@ -34,6 +35,10 @@ namespace Spectrometer {
 struct GUI {
   bool init;
   bool error;
+  bool quit;
+  bool run;
+  bool operating;
+  bool waiting;
   
   std::string host;
   int tcp_port;
@@ -47,8 +52,14 @@ struct GUI {
   std::vector<std::vector<double>> f;
   std::vector<std::vector<double>> d;
   
+  bool newcold, newhot, newatm;
+  std::vector<std::vector<double>> cold;
+  std::vector<std::vector<double>> hot;
+  std::vector<std::vector<double>> atm;
+  
   GUI(const std::string& h, int tcp, int udp, Eigen::MatrixXd fl, Eigen::VectorXi fc, int intus, int blaus, bool reverse) :
-  init(false), error(false), host(h), tcp_port(tcp), udp_port(udp), freq_limits(fl), freq_counts(fc),
+  init(false), error(false), quit(false), run(false), operating(false), waiting(false),
+  host(h), tcp_port(tcp), udp_port(udp), freq_limits(fl), freq_counts(fc),
   integration_time_microsecs(intus), blank_time_microsecs(blaus), mirror(reverse) {
     const size_t N = freq_counts.size();
     f.resize(N);
@@ -120,6 +131,16 @@ struct Backends {
   }
   
   template <size_t i=0>
+  void get_data(int j, int k) {
+    if (i == j)
+      std::get<i>(spectrometers).get_data(k);
+    else if constexpr (i < N - 1)
+      get_data<i+1>(j, k);
+    else
+      std::exit(1);
+  }
+  
+  template <size_t i=0>
   std::string name(int j) {
     if (i == j)
       return std::get<i>(spectrometers).name();
@@ -146,6 +167,16 @@ struct Backends {
     else if constexpr (i < N - 1) {
       return has_error<i+1>(j);
     }
+    else
+      std::exit(1);
+  }
+  
+  template <size_t i=0>
+  std::vector<std::vector<double>> datavec(int j) {
+    if (i == j)
+      return std::get<i>(spectrometers).datavec();
+    else if constexpr (i < N - 1)
+      return datavec<i+1>(j);
     else
       std::exit(1);
   }
@@ -199,21 +230,21 @@ void GuiSetup(Backends<Spectrometers ...>& spectrometers, std::array<GUI, sizeof
         
         if (ctrls[i].init) {
           ImGui::PushItemWidth(150.0f);
-          ImGui::InputText("Host|", &ctrls[i].host, ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
+          ImGui::InputText("Host", &ctrls[i].host, ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
           ImGui::PopItemWidth();
           ImGui::SameLine();
           ImGui::PushItemWidth(80.0f);
-          ImGui::InputInt("TCP|", &ctrls[i].tcp_port, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
+          ImGui::InputInt("TCP", &ctrls[i].tcp_port, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
           ImGui::SameLine();
           ImGui::InputInt("UDP", &ctrls[i].udp_port, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
           ImGui::PopItemWidth();
         } else {
           ImGui::PushItemWidth(150.0f);
-          ImGui::InputText("Host|", &ctrls[i].host, ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
+          ImGui::InputText("Host", &ctrls[i].host, ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
           ImGui::PopItemWidth();
           ImGui::SameLine();
           ImGui::PushItemWidth(80.0f);
-          ImGui::InputInt("TCP|", &ctrls[i].tcp_port, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
+          ImGui::InputInt("TCP", &ctrls[i].tcp_port, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
           ImGui::SameLine();
           ImGui::InputInt("UDP", &ctrls[i].udp_port, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
           ImGui::PopItemWidth();
@@ -230,18 +261,18 @@ void GuiSetup(Backends<Spectrometers ...>& spectrometers, std::array<GUI, sizeof
         
         if (ctrls[i].init) {
           ImGui::PushItemWidth(90.0f);
-          ImGui::InputInt("Int. [us]|", &ctrls[i].integration_time_microsecs, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
+          ImGui::InputInt("Int. [us]", &ctrls[i].integration_time_microsecs, 1, 100,  ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
           ImGui::SameLine();
-          ImGui::InputInt("Blank. [us]|", &ctrls[i].blank_time_microsecs, 1, 10, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
+          ImGui::InputInt("Blank. [us]", &ctrls[i].blank_time_microsecs, 1, 10, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_ReadOnly);
           ImGui::SameLine();
           bool m = ctrls[i].mirror;
           ImGui::Checkbox("Mirror", &m);
           ImGui::PopItemWidth();
         } else {
           ImGui::PushItemWidth(90.0f);
-          ImGui::InputInt("Int. [us]|", &ctrls[i].integration_time_microsecs, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
+          ImGui::InputInt("Int. [us]", &ctrls[i].integration_time_microsecs, 1, 100, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
           ImGui::SameLine();
-          ImGui::InputInt("Blank. [us]|", &ctrls[i].blank_time_microsecs, 1, 10, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
+          ImGui::InputInt("Blank. [us]", &ctrls[i].blank_time_microsecs, 1, 10, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_AutoSelectAll);
           ImGui::SameLine();
           ImGui::Checkbox("Mirror", &ctrls[i].mirror);
           ImGui::PopItemWidth();
@@ -265,15 +296,16 @@ class Dummy {
   bool error_found;
   std::string error;
   std::vector<std::vector<double>> data;
-  volatile bool new_data;
+  std::vector<double> dummy_x;
 
 public:
   template <typename ... Whatever> constexpr Dummy(const std::string& n, Whatever...) : mname(n), 
   manual(false), error_found(false),
-  error(""), data(2, std::vector<double>(1000)), new_data(false) {
+  error(""), data(2, std::vector<double>(1000)), dummy_x(1000) {
     for (int i=0; i<1000; i++) {
-      data[0][i] = std::cos(3.14*2*i/1000.);
-      data[1][i] = std::sin(3.14*2*i/1000.);
+      dummy_x[i] = 4*3.14*i/1000.;
+      data[0][i] = 5 + std::cos(dummy_x[i]);
+      data[1][i] = 5 + std::sin(dummy_x[i]);
     }
   }
   
@@ -281,16 +313,16 @@ public:
   void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
   void close() {}
   void run() {}
-  std::vector<std::vector<double>> datavec() {std::vector<std::vector<double>> out{data}; new_data = false; return out;}
-  bool newdata() const {return new_data;}
+  std::vector<std::vector<double>> datavec() {std::vector<std::vector<double>> out{data}; return out;}
   std::string name() const {return mname;}
   
   void get_data(int) {
     for (int i=0; i<1000; i++) {
-      data[0][i] = std::cos(std::acos(data[0][i])+0.0001);
-      data[1][i] = std::sin(std::asin(data[1][i])+0.0001);
+      dummy_x[i] += 0.05;
+      data[0][i] = 5 + std::cos(dummy_x[i]);
+      data[1][i] = 5 + std::sin(dummy_x[i]);
     }
-    new_data = true;
+    Sleep(0.1);
   }
   bool manual_run() {return manual;}
   const std::string& error_string() const {return error;}

@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <imgui_stdlib.h>
 #include <implot.h>
+#include <imfilebrowser.h>
 
 #include "gui_macros.h"
 
@@ -29,9 +30,13 @@ struct Config {
   size_t tabspos;
   std::vector<std::string> tabs;
   
+  /** User errors */
+  bool gui_error;
+  std::vector<std::string> gui_errors;
+  
   Config(bool fullscreen_on=false) : io(ImGui::GetIO()),
   fullscreen(fullscreen_on), active_errors(0), width(1280), height(720), xpos(50), ypos(50),
-  tabs(0)
+  tabs(0), gui_error(false), gui_errors(0)
   {
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls

@@ -15,9 +15,9 @@ int test001(double time, int n, char x) {
 }
 
 int main () {
-  auto x1 = AsyncThread(test001, 0.00005, 120, 'x');
-  auto x2 = AsyncThread(test001, 0.0001, 60, 'a');
-  auto x3 = AsyncThread(test001, 0.0002, 30, 'b');
-  auto x4 = AsyncThread(test001, 0.0004, 15, 'c');
-  auto x5 = AsyncThread(test001, 0.0008, 8, 'd');
+  auto x1 = Async(test001, 0.00005, 120, 'x');
+  auto x2 = Async(test001, 0.0001, 60, 'a');
+  auto x3 = Async(test001, 0.0002, 30, 'b');
+  auto x4 = Async(test001, 0.0004, 15, 'c');
+  auto x5 = Async(test001, 0.0008, 8, 'd');
 }

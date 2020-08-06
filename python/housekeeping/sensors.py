@@ -11,7 +11,6 @@ Get the temperature of various external sensors in order to store as housekeepin
 
 import serial
 from time import time,sleep
-from mpsrad.helper import serialCheck
 
 class sensors:
 	"""Get the temperature of various external sensors in order to store as housekeeping data
@@ -51,18 +50,14 @@ class sensors:
 		Musn't be initialized already.
 		"""
 		assert not self._initialized, "Cannot init initialized sensors"
-		checkserial=serialCheck.serialcheck()	#make sure to use pyserial
-		try :
-			self._serial=serial.Serial(self._device,115200,timeout=2)
+        
+		self._serial=serial.Serial(self._device,115200,timeout=2)
 
-			self._sensors=['Temp0','Temp1','Temp2','Humidity']
-			# get greetings
-			greetings=self._ask('GS')
-			self._initialized=True
-			return greetings
-		except :
-			print('Dummy sensors...')
-#			self._dummy_sensors=dummy_housekeeping.dummy_sensors()
+		self._sensors=['Temp0','Temp1','Temp2','Humidity']
+		# get greetings
+		greetings=self._ask('GS')
+		self._initialized=True
+		return greetings
 
 	def get_values(self):
 		"""Function to obtain values from the sensor

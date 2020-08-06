@@ -3,11 +3,13 @@
 
 #include <filesystem>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "enums.h"
 #include "gui.h"
 #include "python_interface.h"
+#include "timeclass.h"
 
 namespace Instrument {
 namespace Chopper { 
@@ -18,17 +20,31 @@ ENUMCLASS(ChopperPos, unsigned char,
           Reference
 )
 
+template <ChopperPos ... StartPos>
 struct GUI {
+  static constexpr size_t N = sizeof...(StartPos);
+  
   bool init;
   bool error;
+  bool quit;
+  bool run;
+  bool operating;
+  bool waiting;
+  
   std::string dev;
   int offset;
   double sleeptime;
-  GUI() noexcept : init(false), error(false), dev("/dev/chopper"), offset(1000), sleeptime(0) {}
+  
+  std::array<ChopperPos, N> pos{StartPos...};
+  GUI() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false),
+  dev("/dev/chopper"), offset(1000), sleeptime(0) {}
+  template <class Chopper> void startup(Chopper& chop) const {chop.startup(dev, offset, sleeptime);}
+  template <class Chopper> void manual_init(Chopper& chop) const {chop.init(true);}
+  template <class Chopper> void auto_init(Chopper& chop) const {chop.init(false);}
 };
 
-template <class Chopper>
-void GuiSetup(Chopper& chop, GUI& ctrl, const std::vector<std::string>& devs) {
+template <class Chopper, ChopperPos ... Pos>
+void GuiSetup(Chopper& chop, GUI<Pos...>& ctrl, const std::vector<std::string>& devs) {
   bool change=false;
   bool manual=false;
   if (not ctrl.init) {
@@ -84,12 +100,15 @@ void GuiSetup(Chopper& chop, GUI& ctrl, const std::vector<std::string>& devs) {
     }
   }
   
+  ImGui::PushItemWidth(150.f);
   if (not ctrl.init) {
     ImGui::SliderInt("Offset [#]", &ctrl.offset, 0, 8000);
   } else {
     int throwaway = ctrl.offset;
     ImGui::SliderInt("Offset [#]", &throwaway, 0, 8000);
   }
+  
+  ImGui::SameLine();
   
   if (not ctrl.init) {
     float tmp = float(ctrl.sleeptime);
@@ -100,6 +119,7 @@ void GuiSetup(Chopper& chop, GUI& ctrl, const std::vector<std::string>& devs) {
     float throwaway = float(ctrl.sleeptime);
     ImGui::SliderFloat("Sleeptime [s]", &throwaway, 0, 5);
   }
+  ImGui::PopItemWidth();
   
   if (ctrl.init and chop.manual_run()) {
     if (ImGui::Button(" Cold ")) {
@@ -147,7 +167,7 @@ public:
   void startup(const std::string&, int, double) {}
   void init(bool manual_press) {manual=manual_press; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
   void close() {}
-  void run(ChopperPos x) {pos = x;}
+  void run(ChopperPos x) {Sleep(0.1); pos = x;}
   DataType get_data_raw() {return ChopperPos::FINAL;}
   DataType get_data() {return pos;}
   bool manual_run() {return manual;}
