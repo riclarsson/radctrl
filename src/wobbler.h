@@ -12,27 +12,27 @@ namespace Instrument {
 namespace Wobbler {
 
 template <size_t n>
-struct GUI {
+struct Controller {
   static constexpr size_t N = n;
   
-  bool init;
-  bool error;
-  bool quit;
-  bool run;
-  bool operating;
-  bool waiting;
+  std::atomic<bool> init;
+  std::atomic<bool> error;
+  std::atomic<bool> quit;
+  std::atomic<bool> run;
+  std::atomic<bool> operating;
+  std::atomic<bool> waiting;
   
   std::string dev;
   int baudrate;
   char address;
 
   std::array<int, N> pos;
-  GUI() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false),
+  Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false),
   dev("/dev/wobbler"), baudrate(115200), address('0') {pos.fill(0);}
 };
 
 template <class Wobbler, size_t N>
-void GuiSetup(Wobbler& wob, GUI<N>& ctrl, const std::vector<std::string>& devs) {
+void GuiSetup(Wobbler& wob, Controller<N>& ctrl, const std::vector<std::string>& devs) {
   bool change=false;
   bool manual=false;
   if (not ctrl.init) {

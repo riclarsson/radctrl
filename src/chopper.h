@@ -21,30 +21,29 @@ ENUMCLASS(ChopperPos, unsigned char,
 )
 
 template <ChopperPos ... StartPos>
-struct GUI {
+struct Controller {
   static constexpr size_t N = sizeof...(StartPos);
   
-  bool init;
-  bool error;
-  bool quit;
-  bool run;
-  bool operating;
-  bool waiting;
+  std::atomic<bool> init;
+  std::atomic<bool> error;
+  std::atomic<bool> quit;
+  std::atomic<bool> run;
+  std::atomic<bool> operating;
+  std::atomic<bool> waiting;
+  std::atomic<bool> newdata;
   
   std::string dev;
   int offset;
   double sleeptime;
   
+  ChopperPos lasttarget;
   std::array<ChopperPos, N> pos{StartPos...};
-  GUI() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false),
-  dev("/dev/chopper"), offset(1000), sleeptime(0) {}
-  template <class Chopper> void startup(Chopper& chop) const {chop.startup(dev, offset, sleeptime);}
-  template <class Chopper> void manual_init(Chopper& chop) const {chop.init(true);}
-  template <class Chopper> void auto_init(Chopper& chop) const {chop.init(false);}
+  Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
+  dev("/dev/chopper"), offset(1000), sleeptime(0), lasttarget(ChopperPos::FINAL) {}
 };
 
 template <class Chopper, ChopperPos ... Pos>
-void GuiSetup(Chopper& chop, GUI<Pos...>& ctrl, const std::vector<std::string>& devs) {
+void GuiSetup(Chopper& chop, Controller<Pos...>& ctrl, const std::vector<std::string>& devs) {
   bool change=false;
   bool manual=false;
   if (not ctrl.init) {

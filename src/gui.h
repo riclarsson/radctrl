@@ -10,6 +10,7 @@
 #include <imfilebrowser.h>
 
 #include "gui_macros.h"
+#include "gui_plotting.h"
 
 namespace GUI {
 /** A global config for all things GUI */

@@ -10,25 +10,26 @@
 
 namespace Instrument {
 namespace Housekeeping {
-struct GUI {
-  bool init;
-  bool error;
-  bool quit;
-  bool run;
-  bool operating;
-  bool waiting;
+struct Controller {
+  std::atomic<bool> init;
+  std::atomic<bool> error;
+  std::atomic<bool> quit;
+  std::atomic<bool> run;
+  std::atomic<bool> operating;
+  std::atomic<bool> waiting;
+  std::atomic<bool> newdata;
   
   std::string dev;
   int baudrate;
   
   std::map<std::string, std::string> data;
   
-  GUI() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false),
+  Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
   dev("/dev/sensors"), baudrate(57600), data() {}
 };
 
 template <typename Housekeeping>
-void GuiSetup(Housekeeping& hk, GUI& ctrl, const std::vector<std::string>& devs) {
+void GuiSetup(Housekeeping& hk, Controller& ctrl, const std::vector<std::string>& devs) {
   bool change=false;
   bool manual=false;
   if (not ctrl.init) {

@@ -7,6 +7,7 @@ add_library (gui STATIC
              gui.cpp
              gui_menubar.cpp
              gui_help.cpp
+             gui_plotting.cpp
              )
 target_link_libraries(gui PUBLIC imgui implot)
 target_include_directories(gui PUBLIC ../inc/gui/imgui/ ../inc/gui/implot/ ../inc/gui/imgui-filebrowser/)
@@ -15,6 +16,7 @@ target_include_directories(gui PUBLIC ../inc/gui/imgui/ ../inc/gui/implot/ ../in
 ########################################################################################
 # Math Library: For basic mathematical constructs
 add_library (math STATIC
+             mathhelpers.cpp
              rational.cpp
              )
 target_include_directories(math PUBLIC ../inc/Eigen/)
@@ -65,7 +67,15 @@ target_link_libraries(wobbler PUBLIC gui python)
 add_library (backend STATIC
              backend.cpp
              )
-target_link_libraries(backend PUBLIC gui python)
+target_link_libraries(backend PUBLIC gui python math)
+########################################################################################
+
+########################################################################################
+# Frontend library
+add_library (frontend STATIC
+             frontend.cpp
+             )
+target_link_libraries(frontend PUBLIC gui python)
 ########################################################################################
 
 ########################################################################################
@@ -121,13 +131,13 @@ target_link_libraries(multithread PUBLIC Threads::Threads)
 ########################################################################################
 # Waspam runtime executable
 add_executable (waspam waspam.cpp)
-target_link_libraries(waspam PUBLIC gui python files chopper wobbler housekeeping backend multithread)
+target_link_libraries(waspam PUBLIC gui python files chopper wobbler housekeeping backend multithread frontend)
 ########################################################################################
 
 ########################################################################################
 # IRAM runtime executable
 add_executable (iram iram.cpp)
-target_link_libraries(iram PUBLIC gui python files chopper wobbler housekeeping backend multithread)
+target_link_libraries(iram PUBLIC gui python files chopper wobbler housekeeping backend multithread frontend)
 ########################################################################################
 
 ########################################################################################

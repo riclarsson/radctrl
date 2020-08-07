@@ -7,58 +7,36 @@
 
 #include <Eigen/Core>
 
+#include "mathhelpers.h"
 #include "gui.h"
 #include "python_interface.h"
 #include "timeclass.h"
 
-// FIXME:: Move to better position
-std::vector<double> linspace(double s, double e, int count) {
-  std::vector<double> ls(count);
-  
-  if (count == 0) {
-    return ls;
-  } else if (count == 1) {
-    ls.front() = (e + s) / 2;
-    return ls;
-  } else {
-    const double step = (e - s) / (count - 1);
-    ls.front() = s;
-    ls.back() = e;
-    for(int i=1; i < count-1; ++i)
-      ls[i] = s + step * i;
-    return ls;
-  }
-}
-
 namespace Instrument {
 namespace Spectrometer {
-struct GUI {
-  bool init;
-  bool error;
-  bool quit;
-  bool run;
-  bool operating;
-  bool waiting;
+struct Controller {
+  std::atomic<bool> init;
+  std::atomic<bool> error;
+  std::atomic<bool> quit;
+  std::atomic<bool> run;
+  std::atomic<bool> operating;
+  std::atomic<bool> waiting;
+  std::atomic<bool> newdata;
   
   std::string host;
   int tcp_port;
   int udp_port;
-  Eigen::MatrixXd freq_limits;
+  Eigen::MatrixXf freq_limits;
   Eigen::VectorXi freq_counts;
   int integration_time_microsecs;
   int blank_time_microsecs;
   bool mirror;
   
-  std::vector<std::vector<double>> f;
-  std::vector<std::vector<double>> d;
+  std::vector<std::vector<float>> f;
+  std::vector<std::vector<float>> d;
   
-  bool newcold, newhot, newatm;
-  std::vector<std::vector<double>> cold;
-  std::vector<std::vector<double>> hot;
-  std::vector<std::vector<double>> atm;
-  
-  GUI(const std::string& h, int tcp, int udp, Eigen::MatrixXd fl, Eigen::VectorXi fc, int intus, int blaus, bool reverse) :
-  init(false), error(false), quit(false), run(false), operating(false), waiting(false),
+  Controller(const std::string& h, int tcp, int udp, Eigen::MatrixXf fl, Eigen::VectorXi fc, int intus, int blaus, bool reverse) :
+  init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
   host(h), tcp_port(tcp), udp_port(udp), freq_limits(fl), freq_counts(fc),
   integration_time_microsecs(intus), blank_time_microsecs(blaus), mirror(reverse) {
     const size_t N = freq_counts.size();
@@ -67,10 +45,38 @@ struct GUI {
     for (size_t i=0; i<N; i++) {
       const size_t n = freq_counts[i];
       f[i] = linspace(freq_limits(i, 0), freq_limits(i, 1), n);
-      d[i] = std::vector<double>(n, 0);
+      d[i] = std::vector<float>(n, 0);
     }
   }
 };
+
+template <size_t N>
+std::vector<std::array<GUI::Plotting::Frame, 4>> PlotFrame(
+  const std::array<Controller, N>& ctrls) {
+  std::vector<std::array<GUI::Plotting::Frame, 4>> tmp;
+  for (size_t i=0; i<N; i++) {
+    std::vector<GUI::Plotting::Line> raw;
+    std::vector<GUI::Plotting::Line> noi;
+    std::vector<GUI::Plotting::Line> avg;
+    std::vector<GUI::Plotting::Line> itg;
+    for (size_t j=0; j<ctrls[i].f.size(); j++) {
+      raw.push_back(GUI::Plotting::Line(std::string{"Cold "} + std::to_string(j), ctrls[i].f[j], GUI::Plotting::Data{ctrls[i].f[j].size()}));
+      raw.push_back(GUI::Plotting::Line(std::string{"Target "} + std::to_string(j), ctrls[i].f[j], GUI::Plotting::Data{ctrls[i].f[j].size()}));
+      raw.push_back(GUI::Plotting::Line(std::string{"Hot "} + std::to_string(j), ctrls[i].f[j], GUI::Plotting::Data{ctrls[i].f[j].size()}));
+      noi.push_back(GUI::Plotting::Line(std::string{"System Noise "} + std::to_string(j), ctrls[i].f[j], GUI::Plotting::Data{ctrls[i].f[j].size()}));
+      avg.push_back(GUI::Plotting::Line(std::string{"Average Measurement "} + std::to_string(j), ctrls[i].f[j], GUI::Plotting::Data{ctrls[i].f[j].size()}));
+      itg.push_back(GUI::Plotting::Line(std::string{"Last Measurement "} + std::to_string(j), ctrls[i].f[j], GUI::Plotting::Data{ctrls[i].f[j].size()}));
+    }
+    tmp.push_back(std::array<GUI::Plotting::Frame, 4>{
+      GUI::Plotting::Frame{"Raw", "Frequency", "Counts", raw},
+      GUI::Plotting::Frame{"Noise", "Frequency", "Temperature [K]", noi},
+      GUI::Plotting::Frame{"Integration", "Frequency", "Temperature [K]", itg},
+      GUI::Plotting::Frame{"Average", "Frequency", "Temperature [K]", avg}
+    });
+  }
+  
+  return tmp;
+}
 
 template <typename ... Spectrometers>
 struct Backends {
@@ -101,7 +107,7 @@ struct Backends {
   }
   
   template <size_t i=0>
-  void startup(int j, std::string& h, int t, int u, Eigen::Ref<Eigen::MatrixXd> fl, Eigen::Ref<Eigen::VectorXi> fc, int ius, int bus, bool m) {
+  void startup(int j, std::string& h, int t, int u, Eigen::Ref<Eigen::MatrixXf> fl, Eigen::Ref<Eigen::VectorXi> fc, int ius, int bus, bool m) {
     if (i == j)
       std::get<i>(spectrometers).startup(h, t, u, fl, fc, ius, bus, m);
     else if constexpr (i < N - 1)
@@ -164,15 +170,24 @@ struct Backends {
   bool has_error(int j) {
     if (i == j)
       return std::get<i>(spectrometers).has_error();
-    else if constexpr (i < N - 1) {
+    else if constexpr (i < N - 1)
       return has_error<i+1>(j);
-    }
     else
       std::exit(1);
   }
   
   template <size_t i=0>
-  std::vector<std::vector<double>> datavec(int j) {
+  bool has_any_errors() {
+    if constexpr (i >= N)
+      return false;
+    else if (has_error<i>(i))
+      return true;
+    else
+      return has_any_errors<i+1>();
+  }
+  
+  template <size_t i=0>
+  std::vector<std::vector<float>> datavec(int j) {
     if (i == j)
       return std::get<i>(spectrometers).datavec();
     else if constexpr (i < N - 1)
@@ -183,7 +198,7 @@ struct Backends {
 };
 
 template <typename ... Spectrometers>
-void GuiSetup(Backends<Spectrometers ...>& spectrometers, std::array<GUI, sizeof...(Spectrometers)>& ctrls) {
+void GuiSetup(Backends<Spectrometers ...>& spectrometers, std::array<Controller, sizeof...(Spectrometers)>& ctrls) {
   constexpr size_t N = sizeof...(Spectrometers);
 
   // Do setup per spectrometer
@@ -295,13 +310,13 @@ class Dummy {
   bool manual;
   bool error_found;
   std::string error;
-  std::vector<std::vector<double>> data;
-  std::vector<double> dummy_x;
+  std::vector<std::vector<float>> data;
+  std::vector<float> dummy_x;
 
 public:
   template <typename ... Whatever> constexpr Dummy(const std::string& n, Whatever...) : mname(n), 
   manual(false), error_found(false),
-  error(""), data(2, std::vector<double>(1000)), dummy_x(1000) {
+  error(""), data(2, std::vector<float>(1000)), dummy_x(1000) {
     for (int i=0; i<1000; i++) {
       dummy_x[i] = 4*3.14*i/1000.;
       data[0][i] = 5 + std::cos(dummy_x[i]);
@@ -309,11 +324,11 @@ public:
     }
   }
   
-  void startup(std::string&, int, int, Eigen::Ref<Eigen::MatrixXd>, Eigen::Ref<Eigen::VectorXi>, int, int, bool) {}
+  void startup(std::string&, int, int, Eigen::Ref<Eigen::MatrixXf>, Eigen::Ref<Eigen::VectorXi>, int, int, bool) {}
   void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
   void close() {}
   void run() {}
-  std::vector<std::vector<double>> datavec() {std::vector<std::vector<double>> out{data}; return out;}
+  std::vector<std::vector<float>> datavec() {return data;}
   std::string name() const {return mname;}
   
   void get_data(int) {

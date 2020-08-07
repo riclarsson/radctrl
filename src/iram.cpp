@@ -1,11 +1,7 @@
-#include <array>
-#include <filesystem>
-#include <mutex>
-#include <vector>
-
 #include "backend.h"
 #include "chopper.h"
 #include "file.h"
+#include "frontend.h"
 #include "gui.h"
 #include "housekeeping.h"
 #include "instrument.h"
@@ -22,33 +18,37 @@ int main () try {
   GUI::Config config;
   
   // Chopper
-  Instrument::Chopper::GUI<Instrument::Chopper::ChopperPos::Cold,
-                           Instrument::Chopper::ChopperPos::Antenna,
-                           Instrument::Chopper::ChopperPos::Hot,
-                           Instrument::Chopper::ChopperPos::Antenna> chopper_ctrl;
+  Instrument::Chopper::Controller<Instrument::Chopper::ChopperPos::Cold,
+                                  Instrument::Chopper::ChopperPos::Antenna,
+                                  Instrument::Chopper::ChopperPos::Hot,
+                                  Instrument::Chopper::ChopperPos::Antenna> chopper_ctrl;
   Instrument::Chopper::Dummy chop{"/home/larsson/Work/radctrl/python/chopper/chopper.py"};
   
   // Wobbler
-  Instrument::Wobbler::GUI<4> wobbler_ctrl;
+  Instrument::Wobbler::Controller<4> wobbler_ctrl;
   wobbler_ctrl.pos = {3000, 7000, 3000, 7000};
   Instrument::Wobbler::Dummy wob{"/home/larsson/Work/radctrl/python/wobbler/IRAM.py"};
   
-  // housekeeping
-  Instrument::Housekeeping::GUI housekeeping_ctrl;
+  // Housekeeping
+  Instrument::Housekeeping::Controller housekeeping_ctrl;
   Instrument::Housekeeping::Dummy hk{"/home/larsson/Work/radctrl/python/housekeeping/sensors.py"};
+  
+  // Frontend
+  Instrument::Frontend::Controller frontend_ctrl;
+  Instrument::Frontend::Dummy frontend{""};
   
   // Spectrometers
   Instrument::Spectrometer::Backends backends{
     Instrument::Spectrometer::Dummy(" Dummy1 "),
     Instrument::Spectrometer::Dummy(" Dummy2 ")
   };
-  std::array<Instrument::Spectrometer::GUI, backends.N> backend_ctrls{
-    Instrument::Spectrometer::GUI("Dummy3", 0, 0,
-                                  (Eigen::MatrixXd(2, 2) << 0, 1e9, 0, 100e9).finished(),
+  std::array<Instrument::Spectrometer::Controller, backends.N> backend_ctrls{
+    Instrument::Spectrometer::Controller("Dummy3", 0, 0,
+                                  (Eigen::MatrixXf(2, 2) << 0, 1e9, 0, 100e9).finished(),
                                   (Eigen::VectorXi(2) << 1000, 1000).finished(),
                                   100, 1, false),
-    Instrument::Spectrometer::GUI("Dummy4", 0, 0,
-                                  (Eigen::MatrixXd(2, 2) << 0, 1e9, 0, 100e9).finished(),
+    Instrument::Spectrometer::Controller("Dummy4", 0, 0,
+                                  (Eigen::MatrixXf(2, 2) << 0, 1e9, 0, 100e9).finished(),
                                   (Eigen::VectorXi(2) << 1000, 1000).finished(),
                                   100, 1, false)
   };
@@ -65,11 +65,22 @@ int main () try {
               &Instrument::RunExperiment<decltype(chop), decltype(chopper_ctrl),
                                          decltype(wob), decltype(wobbler_ctrl),
                                          decltype(hk), decltype(housekeeping_ctrl),
+                                         decltype(frontend), decltype(frontend_ctrl),
                                          decltype(backends), decltype(backend_ctrls)>,
               chop, chopper_ctrl,
               wob, wobbler_ctrl,
               hk, housekeeping_ctrl,
+              frontend, frontend_ctrl,
               backends, backend_ctrls);
+  
+  // Data and plotting frames
+  std::array<Instrument::Data, backends.N> backend_data;
+  std::vector<std::array<GUI::Plotting::Frame, 4>> backend_frames{Instrument::Spectrometer::PlotFrame(backend_ctrls)};
+  
+  // Start interchange between output data and operations
+  auto saver = AsyncRef(&Instrument::ExchangeData<backends.N, decltype(chopper_ctrl),
+                        decltype(housekeeping_ctrl), decltype(frontend_ctrl)>,
+                        backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl, backend_data);
   
   // Setup TESTS
   for (size_t i=0; i<backends.N; i++) {
@@ -152,14 +163,16 @@ int main () try {
     if (ImGui::BeginTabBar("GUI Control")) {
       
       if (ImGui::BeginTabItem(" Main ")) {
-        bool none_init = not housekeeping_ctrl.init and not chopper_ctrl.init and not wobbler_ctrl.init and
-          std::none_of(backend_ctrls.cbegin(), backend_ctrls.cend(), [](auto& x){return x.init;});
-        bool all_init = housekeeping_ctrl.init and chopper_ctrl.init and wobbler_ctrl.init and
-          std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(), [](auto& x){return x.init;});
+        bool none_init = not housekeeping_ctrl.init.load() and not chopper_ctrl.init.load() and
+          not wobbler_ctrl.init.load() and not frontend_ctrl.init.load() and
+          std::none_of(backend_ctrls.cbegin(), backend_ctrls.cend(), [](auto& x){return x.init.load();});
+        bool all_init = housekeeping_ctrl.init.load() and chopper_ctrl.init.load() and
+          wobbler_ctrl.init.load() and frontend_ctrl.init.load() and
+          std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(), [](auto& x){return x.init.load();});
           
         if (ImGui::Button(" Initialize all ")) {
           if (none_init)
-            Instrument::InitAll(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, backends, backend_ctrls);
+            Instrument::InitAll(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, frontend, frontend_ctrl, backends, backend_ctrls);
           else {
             config.gui_error = true;
             config.gui_errors.push_back("Cannot initialize all because some machines are initialized");
@@ -170,7 +183,7 @@ int main () try {
         
         if (ImGui::Button(" Close all ")) {
           if (all_init) {
-            Instrument::CloseAll(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, backends, backend_ctrls);
+            Instrument::CloseAll(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, frontend, frontend_ctrl, backends, backend_ctrls);
           } else {
             config.gui_error = true;
             config.gui_errors.push_back("Cannot close all because some machines are not initialized");
@@ -196,7 +209,7 @@ int main () try {
         
         if (ImGui::Button(" Ready to Run ")) {
           if (all_init) {
-            Instrument::ReadyRunAll(chopper_ctrl, wobbler_ctrl, housekeeping_ctrl, backend_ctrls);
+            Instrument::ReadyRunAll(chopper_ctrl, wobbler_ctrl, housekeeping_ctrl, frontend_ctrl, backend_ctrls);
           } else {
             config.gui_error = true;
             config.gui_errors.push_back("Cannot run the experiment because not all machines are initialized");
@@ -207,7 +220,7 @@ int main () try {
         
         if (ImGui::Button(" Stop Running ")) {
           if (all_init) {
-            Instrument::UnreadyRunAll(chopper_ctrl, wobbler_ctrl, housekeeping_ctrl, backend_ctrls);
+            Instrument::UnreadyRunAll(chopper_ctrl, wobbler_ctrl, housekeeping_ctrl, frontend_ctrl, backend_ctrls);
           } else {
             config.gui_error = true;
             config.gui_errors.push_back("Cannot stop the experiment because it is not running");
@@ -236,12 +249,18 @@ int main () try {
         Instrument::Housekeeping::GuiSetup(hk, housekeeping_ctrl, devices);
         ImGui::EndTabItem();
       }
+      
+      if (ImGui::BeginTabItem(" Frontend ")) {
+        Instrument::Frontend::GuiSetup(frontend, frontend_ctrl);
+        ImGui::EndTabItem();
+      }
+      
       ImGui::EndTabBar();
     }
   } GUI::Windows::end();
   
   if (GUI::Windows::sub<5, 7, 2, 6, 3, 1>(window, startpos, "DATA Tool 1")) {
-    Instrument::AllInformation(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, backends, backend_ctrls);
+    Instrument::AllInformation(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, frontend, frontend_ctrl, backends, backend_ctrls);
   } GUI::Windows::end();
   
   // Select the directory
@@ -275,6 +294,11 @@ int main () try {
       housekeeping_ctrl.error = false;
       config.active_errors++;
     }
+    if (frontend_ctrl.error) {
+      ImGui::OpenPopup("Error");
+      frontend_ctrl.error = false;
+      config.active_errors++;
+    }
   }
   
   // Error popup
@@ -287,6 +311,7 @@ int main () try {
       ImGui::TextWrapped("%s: %s", backends.name(i).c_str(), backends.error_string(i).c_str());
     }
     ImGui::TextWrapped(" Housekeeping: %s", hk.error_string().c_str());
+    ImGui::TextWrapped(" Frontend: %s", frontend.error_string().c_str());
     
     ImGui::Text(" ");
     if (ImGui::Button(" OK ", {80.0f, 30.0f})) {
@@ -296,6 +321,7 @@ int main () try {
         backends.delete_error(i);
       }
       hk.delete_error();
+      frontend.delete_error();
       ImGui::CloseCurrentPopup();
       config.active_errors=0;
     }
@@ -334,7 +360,7 @@ int main () try {
   // End of main loop
   EndWhileLoopGUI;
   
-  Instrument::QuitAll(chopper_ctrl, wobbler_ctrl, housekeeping_ctrl, backend_ctrls);
+  Instrument::QuitAll(chopper_ctrl, wobbler_ctrl, housekeeping_ctrl, frontend_ctrl, backend_ctrls);
   auto running_errors = runner.get();
   if (running_errors.size()) {
     std::cerr << "Errors while stopping runner:\n:";
