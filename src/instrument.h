@@ -5,59 +5,355 @@
 #include <array>
 #include <atomic>
 #include <exception>
+#include <filesystem>
 #include <functional>
+#include <mutex>
 #include <string>
 #include <thread>
 #include <vector>
 
-#include "chopper.h"
-#include "gui.h"
 #include "backend.h"
+#include "chopper.h"
+#include "file.h"
+#include "gui.h"
+#include "timeclass.h"
 
 namespace Instrument {
 struct Data {
+  // Multithread guard
+  std::mutex mtx;
+  
   // Chopper Pointing
   Chopper::ChopperPos target;
+  bool has_target;
+  bool has_cold;
+  bool has_hot;
+  bool has_calib;
+  bool has_noise;
+  bool has_calib_avg;
   
   // Frequency grids of the instrument
-  std::vector<std::vector<float>> f;
+  std::vector<std::vector<double>> f;
   
   // Last raw data of the instrument
-  std::vector<std::vector<float>> last_target;
-  std::vector<std::vector<float>> last_cold;
-  std::vector<std::vector<float>> last_hot;
+  std::vector<std::vector<double>> last_target;
+  std::vector<std::vector<double>> last_cold;
+  std::vector<std::vector<double>> last_hot;
   
   // Last calibrated data of the instrument
-  std::vector<std::vector<float>> last_calib;
+  std::vector<std::vector<double>> last_calib;
   
   // Last calibrated noise temperature of the instrument
-  std::vector<std::vector<float>> last_noise;
+  std::vector<std::vector<double>> last_noise;
   
   // Running average of the raw data
-  std::vector<std::vector<float>> avg_target;
-  std::vector<std::vector<float>> avg_cold;
-  std::vector<std::vector<float>> avg_hot;
+  std::vector<std::vector<double>> avg_target;
+  std::vector<std::vector<double>> avg_cold;
+  std::vector<std::vector<double>> avg_hot;
   
   // Average calibrated data of the instrument
-  std::vector<std::vector<float>> avg_calib;
+  std::vector<std::vector<double>> avg_calib;
   
   // Average calibrated noise temperature of the instrument
-  std::vector<std::vector<float>> avg_noise;
+  std::vector<std::vector<double>> avg_noise;
   
   // Housekeeping data
-  Time now;
-  float tcold;
-  float thot;
-  float integration_time_in_seconds;
-  float blank_time_in_seconds;
+  double tcold;
+  double thot;
   
-  // User selections
-  size_t num_avg;  // Number to average
-  size_t avg_count;  //  Count of current average
-  size_t spectral_average;  // Count of nearby channels to average
-  float freq_scaling;  // Scale of frequency (defaults to Hz)
+  // Counters
+  size_t num_measurements;  // Total number of raw measurements
+  size_t num_to_avg;  // Number to average
+  size_t avg_count;  //  Count of current averages
+  
+  Data() noexcept = default;
+  Data(const Data& other) :
+    target(other.target), has_target(other.has_target), has_cold(other.has_cold),
+    has_hot(other.has_hot), has_calib(other.has_calib), has_noise(other.has_noise),
+    has_calib_avg(other.has_calib_avg), f(other.f), last_target(other.last_target),
+    last_cold(other.last_cold), last_hot(other.last_hot), last_calib(other.last_calib),
+    last_noise(other.last_noise), avg_target(other.avg_target), avg_cold(other.avg_cold),
+    avg_hot(other.avg_hot), avg_calib(other.avg_calib), avg_noise(other.avg_noise),
+    tcold(other.tcold), thot(other.thot), num_measurements(other.num_measurements),
+    num_to_avg(other.num_to_avg), avg_count(other.avg_count) {}
+  Data& operator=(const Data& other) {
+    target = other.target; has_target= other.has_target; has_cold = other.has_cold;
+    has_hot = other.has_hot; has_calib = other.has_calib; has_noise = other.has_noise;
+    has_calib_avg = other.has_calib_avg; f = other.f; last_target = other.last_target;
+    last_cold = other.last_cold; last_hot = other.last_hot; last_calib = other.last_calib;
+    last_noise = other.last_noise; avg_target = other.avg_target; avg_cold = other.avg_cold;
+    avg_hot = other.avg_hot; avg_calib = other.avg_calib; avg_noise = other.avg_noise;
+    tcold = other.tcold; thot = other.thot; num_measurements = other.num_measurements;
+    num_to_avg = other.num_to_avg; avg_count = other.avg_count;
+    return *this;
+  }
+  
+  template <typename T>
+  Data(const std::vector<std::vector<T>>& freq_grid) : target(Chopper::ChopperPos::FINAL),
+  has_target(false), has_cold(false), has_hot(false), has_calib(false), has_noise(false), has_calib_avg(false),
+  f(freq_grid.size(), std::vector<double>(freq_grid[0].size())), last_target(f), last_cold(f), last_hot(f),
+  last_calib(f), last_noise(f), avg_target(f), avg_cold(f), avg_hot(f), avg_calib(f), avg_noise(f),
+  tcold(std::numeric_limits<double>::max()), thot(std::numeric_limits<double>::max()),
+  num_measurements(0), num_to_avg(0), avg_count(0) {
+    for (size_t i=0; i<f.size(); i++) {
+      for (size_t j=0; j<f[i].size();j ++) {
+        f[i][j] = freq_grid[i][j];
+        last_target[i][j] = 0;
+        last_cold[i][j] = 0;
+        last_hot[i][j] = 0;
+        last_calib[i][j] = 0;
+        last_noise[i][j] = 0;
+        avg_target[i][j] = 0;
+        avg_cold[i][j] = 0;
+        avg_hot[i][j] = 0;
+        avg_calib[i][j] = 0;
+        avg_noise[i][j] = 0;
+      }
+    }
+  }
+  
+  template <typename T>
+  void update (Chopper::ChopperPos thistarget, double tc, double th, const std::vector<std::vector<T>>& data) {
+    target = thistarget;
+    num_measurements++;
+    
+    // Deal with cold load
+    if (target == Chopper::ChopperPos::Cold) {
+      tcold = tc;
+      for (size_t i=0; i<data.size(); i++)
+        for (size_t j=0; j<data[i].size(); j++)
+          last_cold[i][j] = data[i][j];
+      has_cold = true;
+    }
+    
+    // Deal with hot load
+    if (target == Chopper::ChopperPos::Hot) {
+      thot = th;
+      for (size_t i=0; i<data.size(); i++)
+        for (size_t j=0; j<data[i].size(); j++)
+          last_hot[i][j] = data[i][j];
+      has_hot = true;
+    }
+    
+    // Deal with target
+    if (target == Chopper::ChopperPos::Antenna) {
+      for (size_t i=0; i<data.size(); i++)
+        for (size_t j=0; j<data[i].size(); j++)
+          last_target[i][j] = data[i][j];
+      has_target = true;
+    }
+    
+    // Deal with noise
+    if (has_cold and has_hot) {
+      for (size_t i=0; i<data.size(); i++)
+        for (size_t j=0; j<data[i].size(); j++)
+          last_noise[i][j] = (thot*last_cold[i][j] - tcold*last_hot[i][j]) / (last_hot[i][j] - last_cold[i][j]);
+    }
+    
+    // Deal with calibration
+    if (has_cold and has_hot and has_target) {
+      has_calib = true;
+      for (size_t i=0; i<data.size(); i++)
+        for (size_t j=0; j<data[i].size(); j++)
+          last_calib[i][j] = tcold + (thot - tcold) * (last_target[i][j] - last_cold[i][j]) / (last_hot[i][j] - last_cold[i][j]);
+    }
+    
+    mtx.lock();
+    // Deal with averaging 
+    if (avg_count < num_to_avg)
+      avg_count++;
+    
+    // cold load
+    if (target == Chopper::ChopperPos::Cold) {
+      if (avg_count not_eq 1) {
+        for (size_t i=0; i<data.size(); i++)
+          for (size_t j=0; j<data[i].size(); j++)
+            avg_cold[i][j] = (avg_cold[i][j] * (avg_count-1) + last_cold[i][j]) / double(avg_count);
+      } else {
+        avg_cold = last_cold;
+      }
+    }
+    
+    // hot load
+    if (target == Chopper::ChopperPos::Hot) {
+      if (avg_count not_eq 1) {
+        for (size_t i=0; i<data.size(); i++)
+          for (size_t j=0; j<data[i].size(); j++)
+            avg_hot[i][j] = (avg_hot[i][j] * (avg_count-1) + last_hot[i][j]) / double(avg_count);
+      } else {
+        avg_hot = last_hot;
+      }
+    }
+    
+    // target load
+    if (target == Chopper::ChopperPos::Antenna) {
+      if (avg_count not_eq 1) {
+        for (size_t i=0; i<data.size(); i++)
+          for (size_t j=0; j<data[i].size(); j++)
+            avg_target[i][j] = (avg_target[i][j] * (avg_count-1) + last_target[i][j]) / double(avg_count);
+      } else {
+        avg_target = last_target;
+      }
+    }
+    
+    // noise
+    if (has_hot and has_cold and (target==Chopper::ChopperPos::Cold or target==Chopper::ChopperPos::Hot)) {
+      if (avg_count not_eq 1) {
+        for (size_t i=0; i<data.size(); i++)
+          for (size_t j=0; j<data[i].size(); j++)
+            avg_noise[i][j] = (avg_noise[i][j] * (avg_count-1) + last_noise[i][j]) / double(avg_count);
+      } else {
+        avg_noise = last_noise;
+      }
+    }
+    
+    // calib
+    if (has_hot and has_cold and has_target and (target==Chopper::ChopperPos::Antenna or not has_calib_avg)) {
+      if (avg_count not_eq 1) {
+        for (size_t i=0; i<data.size(); i++)
+          for (size_t j=0; j<data[i].size(); j++)
+            avg_calib[i][j] = (avg_calib[i][j] * (avg_count-1) + last_calib[i][j]) / double(avg_count);
+      } else {
+        avg_calib = last_calib;
+      }
+      has_calib_avg = true;
+    }
+    
+    // Deal with bad avg
+    if (avg_count > num_to_avg)
+      avg_count--;
+    mtx.unlock();
+  }
 };
 
+
+class DataSaver {
+  std::mutex updatepath;
+  int daily_copies;
+  bool newfile;
+  std::string basename;
+  std::string timename;
+  std::string filename;
+  std::filesystem::path savedir;
+
+  std::string filename_composer() {
+    return savedir.string() + basename + std::string{"."} + timename + std::string{"."} + std::to_string(daily_copies) + std::string{".xml"};
+  }
+  
+  void update_time(bool newname=false) {
+    Time now{};
+    std::stringstream ss;
+    std::string newtimename;
+    ss << now;
+    ss >> newtimename;
+    
+    // The time has to be updated every day to not have too many files
+    if (newtimename not_eq timename) {
+      timename = newtimename;
+      newname = true;
+      std::cout<<"HI\n";
+    }
+    
+    // We have a new file if we have a newname
+    newfile = newname;
+    
+    if (newname) {
+      std::cout<<"HI AGAIN\n";
+      
+      updatepath.lock();  // We cannot change the path here
+      daily_copies = 0;  // We first assume there are no copies
+      std::string newfilename = filename_composer(); // and compose a filename
+      while (std::filesystem::exists(newfilename)) {  // but if our new name exists
+        daily_copies++;  // We test if the next filename exists
+        newfilename = filename_composer();  // and compose a new file name
+      }  // until there is a new filename
+      updatepath.unlock();  // at which time we allow updating the path we are writing towards
+      filename = newfilename;  // and set a new file name
+    }
+  }
+  
+public:
+  DataSaver(const std::string& dir, const std::string& basefilename) : daily_copies(0), newfile(true),
+  basename(basefilename), timename("not-a-time-starting-value"), savedir(dir) {
+  }
+  
+  void updatePath(const std::filesystem::path& newdir) {
+    updatepath.lock();
+    savedir = newdir;
+    updatepath.unlock();
+    update_time(true);
+  }
+  
+  template <size_t N>
+  void save(const Chopper::ChopperPos& last,
+            const std::map<std::string, double>& hk_data,
+            const std::map<std::string, double>& frontend_data,
+            const std::array<std::vector<std::vector<float>>, N>& backends_data,
+            const std::array<std::string, N>& backend_names) {
+    update_time(not std::filesystem::exists(filename));
+    
+    if (newfile) {
+      std::cout<<"HI AGAIN, AGAIN\n";
+      
+      File::File<File::Operation::Write, File::Type::Xml> metadatafile(filename);
+      
+      metadatafile.new_child("Time");
+      metadatafile.add_attribute("Type", "Time");
+      metadatafile.add_attribute("Version", Time().Version());
+      metadatafile.leave_child();
+      
+      metadatafile.new_child("Chopper");
+      metadatafile.add_attribute("Type", "int");
+      metadatafile.leave_child();
+      
+      metadatafile.new_child("Housekeeping");
+      metadatafile.add_attribute("Type", "double");
+      metadatafile.add_attribute("size", hk_data.size());
+      size_t counter = 0;
+      for (auto& hk: hk_data) {
+        metadatafile.add_attribute((std::string{"Data"} + std::to_string(counter)).c_str(), hk.first.c_str());
+        counter += 1;
+      }
+      metadatafile.leave_child();
+      
+      metadatafile.new_child("Frontend");
+      metadatafile.add_attribute("Type", "double");
+      metadatafile.add_attribute("size", frontend_data.size());
+      counter = 0;
+      for (auto& fe: frontend_data) {
+        metadatafile.add_attribute((std::string{"Data"} + std::to_string(counter)).c_str(), fe.first.c_str());
+        counter += 1;
+      }
+      metadatafile.leave_child();
+      
+      metadatafile.new_child("Backends");
+      metadatafile.add_attribute("NumberOfBackends", N);
+      metadatafile.add_attribute("Type", "VectorOfVector");
+      for (size_t i=0; i<N; i++) {
+        metadatafile.new_child((std::string{"Data"} + std::to_string(i)).c_str());
+        metadatafile.add_attribute("Type", "float");
+        metadatafile.add_attribute("Name", backend_names[i].c_str());
+        metadatafile.add_attribute("NumberOfBoards", backends_data[i].size());
+        metadatafile.add_attribute("ChannelsPerBoard", backends_data[i][0].size());
+        metadatafile.leave_child();
+      }
+      metadatafile.leave_child();
+      
+      metadatafile.close();
+      
+      newfile = false;
+    }
+    
+    File::File<File::Operation::AppendBinary, File::Type::Xml> datafile(filename);
+    size_t n = 0;
+    n += datafile.write(Time());
+    n += datafile.write(int(last));
+    for (auto& hk: hk_data) n += datafile.write(hk.second);
+    for (auto& fe: frontend_data) n += datafile.write(fe.second);
+    for (auto& specdata: backends_data) n += datafile.write(specdata);
+    std::cout<<"Wrote " << n << " bytes to file\n";
+  }
+};
 
 template <typename Chopper, typename ChopperController,
           typename Wobbler, typename WobblerController,
@@ -234,7 +530,7 @@ void AllInformation (Chopper& chop, ChopperController& chopper_ctrl,
       if (cold == housekeeping_ctrl.data.end())
         ImGui::Text("Cold Target [K]: UNKNOWN");
       else
-        ImGui::Text("Cold Target [K]: %.3lf", std::stod(cold->second));
+        ImGui::Text("Cold Target [K]: %.3lf", cold->second);
       
       ImGui::SameLine();
       ImGui::SetCursorPosX(x0 + dx * 41);
@@ -242,7 +538,7 @@ void AllInformation (Chopper& chop, ChopperController& chopper_ctrl,
       if (hot == housekeeping_ctrl.data.end())
         ImGui::Text("Hot Target [K]: UNKNOWN");
       else
-        ImGui::Text("Hot Target [K]: %.3lf", std::stod(hot->second));
+        ImGui::Text("Hot Target [K]: %.3lf", hot->second);
       
       ImGui::Text("Initialized: ");
       ImGui::SameLine();
@@ -321,8 +617,8 @@ void AllInformation (Chopper& chop, ChopperController& chopper_ctrl,
       float local_dx = 0.0f;
       for (auto& data: housekeeping_ctrl.data) {
         sameline--;
-        ImGui::Text("%s: %s", data.first.c_str(), data.second.c_str());
-        local_dx += dx * (data.first.size() + data.second.size()) * 0.7f;
+        ImGui::Text("%s: %.3lf", data.first.c_str(), data.second);
+        local_dx += dx * 30 * 0.7f;
         if (sameline) {
           ImGui::SameLine();
           ImGui::SetCursorPosX(x0 + local_dx);
@@ -340,8 +636,8 @@ void AllInformation (Chopper& chop, ChopperController& chopper_ctrl,
       float local_dx = 0.0f;
       for (auto& data: frontend_ctrl.data) {
         sameline--;
-        ImGui::Text("%s: %s", data.first.c_str(), data.second.c_str());
-        local_dx += dx * (data.first.size() + data.second.size()) * 0.7f;
+        ImGui::Text("%s: %.3lf", data.first.c_str(), data.second);
+        local_dx += dx * 30 * 0.7f;
         if (sameline) {
           ImGui::SameLine();
           ImGui::SetCursorPosX(x0 + local_dx);
@@ -518,13 +814,20 @@ void ExchangeData(std::array<Spectrometer::Controller, N>& backend_ctrls,
                   ChopperController& chopper_ctrl,
                   HousekeepingController& housekeeping_ctrl,
                   FrontendController& frontend_ctrl,
-                  std::array<Data, N>& data) {
+                  std::array<Data, N>& data,
+                  DataSaver& saver) {
 bool allnew = false;
 bool quit = false;
 Chopper::ChopperPos last;
-std::map<std::string, std::string> hk_data;
-std::map<std::string, std::string> frontend_data;
-std::array<std::vector<std::vector<float>>, N> backend_data;
+std::map<std::string, double> hk_data;
+std::map<std::string, double> frontend_data;
+std::array<std::vector<std::vector<float>>, N> backends_data;
+std::array<std::string, N> backend_names;
+
+for (size_t i=0; i<N; i++) {
+  backend_names[i] = backend_ctrls[i].name;
+  data[i] = Data(backend_ctrls[i].f);
+}
 
 wait:
 Sleep(0.1);
@@ -541,14 +844,19 @@ if (not allnew) goto wait;
 last = chopper_ctrl.lasttarget;
 hk_data = housekeeping_ctrl.data;
 frontend_data = frontend_ctrl.data;
-for (size_t i=0; i<N; i++) backend_data[i] = backend_ctrls[i].d;
+for (size_t i=0; i<N; i++) backends_data[i] = backend_ctrls[i].d;
 
 chopper_ctrl.newdata.store(false);
 housekeeping_ctrl.newdata.store(false);
 frontend_ctrl.newdata.store(false);
 for (size_t i=0; i<N; i++) backend_ctrls[i].newdata.store(false);
 
-// FIXME: save data to file and update plotting tools here
+// Save the raw data to file
+saver.save(last, hk_data, frontend_data, backends_data, backend_names);
+
+// FIXME: Update plotting tools data
+for (size_t i=0; i<N; i++)
+  data[i].update(last, hk_data["Cold Load Temperature"], hk_data["Hot Load Temperature"], backends_data[i]);
 
 goto loop;
 stop: {}

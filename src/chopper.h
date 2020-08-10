@@ -13,7 +13,7 @@
 
 namespace Instrument {
 namespace Chopper { 
-ENUMCLASS(ChopperPos, unsigned char,
+ENUMCLASS(ChopperPos, int,
           Cold,
           Hot,
           Antenna,

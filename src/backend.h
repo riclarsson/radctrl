@@ -32,13 +32,15 @@ struct Controller {
   int blank_time_microsecs;
   bool mirror;
   
+  std::string name;
   std::vector<std::vector<float>> f;
   std::vector<std::vector<float>> d;
   
-  Controller(const std::string& h, int tcp, int udp, Eigen::MatrixXf fl, Eigen::VectorXi fc, int intus, int blaus, bool reverse) :
+  Controller(const std::string& controller_name, const std::string& h, int tcp, int udp, Eigen::MatrixXf fl, Eigen::VectorXi fc, int intus, int blaus, bool reverse) :
   init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
   host(h), tcp_port(tcp), udp_port(udp), freq_limits(fl), freq_counts(fc),
-  integration_time_microsecs(intus), blank_time_microsecs(blaus), mirror(reverse) {
+  integration_time_microsecs(intus), blank_time_microsecs(blaus), mirror(reverse),
+  name (controller_name) {
     const size_t N = freq_counts.size();
     f.resize(N);
     d.resize(N);

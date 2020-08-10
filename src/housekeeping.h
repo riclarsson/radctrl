@@ -22,7 +22,7 @@ struct Controller {
   std::string dev;
   int baudrate;
   
-  std::map<std::string, std::string> data;
+  std::map<std::string, double> data;
   
   Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
   dev("/dev/sensors"), baudrate(57600), data() {}
@@ -100,15 +100,15 @@ class Dummy {
   bool manual;
   bool error_found;
   bool new_data;
-  std::map<std::string, std::string> database;
+  std::map<std::string, double> database;
   std::string error;
   
 public:
-  using DataType = std::map<std::string, std::string>;
+  using DataType = std::map<std::string, double>;
   template <typename ... Whatever> constexpr Dummy(Whatever...) : manual(false), error_found(false), new_data(false),
   database({
-    {"Cold Load Temperature", "18"},
-    {"Hot Load Temperature", "297"}
+    {"Cold Load Temperature", 18},
+    {"Hot Load Temperature", 297}
   }), error("") {}
   void startup(const std::string&, int) {}
   void init(bool manual_press=false) {manual=manual_press; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}

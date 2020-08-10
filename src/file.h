@@ -51,6 +51,7 @@ class File {
   pugi::xml_parse_result result;
   pugi::xml_node root;
   pugi::xml_node child;
+  pugi::xml_node oldchild;
   
 public:
   File(const std::string& p) : path(p) {
@@ -89,27 +90,27 @@ public:
     } else if constexpr (Y == Type::Xml) {
       if constexpr (X == Operation::Read) {
         result = doc.load_file(path.c_str());
-        child = root = doc.document_element();
+        oldchild = child = root = doc.document_element();
       } else if constexpr (X == Operation::ReadBinary) {
         result = doc.load_file(path.c_str());
-        child = root = doc.document_element();
+        oldchild = child = root = doc.document_element();
         fil.open((path.string() + std::string(".bin")).c_str(), std::ios::in | std::ios::binary);
       } else if constexpr (X == Operation::Write) {
         auto declarationNode = doc.append_child(pugi::node_declaration);
         declarationNode.append_attribute("version")= "1.0";
-        child = root = doc.append_child("RADCTRL");
+        oldchild = child = root = doc.append_child("RADCTRL");
       } else if constexpr (X == Operation::WriteBinary) {
         auto declarationNode = doc.append_child(pugi::node_declaration);
         declarationNode.append_attribute("version") = "1.0";
-        child = root = doc.append_child("RADCTRL");
+        oldchild = child = root = doc.append_child("RADCTRL");
         fil.open((path.string() + std::string(".bin")).c_str(), std::ios::out | std::ios::binary);
       } else if constexpr (X == Operation::Append) {
         result = doc.load_file(path.c_str());
-        child = root = doc.document_element();
+        oldchild = child = root = doc.document_element();
       } else if constexpr (X == Operation::AppendBinary) {
         result = doc.load_file(path.c_str());
         fil.open((path.string() + std::string(".bin")).c_str(), std::ios::out | std::ios::binary | std::ios::app);
-        child = root = doc.document_element();
+        oldchild = child = root = doc.document_element();
       }
     }
   }
@@ -155,45 +156,53 @@ public:
   }
   
   template <typename T>
-  void write(const T & x, size_t n=sizeof(T)) {
+  size_t write(const T & x, size_t n=sizeof(T)) {
     static_assert((X == Operation::WriteBinary or X == Operation::AppendBinary) and
     (Y == Type::Raw or Y == Type::Xml), "Bad file type and operation");
     fil.write(reinterpret_cast<const char *>(&x), n);
+    return n;
   }
   
   template <typename T>
-  void write(T * x, size_t n) {
+  size_t write(T * x, size_t n) {
     static_assert((X == Operation::WriteBinary or X == Operation::AppendBinary) and
     (Y == Type::Raw or Y == Type::Xml), "Bad file type and operation");
     fil.write(reinterpret_cast<const char *>(x), n);
+    return n;
   }
   
   template <typename T>
-  void write(const std::vector<T> & x) {
+  size_t write(const std::vector<T> & x) {
     static_assert((X == Operation::WriteBinary or X == Operation::AppendBinary) and
     (Y == Type::Raw or Y == Type::Xml), "Bad file type and operation");
-    for (auto& v: x) write(v);
+    size_t n = 0;
+    for (auto& v: x) n += write(v);
+    return n;
   }
   
   template <typename T>
-  void read(T & x, size_t n=sizeof(T)) {
+  size_t read(T & x, size_t n=sizeof(T)) {
     static_assert(X == Operation::ReadBinary and
     (Y == Type::Raw or Y == Type::Xml), "Bad file type and operation");
     fil.read(reinterpret_cast<char *>(&x), n);
+    return n;
   }
   
   template <typename T>
-  void read(T * x, size_t n) {
+  size_t read(T * x, size_t n) {
     static_assert(X == Operation::ReadBinary and
     (Y == Type::Raw or Y == Type::Xml), "Bad file type and operation");
     fil.read(reinterpret_cast<char *>(x), n);
+    return n;
   }
   
   template <typename T>
-  void read(std::vector<T> & x) {
+  size_t read(std::vector<T> & x) {
     static_assert(X == Operation::ReadBinary and
     (Y == Type::Raw or Y == Type::Xml), "Bad file type and operation");
-    for (auto& v: x) read(v);
+    size_t n=0;
+    for (auto& v: x) n += read(v);
+    return n;
   }
   
   template <bool relative=true>
@@ -232,13 +241,16 @@ public:
                                       X == Operation::WriteBinary or
                                       X == Operation::Append or
                                       X == Operation::AppendBinary));
-    child = root.append_child(name.c_str());
+    oldchild = child;
+    child = child.append_child(name.c_str());
   }
   
   pugi::xml_node get_child(const std::string& name) {
     static_assert(Y == Type::Xml);
-    child = root.child(name.c_str());
+    oldchild = child;
+    child = oldchild.child(name.c_str());
     if (not child) {
+      child = oldchild;
       std::ostringstream os;
       os << "Problem getting child of XML document: " << path << '\n';
       os << "Child does not exist: " << name << '\n';
@@ -249,7 +261,7 @@ public:
   
   void leave_child() {
     static_assert(Y == Type::Xml);
-    child = root;
+    child = oldchild;
   }
   
   template <class T>

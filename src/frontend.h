@@ -19,7 +19,7 @@ struct Controller {
   std::atomic<bool> waiting;
   std::atomic<bool> newdata;
   
-  std::map<std::string, std::string> data;
+  std::map<std::string, double> data;
   
   Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false) {}
 };
@@ -27,14 +27,14 @@ struct Controller {
 class Dummy {
   bool manual;
   std::string mname;
-  std::map<std::string, std::string> database;
+  std::map<std::string, double> database;
   bool error_found;
   std::string error;
   
 public:
-  using DataType = std::map<std::string, std::string>;
+  using DataType = std::map<std::string, double>;
   
-  template <typename ... Whatever> constexpr Dummy(Whatever...) : manual(false), mname("FrontendDummy"), database({{"NODATA", "NODATA"}}), error_found(false), error("") {}
+  template <typename ... Whatever> constexpr Dummy(Whatever...) : manual(false), mname("FrontendDummy"), database({{"NODATA", -1}}), error_found(false), error("") {}
   template <typename ... Whatever> void startup(Whatever...) {}
   void init(bool manual_press) {manual=manual_press; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
   void close() {}

@@ -18,24 +18,24 @@ int main () try {
   GUI::Config config;
   
   // Chopper
+  Instrument::Chopper::Dummy chop{"/home/larsson/Work/radctrl/python/chopper/chopper.py"};
   Instrument::Chopper::Controller<Instrument::Chopper::ChopperPos::Cold,
                                   Instrument::Chopper::ChopperPos::Antenna,
                                   Instrument::Chopper::ChopperPos::Hot,
                                   Instrument::Chopper::ChopperPos::Antenna> chopper_ctrl;
-  Instrument::Chopper::Dummy chop{"/home/larsson/Work/radctrl/python/chopper/chopper.py"};
   
   // Wobbler
+  Instrument::Wobbler::Dummy wob{"/home/larsson/Work/radctrl/python/wobbler/IRAM.py"};
   Instrument::Wobbler::Controller<4> wobbler_ctrl;
   wobbler_ctrl.pos = {3000, 7000, 3000, 7000};
-  Instrument::Wobbler::Dummy wob{"/home/larsson/Work/radctrl/python/wobbler/IRAM.py"};
   
   // Housekeeping
-  Instrument::Housekeeping::Controller housekeeping_ctrl;
   Instrument::Housekeeping::Dummy hk{"/home/larsson/Work/radctrl/python/housekeeping/sensors.py"};
+  Instrument::Housekeeping::Controller housekeeping_ctrl;
   
   // Frontend
-  Instrument::Frontend::Controller frontend_ctrl;
   Instrument::Frontend::Dummy frontend{""};
+  Instrument::Frontend::Controller frontend_ctrl;
   
   // Spectrometers
   Instrument::Spectrometer::Backends backends{
@@ -43,11 +43,11 @@ int main () try {
     Instrument::Spectrometer::Dummy(" Dummy2 ")
   };
   std::array<Instrument::Spectrometer::Controller, backends.N> backend_ctrls{
-    Instrument::Spectrometer::Controller("Dummy3", 0, 0,
+    Instrument::Spectrometer::Controller("Dummy Data 1", "Dummy3", 0, 0,
                                   (Eigen::MatrixXf(2, 2) << 0, 1e9, 0, 100e9).finished(),
                                   (Eigen::VectorXi(2) << 1000, 1000).finished(),
                                   100, 1, false),
-    Instrument::Spectrometer::Controller("Dummy4", 0, 0,
+    Instrument::Spectrometer::Controller("Dummy Data 2", "Dummy4", 0, 0,
                                   (Eigen::MatrixXf(2, 2) << 0, 1e9, 0, 100e9).finished(),
                                   (Eigen::VectorXi(2) << 1000, 1000).finished(),
                                   100, 1, false)
@@ -61,6 +61,7 @@ int main () try {
   directoryBrowser.SetTypeFilters({"[D]"});
   
   // Start the operation of the instrument on a different thread
+  Instrument::DataSaver datasaver(save_path, "IRAM");
   auto runner = AsyncRef(
               &Instrument::RunExperiment<decltype(chop), decltype(chopper_ctrl),
                                          decltype(wob), decltype(wobbler_ctrl),
@@ -77,11 +78,6 @@ int main () try {
   std::array<Instrument::Data, backends.N> backend_data;
   std::vector<std::array<GUI::Plotting::Frame, 4>> backend_frames{Instrument::Spectrometer::PlotFrame(backend_ctrls)};
   
-  // Start interchange between output data and operations
-  auto saver = AsyncRef(&Instrument::ExchangeData<backends.N, decltype(chopper_ctrl),
-                        decltype(housekeeping_ctrl), decltype(frontend_ctrl)>,
-                        backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl, backend_data);
-  
   // Setup TESTS
   for (size_t i=0; i<backends.N; i++) {
     config.tabs.push_back(backends.name(i));
@@ -92,6 +88,12 @@ int main () try {
   
   // Helpers
   const std::vector<std::string> devices = File::Devices({"USB", "S", "chopper", "wobbler", "sensors", "ACM"}, 100);
+  
+  // Start interchange between output data and operations
+  auto saver = AsyncRef(&Instrument::ExchangeData<backends.N, decltype(chopper_ctrl),
+                        decltype(housekeeping_ctrl), decltype(frontend_ctrl)>,
+                        backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl, backend_data,
+                        datasaver);
   
   // Our style
   GUI::LayoutAndStyleSettings();
@@ -263,7 +265,7 @@ int main () try {
     Instrument::AllInformation(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, frontend, frontend_ctrl, backends, backend_ctrls);
   } GUI::Windows::end();
   
-  // Select the directory
+  // Select the directory  FIXME: Should be modal if running
   directoryBrowser.Display();
   if(directoryBrowser.HasSelected()) {
     save_path = directoryBrowser.GetSelected().string();
