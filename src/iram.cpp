@@ -38,19 +38,26 @@ int main () try {
   Instrument::Frontend::Controller frontend_ctrl;
   
   // Spectrometers
+  constexpr size_t height_of_window=7;
+  constexpr size_t part_for_plot=6;
   Instrument::Spectrometer::Backends backends{
     Instrument::Spectrometer::Dummy(" Dummy1 "),
     Instrument::Spectrometer::Dummy(" Dummy2 ")
   };
   std::array<Instrument::Spectrometer::Controller, backends.N> backend_ctrls{
     Instrument::Spectrometer::Controller("Dummy Data 1", "Dummy3", 0, 0,
-                                  (Eigen::MatrixXf(2, 2) << 0, 1e9, 0, 100e9).finished(),
+                                  (Eigen::MatrixXd(2, 2) << 0, 1e9, 0, 100e9).finished(),
                                   (Eigen::VectorXi(2) << 1000, 1000).finished(),
                                   100, 1, false),
     Instrument::Spectrometer::Controller("Dummy Data 2", "Dummy4", 0, 0,
-                                  (Eigen::MatrixXf(2, 2) << 0, 1e9, 0, 100e9).finished(),
+                                  (Eigen::MatrixXd(2, 2) << 0, 1e9, 0, 100e9).finished(),
                                   (Eigen::VectorXi(2) << 1000, 1000).finished(),
                                   100, 1, false)
+  };
+  std::array<Instrument::Data, backends.N> backend_data;
+  std::array<GUI::Plotting::CAHA<height_of_window, part_for_plot>, backends.N> backend_frames{
+    GUI::Plotting::CAHA<height_of_window, part_for_plot>{backend_ctrls[0].name, backend_ctrls[0].f},
+    GUI::Plotting::CAHA<height_of_window, part_for_plot>{backend_ctrls[1].name, backend_ctrls[1].f}
   };
   
   // Files
@@ -74,10 +81,6 @@ int main () try {
               frontend, frontend_ctrl,
               backends, backend_ctrls);
   
-  // Data and plotting frames
-  std::array<Instrument::Data, backends.N> backend_data;
-  std::vector<std::array<GUI::Plotting::Frame, 4>> backend_frames{Instrument::Spectrometer::PlotFrame(backend_ctrls)};
-  
   // Setup TESTS
   for (size_t i=0; i<backends.N; i++) {
     config.tabs.push_back(backends.name(i));
@@ -91,9 +94,10 @@ int main () try {
   
   // Start interchange between output data and operations
   auto saver = AsyncRef(&Instrument::ExchangeData<backends.N, decltype(chopper_ctrl),
-                        decltype(housekeeping_ctrl), decltype(frontend_ctrl)>,
+                        decltype(housekeeping_ctrl), decltype(frontend_ctrl),
+                        height_of_window, part_for_plot>,
                         backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl, backend_data,
-                        datasaver);
+                        datasaver, backend_frames);
   
   // Our style
   GUI::LayoutAndStyleSettings();
@@ -107,61 +111,13 @@ int main () try {
   const size_t current_tab = GUI::MainMenu::tabselect(config);
   
   auto startpos = ImGui::GetCursorPos();
-  if (current_tab == 0) {
-    std::vector<double> y {1,2,3,4,5,6,7,6,5,4,3,2,1};
-    if (GUI::Windows::sub<2, 7, 0, 0, 1, 3>(window, startpos, "Plot tool 1")) {
-      if (ImPlot::BeginPlot("Test", "X", "Y", {-1, -1})) {
-        ImPlot::PlotLine("Plot", backend_ctrls[0].d[0].data(), 1000);
-        ImPlot::EndPlot();
-      }
-    } GUI::Windows::end();
-    if (GUI::Windows::sub<2, 7, 1, 0, 1, 3>(window, startpos, "Plot tool 2")) {
-      if (ImPlot::BeginPlot("Test", "X", "Y", {-1, -1})) {
-        ImPlot::PlotLine("Plot", y.data(), y.size());
-        ImPlot::EndPlot();
-      }
-    } GUI::Windows::end();
-    if (GUI::Windows::sub<2, 7, 0, 3, 1, 3>(window, startpos, "Plot tool 3")) {
-      if (ImPlot::BeginPlot("Test", "X", "Y", {-1, -1})) {
-        ImPlot::PlotLine("Plot", y.data(), y.size());
-        ImPlot::EndPlot();
-      }
-    } GUI::Windows::end();
-    if (GUI::Windows::sub<2, 7, 1, 3, 1, 3>(window, startpos, "Plot tool 4")) {
-      if (ImPlot::BeginPlot("Test", "X", "Y", {-1, -1})) {
-        ImPlot::PlotLine("Plot", y.data(), y.size());
-        ImPlot::EndPlot();
-      }
-    } GUI::Windows::end();
-  } else if (current_tab == 1) {
-    std::vector<double> y {5,2,3,4,5,6,7,6,5,4,3,2,5};
-    if (GUI::Windows::sub<2, 7, 0, 0, 1, 3>(window, startpos, "Plot tool 5")) {
-      if (ImPlot::BeginPlot("Test", "X", "Y", {-1, -1})) {
-        ImPlot::PlotLine("Plot", y.data(), y.size());
-        ImPlot::EndPlot();
-      }
-    } GUI::Windows::end();
-    if (GUI::Windows::sub<2, 7, 1, 0, 1, 3>(window, startpos, "Plot tool 6")) {
-      if (ImPlot::BeginPlot("Test", "X", "Y", {-1, -1})) {
-        ImPlot::PlotLine("Plot", y.data(), y.size());
-        ImPlot::EndPlot();
-      }
-    } GUI::Windows::end();
-    if (GUI::Windows::sub<2, 7, 0, 3, 1, 3>(window, startpos, "Plot tool 7")) {
-      if (ImPlot::BeginPlot("Test", "X", "Y", {-1, -1})) {
-        ImPlot::PlotLine("Plot", y.data(), y.size());
-        ImPlot::EndPlot();
-      }
-    } GUI::Windows::end();
-    if (GUI::Windows::sub<2, 7, 1, 3, 1, 3>(window, startpos, "Plot tool 8")) {
-      if (ImPlot::BeginPlot("Test", "X", "Y", {-1, -1})) {
-        ImPlot::PlotLine("Plot", y.data(), y.size());
-        ImPlot::EndPlot();
-      }
-    } GUI::Windows::end();
-  }
-  
-  if (GUI::Windows::sub<5, 7, 0, 6, 2, 1>(window, startpos, "CTRL Tool 1")) {
+  for (size_t i=0; i<backends.N; i++)
+    if (current_tab == i)
+      backend_frames[i].plot(window, startpos);
+  if (current_tab == backends.N)
+    GUI::Plotting::plot_combined(window, startpos, backend_frames);
+    
+  if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2, 1>(window, startpos, "CTRL Tool 1")) {
     if (ImGui::BeginTabBar("GUI Control")) {
       
       if (ImGui::BeginTabItem(" Main ")) {
@@ -261,7 +217,7 @@ int main () try {
     }
   } GUI::Windows::end();
   
-  if (GUI::Windows::sub<5, 7, 2, 6, 3, 1>(window, startpos, "DATA Tool 1")) {
+  if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3, 1>(window, startpos, "DATA Tool 1")) {
     Instrument::AllInformation(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, frontend, frontend_ctrl, backends, backend_ctrls);
   } GUI::Windows::end();
   

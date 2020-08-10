@@ -9,6 +9,5 @@ void plot_frame(Frame& frame) {
     ImPlot::EndPlot();
   }
 }
-
 }  // Plotting
 }  // GUI

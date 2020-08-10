@@ -1,7 +1,7 @@
 #include "mathhelpers.h"
 
-std::vector<float> linspace(float s, float e, int count) {
-  std::vector<float> ls(count);
+std::vector<double> linspace(double s, double e, int count) {
+  std::vector<double> ls(count);
   
   if (count == 0) {
     return ls;
@@ -9,7 +9,7 @@ std::vector<float> linspace(float s, float e, int count) {
     ls.front() = (e + s) / 2;
     return ls;
   } else {
-    const float step = (e - s) / (count - 1);
+    const double step = (e - s) / (count - 1);
     ls.front() = s;
     ls.back() = e;
     for(int i=1; i < count-1; ++i)

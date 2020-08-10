@@ -3,6 +3,6 @@
 
 #include <vector>
 
-std::vector<float> linspace(float s, float e, int count);
+std::vector<double> linspace(double s, double e, int count);
 
 #endif  // mathhelpers_h

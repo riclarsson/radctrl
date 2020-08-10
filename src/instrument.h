@@ -94,7 +94,7 @@ struct Data {
   f(freq_grid.size(), std::vector<double>(freq_grid[0].size())), last_target(f), last_cold(f), last_hot(f),
   last_calib(f), last_noise(f), avg_target(f), avg_cold(f), avg_hot(f), avg_calib(f), avg_noise(f),
   tcold(std::numeric_limits<double>::max()), thot(std::numeric_limits<double>::max()),
-  num_measurements(0), num_to_avg(0), avg_count(0) {
+  num_measurements(0), num_to_avg(std::numeric_limits<size_t>::max()), avg_count(0) {
     for (size_t i=0; i<f.size(); i++) {
       for (size_t j=0; j<f[i].size();j ++) {
         f[i][j] = freq_grid[i][j];
@@ -122,7 +122,7 @@ struct Data {
       tcold = tc;
       for (size_t i=0; i<data.size(); i++)
         for (size_t j=0; j<data[i].size(); j++)
-          last_cold[i][j] = data[i][j];
+          last_cold[i][j] = data[i][j]-1;  // FIXME
       has_cold = true;
     }
     
@@ -131,7 +131,7 @@ struct Data {
       thot = th;
       for (size_t i=0; i<data.size(); i++)
         for (size_t j=0; j<data[i].size(); j++)
-          last_hot[i][j] = data[i][j];
+          last_hot[i][j] = data[i][j]+1;  // FIXME
       has_hot = true;
     }
     
@@ -148,14 +148,15 @@ struct Data {
       for (size_t i=0; i<data.size(); i++)
         for (size_t j=0; j<data[i].size(); j++)
           last_noise[i][j] = (thot*last_cold[i][j] - tcold*last_hot[i][j]) / (last_hot[i][j] - last_cold[i][j]);
+      has_noise = true;
     }
     
     // Deal with calibration
     if (has_cold and has_hot and has_target) {
-      has_calib = true;
       for (size_t i=0; i<data.size(); i++)
         for (size_t j=0; j<data[i].size(); j++)
           last_calib[i][j] = tcold + (thot - tcold) * (last_target[i][j] - last_cold[i][j]) / (last_hot[i][j] - last_cold[i][j]);
+      has_calib = true;
     }
     
     mtx.lock();
@@ -251,15 +252,12 @@ class DataSaver {
     if (newtimename not_eq timename) {
       timename = newtimename;
       newname = true;
-      std::cout<<"HI\n";
     }
     
     // We have a new file if we have a newname
     newfile = newname;
     
     if (newname) {
-      std::cout<<"HI AGAIN\n";
-      
       updatepath.lock();  // We cannot change the path here
       daily_copies = 0;  // We first assume there are no copies
       std::string newfilename = filename_composer(); // and compose a filename
@@ -293,8 +291,6 @@ public:
     update_time(not std::filesystem::exists(filename));
     
     if (newfile) {
-      std::cout<<"HI AGAIN, AGAIN\n";
-      
       File::File<File::Operation::Write, File::Type::Xml> metadatafile(filename);
       
       metadatafile.new_child("Time");
@@ -351,7 +347,6 @@ public:
     for (auto& hk: hk_data) n += datafile.write(hk.second);
     for (auto& fe: frontend_data) n += datafile.write(fe.second);
     for (auto& specdata: backends_data) n += datafile.write(specdata);
-    std::cout<<"Wrote " << n << " bytes to file\n";
   }
 };
 
@@ -686,8 +681,6 @@ run = chopper_ctrl.run.load() and wobbler_ctrl.run.load() and housekeeping_ctrl.
 error = chop.has_error() or wob.has_error() or hk.has_error() or frontend.has_error() or backends.has_any_errors();
 quit = chopper_ctrl.quit.load() or wobbler_ctrl.quit.load() or housekeeping_ctrl.quit.load() or frontend_ctrl.quit.load() or
   std::any_of(backend_ctrls.cbegin(), backend_ctrls.cend(), [](auto& x){return x.quit.load();});
-
-std::cout << std::boolalpha << init << ' '  << run << ' ' << error << ' ' << quit << '\n';
   
 // Quit if any instrument wants it
 if (quit) goto stop;
@@ -809,13 +802,15 @@ stop:
 }
 
 template <size_t N, typename ChopperController,
-typename HousekeepingController, typename FrontendController>
+typename HousekeepingController, typename FrontendController,
+size_t CAHA_N, size_t CAHA_M>
 void ExchangeData(std::array<Spectrometer::Controller, N>& backend_ctrls,
                   ChopperController& chopper_ctrl,
                   HousekeepingController& housekeeping_ctrl,
                   FrontendController& frontend_ctrl,
                   std::array<Data, N>& data,
-                  DataSaver& saver) {
+                  DataSaver& saver,
+                  std::array<GUI::Plotting::CAHA<CAHA_N, CAHA_M>, N>& rawplots) {
 bool allnew = false;
 bool quit = false;
 Chopper::ChopperPos last;
@@ -828,6 +823,8 @@ for (size_t i=0; i<N; i++) {
   backend_names[i] = backend_ctrls[i].name;
   data[i] = Data(backend_ctrls[i].f);
 }
+
+if (rawplots.size() not_eq N) throw std::runtime_error("Bad plotting frames");
 
 wait:
 Sleep(0.1);
@@ -854,9 +851,26 @@ for (size_t i=0; i<N; i++) backend_ctrls[i].newdata.store(false);
 // Save the raw data to file
 saver.save(last, hk_data, frontend_data, backends_data, backend_names);
 
-// FIXME: Update plotting tools data
-for (size_t i=0; i<N; i++)
+// Update plotting tools data
+for (size_t i=0; i<N; i++) {
   data[i].update(last, hk_data["Cold Load Temperature"], hk_data["Hot Load Temperature"], backends_data[i]);
+  
+  // Fill rawplots
+  for (size_t j=0; j<data[i].f.size(); j++) {
+    if (last == Chopper::ChopperPos::Cold)
+      rawplots[i].Raw()[3*j+0].setY(data[i].last_cold[j]);
+    if (last == Chopper::ChopperPos::Antenna)
+      rawplots[i].Raw()[3*j+1].setY(data[i].last_target[j]);
+    if (last == Chopper::ChopperPos::Hot)
+      rawplots[i].Raw()[3*j+2].setY(data[i].last_hot[j]);
+    if (data[i].has_noise)
+      rawplots[i].Noise()[j].setY(data[i].last_noise[j]);
+    if (data[i].has_calib)
+      rawplots[i].Integration()[j].setY(data[i].last_calib[j]);
+    if (data[i].has_calib_avg)
+      rawplots[i].Averaging()[j].setY(data[i].avg_calib[j]);
+  }
+}
 
 goto loop;
 stop: {}

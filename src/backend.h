@@ -26,17 +26,17 @@ struct Controller {
   std::string host;
   int tcp_port;
   int udp_port;
-  Eigen::MatrixXf freq_limits;
+  Eigen::MatrixXd freq_limits;
   Eigen::VectorXi freq_counts;
   int integration_time_microsecs;
   int blank_time_microsecs;
   bool mirror;
   
   std::string name;
-  std::vector<std::vector<float>> f;
+  std::vector<std::vector<double>> f;
   std::vector<std::vector<float>> d;
   
-  Controller(const std::string& controller_name, const std::string& h, int tcp, int udp, Eigen::MatrixXf fl, Eigen::VectorXi fc, int intus, int blaus, bool reverse) :
+  Controller(const std::string& controller_name, const std::string& h, int tcp, int udp, Eigen::MatrixXd fl, Eigen::VectorXi fc, int intus, int blaus, bool reverse) :
   init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
   host(h), tcp_port(tcp), udp_port(udp), freq_limits(fl), freq_counts(fc),
   integration_time_microsecs(intus), blank_time_microsecs(blaus), mirror(reverse),
@@ -109,7 +109,7 @@ struct Backends {
   }
   
   template <size_t i=0>
-  void startup(int j, std::string& h, int t, int u, Eigen::Ref<Eigen::MatrixXf> fl, Eigen::Ref<Eigen::VectorXi> fc, int ius, int bus, bool m) {
+  void startup(int j, std::string& h, int t, int u, Eigen::Ref<Eigen::MatrixXd> fl, Eigen::Ref<Eigen::VectorXi> fc, int ius, int bus, bool m) {
     if (i == j)
       std::get<i>(spectrometers).startup(h, t, u, fl, fc, ius, bus, m);
     else if constexpr (i < N - 1)
@@ -326,7 +326,7 @@ public:
     }
   }
   
-  void startup(std::string&, int, int, Eigen::Ref<Eigen::MatrixXf>, Eigen::Ref<Eigen::VectorXi>, int, int, bool) {}
+  void startup(std::string&, int, int, Eigen::Ref<Eigen::MatrixXd>, Eigen::Ref<Eigen::VectorXi>, int, int, bool) {}
   void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
   void close() {}
   void run() {}
