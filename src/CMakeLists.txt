@@ -129,15 +129,27 @@ target_link_libraries(multithread PUBLIC Threads::Threads)
 ########################################################################################
 
 ########################################################################################
+# Instrument GUI libraries
+add_library (instrument_gui_controller STATIC dummy_gui.cpp)
+target_link_libraries(instrument_gui_controller PUBLIC gui python files chopper wobbler housekeeping backend multithread frontend)
+########################################################################################
+
+########################################################################################
+# Dummy GUI
+add_executable (dummy_gui dummy_gui.cpp)
+target_link_libraries(dummy_gui PUBLIC instrument_gui_controller)
+########################################################################################
+
+########################################################################################
 # Waspam runtime executable
 add_executable (waspam waspam.cpp)
-target_link_libraries(waspam PUBLIC gui python files chopper wobbler housekeeping backend multithread frontend)
+target_link_libraries(waspam PUBLIC instrument_gui_controller)
 ########################################################################################
 
 ########################################################################################
 # IRAM runtime executable
 add_executable (iram iram.cpp)
-target_link_libraries(iram PUBLIC gui python files chopper wobbler housekeeping backend multithread frontend)
+target_link_libraries(iram PUBLIC instrument_gui_controller)
 ########################################################################################
 
 ########################################################################################
