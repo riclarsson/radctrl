@@ -153,6 +153,7 @@ int main () try {
           if (std::filesystem::is_directory(tmp_save_path)) {
             save_path = tmp_save_path;
             directoryBrowser.SetPwd(save_path);
+            config.new_save_path = true;
           } else {
             config.gui_error = true;
             config.gui_errors.push_back("Invalid directory");
@@ -224,8 +225,30 @@ int main () try {
   // Select the directory  FIXME: Should be modal if running
   directoryBrowser.Display();
   if(directoryBrowser.HasSelected()) {
+    config.new_save_path = true;
     save_path = directoryBrowser.GetSelected().string();
     directoryBrowser.ClearSelected();
+  }
+  
+  if (config.new_save_path) {
+    ImGui::OpenPopup("DirectoryChooser");
+    config.new_save_path = false;
+  }
+  
+  // Directory popup question
+  if (ImGui::BeginPopupModal("DirectoryChooser")) {
+    ImGui::Text("\n You are changing directory to %s\t", save_path.c_str());
+    ImGui::TextWrapped(" This will reset the current save (even if you are choosing the same directory)."
+    " Is this OK?");
+    if (ImGui::Button(" OK ", {80.0f, 30.0f})) {
+      datasaver.updatePath(save_path);
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(" Cancel ", {80.0f, 30.0f})) {
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
   }
   
   // Error handling (only if there are no known errors)

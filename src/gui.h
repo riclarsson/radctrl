@@ -35,9 +35,12 @@ struct Config {
   bool gui_error;
   std::vector<std::string> gui_errors;
   
+  /** User input */
+  bool new_save_path;
+  
   Config(bool fullscreen_on=false) : io(ImGui::GetIO()),
   fullscreen(fullscreen_on), active_errors(0), width(1280), height(720), xpos(50), ypos(50),
-  tabs(0), gui_error(false), gui_errors(0)
+  tabs(0), gui_error(false), gui_errors(0), new_save_path(false)
   {
     (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls

@@ -230,7 +230,7 @@ struct Data {
 
 class DataSaver {
   std::mutex updatepath;
-  int daily_copies;
+  size_t daily_copies;
   bool newfile;
   std::string basename;
   std::string timename;
