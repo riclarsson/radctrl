@@ -20,6 +20,9 @@
 
 namespace Instrument {
 struct Data {
+  // New variable (FIXME: should be respected to not overwrite any when true)
+  std::atomic<bool> newdata;
+  
   // Multithread guard
   std::mutex mtx;
   
@@ -67,7 +70,7 @@ struct Data {
   size_t avg_count;  //  Count of current averages
   
   Data() noexcept = default;
-  Data(const Data& other) :
+  Data(const Data& other) noexcept :
     target(other.target), has_target(other.has_target), has_cold(other.has_cold),
     has_hot(other.has_hot), has_calib(other.has_calib), has_noise(other.has_noise),
     has_calib_avg(other.has_calib_avg), f(other.f), last_target(other.last_target),
@@ -76,7 +79,7 @@ struct Data {
     avg_hot(other.avg_hot), avg_calib(other.avg_calib), avg_noise(other.avg_noise),
     tcold(other.tcold), thot(other.thot), num_measurements(other.num_measurements),
     num_to_avg(other.num_to_avg), avg_count(other.avg_count) {}
-  Data& operator=(const Data& other) {
+    Data& operator=(const Data& other) noexcept {
     target = other.target; has_target= other.has_target; has_cold = other.has_cold;
     has_hot = other.has_hot; has_calib = other.has_calib; has_noise = other.has_noise;
     has_calib_avg = other.has_calib_avg; f = other.f; last_target = other.last_target;
@@ -89,7 +92,7 @@ struct Data {
   }
   
   template <typename T>
-  Data(const std::vector<std::vector<T>>& freq_grid) : target(Chopper::ChopperPos::FINAL),
+  Data(const std::vector<std::vector<T>>& freq_grid) noexcept : target(Chopper::ChopperPos::FINAL),
   has_target(false), has_cold(false), has_hot(false), has_calib(false), has_noise(false), has_calib_avg(false),
   f(freq_grid.size(), std::vector<double>(freq_grid[0].size())), last_target(f), last_cold(f), last_hot(f),
   last_calib(f), last_noise(f), avg_target(f), avg_cold(f), avg_hot(f), avg_calib(f), avg_noise(f),
@@ -113,7 +116,10 @@ struct Data {
   }
   
   template <typename T>
-  void update (Chopper::ChopperPos thistarget, double tc, double th, const std::vector<std::vector<T>>& data) {
+  void update (Chopper::ChopperPos thistarget,
+               double tc,
+               double th,
+               const std::vector<std::vector<T>>& data) noexcept {
     target = thistarget;
     num_measurements++;
     
@@ -224,6 +230,8 @@ struct Data {
     if (avg_count > num_to_avg)
       avg_count--;
     mtx.unlock();
+    
+    newdata.store(true);
   }
 };
 
@@ -237,11 +245,11 @@ class DataSaver {
   std::string filename;
   std::filesystem::path savedir;
 
-  std::string filename_composer() {
+  std::string filename_composer() noexcept {
     return savedir.string() + basename + std::string{"."} + timename + std::string{"."} + std::to_string(daily_copies) + std::string{".xml"};
   }
   
-  void update_time(bool newname=false) {
+  void update_time(bool newname=false) noexcept {
     Time now{};
     std::stringstream ss;
     std::string newtimename;
@@ -271,9 +279,8 @@ class DataSaver {
   }
   
 public:
-  DataSaver(const std::string& dir, const std::string& basefilename) : daily_copies(0), newfile(true),
-  basename(basefilename), timename("not-a-time-starting-value"), savedir(dir) {
-  }
+  DataSaver(const std::string& dir, const std::string& basefilename) noexcept : daily_copies(0), newfile(true),
+  basename(basefilename), timename("not-a-time-starting-value"), savedir(dir) {}
   
   void updatePath(const std::filesystem::path& newdir) {
     updatepath.lock();
@@ -287,7 +294,7 @@ public:
             const std::map<std::string, double>& hk_data,
             const std::map<std::string, double>& frontend_data,
             const std::array<std::vector<std::vector<float>>, N>& backends_data,
-            const std::array<std::string, N>& backend_names) {
+            const std::array<std::string, N>& backend_names) noexcept {
     update_time(not std::filesystem::exists(filename));
     
     if (newfile) {
@@ -455,7 +462,7 @@ void ReadyRunAll (ChopperController& chopper_ctrl,
                   WobblerController& wobbler_ctrl,
                   HousekeepingController& housekeeping_ctrl,
                   FrontendController& frontend_ctrl,
-                  BackendControllers& backend_ctrls) {
+                  BackendControllers& backend_ctrls) noexcept {
   chopper_ctrl.run = true;
   wobbler_ctrl.run = true;
   housekeeping_ctrl.run = true;
@@ -472,7 +479,7 @@ void UnreadyRunAll (ChopperController& chopper_ctrl,
                     WobblerController& wobbler_ctrl,
                     HousekeepingController& housekeeping_ctrl,
                     FrontendController& frontend_ctrl,
-                    BackendControllers& backend_ctrls) {
+                    BackendControllers& backend_ctrls) noexcept {
   chopper_ctrl.run = false;
   wobbler_ctrl.run = false;
   housekeeping_ctrl.run = false;
@@ -489,7 +496,7 @@ void QuitAll (ChopperController& chopper_ctrl,
               WobblerController& wobbler_ctrl,
               HousekeepingController& housekeeping_ctrl,
               FrontendController& frontend_ctrl,
-              BackendControllers& backend_ctrls) {
+              BackendControllers& backend_ctrls) noexcept {
   chopper_ctrl.quit = true;
   wobbler_ctrl.quit = true;
   housekeeping_ctrl.quit = true;
@@ -506,7 +513,7 @@ void AllInformation (Chopper& chop, ChopperController& chopper_ctrl,
                      Wobbler& wob, WobblerController& wobbler_ctrl,
                      Housekeeping& /*hk*/, HousekeepingController& housekeeping_ctrl,
                      Frontend& frontend, FrontendController& frontend_ctrl,
-                     Backends& backends, BackendControllers& backend_ctrls) {
+                     Backends& backends, BackendControllers& backend_ctrls) noexcept {
   float x0 = ImGui::GetCursorPosX();
   float dx = ImGui::GetFontSize();
   
@@ -657,7 +664,7 @@ std::vector<std::string> RunExperiment (Chopper& chop, ChopperController& choppe
                                         Wobbler& wob, WobblerController& wobbler_ctrl,
                                         Housekeeping& hk, HousekeepingController& housekeeping_ctrl,
                                         Frontend& frontend, FrontendController& frontend_ctrl,
-                                        Backends& backends, BackendControllers& backend_ctrls) {
+                                        Backends& backends, BackendControllers& backend_ctrls) noexcept {
 static_assert(ChopperController::N == WobblerController::N, "Need the same number of positions");
 
 std::vector<std::string> errors(0);
@@ -810,7 +817,7 @@ void ExchangeData(std::array<Spectrometer::Controller, N>& backend_ctrls,
                   FrontendController& frontend_ctrl,
                   std::array<Data, N>& data,
                   DataSaver& saver,
-                  std::array<GUI::Plotting::CAHA<CAHA_N, CAHA_M>, N>& rawplots) {
+                  std::array<GUI::Plotting::CAHA<CAHA_N, CAHA_M>, N>& rawplots) noexcept {
 bool allnew = false;
 bool quit = false;
 Chopper::ChopperPos last;
@@ -822,9 +829,10 @@ std::array<std::string, N> backend_names;
 for (size_t i=0; i<N; i++) {
   backend_names[i] = backend_ctrls[i].name;
   data[i] = Data(backend_ctrls[i].f);
+  data[i].newdata.store(false);
 }
 
-if (rawplots.size() not_eq N) throw std::runtime_error("Bad plotting frames");
+if (rawplots.size() not_eq N) std::exit(1);
 
 wait:
 Sleep(0.1);
@@ -846,7 +854,7 @@ for (size_t i=0; i<N; i++) backends_data[i] = backend_ctrls[i].d;
 chopper_ctrl.newdata.store(false);
 housekeeping_ctrl.newdata.store(false);
 frontend_ctrl.newdata.store(false);
-for (size_t i=0; i<N; i++) backend_ctrls[i].newdata.store(false);
+for (auto& ctrl: backend_ctrls) ctrl.newdata.store(false);
 
 // Save the raw data to file
 saver.save(last, hk_data, frontend_data, backends_data, backend_names);

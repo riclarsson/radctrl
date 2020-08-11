@@ -10,36 +10,40 @@
 #include "wobbler.h"
 
 int main () try {
-  auto py = Python::createPython();  // Must be declared even if unused
+  constexpr size_t height_of_window=7;   // Any size larger than part_for_plot
+  constexpr size_t part_for_plot=6; // multiple of 2 and 3
+  static_assert(part_for_plot % 6 == 0, "part_of_plot must be a multiple of 6");
+  
+  // Start a python interpreter in case python code will be executed
+  auto py = Python::createPython();
 
+  // Start the window and give it a name
   InitializeGUI("IRAM");
   
-  // Our states
+  // Our global states are stored in a config
   GUI::Config config;
   
-  // Chopper
+  // Chopper declaration
   Instrument::Chopper::Dummy chop{"/home/larsson/Work/radctrl/python/chopper/chopper.py"};
   Instrument::Chopper::Controller<Instrument::Chopper::ChopperPos::Cold,
                                   Instrument::Chopper::ChopperPos::Antenna,
                                   Instrument::Chopper::ChopperPos::Hot,
                                   Instrument::Chopper::ChopperPos::Antenna> chopper_ctrl;
   
-  // Wobbler
+  // Wobbler declaration
   Instrument::Wobbler::Dummy wob{"/home/larsson/Work/radctrl/python/wobbler/IRAM.py"};
   Instrument::Wobbler::Controller<4> wobbler_ctrl;
   wobbler_ctrl.pos = {3000, 7000, 3000, 7000};
   
-  // Housekeeping
+  // Housekeeping declaration
   Instrument::Housekeeping::Dummy hk{"/home/larsson/Work/radctrl/python/housekeeping/sensors.py"};
   Instrument::Housekeeping::Controller housekeeping_ctrl;
   
-  // Frontend
+  // Frontend declaration
   Instrument::Frontend::Dummy frontend{""};
   Instrument::Frontend::Controller frontend_ctrl;
   
-  // Spectrometers
-  constexpr size_t height_of_window=7;
-  constexpr size_t part_for_plot=6;
+  // Spectrometers declarations
   Instrument::Spectrometer::Backends backends{
     Instrument::Spectrometer::Dummy(" Dummy1 "),
     Instrument::Spectrometer::Dummy(" Dummy2 ")
@@ -60,7 +64,7 @@ int main () try {
     GUI::Plotting::CAHA<height_of_window, part_for_plot>{backend_ctrls[1].name, backend_ctrls[1].f}
   };
   
-  // Files
+  // Files chooser
   auto directoryBrowser = ImGui::FileBrowser(ImGuiFileBrowserFlags_SelectDirectory | ImGuiFileBrowserFlags_CloseOnEsc | ImGuiFileBrowserFlags_CreateNewDir);
   directoryBrowser.SetTitle("Select Directory");
   std::filesystem::path save_path{"/home/larsson/data/"};
@@ -81,7 +85,14 @@ int main () try {
               frontend, frontend_ctrl,
               backends, backend_ctrls);
   
-  // Setup TESTS
+  // Start interchange between output data and operations on yet another thread
+  auto saver = AsyncRef(&Instrument::ExchangeData<backends.N, decltype(chopper_ctrl),
+                        decltype(housekeeping_ctrl), decltype(frontend_ctrl),
+                        height_of_window, part_for_plot>,
+                        backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl, backend_data,
+                        datasaver, backend_frames);
+  
+  // Setup of the tabs
   for (size_t i=0; i<backends.N; i++) {
     config.tabs.push_back(backends.name(i));
   }
@@ -92,13 +103,6 @@ int main () try {
   // Helpers
   const std::vector<std::string> devices = File::Devices({"USB", "S", "chopper", "wobbler", "sensors", "ACM"}, 100);
   
-  // Start interchange between output data and operations
-  auto saver = AsyncRef(&Instrument::ExchangeData<backends.N, decltype(chopper_ctrl),
-                        decltype(housekeeping_ctrl), decltype(frontend_ctrl),
-                        height_of_window, part_for_plot>,
-                        backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl, backend_data,
-                        datasaver, backend_frames);
-  
   // Our style
   GUI::LayoutAndStyleSettings();
   
@@ -108,6 +112,7 @@ int main () try {
   // Main menu bar
   GUI::MainMenu::fullscreen(config, window);
   GUI::MainMenu::quitscreen(config, window);
+  GUI::Plotting::caha_mainmenu(backend_frames);
   const size_t current_tab = GUI::MainMenu::tabselect(config);
   
   auto startpos = ImGui::GetCursorPos();
@@ -117,7 +122,7 @@ int main () try {
   if (current_tab == backends.N)
     GUI::Plotting::plot_combined(window, startpos, backend_frames);
     
-  if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2, 1>(window, startpos, "CTRL Tool 1")) {
+  if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2, height_of_window-part_for_plot>(window, startpos, "CTRL Tool 1")) {
     if (ImGui::BeginTabBar("GUI Control")) {
       
       if (ImGui::BeginTabItem(" Main ")) {
@@ -218,7 +223,7 @@ int main () try {
     }
   } GUI::Windows::end();
   
-  if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3, 1>(window, startpos, "DATA Tool 1")) {
+  if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3, height_of_window-part_for_plot>(window, startpos, "DATA Tool 1")) {
     Instrument::AllInformation(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, frontend, frontend_ctrl, backends, backend_ctrls);
   } GUI::Windows::end();
   

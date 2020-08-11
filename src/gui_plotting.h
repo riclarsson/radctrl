@@ -44,26 +44,47 @@ public:
 typedef ImPlotPoint (* LineGetter)(void *, int);
 
 class Line {
+  mutable std::mutex mtx;
+  
   std::string mname;
   Data xval;
   Data yval;
   size_t running_avg;
   double xscale;
   double yscale;
+  double xoffset;
+  double yoffset;
   
-  double x(size_t i) const {return xval.get(i);}
-  double y(size_t i) const {return yval.get(i);}
+  double x(size_t i) const {mtx.lock(); const double val = (xoffset + xval.get(i)) * xscale; mtx.unlock(); return val;}
+  double y(size_t i) const {mtx.lock(); const double val = (yoffset + yval.get(i)) * yscale; mtx.unlock(); return val;}
   
   ImPlotPoint avg(size_t i) const {
     ImPlotPoint out{0.0, 0.0};
     size_t num{0};
-    while (num < running_avg) {
-      out.x += x(running_avg*i+num);
-      out.y += y(running_avg*i+num);
+    
+    mtx.lock();  // Access running_avg
+    bool test_loop = num < running_avg;
+    mtx.unlock();
+    
+    while (test_loop) {
+      mtx.lock();  // Access running_avg
+      const size_t j = running_avg*i + num;
+      mtx.unlock();
+      
+      // Safety measures in case we are changing things
+      if (j < xval.N()) out.x += x(j);
+      if (j < yval.N()) out.y += y(j);
+      
       num++;
+      mtx.lock();  // Access running_avg
+      test_loop = num < running_avg;
+      mtx.unlock();
     }
-    out.x *= xscale / running_avg;
-    out.y *= yscale / running_avg;
+    
+    mtx.lock();  // Access running_avg
+    out.x /= running_avg;
+    out.y /= running_avg;
+    mtx.unlock();
     return out;
   }
   
@@ -72,15 +93,29 @@ class Line {
   }
 
 public:
-  Line(const std::string& name, const Data& X, const Data& Y) : mname(name), xval(X), yval(Y), running_avg(1), xscale(1.0f), yscale(1.0f) {
+  Line(const std::string& name, const Data& X, const Data& Y) : mname(name), xval(X), yval(Y),
+  running_avg(1), xscale(1), yscale(1), xoffset(0), yoffset(0) {
     if (X.N() not_eq Y.N())
       throw std::runtime_error("Bad data size");
   }
+  Line (const Line& other) noexcept : mname(other.mname), xval(other.xval), yval(other.yval),
+  running_avg(other.running_avg), xscale(other.xscale), yscale(other.yscale), xoffset(other.xoffset), yoffset(other.yoffset) {}
+  
   void setX(const std::vector<double>& x) {xval.set(x);}
   void setY(const std::vector<double>& y) {yval.set(y);}
-  int size() const {return yval.N() / running_avg;}
+  int size() const {mtx.lock(); const int val = yval.N() / running_avg; mtx.unlock(); return val;}
   LineGetter getter() const {return avgfun();}
   const std::string& name() const {return mname;}
+  void Xscale(double x) {mtx.lock(); xscale = x; mtx.unlock();}
+  void Yscale(double x) {mtx.lock(); yscale = x; mtx.unlock();}
+  void Xoffset(double x) {mtx.lock(); xoffset = x; mtx.unlock();}
+  void Yoffset(double x) {mtx.lock(); yoffset = x; mtx.unlock();}
+  double Xscale() const {mtx.lock(); const double val=xscale; mtx.unlock(); return val;}
+  double Yscale() const {mtx.lock(); const double val=yscale; mtx.unlock(); return val;}
+  double Xoffset() const {mtx.lock(); const double val=xoffset; mtx.unlock(); return val;}
+  double Yoffset() const {mtx.lock(); const double val=yoffset; mtx.unlock(); return val;}
+  void RunAvgCount(size_t n) {mtx.lock(); running_avg = n; mtx.unlock();}
+  size_t RunAvgCount() const {mtx.lock(); const size_t val=running_avg; mtx.unlock(); return val;}
 };  // Line
 
 class Frame {
@@ -103,6 +138,8 @@ public:
 };  // Frame
 
 void plot_frame(Frame& frame);
+
+void frame_menuitem(Frame& frame);
 
 template <size_t Height, size_t PartOfHeight>
 class CAHA {
@@ -166,31 +203,59 @@ public:
 };
 
 template <size_t Height, size_t PartOfHeight, size_t N>
-void plot_combined(GLFWwindow* window, const ImVec2 startpos, std::array<CAHA<Height, PartOfHeight>, N>& frames) {
+void plot_combined(GLFWwindow* window, const ImVec2 startpos, std::array<CAHA<Height, PartOfHeight>, N>& cahas) {
   if (GUI::Windows::sub<1, Height, 0, 0, 1, PartOfHeight/3>(window, startpos, "Combined Last Measurement Integration TILE")) {
-    if (ImPlot::BeginPlot(frames[0].Integration().title().c_str(), frames[0].Integration().xlabel().c_str(), frames[0].Integration().ylabel().c_str(), {-1, -1})) {
-      for (auto& frame: frames)
-        for (auto& line: frame.Integration())
-          ImPlot::PlotLine((frame.name() + std::string{" "} + line.name()).c_str(), line.getter(), (void*)&line, line.size());
+    if (ImPlot::BeginPlot(cahas[0].Integration().title().c_str(), cahas[0].Integration().xlabel().c_str(), cahas[0].Integration().ylabel().c_str(), {-1, -1})) {
+      for (auto& caha: cahas)
+        for (auto& line: caha.Integration())
+          ImPlot::PlotLine((caha.name() + std::string{" "} + line.name()).c_str(), line.getter(), (void*)&line, line.size());
       ImPlot::EndPlot();
     }
   } GUI::Windows::end();
   if (GUI::Windows::sub<1, Height, 0, PartOfHeight/3, 1, PartOfHeight/3>(window, startpos, "Combined Average Measurement Integration TILE")) {
-    if (ImPlot::BeginPlot(frames[0].Averaging().title().c_str(), frames[0].Averaging().xlabel().c_str(), frames[0].Averaging().ylabel().c_str(), {-1, -1})) {
-      for (auto& frame: frames)
-        for (auto& line: frame.Averaging())
-          ImPlot::PlotLine((frame.name() + std::string{" "} + line.name()).c_str(), line.getter(), (void*)&line, line.size());
+    if (ImPlot::BeginPlot(cahas[0].Averaging().title().c_str(), cahas[0].Averaging().xlabel().c_str(), cahas[0].Averaging().ylabel().c_str(), {-1, -1})) {
+      for (auto& caha: cahas)
+        for (auto& line: caha.Averaging())
+          ImPlot::PlotLine((caha.name() + std::string{" "} + line.name()).c_str(), line.getter(), (void*)&line, line.size());
       ImPlot::EndPlot();
     }
   } GUI::Windows::end();
   if (GUI::Windows::sub<1, Height, 0, 2*PartOfHeight/3, 1, PartOfHeight/3>(window, startpos, "Combined Noise TILE")) {
-    if (ImPlot::BeginPlot(frames[0].Noise().title().c_str(), frames[0].Noise().xlabel().c_str(), frames[0].Noise().ylabel().c_str(), {-1, -1})) {
-      for (auto& frame: frames)
-        for (auto& line: frame.Noise())
-          ImPlot::PlotLine((frame.name() + std::string{" "} + line.name()).c_str(), line.getter(), (void*)&line, line.size());
+    if (ImPlot::BeginPlot(cahas[0].Noise().title().c_str(), cahas[0].Noise().xlabel().c_str(), cahas[0].Noise().ylabel().c_str(), {-1, -1})) {
+      for (auto& caha: cahas)
+        for (auto& line: caha.Noise())
+          ImPlot::PlotLine((caha.name() + std::string{" "} + line.name()).c_str(), line.getter(), (void*)&line, line.size());
       ImPlot::EndPlot();
     }
   } GUI::Windows::end();
+}
+
+template <size_t Height, size_t PartOfHeight>
+void caha_menuitem(CAHA<Height, PartOfHeight>& caha) {
+  if (ImGui::BeginMenu(caha.name().c_str())) {
+    frame_menuitem(caha.Raw());
+    ImGui::Separator();
+    frame_menuitem(caha.Noise());
+    ImGui::Separator();
+    frame_menuitem(caha.Integration());
+    ImGui::Separator();
+    frame_menuitem(caha.Averaging());
+    ImGui::EndMenu();
+  }
+}
+
+template <size_t Height, size_t PartOfHeight, size_t N>
+void caha_mainmenu(std::array<CAHA<Height, PartOfHeight>, N>& cahas) {
+  if (ImGui::BeginMainMenuBar()) {
+    if (ImGui::BeginMenu("Plots")) {
+      for (auto& caha: cahas) {
+        caha_menuitem(caha);
+        ImGui::Separator();
+      }
+      ImGui::EndMenu();
+    }
+    ImGui::EndMainMenuBar();
+  }
 }
 
 }  // Plotting
