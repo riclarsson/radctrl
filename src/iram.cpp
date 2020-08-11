@@ -115,13 +115,19 @@ int main () try {
   GUI::Plotting::caha_mainmenu(backend_frames);
   const size_t current_tab = GUI::MainMenu::tabselect(config);
   
-  auto startpos = ImGui::GetCursorPos();
+  // Drawer helper
+  const auto startpos = ImGui::GetCursorPos();
+  
+  // Draw the individual tabs
   for (size_t i=0; i<backends.N; i++)
     if (current_tab == i)
       backend_frames[i].plot(window, startpos);
+  
+  // Draw the combined backends
   if (current_tab == backends.N)
     GUI::Plotting::plot_combined(window, startpos, backend_frames);
     
+  // Control tool
   if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2, height_of_window-part_for_plot>(window, startpos, "CTRL Tool 1")) {
     if (ImGui::BeginTabBar("GUI Control")) {
       
@@ -223,6 +229,7 @@ int main () try {
     }
   } GUI::Windows::end();
   
+  // Information tool
   if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3, height_of_window-part_for_plot>(window, startpos, "DATA Tool 1")) {
     Instrument::AllInformation(chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, frontend, frontend_ctrl, backends, backend_ctrls);
   } GUI::Windows::end();
