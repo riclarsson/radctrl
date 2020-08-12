@@ -25,6 +25,7 @@ ENUMCLASS(Type, unsigned char,
           Double,
           String,
           List,
+          Dict,
           NumpyVector
          )
 
@@ -41,6 +42,15 @@ public:
   double toDouble() const {static_assert(X == Type::Double); return Obj.cast<double>();}
   bool toBool() const {static_assert(X == Type::Bool); return Obj.cast<bool>();}
   int toInt() const {static_assert(X == Type::Int); return Obj.cast<int>();}
+  
+  template <Type Y> Object<Y> fromDict(const std::string& key) const {static_assert(X == Type::Dict); return Object<Y>{Obj[key.c_str()]};}
+  std::vector<std::string> keysDict() const {
+    static_assert(X == Type::Dict);
+    std::vector<std::string> out;
+    for (auto& key: Obj)
+      out.push_back(key.cast<std::string>());
+    return out;
+  }
   
   template <typename T>
   std::vector<T> toVector() const {
