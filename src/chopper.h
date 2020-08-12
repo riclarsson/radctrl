@@ -38,8 +38,9 @@ struct Controller {
   
   ChopperPos lasttarget;
   std::array<ChopperPos, N> pos{StartPos...};
-  Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
-  dev("/dev/chopper"), offset(1000), sleeptime(0), lasttarget(ChopperPos::FINAL) {}
+  Controller(const std::string& d, int o, double s) noexcept : init(false), error(false), quit(false),
+  run(false), operating(false), waiting(false), newdata(false),
+  dev(d), offset(o), sleeptime(s), lasttarget(ChopperPos::FINAL) {}
 };
 
 template <class Chopper, ChopperPos ... Pos>

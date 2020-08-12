@@ -28,11 +28,11 @@ int main () try {
   Instrument::Chopper::Controller<Instrument::Chopper::ChopperPos::Cold,
                                   Instrument::Chopper::ChopperPos::Antenna,
                                   Instrument::Chopper::ChopperPos::Hot,
-                                  Instrument::Chopper::ChopperPos::Antenna> chopper_ctrl;
+                                  Instrument::Chopper::ChopperPos::Antenna> chopper_ctrl{"/dev/chopper", 1000, 0.0};
   
   // Wobbler declaration
   Instrument::Wobbler::Dummy wob{"filename?"};
-  Instrument::Wobbler::Controller<4> wobbler_ctrl;
+  Instrument::Wobbler::Controller<4> wobbler_ctrl{"/dev/wobbler", 115200, '0'};
   wobbler_ctrl.pos = {3000, 7000, 3000, 7000};
   
   // Housekeeping declaration
@@ -40,8 +40,8 @@ int main () try {
   Instrument::Housekeeping::Controller housekeeping_ctrl;
   
   // Frontend declaration
-  Instrument::Frontend::Dummy frontend{""};
-  Instrument::Frontend::Controller frontend_ctrl;
+  Instrument::Frontend::Dummy frontend{"filename?"};
+  Instrument::Frontend::Controller frontend_ctrl{"some-server", 1234};
   
   // Spectrometers declarations
   Instrument::Spectrometer::Backends backends{

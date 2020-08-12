@@ -27,8 +27,8 @@ struct Controller {
   char address;
 
   std::array<int, N> pos;
-  Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false),
-  dev("/dev/wobbler"), baudrate(115200), address('0') {pos.fill(0);}
+  Controller(const std::string& d, int b, char a) noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false),
+  dev(d), baudrate(b), address(a) {pos.fill(0);}
 };
 
 template <class Wobbler, size_t N>

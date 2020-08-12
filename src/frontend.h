@@ -19,34 +19,13 @@ struct Controller {
   std::atomic<bool> waiting;
   std::atomic<bool> newdata;
   
+  std::string server;
+  int port;
+  
   std::map<std::string, double> data;
   
-  Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false) {}
-};
-
-class Dummy {
-  bool manual;
-  std::string mname;
-  std::map<std::string, double> database;
-  bool error_found;
-  std::string error;
-  
-public:
-  using DataType = std::map<std::string, double>;
-  
-  template <typename ... Whatever> constexpr Dummy(Whatever...) : manual(false), mname("FrontendDummy"), database({{"NODATA", -1}}), error_found(false), error("") {}
-  template <typename ... Whatever> void startup(Whatever...) {}
-  void init(bool manual_press) {manual=manual_press; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
-  void close() {}
-  void run() {}
-  void get_data() const {}
-  DataType data() const {return database;}
-  bool manual_run() {return manual;}
-  const std::string& error_string() const {return error;}
-  bool has_error() {return error_found;}
-  void delete_error() {error_found=false; error = "";}
-  void gui_setup(Controller&) {ImGui::Text("There is no setup, this is a dummy class");}
-  const std::string& name() const {return mname;}
+  Controller(const std::string& s, int p) noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
+  server(s), port(p) {}
 };
 
 template <class Frontend>
@@ -78,7 +57,7 @@ void GuiSetup(Frontend& frontend, Controller& ctrl) {
   
   if (change) {
     if (ctrl.init) {
-      frontend.startup(/*FIXME????FIXME*/);
+      frontend.startup(ctrl.server, ctrl.port);
       frontend.init(manual);
     } else {
       frontend.close();
@@ -95,7 +74,92 @@ void GuiSetup(Frontend& frontend, Controller& ctrl) {
     ctrl.error = false;
 }
 
+class Dummy {
+  bool manual;
+  std::string mname;
+  std::map<std::string, double> database;
+  bool error_found;
+  std::string error;
+  
+public:
+  using DataType = std::map<std::string, double>;
+  
+  template <typename ... Whatever> constexpr Dummy(Whatever...) : manual(false), mname("FrontendDummy"), database({{"NODATA", -1}}), error_found(false), error("") {}
+  template <typename ... Whatever> void startup(Whatever...) {}
+  void init(bool manual_press) {manual=manual_press; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void close() {}
+  void run() {}
+  void get_data() const {}
+  DataType data() const {return database;}
+  bool manual_run() {return manual;}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
+  void gui_setup(Controller&) {ImGui::Text("There is no setup, this is a dummy class");}
+  const std::string& name() const {return mname;}
+};
+
+class DBR {
+  bool manual;
+  std::string mname;
+  std::map<std::string, double> database;
+  bool error_found;
+  std::string error;
+  
+  Python::ClassInterface PyClass;
+  Python::ClassInstance PyInst;
+  Python::Function initfun;
+  Python::Function shutdown;
+  Python::Function set_frequency;
+  Python::Function get_status;
+  
+  Python::Object status;
+  
+public:
+  using DataType = std::map<std::string, double>;
+  
+  DBR(const std::filesystem::path& path) : manual(false), mname("DBR"), error_found(false), error("") {
+    if (not std::filesystem::exists(path)) {
+      std::ostringstream os;
+      os << "Cannot find Chopper python file at:\n\t" << path << '\n';
+      throw std::runtime_error(os.str());
+    }
+    py::eval_file(path.c_str());
+    PyClass = Python::ClassInterface{"dbr"};
+  }
+  
+  void startup(const std::string& server, int port) {
+    PyInst = Python::ClassInstance{PyClass(server, port)};
+    initfun = Python::Function{PyInst("init")};
+    shutdown = Python::Function{PyInst("close")};
+    set_frequency = Python::Function{PyInst("set_frequency")};
+    get_status = Python::Function{PyInst("get_status_as_dict")};
+  }
+  
+  void init(bool manual_press) {
+    manual=manual_press;
+    initfun();
+  }
+  
+  void close() {shutdown();}
+  
+  void run() {
+    
+  }
+  
+  void get_data() const {}
+  DataType data() const {return database;}
+  bool manual_run() {return manual;}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
+  void gui_setup(Controller&) {ImGui::Text("There is no setup, this is a dummy class");}
+  const std::string& name() const {return mname;}
+};
+
 }  // Frontend
+
+
 }  // Instrument
 
 #endif  // frontend_h

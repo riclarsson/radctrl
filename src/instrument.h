@@ -407,22 +407,26 @@ void InitAll (Chopper& chop, ChopperController& chopper_ctrl,
     }
   }, std::ref(chop), std::ref(chopper_ctrl));
   
-  for (size_t i=0; i<backends.N; i++) {
-    backends.startup(i, backend_ctrls[i].host, backend_ctrls[i].tcp_port, backend_ctrls[i].udp_port,
-                     backend_ctrls[i].freq_limits, backend_ctrls[i].freq_counts,
-                     backend_ctrls[i].integration_time_microsecs, backend_ctrls[i].blank_time_microsecs,
-                     backend_ctrls[i].mirror);
-    backends.init(i, false);
-    if (backends.has_error(i))
-      backend_ctrls[i].error = true;
+  for (size_t ii=0; ii<backends.N; ii++) {
+    std::thread backinit([](int i, Backends& inst, BackendControllers& ctrls) {
+    inst.startup(i, ctrls[i].host, ctrls[i].tcp_port, ctrls[i].udp_port,
+                     ctrls[i].freq_limits, ctrls[i].freq_counts,
+                     ctrls[i].integration_time_microsecs, ctrls[i].blank_time_microsecs,
+                     ctrls[i].mirror);
+    inst.init(i, false);
+    if (inst.has_error(i))
+      ctrls[i].error = true;
     else
-      backend_ctrls[i].init = true;
+      ctrls[i].init = true;
+    }, ii, std::ref(backends), std::ref(backend_ctrls));
+    
+    backinit.detach();
   }
   
-  hkinit.join();
-  wobinit.join();
-  chopinit.join();
-  frontendinit.join();
+  hkinit.detach();
+  wobinit.detach();
+  chopinit.detach();
+  frontendinit.detach();
 }
 
 template <typename Chopper, typename ChopperController,

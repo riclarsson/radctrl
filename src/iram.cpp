@@ -1,6 +1,5 @@
 #include "backend.h"
 #include "chopper.h"
-#include "file.h"
 #include "frontend.h"
 #include "gui.h"
 #include "housekeeping.h"
@@ -8,8 +7,9 @@
 #include "multithread.h"
 #include "python_interface.h"
 #include "wobbler.h"
+#include "xml_config.h"
 
-int main () try {
+int main (int argc, char * argv[]) try {
   constexpr size_t height_of_window=7;   // Any size larger than part_for_plot
   constexpr size_t part_for_plot=6; // multiple of 2 and 3
   static_assert(part_for_plot % 6 == 0, "part_of_plot must be a multiple of 6");
@@ -20,28 +20,33 @@ int main () try {
   // Start the window and give it a name
   InitializeGUI("IRAM");
   
-  // Our global states are stored in a config
+  // Our global states are stored in configs
+  if (argc not_eq 2) throw std::runtime_error("Bad parguments, please include the XML file");
+  File::ConfigParser parser(argv[1], {"Chopper", "Wobbler", "Housekeeping", "Frontend", "Backends", "Savepath"});
+  std::cout<<parser<<"\n";
   GUI::Config config;
   
   // Chopper declaration
-  Instrument::Chopper::PythonOriginal chop{"/home/larsson/software/radctrl/python/chopper/chopper.py"};
+  Instrument::Chopper::PythonOriginal chop{parser("Chopper", "path")};
   Instrument::Chopper::Controller<Instrument::Chopper::ChopperPos::Cold,
                                   Instrument::Chopper::ChopperPos::Antenna,
                                   Instrument::Chopper::ChopperPos::Hot,
-                                  Instrument::Chopper::ChopperPos::Antenna> chopper_ctrl;
+                                  Instrument::Chopper::ChopperPos::Antenna> chopper_ctrl{parser("Chopper", "dev"),
+                                      std::stoi(parser("Chopper", "offset")), std::stod(parser("Chopper", "sleeptime"))};
   
   // Wobbler declaration
-  Instrument::Wobbler::Dummy wob{"/home/larsson/Work/radctrl/python/wobbler/IRAM.py"};
-  Instrument::Wobbler::Controller<4> wobbler_ctrl;
-  wobbler_ctrl.pos = {3000, 7000, 3000, 7000};
+  Instrument::Wobbler::PythonOriginalIRAM wob{parser("Wobbler", "path")};
+  Instrument::Wobbler::Controller<4> wobbler_ctrl{parser("Wobbler", "dev"), std::stoi(parser("Wobbler", "baudrate")), parser("Wobbler", "address")[0]};
+  wobbler_ctrl.pos = {std::stoi(parser("Wobbler", "start")), std::stoi(parser("Wobbler", "end")),
+                      std::stoi(parser("Wobbler", "start")), std::stoi(parser("Wobbler", "end"))};
   
   // Housekeeping declaration
-  Instrument::Housekeeping::Dummy hk{"/home/larsson/Work/radctrl/python/housekeeping/sensors.py"};
+  Instrument::Housekeeping::Dummy hk{parser("Housekeeping", "path")};
   Instrument::Housekeeping::Controller housekeeping_ctrl;
   
   // Frontend declaration
-  Instrument::Frontend::Dummy frontend{""};
-  Instrument::Frontend::Controller frontend_ctrl;
+  Instrument::Frontend::Dummy frontend{parser("Frontend", "path")};
+  Instrument::Frontend::Controller frontend_ctrl{parser("Frontend", "server"), std::stoi(parser("Frontend", "port"))};
   
   // Spectrometers declarations
   Instrument::Spectrometer::Backends backends{

@@ -12,7 +12,7 @@ from time import time,sleep
 
 class wobbler:
 	"""Wobbler control library"""
-	def __init__(self,device='/dev/wobbler',baud=9600,address=b'0'):
+	def __init__(self,device='/dev/ttyS0',baud=9600,address=b'0'):
 		"""
 		Parameters:
 			device (str):
@@ -42,7 +42,7 @@ class wobbler:
 		self._minpos=0
 		self._pos=None
 
-	def init(self,position,frequency=None):
+	def init(self,position):
 		"""Set the connection to the device
 
 		Musn't be initialized already
@@ -145,7 +145,7 @@ class wobbler:
 			self._send("PC?")
 			resp,stat=self._read()[0:2]
 
-#			print "Pos:",resp
+#			print("Pos:",resp)
 
 			sleep(0.125*abs(self._pos-int(resp))/float(f) \
 				if (time is None) else time)
@@ -181,7 +181,7 @@ class wobbler:
 		self._send("PF?")
 		tmp = self._read()
 #		print(tmp)
-		if tmp[0] == b'':  # ERROR: need to change return?
+		if tmp[0] == b'' or tmp[0] == '':  # ERROR: need to change return?
 			return 0
 		return int(tmp[0])
 
