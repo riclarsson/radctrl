@@ -754,6 +754,12 @@ for (size_t i=0; i<backends.N; i++)
 housekeeping_ctrl.data = hk.data();
 frontend_ctrl.data = frontend.data();
 
+// If the front end contains the hot load or cold load, load those over to Housekeeping
+if constexpr(frontend.has_cold_load)
+  housekeeping_ctrl.data["Cold Load Temperature"] = frontend.cold_load();
+if constexpr(frontend.has_hot_load)
+  housekeeping_ctrl.data["Hot Load Temperature"] = frontend.hot_load();
+
 // Tell the storing device that there is new data
 for (auto& x: backend_ctrls)
   x.newdata.store(true);

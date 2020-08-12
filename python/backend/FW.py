@@ -159,15 +159,9 @@ class FW:
 
         if self.reverse:
             self._data[i] = self._data[i][::-1]
-
-    def set_housekeeping(self, hk):
-        """ Sets the housekeeping data dictionary.  hk must be dictionary """
-        assert self._initialized, "Can set housekeeping when initialized"
-
-        hk['Instrument']["FW"] = {}
-        hk['Instrument']["FW"]['Frequency [MHz]'] = self.frequency
-        hk['Instrument']["FW"]['Channels [#]'] = self._channels
-        hk['Instrument']["FW"]['Integration [micro-s]'] = self._integration_time
+    
+    def copy(self,i=0):
+        return 1.0*self._data[i]
 
     def close(self):
         """Disconnect from both servers of the AFFTS and sends stop to AFFTS

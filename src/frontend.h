@@ -82,6 +82,8 @@ class Dummy {
   std::string error;
   
 public:
+  static constexpr bool has_cold_load = false;
+  static constexpr bool has_hot_load = false;
   using DataType = std::map<std::string, double>;
   
   template <typename ... Whatever> constexpr Dummy(Whatever...) : manual(false), mname("FrontendDummy"), database({{"NODATA", -1}}), error_found(false), error("") {}
@@ -116,6 +118,8 @@ class DBR {
   Python::Object<Python::Type::Dict> status;
   
 public:
+  static constexpr bool has_cold_load = true;
+  static constexpr bool has_hot_load = false;
   using DataType = std::map<std::string, double>;
   
   DBR(const std::filesystem::path& path) : manual(false), mname("DBR"), error_found(false), error("") {
@@ -187,6 +191,8 @@ public:
   }
   
   const std::string& name() const {return mname;}
+  
+  double cold_load() const {return database.at("cryo.ColdLd.val");}
 };
 
 }  // Frontend

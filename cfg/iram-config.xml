@@ -4,7 +4,6 @@
 <Wobbler path="/home/larsson/software/radctrl/python/wobbler/IRAM.py" dev="/dev/ttyS0" baudrate="9600" address="0" start="3000" end="7000" />
 <Housekeeping path="/home/larsson/software/radctrl/python/housekeeping/sensors.py" />
 <Frontend path="/home/larsson/software/radctrl/python/frontend/dbr.py" server="dbr" port="1080" />
-<Backends size="2" spectormeter1=" dFFTS " spectormeter2=" CTS 210 " />
+<Backends size="2" spectormeter1=" dFFTS " spectormeter2=" CTS 210 " config1="dffts-base.xml" config2="rcts104-sofia4.xml" />
 <Savepath path="/home/larsson/xmldata/" />
 </RADCTRL>
-

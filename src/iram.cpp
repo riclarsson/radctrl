@@ -73,7 +73,7 @@ int main (int argc, char * argv[]) try {
   // Files chooser
   auto directoryBrowser = ImGui::FileBrowser(ImGuiFileBrowserFlags_SelectDirectory | ImGuiFileBrowserFlags_CloseOnEsc | ImGuiFileBrowserFlags_CreateNewDir);
   directoryBrowser.SetTitle("Select Directory");
-  std::filesystem::path save_path{"/home/larsson/data/"};
+  std::filesystem::path save_path{parser("Savepath", "path")};
   directoryBrowser.SetPwd(save_path);
   directoryBrowser.SetTypeFilters({"[D]"});
   
