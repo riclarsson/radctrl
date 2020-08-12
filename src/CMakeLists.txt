@@ -35,8 +35,10 @@ target_link_libraries(species PUBLIC math)
 # Atmospheric Library:  For equations and classes for computing the atmosphere
 add_library (files STATIC
              file.cpp
+             xml_config.cpp
              )
 target_link_libraries(files PUBLIC xml)
+target_include_directories(files PUBLIC ../inc/pugixml/)
 ########################################################################################
 
 ########################################################################################
