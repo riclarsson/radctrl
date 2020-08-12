@@ -18,25 +18,25 @@ int main () try {
   auto py = Python::createPython();
 
   // Start the window and give it a name
-  InitializeGUI("IRAM");
+  InitializeGUI("Dummy GUI for Testing");
   
   // Our global states are stored in a config
   GUI::Config config;
   
   // Chopper declaration
-  Instrument::Chopper::Dummy chop{"/home/larsson/Work/radctrl/python/chopper/chopper.py"};
+  Instrument::Chopper::Dummy chop{"filename?"};
   Instrument::Chopper::Controller<Instrument::Chopper::ChopperPos::Cold,
                                   Instrument::Chopper::ChopperPos::Antenna,
                                   Instrument::Chopper::ChopperPos::Hot,
                                   Instrument::Chopper::ChopperPos::Antenna> chopper_ctrl;
   
   // Wobbler declaration
-  Instrument::Wobbler::Dummy wob{"/home/larsson/Work/radctrl/python/wobbler/IRAM.py"};
+  Instrument::Wobbler::Dummy wob{"filename?"};
   Instrument::Wobbler::Controller<4> wobbler_ctrl;
   wobbler_ctrl.pos = {3000, 7000, 3000, 7000};
   
   // Housekeeping declaration
-  Instrument::Housekeeping::Dummy hk{"/home/larsson/Work/radctrl/python/housekeeping/sensors.py"};
+  Instrument::Housekeeping::Dummy hk{"filename?"};
   Instrument::Housekeeping::Controller housekeeping_ctrl;
   
   // Frontend declaration
@@ -67,7 +67,7 @@ int main () try {
   // Files chooser
   auto directoryBrowser = ImGui::FileBrowser(ImGuiFileBrowserFlags_SelectDirectory | ImGuiFileBrowserFlags_CloseOnEsc | ImGuiFileBrowserFlags_CreateNewDir);
   directoryBrowser.SetTitle("Select Directory");
-  std::filesystem::path save_path{"/home/larsson/data/"};
+  std::filesystem::path save_path{"pathname?"};
   directoryBrowser.SetPwd(save_path);
   directoryBrowser.SetTypeFilters({"[D]"});
   
