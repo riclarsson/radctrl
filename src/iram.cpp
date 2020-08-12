@@ -24,7 +24,7 @@ int main () try {
   GUI::Config config;
   
   // Chopper declaration
-  Instrument::Chopper::Dummy chop{"/home/larsson/Work/radctrl/python/chopper/chopper.py"};
+  Instrument::Chopper::PythonOriginal chop{"/home/larsson/software/radctrl/python/chopper/chopper.py"};
   Instrument::Chopper::Controller<Instrument::Chopper::ChopperPos::Cold,
                                   Instrument::Chopper::ChopperPos::Antenna,
                                   Instrument::Chopper::ChopperPos::Hot,
