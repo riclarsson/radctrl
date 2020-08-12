@@ -113,7 +113,7 @@ class DBR {
   Python::Function set_frequency;
   Python::Function get_status;
   
-  Python::Object status;
+  Python::Object<Python::Type::Dict> status;
   
 public:
   using DataType = std::map<std::string, double>;
@@ -144,16 +144,48 @@ public:
   void close() {shutdown();}
   
   void run() {
-    
+    status = get_status();
   }
   
-  void get_data() const {}
+  void get_data() {
+    auto keys = status.keysDict();
+    for (auto& key: keys)
+      database[key] = status.fromDict<Python::Type::Double>(key).toDouble();
+  }
+  
   DataType data() const {return database;}
   bool manual_run() {return manual;}
   const std::string& error_string() const {return error;}
   bool has_error() {return error_found;}
   void delete_error() {error_found=false; error = "";}
-  void gui_setup(Controller&) {ImGui::Text("There is no setup, this is a dummy class");}
+  void gui_setup(Controller& ctrl) {
+    ImGui::PushItemWidth(180.0f);
+    if (ctrl.init) {
+      ImGui::InputText("Server", &ctrl.server, ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_ReadOnly);
+    } else {
+      ImGui::InputText("Server", &ctrl.server, ImGuiInputTextFlags_CharsNoBlank | ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll);
+    }
+    ImGui::PopItemWidth();
+    ImGui::SameLine();
+    ImGui::PushItemWidth(120.0f);
+    if (ctrl.init) {
+      ImGui::InputInt("port", &ctrl.port, 1, 100, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll | ImGuiInputTextFlags_ReadOnly);
+    } else {
+      ImGui::InputInt("port", &ctrl.port, 1, 100, ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_NoHorizontalScroll);
+    }
+    ImGui::PopItemWidth();
+    
+    if (ctrl.init and manual_run()) {
+      if (ImGui::Button(" Run ")) {
+        run();
+        get_data();
+        ctrl.data = data();
+      }
+    } else {
+      ImGui::Text(" Run ");
+    }
+  }
+  
   const std::string& name() const {return mname;}
 };
 

@@ -378,7 +378,7 @@ void InitAll (Chopper& chop, ChopperController& chopper_ctrl,
   }, std::ref(hk), std::ref(housekeeping_ctrl));
   
   std::thread frontendinit([](Frontend& inst, FrontendController& ctrl){
-    inst.startup(/*FIXME????FIXME*/);
+    inst.startup(ctrl.server, ctrl.port);
     inst.init(false);
     if (inst.has_error()) {
       ctrl.error = true;

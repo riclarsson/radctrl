@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<RADCTRL>
+<Chopper path="/home/larsson/software/radctrl/python/chopper/chopper.py" dev="/dev/ttyUSB1" offset="1000" sleeptime="0.0" />
+<Wobbler path="/home/larsson/software/radctrl/python/wobbler/IRAM.py" dev="/dev/ttyS0" baudrate="9600" address="0" start="3000" end="7000" />
+<Housekeeping path="/home/larsson/software/radctrl/python/housekeeping/sensors.py" />
+<Frontend path="/home/larsson/software/radctrl/python/frontend/dbr.py" server="dbr" port="1080" />
+<Backends size="2" spectormeter1=" dFFTS " spectormeter2=" CTS 210 " />
+<Savepath path="/home/larsson/xmldata/" />
+</RADCTRL>
+

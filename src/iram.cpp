@@ -45,13 +45,13 @@ int main (int argc, char * argv[]) try {
   Instrument::Housekeeping::Controller housekeeping_ctrl;
   
   // Frontend declaration
-  Instrument::Frontend::Dummy frontend{parser("Frontend", "path")};
+  Instrument::Frontend::DBR frontend{parser("Frontend", "path")};
   Instrument::Frontend::Controller frontend_ctrl{parser("Frontend", "server"), std::stoi(parser("Frontend", "port"))};
   
   // Spectrometers declarations
   Instrument::Spectrometer::Backends backends{
-    Instrument::Spectrometer::Dummy(" Dummy1 "),
-    Instrument::Spectrometer::Dummy(" Dummy2 ")
+    Instrument::Spectrometer::Dummy(parser("Backends", "spectormeter1")),
+    Instrument::Spectrometer::Dummy(parser("Backends", "spectormeter2"))
   };
   std::array<Instrument::Spectrometer::Controller, backends.N> backend_ctrls{
     Instrument::Spectrometer::Controller("Dummy Data 1", "Dummy3", 0, 0,
@@ -68,6 +68,7 @@ int main (int argc, char * argv[]) try {
     GUI::Plotting::CAHA<height_of_window, part_for_plot>{backend_ctrls[0].name, backend_ctrls[0].f},
     GUI::Plotting::CAHA<height_of_window, part_for_plot>{backend_ctrls[1].name, backend_ctrls[1].f}
   };
+  if (std::stoi(parser("Backends", "size")) not_eq backends.N) throw std::runtime_error("Bad backend count");
   
   // Files chooser
   auto directoryBrowser = ImGui::FileBrowser(ImGuiFileBrowserFlags_SelectDirectory | ImGuiFileBrowserFlags_CloseOnEsc | ImGuiFileBrowserFlags_CreateNewDir);
