@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<RADCTRL>
+<RCTS104 name="WASPAM 6" host="waspam6" tcp="1788" udp="-1" Nboards="1" Nchannels="4096" mirror="true">
+1330e6 1370e6
+</RCTS104>
+</RADCTRL>

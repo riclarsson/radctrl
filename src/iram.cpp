@@ -42,7 +42,7 @@ int main (int argc, char * argv[]) try {
   
   // Housekeeping declaration
   Instrument::Housekeeping::Dummy hk{parser("Housekeeping", "path")};
-  Instrument::Housekeeping::Controller housekeeping_ctrl;
+  Instrument::Housekeeping::Controller housekeeping_ctrl{parser("Housekeeping", "dev"), std::stoi(parser("Housekeeping", "baudrate"))};
   
   // Frontend declaration
   Instrument::Frontend::DBR frontend{parser("Frontend", "path")};

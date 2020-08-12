@@ -24,8 +24,8 @@ struct Controller {
   
   std::map<std::string, double> data;
   
-  Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
-  dev("/dev/sensors"), baudrate(57600), data() {}
+  Controller(const std::string& d, int b) noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
+  dev(d), baudrate(b), data() {}
 };
 
 template <typename Housekeeping>

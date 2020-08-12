@@ -1,14 +1,16 @@
 #ifndef backend_h
 #define backend_h
 
+#include <algorithm>
 #include <atomic>
 #include <string>
 #include <vector>
 
 #include <Eigen/Core>
 
-#include "mathhelpers.h"
+#include "file.h"
 #include "gui.h"
+#include "mathhelpers.h"
 #include "python_interface.h"
 #include "timeclass.h"
 
@@ -46,6 +48,33 @@ struct Controller {
     d.resize(N);
     for (size_t i=0; i<N; i++) {
       const size_t n = freq_counts[i];
+      f[i] = linspace(freq_limits(i, 0), freq_limits(i, 1), n);
+      d[i] = std::vector<float>(n, 0);
+    }
+  }
+  
+  Controller(const std::string& controller_name, const std::filesystem::path& path, int intus, int blaus) :
+  init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
+  integration_time_microsecs(intus), blank_time_microsecs(blaus), name (controller_name) {
+    File::File<File::Operation::Read, File::Type::Xml> file{path};
+    std::string name = controller_name;
+    name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
+    file.get_child(name);
+    host = file.get_attribute("host").as_string();
+    tcp_port = file.get_attribute("tcp").as_int();
+    udp_port = file.get_attribute("udp").as_int();
+    
+    const int N = file.get_attribute("Nboards").as_int();
+    freq_limits = Eigen::MatrixXd(N, 2);
+    freq_counts = Eigen::VectorXi(N);
+    for (int i=0; i<N; i++)
+      file >> freq_counts[i] >> freq_limits(i, 0) >> freq_limits(i, 1);
+    mirror = file.get_attribute("mirror").as_bool();
+    
+    f.resize(N);
+    d.resize(N);
+    for (int i=0; i<N; i++) {
+      const int n = freq_counts[i];
       f[i] = linspace(freq_limits(i, 0), freq_limits(i, 1), n);
       d[i] = std::vector<float>(n, 0);
     }
