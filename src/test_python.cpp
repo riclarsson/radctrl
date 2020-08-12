@@ -116,7 +116,29 @@ void test002()
   print(Eigen::Ref<Eigen::MatrixXd>(eigtest));
 }
 
+void test003()
+{
+  // Executes a very simply script importing important libraries and
+  // defining some random classes and functions and puts it in main scope
+  py::exec(R"(
+    def f():
+        return {"a": "b", "c": "d", "1": "3.14"};
+    def e():
+        return {"a": 1, "c": 2.2, "1": 3.14};
+  )");
+  
+  const Python::Function dict_fun1{"f"};
+  const Python::Function dict_fun2{"e"};
+  const Python::Object<Python::Type::Dict> dict1{dict_fun1()};
+  const Python::Object<Python::Type::Dict> dict2{dict_fun2()};
+  for (auto& a: dict1.keysDict())
+    std::cout << a << ": " << dict1.fromDict<Python::Type::String>(a).toString() << '\n';
+  for (auto& a: dict2.keysDict())
+    std::cout << a << ": " << dict2.fromDict<Python::Type::Double>(a).toDouble() << '\n';
+}
+
 int main() {
 //   test001();  // Standard python
-  test002();  // Numpy arrays
+//   test002();  // Numpy arrays
+  test003();  // Numpy arrays
 }
