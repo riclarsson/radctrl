@@ -7,7 +7,7 @@
 #include <vector>
 #include <iomanip>
 
-#include "../inc/pugixml/pugixml.hpp"
+#include <pugixml.hpp>
 
 #include "enums.h"
 

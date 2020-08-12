@@ -1,5 +1,6 @@
 #include <type_traits>
 #include "file.h"
+#include "xml_config.h"
 
 template <class T> std::ostream& operator<<(std::ostream& os, const std::vector<T>& x) {
   for (auto& b: x)
@@ -216,6 +217,25 @@ void test007() {
   std::cout<<"read data (int): " << y << '\n';
 }
 
+void test008() {
+  File::File<File::Operation::Write, File::Type::Xml> w("test_config.xml");
+  w.new_child("MyChild");
+  w.add_attribute("Scream", "I am here");
+  w.add_attribute("Born", false);
+  w.add_attribute("Age", 0);
+  w.add_attribute("Height", 0.5);
+  w.leave_child();
+  w.new_child("MyOtherChild");
+  w.add_attribute("Scream", "I am also here");
+  w.add_attribute("Born", true);
+  w.add_attribute("Age", 1);
+  w.add_attribute("Height", 0.9);
+  w.leave_child();
+  w.close();
+  
+  std::cout << File::ConfigParser("test_config.xml", {"MyChild", "MyOtherChild"}) << '\n';
+}
+
 
 int main() {
   std::cout<<"---------------------------------------Raw Text\n";
@@ -232,5 +252,7 @@ int main() {
   test006();  // Test XML Binary IO Scalar
   std::cout<<"---------------------------------------Xml Binary Vector\n";
   test007();  // Test XML Binary IO Vector
+  std::cout<<"---------------------------------------Config Parser\n";
+  test008();  // Test the configuration parser
   std::cout<<"---------------------------------------\n";
 }
