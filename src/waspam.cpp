@@ -18,7 +18,7 @@ int main (int argc, char * argv[]) try {
   auto py = Python::createPython();
 
   // Start the window and give it a name
-  InitializeGUI("IRAM");
+  InitializeGUI("WASPAM");
   
   // Our global states are stored in configs
   if (argc not_eq 2) throw std::runtime_error("Bad parguments, please include the XML file");
@@ -75,7 +75,7 @@ int main (int argc, char * argv[]) try {
   directoryBrowser.SetTypeFilters({"[D]"});
   
   // Start the operation of the instrument on a different thread
-  Instrument::DataSaver datasaver(save_path, "IRAM");
+  Instrument::DataSaver datasaver(save_path, "WASPAM");
   auto runner = AsyncRef(
               &Instrument::RunExperiment<decltype(chop), decltype(chopper_ctrl),
                                          decltype(wob), decltype(wobbler_ctrl),
