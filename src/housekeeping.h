@@ -7,6 +7,7 @@
 
 #include "gui.h"
 #include "python_interface.h"
+#include "timeclass.h"
 
 namespace Instrument {
 namespace Housekeeping {
@@ -24,8 +25,8 @@ struct Controller {
   
   std::map<std::string, double> data;
   
-  Controller() noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
-  dev("/dev/sensors"), baudrate(57600), data() {}
+  Controller(const std::string& d, int b) noexcept : init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
+  dev(d), baudrate(b), data() {}
 };
 
 template <typename Housekeeping>
@@ -119,6 +120,55 @@ public:
   bool has_error() {return error_found;}
   void delete_error() {error_found=false; error = "";}
   void get_data() const {}
+  DataType data() const {return database;}
+};  // Dummy
+
+class AgilentPython {
+  bool manual;
+  bool error_found;
+  bool new_data;
+  std::string error;
+  
+  std::map<std::string, double> database;
+  
+  Python::ClassInterface PyClass;
+  Python::ClassInstance PyInst;
+  Python::Function initfun;
+  Python::Function shutdown;
+  Python::Function download;
+  
+  Python::Object<Python::Type::Dict> status;
+  
+public:
+  using DataType = std::map<std::string, double>;
+  AgilentPython(const std::filesystem::path& path) : manual(false), error_found(false), new_data(false), error("")  {
+    if (not std::filesystem::exists(path)) {
+      std::ostringstream os;
+      os << "Cannot find Agilent python file at:\n\t" << path << '\n';
+      throw std::runtime_error(os.str());
+    }
+    py::eval_file(path.c_str());
+    PyClass = Python::ClassInterface{"Agilent34970A"};
+  };
+  
+  void startup(const std::string& dev, int baud) {
+    PyInst = Python::ClassInstance{PyClass(dev, baud)};
+    initfun = Python::Function{PyInst("inst")};
+    shutdown = Python::Function{PyInst("close")};
+    download = Python::Function{PyInst("get_status_as_dict")};
+  }
+  void init(bool manual_press=false) {manual=manual_press; initfun(); Sleep(6);}
+  void run() {status=download();}
+  void close() {}
+  bool manual_run() {return manual;}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
+  void get_data() {
+    auto keys = status.keysDict();
+    for (auto& key: keys)
+      database[key] = status.fromDict<Python::Type::Double>(key).toDouble();
+  }
   DataType data() const {return database;}
 };  // Dummy
 

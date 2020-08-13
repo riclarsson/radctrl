@@ -1,14 +1,16 @@
 #ifndef backend_h
 #define backend_h
 
+#include <algorithm>
 #include <atomic>
 #include <string>
 #include <vector>
 
 #include <Eigen/Core>
 
-#include "mathhelpers.h"
+#include "file.h"
 #include "gui.h"
+#include "mathhelpers.h"
 #include "python_interface.h"
 #include "timeclass.h"
 
@@ -46,6 +48,33 @@ struct Controller {
     d.resize(N);
     for (size_t i=0; i<N; i++) {
       const size_t n = freq_counts[i];
+      f[i] = linspace(freq_limits(i, 0), freq_limits(i, 1), n);
+      d[i] = std::vector<float>(n, 0);
+    }
+  }
+  
+  Controller(const std::string& controller_name, const std::filesystem::path& path, int intus, int blaus) :
+  init(false), error(false), quit(false), run(false), operating(false), waiting(false), newdata(false),
+  integration_time_microsecs(intus), blank_time_microsecs(blaus), name (controller_name) {
+    File::File<File::Operation::Read, File::Type::Xml> file{path};
+    std::string name = controller_name;
+    name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
+    file.get_child(name);
+    host = file.get_attribute("host").as_string();
+    tcp_port = file.get_attribute("tcp").as_int();
+    udp_port = file.get_attribute("udp").as_int();
+    
+    const int N = file.get_attribute("Nboards").as_int();
+    freq_limits = Eigen::MatrixXd(N, 2);
+    freq_counts = Eigen::VectorXi(N);
+    for (int i=0; i<N; i++)
+      file >> freq_counts[i] >> freq_limits(i, 0) >> freq_limits(i, 1);
+    mirror = file.get_attribute("mirror").as_bool();
+    
+    f.resize(N);
+    d.resize(N);
+    for (int i=0; i<N; i++) {
+      const int n = freq_counts[i];
       f[i] = linspace(freq_limits(i, 0), freq_limits(i, 1), n);
       d[i] = std::vector<float>(n, 0);
     }
@@ -109,7 +138,7 @@ struct Backends {
   }
   
   template <size_t i=0>
-  void startup(int j, std::string& h, int t, int u, Eigen::Ref<Eigen::MatrixXd> fl, Eigen::Ref<Eigen::VectorXi> fc, int ius, int bus, bool m) {
+  void startup(int j, const std::string& h, int t, int u, Eigen::Ref<Eigen::MatrixXd> fl, Eigen::Ref<Eigen::VectorXi> fc, int ius, int bus, bool m) {
     if (i == j)
       std::get<i>(spectrometers).startup(h, t, u, fl, fc, ius, bus, m);
     else if constexpr (i < N - 1)
@@ -326,7 +355,7 @@ public:
     }
   }
   
-  void startup(std::string&, int, int, Eigen::Ref<Eigen::MatrixXd>, Eigen::Ref<Eigen::VectorXi>, int, int, bool) {}
+  void startup(const std::string&, int, int, Eigen::Ref<Eigen::MatrixXd>, Eigen::Ref<Eigen::VectorXi>, int, int, bool) {}
   void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
   void close() {}
   void run() {}
@@ -346,6 +375,416 @@ public:
   bool has_error() {return error_found;}
   void delete_error() {error_found=false; error = "";}
 };  // Dummy
+
+class AFFTS {
+  std::string mname;
+  bool manual;
+  bool error_found;
+  std::string error;
+  std::vector<std::vector<float>> data;
+  
+  Python::ClassInterface PyClass;
+  Python::ClassInstance PyInst;
+  Python::Function initfun;
+  Python::Function shutdown;
+  Python::Function runfun;
+  Python::Function download;
+  Python::Function get_data_copy;
+  
+  Python::Object<Python::Type::NumpyVector> internal_data;
+  
+public:
+  AFFTS(const std::string& n, const std::filesystem::path& path) : mname(n), 
+  manual(false), error_found(false), error("") {
+    if (not std::filesystem::exists(path)) {
+      std::ostringstream os;
+      os << "Cannot find AFFTS python file at:\n\t" << path << '\n';
+      throw std::runtime_error(os.str());
+    }
+    py::eval_file(path.c_str());
+    PyClass = Python::ClassInterface{"FW"};
+  }
+  
+  void startup(const std::string& host,
+               int tcp,
+               int udp, 
+               Eigen::Ref<Eigen::MatrixXd> freq_limits,
+               Eigen::Ref<Eigen::VectorXi> freq_counts,
+               int integration_time_microsecs,
+               int blank_time_microsecs,
+               bool mirror) {
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    initfun = Python::Function{PyInst("init")};
+    shutdown = Python::Function{PyInst("close")};
+    runfun = Python::Function{PyInst("run")};
+    download = Python::Function{PyInst("get_data")};
+    get_data_copy = Python::Function{PyInst("copy")};
+    
+    // Fill our data with zeroes
+    data.resize(freq_counts.size());
+    for (long i=0; i<freq_counts.size(); i++)
+      data[i] = std::vector<float>(freq_counts[i], 0);
+  }
+  
+  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void close() {shutdown();}
+  
+  void run() {runfun();}
+  
+  std::vector<std::vector<float>> datavec() {return data;}
+  
+  std::string name() const {return mname;}
+  
+  void get_data(int i) {
+    download(i);
+    
+    // Copy to C++
+    internal_data = get_data_copy(i);
+    std::vector<float> copy = internal_data.toVector<float>();
+    
+    // Assign to correct position
+    size_t ind=0;
+    for (std::vector<float>& board: data) {
+      for (float& val: board) {
+        val = copy[ind];
+        ind++;
+      }
+    }
+  }
+  
+  bool manual_run() {return manual;}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
+};  // AFFTS
+
+class XFFTS {
+  std::string mname;
+  bool manual;
+  bool error_found;
+  std::string error;
+  std::vector<std::vector<float>> data;
+  
+  Python::ClassInterface PyClass;
+  Python::ClassInstance PyInst;
+  Python::Function initfun;
+  Python::Function shutdown;
+  Python::Function runfun;
+  Python::Function download;
+  Python::Function get_data_copy;
+  
+  Python::Object<Python::Type::NumpyVector> internal_data;
+  
+public:
+  XFFTS(const std::string& n, const std::filesystem::path& path) : mname(n), 
+  manual(false), error_found(false), error("") {
+    if (not std::filesystem::exists(path)) {
+      std::ostringstream os;
+      os << "Cannot find XFFTS python file at:\n\t" << path << '\n';
+      throw std::runtime_error(os.str());
+    }
+    py::eval_file(path.c_str());
+    PyClass = Python::ClassInterface{"XFW"};
+  }
+  
+  void startup(const std::string& host,
+               int tcp,
+               int udp, 
+               Eigen::Ref<Eigen::MatrixXd> freq_limits,
+               Eigen::Ref<Eigen::VectorXi> freq_counts,
+               int integration_time_microsecs,
+               int blank_time_microsecs,
+               bool mirror) {
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    initfun = Python::Function{PyInst("init")};
+    shutdown = Python::Function{PyInst("close")};
+    runfun = Python::Function{PyInst("run")};
+    download = Python::Function{PyInst("get_data")};
+    get_data_copy = Python::Function{PyInst("copy")};
+    
+    // Fill our data with zeroes
+    data.resize(freq_counts.size());
+    for (long i=0; i<freq_counts.size(); i++)
+      data[i] = std::vector<float>(freq_counts[i], 0);
+  }
+  
+  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void close() {shutdown();}
+  
+  void run() {runfun();}
+  
+  std::vector<std::vector<float>> datavec() {return data;}
+  
+  std::string name() const {return mname;}
+  
+  void get_data(int i) {
+    download(i);
+    
+    // Copy to C++
+    internal_data = get_data_copy(i);
+    std::vector<float> copy = internal_data.toVector<float>();
+    
+    // Assign to correct position
+    size_t ind=0;
+    for (std::vector<float>& board: data) {
+      for (float& val: board) {
+        val = copy[ind];
+        ind++;
+      }
+    }
+  }
+  
+  bool manual_run() {return manual;}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
+};  // XFFTS
+
+class RCTS104 {
+  std::string mname;
+  bool manual;
+  bool error_found;
+  std::string error;
+  std::vector<std::vector<float>> data;
+  
+  Python::ClassInterface PyClass;
+  Python::ClassInstance PyInst;
+  Python::Function initfun;
+  Python::Function shutdown;
+  Python::Function runfun;
+  Python::Function download;
+  Python::Function get_data_copy;
+  
+  Python::Object<Python::Type::NumpyVector> internal_data;
+  
+public:
+  RCTS104(const std::string& n, const std::filesystem::path& path) : mname(n), 
+  manual(false), error_found(false), error("") {
+    if (not std::filesystem::exists(path)) {
+      std::ostringstream os;
+      os << "Cannot find XFFTS python file at:\n\t" << path << '\n';
+      throw std::runtime_error(os.str());
+    }
+    py::eval_file(path.c_str());
+    PyClass = Python::ClassInterface{"rcts104"};
+  }
+  
+  void startup(const std::string& host,
+               int tcp,
+               int udp, 
+               Eigen::Ref<Eigen::MatrixXd> freq_limits,
+               Eigen::Ref<Eigen::VectorXi> freq_counts,
+               int integration_time_microsecs,
+               int blank_time_microsecs,
+               bool mirror) {
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    initfun = Python::Function{PyInst("init")};
+    shutdown = Python::Function{PyInst("close")};
+    runfun = Python::Function{PyInst("run")};
+    download = Python::Function{PyInst("get_data")};
+    get_data_copy = Python::Function{PyInst("copy")};
+    
+    // Fill our data with zeroes
+    data.resize(freq_counts.size());
+    for (long i=0; i<freq_counts.size(); i++)
+      data[i] = std::vector<float>(freq_counts[i], 0);
+  }
+  
+  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void close() {shutdown();}
+  
+  void run() {runfun();}
+  
+  std::vector<std::vector<float>> datavec() {return data;}
+  
+  std::string name() const {return mname;}
+  
+  void get_data(int i) {
+    download(i);
+    
+    // Copy to C++
+    internal_data = get_data_copy(i);
+    std::vector<float> copy = internal_data.toVector<float>();
+    
+    // Assign to correct position
+    size_t ind=0;
+    for (std::vector<float>& board: data) {
+      for (float& val: board) {
+        val = copy[ind];
+        ind++;
+      }
+    }
+  }
+  
+  bool manual_run() {return manual;}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
+};  // RCTS104
+
+class PC104 {
+  std::string mname;
+  bool manual;
+  bool error_found;
+  std::string error;
+  std::vector<std::vector<float>> data;
+  
+  Python::ClassInterface PyClass;
+  Python::ClassInstance PyInst;
+  Python::Function initfun;
+  Python::Function shutdown;
+  Python::Function runfun;
+  Python::Function download;
+  Python::Function get_data_copy;
+  
+  Python::Object<Python::Type::NumpyVector> internal_data;
+  
+public:
+  PC104(const std::string& n, const std::filesystem::path& path) : mname(n), 
+  manual(false), error_found(false), error("") {
+    if (not std::filesystem::exists(path)) {
+      std::ostringstream os;
+      os << "Cannot find XFFTS python file at:\n\t" << path << '\n';
+      throw std::runtime_error(os.str());
+    }
+    py::eval_file(path.c_str());
+    PyClass = Python::ClassInterface{"pc104"};
+  }
+  
+  void startup(const std::string& host,
+               int tcp,
+               int udp, 
+               Eigen::Ref<Eigen::MatrixXd> freq_limits,
+               Eigen::Ref<Eigen::VectorXi> freq_counts,
+               int integration_time_microsecs,
+               int blank_time_microsecs,
+               bool mirror) {
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    initfun = Python::Function{PyInst("init")};
+    shutdown = Python::Function{PyInst("close")};
+    runfun = Python::Function{PyInst("run")};
+    download = Python::Function{PyInst("get_data")};
+    get_data_copy = Python::Function{PyInst("copy")};
+    
+    // Fill our data with zeroes
+    data.resize(freq_counts.size());
+    for (long i=0; i<freq_counts.size(); i++)
+      data[i] = std::vector<float>(freq_counts[i], 0);
+  }
+  
+  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void close() {shutdown();}
+  
+  void run() {runfun();}
+  
+  std::vector<std::vector<float>> datavec() {return data;}
+  
+  std::string name() const {return mname;}
+  
+  void get_data(int i) {
+    download(i);
+    
+    // Copy to C++
+    internal_data = get_data_copy(i);
+    std::vector<float> copy = internal_data.toVector<float>();
+    
+    // Assign to correct position
+    size_t ind=0;
+    for (std::vector<float>& board: data) {
+      for (float& val: board) {
+        val = copy[ind];
+        ind++;
+      }
+    }
+  }
+  
+  bool manual_run() {return manual;}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
+};  // PC104
+
+class SWICTS {
+  std::string mname;
+  bool manual;
+  bool error_found;
+  std::string error;
+  std::vector<std::vector<float>> data;
+  
+  Python::ClassInterface PyClass;
+  Python::ClassInstance PyInst;
+  Python::Function initfun;
+  Python::Function shutdown;
+  Python::Function runfun;
+  Python::Function download;
+  Python::Function get_data_copy;
+  
+  Python::Object<Python::Type::NumpyVector> internal_data;
+  
+public:
+  SWICTS(const std::string& n, const std::filesystem::path& path) : mname(n), 
+  manual(false), error_found(false), error("") {
+    if (not std::filesystem::exists(path)) {
+      std::ostringstream os;
+      os << "Cannot find XFFTS python file at:\n\t" << path << '\n';
+      throw std::runtime_error(os.str());
+    }
+    py::eval_file(path.c_str());
+    PyClass = Python::ClassInterface{"swicts"};
+  }
+  
+  void startup(const std::string& host,
+               int tcp,
+               int udp, 
+               Eigen::Ref<Eigen::MatrixXd> freq_limits,
+               Eigen::Ref<Eigen::VectorXi> freq_counts,
+               int integration_time_microsecs,
+               int blank_time_microsecs,
+               bool mirror) {
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    initfun = Python::Function{PyInst("init")};
+    shutdown = Python::Function{PyInst("close")};
+    runfun = Python::Function{PyInst("run")};
+    download = Python::Function{PyInst("get_data")};
+    get_data_copy = Python::Function{PyInst("copy")};
+    
+    // Fill our data with zeroes
+    data.resize(freq_counts.size());
+    for (long i=0; i<freq_counts.size(); i++)
+      data[i] = std::vector<float>(freq_counts[i], 0);
+  }
+  
+  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void close() {shutdown();}
+  
+  void run() {runfun();}
+  
+  std::vector<std::vector<float>> datavec() {return data;}
+  
+  std::string name() const {return mname;}
+  
+  void get_data(int i) {
+    download(i);
+    
+    // Copy to C++
+    internal_data = get_data_copy(i);
+    std::vector<float> copy = internal_data.toVector<float>();
+    
+    // Assign to correct position
+    size_t ind=0;
+    for (std::vector<float>& board: data) {
+      for (float& val: board) {
+        val = copy[ind];
+        ind++;
+      }
+    }
+  }
+  
+  bool manual_run() {return manual;}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
+};  // SWICTS
 
 }  // Spectrometer
 }  // Instrument

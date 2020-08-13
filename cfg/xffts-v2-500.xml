@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<RADCTRL>
+<XFFTS-V2 name="XFFTS-V2" host="localhost" tcp="25144" udp="16210" Nboards="2" mirror="false">
+65536 0 500e6
+65536 0 500e6
+</XFFTS-V2>
+</RADCTRL>

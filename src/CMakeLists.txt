@@ -69,7 +69,7 @@ target_link_libraries(wobbler PUBLIC gui python)
 add_library (backend STATIC
              backend.cpp
              )
-target_link_libraries(backend PUBLIC gui python math)
+target_link_libraries(backend PUBLIC files gui python math)
 ########################################################################################
 
 ########################################################################################

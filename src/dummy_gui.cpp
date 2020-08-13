@@ -37,7 +37,7 @@ int main () try {
   
   // Housekeeping declaration
   Instrument::Housekeeping::Dummy hk{"filename?"};
-  Instrument::Housekeeping::Controller housekeeping_ctrl;
+  Instrument::Housekeeping::Controller housekeeping_ctrl{"some-device", 12345};
   
   // Frontend declaration
   Instrument::Frontend::Dummy frontend{"filename?"};

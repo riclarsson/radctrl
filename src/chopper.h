@@ -196,7 +196,7 @@ class PythonOriginal {
 public:
   using DataType = ChopperPos;
   
-  PythonOriginal(const std::filesystem::path& path) : manual(false), pos(ChopperPos::Cold), error_found(false), error("")  {
+  PythonOriginal(const std::filesystem::path& path) : manual(false), pos(ChopperPos::Cold), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
       os << "Cannot find Chopper python file at:\n\t" << path << '\n';

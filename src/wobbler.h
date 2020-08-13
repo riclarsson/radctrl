@@ -168,7 +168,7 @@ class PythonOriginalWASPAM {
 public:
   using DataType = int;
   
-  PythonOriginalWASPAM(const std::filesystem::path& path) : manual(false), error_found(false), position(4000), error("")  {
+  PythonOriginalWASPAM(const std::filesystem::path& path) : manual(false), error_found(false), position(4000), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
       os << "Cannot find Wobbler python file at:\n\t" << path << '\n';
@@ -176,7 +176,7 @@ public:
     }
     py::eval_file(path.c_str());
     PyClass = Python::ClassInterface{"wobbler"};
-  };
+  }
   
   void startup(std::string& dev, int baudrate, char address) {
     PyInst = Python::ClassInstance{PyClass(dev, baudrate, address)};

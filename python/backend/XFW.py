@@ -194,32 +194,9 @@ class XFW:
 
         if self.reverse:
             self._data[i] = self._data[i][::-1]
-
-    def save_data(self,basename="/home/waspam/data/test/FW",binary=True):
-        """Saves data to file at basename+filename.
-
-        Uses last access-time to server socket as filename.
-
-        Saves with numpy binary format if binary is true or as ascii otherwise.
-        """
-        assert self._initialized,"No data exists for an uninitialized FFTS"
-        assert len(self._time),"Must call run() succesfully to save data"
-
-        filename=self._time
-
-        if binary: np.save(basename+filename,self._data)
-        else: np.savetxt(basename+filename,self._data)
-
-        self._time=''
-
-    def set_housekeeping(self, hk):
-        """ Sets the housekeeping data dictionary.  hk must be dictionary """
-        assert self._initialized, "Can set housekeeping when initialized"
-
-        hk['Instrument']['XFFTS'] = {}
-        hk['Instrument']['XFFTS']['Frequency [MHz]'] = self.frequency
-        hk['Instrument']['XFFTS']['Channels [#]'] = self._channels
-        hk['Instrument']['XFFTS']['Integration [micro-s]'] = self._integration_time
+    
+    def copy(self,i=0):
+        return 1.0*self._data[i]
 
     def close(self):
         """Disconnect from both servers of the XFFTS and sends stop to XFFTS

@@ -12,7 +12,6 @@ Interactions with CTS functionality
 
 import socket
 import struct
-import datetime
 import numpy as np
 
 
@@ -105,35 +104,9 @@ class pc104:
 
         if self.reverse:
             self._data[int(i)] = self._data[int(i)][::-1]
-
-    def set_housekeeping(self, hk):
-        """ Sets the housekeeping data dictionary.  hk must be dictionary """
-        assert self._initialized, "Can set housekeeping when initialized"
-
-        hk['Instrument']["pc104"] = {}
-        hk['Instrument']["pc104"]['Frequency [MHz]'] = self.frequency
-        hk['Instrument']["pc104"]['Channels [#]'] = self._channels
-        hk['Instrument']["pc104"]['Integration [s]'] = self._runtime
-
-    def save_data(self, basename="/home/dabrowski/data/test/CTS", file=None,
-            binary=True):
-        """Saves data to file at basename+file.
-
-        If file is None, the current time is used to create the filename
-        Saves with numpy binary format if binary is true or as ascii otherwise
-        """
-        assert self._initialized, "No data exists for an uninitialized CTS"
-
-        now=datetime.datetime.now()
-        if file is None:
-            filename=self._hostname + now.strftime("-%Y%m%d%H%M%S-%f")
-        else:
-            filename=str(file)
-
-        if binary: np.save(basename+filename, self._data)
-        else: np.savetxt(basename+filename, self._data)
-
-        return filename
+    
+    def copy(self,i=0):
+        return 1.0*self._data[i]
 
     def close(self):
         """Remove the lock of the machine"""
