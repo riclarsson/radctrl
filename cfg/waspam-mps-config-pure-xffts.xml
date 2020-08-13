@@ -6,6 +6,6 @@
 <Frontend path="None" server="None" port="12345" />
 <Backends size="1" spectormeter1=" XFFTS-V2 " config1="/home/dabrowski/software/radctrl/cfg/xffts-v2-500.xml" path1="/home/dabrowski/software/radctrl/python/backend/XFW.py" />
 <Operations integration_time="7500" blank_time="50" />
-<Savepath path="/media/dabrowski/Data/xmldata/" />
+<Savepath path="/mnt/Data/xmldata/" />
 </RADCTRL>
 
