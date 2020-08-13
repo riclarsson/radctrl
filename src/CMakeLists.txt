@@ -142,18 +142,21 @@ target_link_libraries(instrument_gui_controller PUBLIC gui python files chopper 
 # Dummy GUI
 add_executable (dummy_gui dummy_gui.cpp)
 target_link_libraries(dummy_gui PUBLIC instrument_gui_controller)
+install (TARGETS dummy_gui RUNTIME DESTINATION bin)
 ########################################################################################
 
 ########################################################################################
 # Waspam runtime executable
 add_executable (waspam waspam.cpp)
 target_link_libraries(waspam PUBLIC instrument_gui_controller)
+install (TARGETS waspam RUNTIME DESTINATION bin)
 ########################################################################################
 
 ########################################################################################
 # IRAM runtime executable
 add_executable (iram iram.cpp)
 target_link_libraries(iram PUBLIC instrument_gui_controller)
+install (TARGETS iram RUNTIME DESTINATION bin)
 ########################################################################################
 
 ########################################################################################
