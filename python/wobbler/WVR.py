@@ -85,7 +85,7 @@ class wobbler:
 		self._pos=position
 		self._write("P"+str(self._pos))
 
-	def wait(self, timeout=0):
+	def wait(self, timeout=0.1):
 		assert self._initialized, "Must initialize the wobbler before wait"
 		return self._wait(timeout)
 

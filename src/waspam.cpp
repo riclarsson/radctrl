@@ -44,7 +44,7 @@ int main (int argc, char * argv[]) try {
   Instrument::Housekeeping::Controller housekeeping_ctrl{parser("Housekeeping", "dev"), std::stoi(parser("Housekeeping", "baudrate"))};
   
   // Frontend declaration
-  Instrument::Frontend::Dummy frontend{parser("Frontend", "path")};
+  Instrument::Frontend::Waspam frontend{parser("Frontend", "path")};
   Instrument::Frontend::Controller frontend_ctrl{parser("Frontend", "server"), std::stoi(parser("Frontend", "port"))};
   
   // Spectrometers declarations

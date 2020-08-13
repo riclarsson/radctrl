@@ -59,16 +59,17 @@ struct Controller {
     File::File<File::Operation::Read, File::Type::Xml> file{path};
     std::string name = controller_name;
     name.erase(std::remove(name.begin(), name.end(), ' '), name.end());
-    file.get_child(name);
+    auto child = file.get_child(name);
     host = file.get_attribute("host").as_string();
     tcp_port = file.get_attribute("tcp").as_int();
     udp_port = file.get_attribute("udp").as_int();
     
+    std::istringstream is(child.text().as_string());
     const int N = file.get_attribute("Nboards").as_int();
     freq_limits = Eigen::MatrixXd(N, 2);
     freq_counts = Eigen::VectorXi(N);
     for (int i=0; i<N; i++)
-      file >> freq_counts[i] >> freq_limits(i, 0) >> freq_limits(i, 1);
+      is >> freq_counts[i] >> freq_limits(i, 0) >> freq_limits(i, 1);
     mirror = file.get_attribute("mirror").as_bool();
     
     f.resize(N);
@@ -114,6 +115,7 @@ struct Backends {
   static constexpr size_t N = sizeof...(Spectrometers);
   
   std::tuple<Spectrometers...> spectrometers;
+  Time now;
   
   Backends(Spectrometers ... s) noexcept : spectrometers(std::make_tuple(s...)) {static_assert(N > 0);}
   
@@ -125,6 +127,7 @@ struct Backends {
       run<i+1>(j);
     else
       std::exit(1);
+    now = Time();
   }
   
   template <size_t i=0>
@@ -413,7 +416,7 @@ public:
                int integration_time_microsecs,
                int blank_time_microsecs,
                bool mirror) {
-    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits/1e6, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
     initfun = Python::Function{PyInst("init")};
     shutdown = Python::Function{PyInst("close")};
     runfun = Python::Function{PyInst("run")};
@@ -426,7 +429,7 @@ public:
       data[i] = std::vector<float>(freq_counts[i], 0);
   }
   
-  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void init(bool manual_init) {manual=manual_init; initfun();}
   void close() {shutdown();}
   
   void run() {runfun();}
@@ -495,20 +498,19 @@ public:
                int integration_time_microsecs,
                int blank_time_microsecs,
                bool mirror) {
-    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits/1e6, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
     initfun = Python::Function{PyInst("init")};
     shutdown = Python::Function{PyInst("close")};
     runfun = Python::Function{PyInst("run")};
     download = Python::Function{PyInst("get_data")};
     get_data_copy = Python::Function{PyInst("copy")};
-    
     // Fill our data with zeroes
     data.resize(freq_counts.size());
     for (long i=0; i<freq_counts.size(); i++)
       data[i] = std::vector<float>(freq_counts[i], 0);
   }
   
-  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void init(bool manual_init) {manual=manual_init; initfun();}
   void close() {shutdown();}
   
   void run() {runfun();}
@@ -577,7 +579,7 @@ public:
                int integration_time_microsecs,
                int blank_time_microsecs,
                bool mirror) {
-    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits/1e6, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
     initfun = Python::Function{PyInst("init")};
     shutdown = Python::Function{PyInst("close")};
     runfun = Python::Function{PyInst("run")};
@@ -590,7 +592,7 @@ public:
       data[i] = std::vector<float>(freq_counts[i], 0);
   }
   
-  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void init(bool manual_init) {manual=manual_init; initfun();}
   void close() {shutdown();}
   
   void run() {runfun();}
@@ -659,7 +661,7 @@ public:
                int integration_time_microsecs,
                int blank_time_microsecs,
                bool mirror) {
-    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits/1e6, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
     initfun = Python::Function{PyInst("init")};
     shutdown = Python::Function{PyInst("close")};
     runfun = Python::Function{PyInst("run")};
@@ -672,7 +674,7 @@ public:
       data[i] = std::vector<float>(freq_counts[i], 0);
   }
   
-  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void init(bool manual_init) {manual=manual_init; initfun();}
   void close() {shutdown();}
   
   void run() {runfun();}
@@ -741,7 +743,7 @@ public:
                int integration_time_microsecs,
                int blank_time_microsecs,
                bool mirror) {
-    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
+    PyInst = Python::ClassInstance{PyClass(host, tcp, udp, freq_limits/1e6, freq_counts, integration_time_microsecs, blank_time_microsecs, mirror)};
     initfun = Python::Function{PyInst("init")};
     shutdown = Python::Function{PyInst("close")};
     runfun = Python::Function{PyInst("run")};
@@ -754,7 +756,7 @@ public:
       data[i] = std::vector<float>(freq_counts[i], 0);
   }
   
-  void init(bool manual_init) {manual=manual_init; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void init(bool manual_init) {manual=manual_init; initfun();}
   void close() {shutdown();}
   
   void run() {runfun();}

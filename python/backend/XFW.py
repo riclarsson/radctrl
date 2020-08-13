@@ -42,7 +42,6 @@ class XFW:
                 **info**
         """
         assert isinstance(integration_time,int),"Integration in integers"
-        assert integration_time < 5001,"5000 ms integration time is maximum"
 
         self._bytes=np.sum(channels)*4
         self._boards=len(channels)
@@ -51,6 +50,9 @@ class XFW:
         self._udp_port=udp_port
         self._host=host
         self._integration_time=str(int(integration_time//2 * 1000))
+        
+        assert int(self._integration_time) < 5000001,"5000 ms integration time is maximum"
+        
         self._blank_time=str(int(blank_time * 1000))
         self._copies_of_vectors=int(4)
         self.frequency = frequency
@@ -66,7 +68,6 @@ class XFW:
         Musn't be initialized already
         """
         assert not self._initialized,"Cannot init initialized FFTS"
-
 
         self._tcp_sock=socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self._ip=socket.gethostbyname(self._host)

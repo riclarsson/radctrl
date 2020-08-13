@@ -8,7 +8,6 @@ Author: Borys Dabrowski
 """
 import serial
 from time import time,sleep,strftime
-from threading import Thread
 from scipy.interpolate import make_interp_spline
 
 class Agilent34970A:
@@ -63,7 +62,6 @@ class Agilent34970A:
         # Open a serial port
         self._serial=serial.Serial(self._device,self._baud,xonxoff=True,timeout=2)
         self.configMultimeter()
-        self._measureThread=measureThread(self)
         self._initialized=True
 
     def close(self):
@@ -72,8 +70,6 @@ class Agilent34970A:
         Must be initialized already
         """
         assert self._initialized, "Cannot close uninitialized multimeter"
-        self._measureThread.close()
-        while self._measureThread.running: pass
         self._serial.close()
         self._initialized=False
 
@@ -161,11 +157,12 @@ class Agilent34970A:
     # checks if valves are open (channels are closed)
     def getStatus(self):
         """**INFO**"""
-        self._measureThread._input="ROUTE:CLOSE? (@201:220)"
+        self._output = None
+        self.command_interpret("ROUTE:CLOSE? (@201:220)")
 
         # wait until executed
-        while self._measureThread._input is not None: sleep(.1)
-        answer=self._measureThread._output
+        while self._output is None: sleep(.1)
+        answer=self._output
         answer=[int(n)>0 for n in answer.split(b',')]
         return answer
     
@@ -190,12 +187,9 @@ class Agilent34970A:
                 **INFO**
         """
         # open relais, close valve
-        if opening: self._measureThread._input="ROUTE:OPEN (@%d)"%(200+rel_nr)
+        if opening: self.command_interpret("ROUTE:OPEN (@%d)"%(200+rel_nr))
         # close relais, open valve
-        else: self._measureThread._input="ROUTE:CLOSE (@%d)"%(200+rel_nr)
-
-        # wait until executed
-        while self._measureThread._input is not None: sleep(.1)
+        else: self.command_interpret("ROUTE:CLOSE (@%d)"%(200+rel_nr))
 
     def closeValve(self,nr):
         """
@@ -351,44 +345,17 @@ class Agilent34970A:
         elif v> 2.4 and v<=14.: return 0.        # pure Pirani mode
         else: return -1.                    # no pressore sensor connected
 
-
-class measureThread(Thread):
-    """
-    .. note:: For more information about the Thread’s methods and attributes used here, please refer to the `threading.Thread class documentation <https://docs.python.org/3/library/threading.html>`_
-    """
-    def __init__(self,parent):
-        
-        Thread.__init__(self)
-        self.parent=parent
-        self.read=parent.read
-        self.write=parent.write
-        self.ask=parent.ask
-        self.running=False
-        self._initialized=True
-        self._output=None
-        self._input=None
-        self.start()
-
-    def close(self):
-        self._initialized=False
-
     def run(self):
         """**INFO**"""
-        self.running=True
+        # update date and time
+        self._now=strftime("%d-%m-%Y %H:%M:%S")
+        # measure
+        results=self.ask("READ?")        # trigger the scan
+        # update self.output
+        if len(results): self._values=[float(n) for n in results.split(b',')]
 
-        while self._initialized:
-            # update date and time
-            self.parent._now=strftime("%d-%m-%Y %H:%M:%S")
-            # measure
-            results=self.ask("READ?")        # trigger the scan
-            # update self.output
-            if len(results): self.parent._values=[float(n) for n in results.split(b',')]
-
-            if self._input is not None:
-                if ("?" if isinstance(self._input,str) else b"?") in self._input:
-                    self._output=self.ask(self._input)
-                else: self.write(self._input)
-            self._input=None
-            sleep(.2)
-
-        self.running=False
+    def command_interpret(self, input=None):
+        if input is not None:
+            if ("?" if isinstance(input, str) else b"?") in input:
+                self._output=self.ask(input)
+            else: self.write(input)
