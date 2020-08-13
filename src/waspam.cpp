@@ -40,7 +40,7 @@ int main (int argc, char * argv[]) try {
                       std::stoi(parser("Wobbler", "start")), std::stoi(parser("Wobbler", "end"))};
   
   // Housekeeping declaration
-  Instrument::Housekeeping::Agilent hk{parser("Housekeeping", "path")};
+  Instrument::Housekeeping::AgilentPython hk{parser("Housekeeping", "path")};
   Instrument::Housekeeping::Controller housekeeping_ctrl{parser("Housekeeping", "dev"), std::stoi(parser("Housekeeping", "baudrate"))};
   
   // Frontend declaration

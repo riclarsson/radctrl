@@ -1,6 +1,8 @@
 # Global compile time options
 add_compile_options(-Wall -Wextra -pedantic -O3 -march=native -fvisibility=hidden -flto)
 
+# Sub directories
+
 ########################################################################################
 # GUI Library: For basic GUI creation
 add_library (gui STATIC

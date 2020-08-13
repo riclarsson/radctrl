@@ -10,8 +10,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-project (RADCALC CXX)
-enable_language(CXX)
+project (RADCALC CXX C)
+enable_language(CXX C)
 
 add_subdirectory(inc)
 add_subdirectory(python)

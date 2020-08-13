@@ -7,7 +7,6 @@
 
 #include "gui.h"
 #include "python_interface.h"
-#include "timeclass.h"
 
 namespace Instrument {
 namespace Housekeeping {
@@ -157,7 +156,7 @@ public:
     shutdown = Python::Function{PyInst("close")};
     download = Python::Function{PyInst("get_status_as_dict")};
   }
-  void init(bool manual_press=false) {manual=manual_press; initfun(); Sleep(6);}
+  void init(bool manual_press=false) {manual=manual_press; initfun();}
   void run() {status=download();}
   void close() {}
   bool manual_run() {return manual;}
