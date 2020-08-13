@@ -23,7 +23,6 @@ int main (int argc, char * argv[]) try {
   // Our global states are stored in configs
   if (argc not_eq 2) throw std::runtime_error("Bad parguments, please include the XML file");
   File::ConfigParser parser(argv[1], {"Chopper", "Wobbler", "Housekeeping", "Frontend", "Backends", "Operations", "Savepath"});
-  std::cout<<parser<<"\n";
   GUI::Config config;
   
   // Chopper declaration
@@ -41,7 +40,7 @@ int main (int argc, char * argv[]) try {
                       std::stoi(parser("Wobbler", "start")), std::stoi(parser("Wobbler", "end"))};
   
   // Housekeeping declaration
-  Instrument::Housekeeping::Dummy hk{parser("Housekeeping", "path")};
+  Instrument::Housekeeping::Agilent hk{parser("Housekeeping", "path")};
   Instrument::Housekeeping::Controller housekeeping_ctrl{parser("Housekeeping", "dev"), std::stoi(parser("Housekeeping", "baudrate"))};
   
   // Frontend declaration

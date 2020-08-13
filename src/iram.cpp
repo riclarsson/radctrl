@@ -23,7 +23,6 @@ int main (int argc, char * argv[]) try {
   // Our global states are stored in configs
   if (argc not_eq 2) throw std::runtime_error("Bad parguments, please include the XML file");
   File::ConfigParser parser(argv[1], {"Chopper", "Wobbler", "Housekeeping", "Frontend", "Backends", "Savepath"});
-  std::cout<<parser<<"\n";
   GUI::Config config;
   
   // Chopper declaration
