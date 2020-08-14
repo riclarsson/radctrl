@@ -1,10 +1,12 @@
 #ifndef housekeeping_h
 #define housekeeping_h
 
+#include <algorithm>
 #include <map>
 #include <string>
 #include <vector>
 
+#include "asio_interface.h"
 #include "gui.h"
 #include "python_interface.h"
 
@@ -170,6 +172,118 @@ public:
     auto keys = status.keysDict();
     for (auto& key: keys)
       database[key] = status.fromDict<Python::Type::Double>(key).toDouble();
+  }
+  DataType data() const {return database;}
+};  // AgilentPython
+
+template <size_t N>
+constexpr double linear_interpolation (const std::array<double, N>& x, const std::array<double, N>& y, double t) {
+  int i=1;
+  while (i<N-1 and t<x[i]) i++;
+  return y[i-1] + y[i] * (t - x[i-1]) / (x[i] - x[i-1]);
+}
+
+class Agilent34970A {
+  bool manual;
+  bool error_found;
+  bool new_data;
+  std::string error;
+  
+  std::map<std::string, double> database;
+  
+  Network::Serial port;
+  
+  std::string results;
+  
+public:
+  using DataType = std::map<std::string, double>;
+  Agilent34970A() : manual(false), error_found(false), new_data(false), error("")  {
+  };
+  
+  void startup(const std::string& dev, int baud) {
+    port.set_baudrate(baud);
+    port.open(dev);
+  }
+  void init(bool manual_press=false) {
+    manual=manual_press;
+    port.write("\x03\n");
+    port.write("*IDN?\n");
+    std::string name = port.readline();
+    
+    port.write("SYSTEM:CPON 100\n");
+    port.write("ROUTE:CHAN:DELAY:AUTO ON, (@101:120)\n");
+    port.write("CALC:SCALE:STATE OFF, (@101:120)\n");
+    
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@101)\n");
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@102)\n");
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@103)\n");
+    port.write("SENSE:FUNCTION \"RESISTANCE\", (@104)\n");
+    port.write("SENSE:FUNCTION \"RESISTANCE\", (@105)\n");
+    port.write("SENSE:FUNCTION \"RESISTANCE\", (@106)\n");
+    port.write("SENSE:FUNCTION \"RESISTANCE\", (@107)\n");
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@108)\n");
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@109)\n");
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@111)\n");
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@112)\n");
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@113)\n");
+    port.write("SENSE:FUNCTION \"RESISTANCE\", (@114)\n");
+    port.write("SENSE:FUNCTION \"RESISTANCE\", (@115)\n");
+    port.write("SENSE:FUNCTION \"RESISTANCE\", (@116)\n");
+    port.write("SENSE:FUNCTION \"RESISTANCE\", (@117)\n");
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@118)\n");
+    port.write("SENSE:FUNCTION \"VOLTAGE:DC\", (@119)\n");
+    
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@101)\n");
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@102)\n");
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@103)\n");
+    port.write("SENSE:RESISTANCE:NPLC 10, (@104)\n");
+    port.write("SENSE:RESISTANCE:NPLC 10, (@105)\n");
+    port.write("SENSE:RESISTANCE:NPLC 10, (@106)\n");
+    port.write("SENSE:RESISTANCE:NPLC 10, (@107)\n");
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@108)\n");
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@109)\n");
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@111)\n");
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@112)\n");
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@113)\n");
+    port.write("SENSE:RESISTANCE:NPLC 10, (@114)\n");
+    port.write("SENSE:RESISTANCE:NPLC 10, (@115)\n");
+    port.write("SENSE:RESISTANCE:NPLC 10, (@116)\n");
+    port.write("SENSE:RESISTANCE:NPLC 10, (@117)\n");
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@118)\n");
+    port.write("SENSE:VOLTAGE:DC:NPLC 10, (@119)\n");
+    
+    port.write("ROUTE:SCAN (@101,102,103,104,105,106,107,108,109,114,115,116,117,118,119)\n");
+  }
+  void run() {
+    port.write("READ?\n");
+    results = port.readline();
+  }
+  void close() {port.close();}
+  bool manual_run() {return manual;}
+  const std::string& error_string() const {return error;}
+  bool has_error() {return error_found;}
+  void delete_error() {error_found=false; error = "";}
+  void get_data() {
+    size_t pos = 0;
+    std::vector<double> vals;
+    while (pos < results.size()) {
+      auto end = results.find(',', pos);
+      
+      if (end >= pos or end == std::string::npos) break;
+      
+      vals.push_back(std::stod(results.substr(pos, end-pos)));
+      pos = end + 1;
+    }
+    
+    database ={{"Cold Load Temperature", vals[1]},
+               {"Hot Load Temperature", vals[2]},
+               {"HEMT Temperature", vals[0]},
+               {"Room Temperature 1", vals[6]},
+               {"Room Temperature 2", vals[12]},
+               {"CTS 1 Temperature 1", vals[3]},
+               {"CTS 1 Temperature 2", vals[4]},
+               {"CTS 2 Temperature 1", vals[9]},
+               {"CTS 2 Temperature 2", vals[10]}};
   }
   DataType data() const {return database;}
 };  // AgilentPython

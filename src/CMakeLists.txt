@@ -56,6 +56,7 @@ add_library (network STATIC
              asio_interface.cpp
              )
 target_include_directories(network PUBLIC ../3rdparty/asio/asio/include/)
+target_link_libraries(network PUBLIC multithread)
 
 ########################################################################################
 
@@ -96,7 +97,10 @@ target_link_libraries(frontend PUBLIC gui python)
 add_library (housekeeping STATIC
              housekeeping.cpp
              )
-target_link_libraries(housekeeping PUBLIC gui python)
+target_link_libraries(housekeeping PUBLIC gui python network)
+add_executable (housekeeping_bin housekeeping.cpp)
+target_link_libraries(housekeeping_bin PUBLIC housekeeping)
+set_target_properties(housekeeping_bin PROPERTIES OUTPUT_NAME "housekeeping")
 ########################################################################################
 
 ########################################################################################
