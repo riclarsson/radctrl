@@ -12,7 +12,7 @@ add_library (gui STATIC
              gui_plotting.cpp
              )
 target_link_libraries(gui PUBLIC imgui implot)
-target_include_directories(gui PUBLIC ../inc/gui/imgui/ ../inc/gui/implot/ ../inc/gui/imgui-filebrowser/)
+target_include_directories(gui PUBLIC ../3rdparty/gui/imgui/ ../3rdparty/gui/implot/ ../3rdparty/gui/imgui-filebrowser/)
 ########################################################################################
 
 ########################################################################################
@@ -21,7 +21,7 @@ add_library (math STATIC
              mathhelpers.cpp
              rational.cpp
              )
-target_include_directories(math PUBLIC ../inc/Eigen/)
+target_include_directories(math PUBLIC ../3rdparty/Eigen/)
 ########################################################################################
 
 ########################################################################################
@@ -40,7 +40,7 @@ add_library (files STATIC
              xml_config.cpp
              )
 target_link_libraries(files PUBLIC xml)
-target_include_directories(files PUBLIC ../inc/pugixml/)
+target_include_directories(files PUBLIC ../3rdparty/pugixml/)
 ########################################################################################
 
 ########################################################################################
@@ -105,7 +105,7 @@ add_library (absorption STATIC
              lbl.cpp
              lineshapes.cpp
              )
-target_include_directories(absorption PUBLIC ../inc/Faddeeva/)
+target_include_directories(absorption PUBLIC ../3rdparty/Faddeeva/)
 target_link_libraries(absorption PUBLIC species files)
 ########################################################################################
 
@@ -121,7 +121,7 @@ target_link_libraries(rte PUBLIC species)
 # Python Interface Library:  For calling python code
 set(Python_ADDITIONAL_VERSIONS 3)
 add_library(python STATIC python_interface.cpp)
-target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../inc/pybind11/include/ ../inc/Eigen/)
+target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../3rdparty/pybind11/include/ ../3rdparty/Eigen/)
 target_link_libraries(python PUBLIC ${PYTHON_LIBRARIES} pybind11::embed)
 ########################################################################################
 

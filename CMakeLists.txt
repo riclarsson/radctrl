@@ -13,7 +13,7 @@ set(CMAKE_CXX_EXTENSIONS ON)
 project (RADCALC CXX C)
 enable_language(CXX C)
 
-add_subdirectory(inc)
+add_subdirectory(3rdparty)
 add_subdirectory(python)
 add_subdirectory(src)
 add_subdirectory(icons)
