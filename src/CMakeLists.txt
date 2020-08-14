@@ -1,5 +1,5 @@
 # Global compile time options
-add_compile_options(-Wall -Wextra -pedantic -O3 -march=native -fvisibility=hidden -flto)
+add_compile_options(-Wall -Wextra -Wdouble-promotion -Wimplicit-fallthrough=5  -Wno-ignored-attributes -pedantic -O3 -march=native -fvisibility=hidden -flto)
 
 # Sub directories
 

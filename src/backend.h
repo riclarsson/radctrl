@@ -367,7 +367,7 @@ public:
   
   void get_data(int) {
     for (int i=0; i<1000; i++) {
-      dummy_x[i] += 0.05;
+      dummy_x[i] += 0.05f;
       data[0][i] = 5 + std::cos(dummy_x[i]);
       data[1][i] = 5 + std::sin(dummy_x[i]);
     }
