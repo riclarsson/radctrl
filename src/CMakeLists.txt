@@ -51,6 +51,15 @@ add_library (atm STATIC
 ########################################################################################
 
 ########################################################################################
+# ASIO Interface
+add_library (network STATIC
+             asio_interface.cpp
+             )
+target_include_directories(network PUBLIC ../3rdparty/asio/asio/include/)
+
+########################################################################################
+
+########################################################################################
 # Chopper library
 add_library (chopper STATIC
              chopper.cpp
