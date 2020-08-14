@@ -169,6 +169,7 @@ struct Data {
     // Deal with averaging 
     if (avg_count < num_to_avg)
       avg_count++;
+    std::cout<<avg_count<< " " << num_to_avg << '\n';
     
     // cold load
     if (target == Chopper::ChopperPos::Cold) {
@@ -367,67 +368,67 @@ void InitAll (Chopper& chop, ChopperController& chopper_ctrl,
               Housekeeping& hk, HousekeepingController& housekeeping_ctrl,
               Frontend& frontend, FrontendController& frontend_ctrl,
               Backends& backends, BackendControllers& backend_ctrls) {
-  std::cout << "Binding housekeeping\n";
+  std::cout << Time() << ' ' << "Binding housekeeping\n";
   hk.startup(housekeeping_ctrl.dev, housekeeping_ctrl.baudrate);
-  std::cout << "Initializing housekeeping\n";
+  std::cout << Time() << ' ' << "Initializing housekeeping\n";
   hk.init(false);
   if (hk.has_error()) {
     housekeeping_ctrl.error = true;
-    std::cout << "Error housekeeping\n";
+    std::cout << Time() << ' ' << "Error housekeeping\n";
   } else {
-    std::cout << "Done housekeeping\n";
+    std::cout << Time() << ' ' << "Done housekeeping\n";
     housekeeping_ctrl.init = true;
   }
   
-  std::cout << "Binding frontend\n";
+  std::cout << Time() << ' ' << "Binding frontend\n";
   frontend.startup(frontend_ctrl.server, frontend_ctrl.port);
-  std::cout << "Initializing frontend\n";
+  std::cout << Time() << ' ' << "Initializing frontend\n";
   frontend.init(false);
   if (frontend.has_error()) {
-    std::cout << "Error frontend\n";
+    std::cout << Time() << ' ' << "Error frontend\n";
     frontend_ctrl.error = true;
   } else {
-    std::cout << "Done frontend\n";
+    std::cout << Time() << ' ' << "Done frontend\n";
     frontend_ctrl.init = true;
   }
   
-  std::cout << "Binding wobbler\n";
+  std::cout << Time() << ' ' << "Binding wobbler\n";
   wob.startup(wobbler_ctrl.dev, wobbler_ctrl.baudrate, wobbler_ctrl.address);
-  std::cout << "Initializing wobbler\n";
+  std::cout << Time() << ' ' << "Initializing wobbler\n";
   wob.init(false);
   if (wob.has_error()) {
-    std::cout << "Error wobbler\n";
+    std::cout << Time() << ' ' << "Error wobbler\n";
     wobbler_ctrl.error = true;
   } else {
-    std::cout << "Done wobbler\n";
+    std::cout << Time() << ' ' << "Done wobbler\n";
     wobbler_ctrl.init = true;
   }
   
-  std::cout << "Binding chopper\n";
+  std::cout << Time() << ' ' << "Binding chopper\n";
   chop.startup(chopper_ctrl.dev, chopper_ctrl.offset, chopper_ctrl.sleeptime);
-  std::cout << "Initializing chopper\n";
+  std::cout << Time() << ' ' << "Initializing chopper\n";
   chop.init(false);
   if (chop.has_error()) {
-    std::cout << "Error chopper\n";
+    std::cout << Time() << ' ' << "Error chopper\n";
     chopper_ctrl.error = true;
   } else {
-    std::cout << "Done chopper\n";
+    std::cout << Time() << ' ' << "Done chopper\n";
     chopper_ctrl.init = true;
   }
   
   for (size_t i=0; i<backends.N; i++) {
-    std::cout << "Binding backend "<<i+1<<"\n";
+    std::cout << Time() << ' ' << "Binding backend "<<i+1<<"\n";
     backends.startup(i, backend_ctrls[i].host, backend_ctrls[i].tcp_port, backend_ctrls[i].udp_port,
                      backend_ctrls[i].freq_limits, backend_ctrls[i].freq_counts,
                      backend_ctrls[i].integration_time_microsecs, backend_ctrls[i].blank_time_microsecs,
                      backend_ctrls[i].mirror);
-    std::cout << "Initializing backend "<<i+1<<"\n";
+    std::cout << Time() << ' ' << "Initializing backend "<<i+1<<"\n";
     backends.init(i, false);
     if (backends.has_error(i)) {
-      std::cout << "Error backend "<<i+1<<"\n";
+      std::cout << Time() << ' ' << "Error backend "<<i+1<<"\n";
       backend_ctrls[i].error = true;
     } else {
-      std::cout << "Done backend "<<i+1<<"\n";
+      std::cout << Time() << ' ' << "Done backend "<<i+1<<"\n";
       backend_ctrls[i].init = true;
     }
   }
@@ -694,8 +695,6 @@ wait:
 Sleep(0.1);
 
 loop:
-std::cout<<Time()<<" Start Loop\n";
-
 init = chopper_ctrl.init.load() and wobbler_ctrl.init.load() and housekeeping_ctrl.init.load() and frontend_ctrl.init.load() and
   std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(), [](auto& x){return x.init.load();});
 run = chopper_ctrl.run.load() and wobbler_ctrl.run.load() and housekeeping_ctrl.run.load() and frontend_ctrl.run.load() and
@@ -809,8 +808,6 @@ std::cout<<Time()<<" Done Wobbler\n";
 
 // Ready for next loop
 pos = (pos+1) % chopper_ctrl.N;
-
-std::cout<<Time()<<" Start Next Loop\n";
 goto loop;
 
 // Stop must kill all machines if necessary
