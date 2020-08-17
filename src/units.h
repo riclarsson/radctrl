@@ -119,7 +119,7 @@ class Magnetism {
     if constexpr (X == MagnetismType::G) {for (auto& x: M) x=Conversion::t2g(x);}
   }
 public:
-  explicit constexpr Magnetism(std::array<double, 3> m) noexcept : M(m) {}
+  constexpr Magnetism(std::array<double, 3> m) noexcept : M(m) {}
   constexpr Magnetism(const Magnetism<MagnetismType::T>& m) noexcept : M(m.M) {t2self();}
   constexpr Magnetism(const Magnetism<MagnetismType::G>& m) noexcept : M({Conversion::g2t(m.M[0]), Conversion::g2t(m.M[1]), Conversion::g2t(m.M[2])}) {t2self();}
   
@@ -127,6 +127,7 @@ public:
   Magnetism& operator*=(double x) noexcept {for (auto& m: M) m *= x; return *this;}
   Magnetism& operator+=(Magnetism x) noexcept {M[0] += x.M[0]; M[1] += x.M[1]; M[2] += x.M[2]; return *this;}
   friend std::ostream& operator<<(std::ostream& os, Magnetism m) {return os << m.M[0] << ' ' << m.M[1] << ' ' << m.M[2];}
+  friend std::istream& operator>>(std::istream& is, Magnetism& m) {return is >> m.M[0] >> m.M[1] >> m.M[2];}
 };  // Magnetism
 
 
@@ -141,13 +142,14 @@ class Wind {
     if constexpr (X == WindType::meters_per_second) {}
   }
 public:
-  explicit constexpr Wind(std::array<double, 3> w) noexcept : W(w) {}
+  constexpr Wind(std::array<double, 3> w) noexcept : W(w) {}
   constexpr Wind(const Wind<WindType::meters_per_second>& w) noexcept : W(w.W) {ms2self();}
   
   constexpr std::array<double, 3> value() const noexcept {return W;}
   Wind& operator*=(double x) noexcept {for (auto& w: W) w *= x; return *this;}
   Wind& operator+=(Wind x) noexcept {W[0] += x.W[0]; W[1] += x.W[1]; W[2] += x.W[2]; return *this;}
   friend std::ostream& operator<<(std::ostream& os, Wind w) {return os << w.W[0] << ' ' << w.W[1] << ' ' << w.W[2];}
+  friend std::istream& operator>>(std::istream& is, Wind& w) {return is >> w.W[0] >> w.W[1] >> w.W[2];}
 };  // Wind
 
 ENUMCLASS(VMRType, char,
@@ -162,14 +164,19 @@ class VMR {
     if constexpr (X == VMRType::ratio) {}
   }
 public:
+  constexpr VMR() noexcept : I(Species::Isotope(Species::Species::FINAL, -1)), R(0) {}
   explicit constexpr VMR(Species::Isotope s, double r) noexcept : I(s), R(r) {}
   constexpr VMR(const VMR<VMRType::ratio>& r) noexcept : I(r.I), R(r.R) {r2self();}
   
   constexpr Species::Species Species() const noexcept {return I.Spec();}
   constexpr double value() const noexcept {return R;}
+  constexpr Species::Isotope isot() const noexcept {return I;}
+  void isot(Species::Isotope i) noexcept {I=i;}
   VMR& operator*=(double x) noexcept {R *= x; return *this;}
   VMR& operator+=(VMR x) noexcept {if (x.I == I) {R += x.R;} return *this;}
   friend std::ostream& operator<<(std::ostream& os, VMR r) {return os << r.I << ' ' << r.R;}
+  friend std::istream& operator>>(std::istream& is, VMR& r) {return is >> r.I >> r.R;}
+  template <typename Input> friend void readRatioOnly(Input& file, VMR& r) {file >> r.R;}
 };  // VMR
 
 ENUMCLASS(DistanceType, char,

@@ -7,6 +7,7 @@
 
 #include "constants.h"
 #include "enums.h"
+#include "file.h"
 #include "grids.h"
 #include "units.h"
 #include "species.h"
@@ -26,12 +27,26 @@ class AtmPoint {
   Wind<WindType::meters_per_second> W;
   std::vector<VMR<VMRType::ratio>> vmr;
 public:
+  AtmPoint(Pressure<PressureType::Pa> p, Temperature<TemperatureType::K> t,
+           Magnetism<MagnetismType::T> m, Wind<WindType::meters_per_second> w,
+           const std::vector<VMR<VMRType::ratio>>& v) noexcept : P(p), T(t), M(m), W(w), vmr(v) {}
+  
+  AtmPoint(decltype(vmr)::size_type n=0) noexcept : M({0,0,0}), W({0,0,0}), vmr(n) {}
+  
+  decltype(vmr)::size_type size() const {return vmr.size();}
   
   friend std::ostream& operator<<(std::ostream& os, AtmPoint p) {
     os << p.P << ' ' << p.T << ' ' << p.M << ' ' << p.W;
     for (auto x: p.vmr)
       os << ' ' << x;
     return os;
+  }
+  
+  friend std::istream& operator>>(std::istream& is, AtmPoint& p) {
+    is >> p.P >> p.T >> p.M >> p.W;
+    for (auto& x: p.vmr)
+      is >> x;
+    return is;
   }
   
   AtmPoint& operator+=(const LazyAtmPoint& x) noexcept;
@@ -41,7 +56,45 @@ public:
     return out *= x;
   }
   
+  friend void saveAtmPoint(File::File<File::Operation::Write, File::Type::Xml>& file, const AtmPoint& ap) {
+    file.new_child("AtmPoint");
+    file.add_attribute("size", ap.size());
+    file.add_attribute("Species", ap.specs());
+    file << '\n';
+    ap.savePureAscii(file);
+    file << '\n';
+    file.leave_child();
+  }
+  
+  friend void readAtmPoint(File::File<File::Operation::Read, File::Type::Xml>& file, AtmPoint& ap) {
+    auto child = file.get_child("AtmPoint");
+    ap.vmr.resize(file.size());
+    auto isot = file.get_vector_attribute<Species::Isotope>("Species");
+    for (size_t i=0; i<isot.size(); i++) {ap.vmr[i].isot(isot[i]);}
+    std::istringstream data(child.text().as_string());
+    ap.readPureAscii(data);
+    file.leave_child();
+  }
+  
 private:
+  template <typename Output>
+  void savePureAscii(Output& file) const {
+    file << P << ' ' << T << ' ' << M << ' ' << W;
+    for (auto x: vmr) file << ' ' << x.value();
+  }
+  
+  template <typename Input>
+  void readPureAscii(Input& file) {
+    file >> P >> T >> M >> W;
+    for (auto& x: vmr) readRatioOnly(file, x);
+  }
+  
+  std::vector<Species::Isotope> specs() const {
+    std::vector<Species::Isotope> s;
+    for (auto x: vmr) s.push_back(x.isot());
+    return s;
+  }
+  
   AtmPoint& operator*=(double x) noexcept {
     P *= x;
     T *= x;

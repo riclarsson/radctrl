@@ -48,6 +48,7 @@ target_include_directories(files PUBLIC ../3rdparty/pugixml/)
 add_library (atm STATIC
              atm.cpp
              )
+target_link_libraries(atm PUBLIC files)
 ########################################################################################
 
 ########################################################################################
@@ -57,7 +58,6 @@ add_library (network STATIC
              )
 target_include_directories(network PUBLIC ../3rdparty/asio/asio/include/)
 target_link_libraries(network PUBLIC multithread)
-
 ########################################################################################
 
 ########################################################################################
@@ -208,6 +208,12 @@ target_link_libraries(test_hitran PUBLIC absorption files)
 # Test python interface
 add_executable(test_python test_python.cpp)
 target_link_libraries(test_python PUBLIC python)
+########################################################################################
+
+########################################################################################
+# Test atmosphere interface
+add_executable(test_atm test_atm.cpp)
+target_link_libraries(test_atm PUBLIC atm)
 ########################################################################################
 
 ########################################################################################

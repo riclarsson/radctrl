@@ -1284,6 +1284,7 @@ class Isotope {
 
 public:
   constexpr Isotope(Species S, long n) noexcept : s(S), num(n) {}
+  constexpr Isotope() noexcept : s(Species::FINAL), num(-1) {}
   Isotope(Species S, const std::vector<ChargedAtom>& ca) : s(S), num(0) {
     switch(s) {
       case Species::Bath: num = 0; break;
@@ -1344,6 +1345,14 @@ public:
   }
   
   friend std::ostream& operator<<(std::ostream& os, Isotope x) {return os << x.s << '-' << int(x.num);}
+  friend std::istream& operator>>(std::istream& is, Isotope& x) {
+    std::string isot;
+    is >> isot;
+    size_t bindes = isot.find('-');
+    x.s = toSpecies(isot.substr(0, bindes));
+    x.num = std::stoi(isot.substr(bindes+1, isot.size()));
+    return is;
+  }
   friend bool operator==(Isotope x, Isotope y) {return (x.s == y.s) and (x.num == y.num);}
   
   constexpr Species Spec() const noexcept {return s;}
