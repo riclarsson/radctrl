@@ -12,18 +12,13 @@
 #include "timeclass.h"
 
 namespace Instrument {
-namespace Chopper { 
-ENUMCLASS(ChopperPos, int,
-          Cold,
-          Hot,
-          Antenna,
-          Reference
-)
+namespace Chopper {
+ENUMCLASS(ChopperPos, int, Cold, Hot, Antenna, Reference)
 
-template <ChopperPos ... StartPos>
+template <ChopperPos... StartPos>
 struct Controller {
   static constexpr size_t N = sizeof...(StartPos);
-  
+
   std::atomic<bool> init;
   std::atomic<bool> error;
   std::atomic<bool> quit;
@@ -31,35 +26,47 @@ struct Controller {
   std::atomic<bool> operating;
   std::atomic<bool> waiting;
   std::atomic<bool> newdata;
-  
+
   std::string dev;
   int offset;
   double sleeptime;
-  
+
   ChopperPos lasttarget;
   std::array<ChopperPos, N> pos{StartPos...};
-  Controller(const std::string& d, int o, double s) noexcept : init(false), error(false), quit(false),
-  run(false), operating(false), waiting(false), newdata(false),
-  dev(d), offset(o), sleeptime(s), lasttarget(ChopperPos::FINAL) {}
+  Controller(const std::string& d, int o, double s) noexcept
+      : init(false),
+        error(false),
+        quit(false),
+        run(false),
+        operating(false),
+        waiting(false),
+        newdata(false),
+        dev(d),
+        offset(o),
+        sleeptime(s),
+        lasttarget(ChopperPos::FINAL) {}
 };
 
-template <class Chopper, ChopperPos ... Pos>
-void GuiSetup(Chopper& chop, Controller<Pos...>& ctrl, const std::vector<std::string>& devs) {
-  bool change=false;
-  bool manual=false;
+template <class Chopper, ChopperPos... Pos>
+void GuiSetup(Chopper& chop, Controller<Pos...>& ctrl,
+              const std::vector<std::string>& devs) {
+  bool change = false;
+  bool manual = false;
   if (not ctrl.init) {
     if (ImGui::Button(" Manual Init ")) {
       change = true;
       manual = true;
       ctrl.init = true;
-    } ImGui::SameLine();
+    }
+    ImGui::SameLine();
     if (ImGui::Button(" Automatic Init ")) {
       change = true;
       manual = false;
       ctrl.init = true;
-    } ImGui::SameLine();
+    }
+    ImGui::SameLine();
     ImGui::Text(" Close ");
-  } else  {
+  } else {
     ImGui::Text(" Manual Init ");
     ImGui::SameLine();
     ImGui::Text(" Automatic Init ");
@@ -69,37 +76,39 @@ void GuiSetup(Chopper& chop, Controller<Pos...>& ctrl, const std::vector<std::st
       ctrl.init = false;
     }
   }
-  
+
   if (change) {
     if (ctrl.init) {
       chop.startup(ctrl.dev, ctrl.offset, ctrl.sleeptime);
       chop.init(manual);
     } else {
-     chop.close();
+      chop.close();
     }
   }
-  
+
   auto dev = ctrl.dev.c_str();
   if (ImGui::BeginCombo("Device", dev)) {
-    bool newselection=false;
-    for (auto& d: devs) {
+    bool newselection = false;
+    for (auto& d : devs) {
       auto dev2 = d.c_str();
-      bool is_selected = (dev == dev2); // You can store your selection however you want, outside or inside your objects
+      bool is_selected =
+          (dev == dev2);  // You can store your selection however you want,
+                          // outside or inside your objects
       if (ImGui::Selectable(dev2, is_selected)) {
         newselection = true;
         dev = dev2;
       }
     }
-    
+
     ImGui::EndCombo();
-    
+
     if (not ctrl.init) {
       if (newselection) {
         ctrl.dev = dev;
       }
     }
   }
-  
+
   ImGui::PushItemWidth(150.f);
   if (not ctrl.init) {
     ImGui::SliderInt("Offset [#]", &ctrl.offset, 0, 8000);
@@ -107,20 +116,19 @@ void GuiSetup(Chopper& chop, Controller<Pos...>& ctrl, const std::vector<std::st
     int throwaway = ctrl.offset;
     ImGui::SliderInt("Offset [#]", &throwaway, 0, 8000);
   }
-  
+
   ImGui::SameLine();
-  
+
   if (not ctrl.init) {
     float tmp = float(ctrl.sleeptime);
     ImGui::SliderFloat("Sleeptime [s]", &tmp, 0, 5);
     ctrl.sleeptime = tmp;
-  }
-  else {
+  } else {
     float throwaway = float(ctrl.sleeptime);
     ImGui::SliderFloat("Sleeptime [s]", &throwaway, 0, 5);
   }
   ImGui::PopItemWidth();
-  
+
   if (ctrl.init and chop.manual_run()) {
     if (ImGui::Button(" Cold ")) {
       chop.run(ChopperPos::Cold);
@@ -148,7 +156,7 @@ void GuiSetup(Chopper& chop, Controller<Pos...>& ctrl, const std::vector<std::st
     ImGui::SameLine();
     ImGui::Text(" Reference ");
   }
-  
+
   if (chop.has_error()) {
     ctrl.init = false;
     ctrl.error = true;
@@ -161,25 +169,40 @@ class Dummy {
   ChopperPos pos;
   bool error_found;
   std::string error;
-public:
+
+ public:
   using DataType = ChopperPos;
-  template <typename ... Whatever> constexpr Dummy(Whatever...) : manual(false), pos(ChopperPos::Cold), error_found(false), error("") {}
+  template <typename... Whatever>
+  constexpr Dummy(Whatever...)
+      : manual(false), pos(ChopperPos::Cold), error_found(false), error("") {}
   void startup(const std::string&, int, double) {}
-  void init(bool manual_press) {manual=manual_press; if (not manual) {error = "Must be manual, is dummy"; error_found=true;}}
+  void init(bool manual_press) {
+    manual = manual_press;
+    if (not manual) {
+      error = "Must be manual, is dummy";
+      error_found = true;
+    }
+  }
   void close() {}
-  void run(ChopperPos x) {Sleep(0.1); pos = x;}
-  DataType get_data_raw() {return ChopperPos::FINAL;}
-  DataType get_data() {return pos;}
-  bool manual_run() {return manual;}
-  const std::string& error_string() const {return error;}
-  bool has_error() {return error_found;}
-  void delete_error() {error_found=false; error = "";}
+  void run(ChopperPos x) {
+    Sleep(0.1);
+    pos = x;
+  }
+  DataType get_data_raw() { return ChopperPos::FINAL; }
+  DataType get_data() { return pos; }
+  bool manual_run() { return manual; }
+  const std::string& error_string() const { return error; }
+  bool has_error() { return error_found; }
+  void delete_error() {
+    error_found = false;
+    error = "";
+  }
 };  // Dummy
 
 class PythonOriginal {
   bool manual;
   ChopperPos pos;
-  
+
   Python::ClassInterface PyClass;
   Python::ClassInstance PyInst;
   Python::Function hot;
@@ -189,14 +212,15 @@ class PythonOriginal {
   Python::Function initfun;
   Python::Function shutdown;
   Python::Function get;
-  
+
   bool error_found;
   std::string error;
 
-public:
+ public:
   using DataType = ChopperPos;
-  
-  PythonOriginal(const std::filesystem::path& path) : manual(false), pos(ChopperPos::Cold), error_found(false), error("") {
+
+  PythonOriginal(const std::filesystem::path& path)
+      : manual(false), pos(ChopperPos::Cold), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
       os << "Cannot find Chopper python file at:\n\t" << path << '\n';
@@ -205,7 +229,7 @@ public:
     py::eval_file(path.c_str());
     PyClass = Python::ClassInterface{"chopper"};
   };
-  
+
   void startup(const std::string& dev, int offset, double sleeptime) {
     PyInst = Python::ClassInstance{PyClass(dev, offset, sleeptime)};
     initfun = Python::Function{PyInst("init")};
@@ -216,11 +240,11 @@ public:
     cold = Python::Function{PyInst("set_cold")};
     get = Python::Function{PyInst("get_pos")};
   }
-  
+
   // Call once before the operation
-  void init(bool manual_press=false) {
-    manual=manual_press;
-    
+  void init(bool manual_press = false) {
+    manual = manual_press;
+
     try {
       initfun();
     } catch (const std::exception& e) {
@@ -228,10 +252,10 @@ public:
       error_found = true;
     }
   }
-  
+
   // Call upon exit for clean getaway
-  void close() {shutdown();}
-  
+  void close() { shutdown(); }
+
   // Main operation
   void run(ChopperPos x) {
     if (pos not_eq x) {
@@ -245,22 +269,28 @@ public:
         cold();
       }
     }
-    
+
     pos = x;
   }
-  
+
   // Queries
-  DataType get_data_raw() {return toChopperPos((Python::Object<Python::Type::String>{get()}).toString());}
-  DataType get_data() {return pos;}
-  
+  DataType get_data_raw() {
+    return toChopperPos(
+        (Python::Object<Python::Type::String>{get()}).toString());
+  }
+  DataType get_data() { return pos; }
+
   // Error handling
-  bool manual_run() {return manual;}
-  const std::string& error_string() const {return error;}
-  bool has_error() {return error_found;}
-  void delete_error() {error_found=false; error = "";}
+  bool manual_run() { return manual; }
+  const std::string& error_string() const { return error; }
+  bool has_error() { return error_found; }
+  void delete_error() {
+    error_found = false;
+    error = "";
+  }
 };  // PythonOriginalChopper
-}  // Chopper
-}  // Instrument
+}  // namespace Chopper
+}  // namespace Instrument
 
 #undef PATH
 #endif  // chopper_h

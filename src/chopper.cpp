@@ -1,6 +1,5 @@
 #include "chopper.h"
 
 namespace Instrument {
-namespace Chopper {
-}  // Chopper
-}  // Instrument
+namespace Chopper {}  // namespace Chopper
+}  // namespace Instrument

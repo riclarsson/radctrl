@@ -13,26 +13,26 @@
 #include "rational.h"
 
 /** Ready Wigner
-  * 
-  * @param[in] largest
-  * @param[in] fastest
-  * @param[in] size [3 or 6]
-  * @return largest if successful
-  */
+ *
+ * @param[in] largest
+ * @param[in] fastest
+ * @param[in] size [3 or 6]
+ * @return largest if successful
+ */
 int make_wigner_ready(int largest, int fastest, int size);
 
 /** Wigner 3J symbol
- * 
+ *
  * Run wigxjpf wig3jj for Rational symbol
- * 
+ *
  * /                \
  * |  j1   j2   j3  |
  * |                |
  * |  m1   m2   m3  |
  * \                /
- * 
+ *
  * See for definition: http://dlmf.nist.gov/34.2
- * 
+ *
  * @param[in] j1 as above
  * @param[in] j2 as above
  * @param[in] j3 as above
@@ -41,11 +41,7 @@ int make_wigner_ready(int largest, int fastest, int size);
  * @param[in] m3 as above
  * @return Symbol value
  */
-double wigner3j(const Rational j1,
-                const Rational j2,
-                const Rational j3,
-                const Rational m1,
-                const Rational m2,
-                const Rational m3);
+double wigner3j(const Rational j1, const Rational j2, const Rational j3,
+                const Rational m1, const Rational m2, const Rational m3);
 
 #endif  // wigner_h

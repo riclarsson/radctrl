@@ -6,32 +6,34 @@
 /** Namespace containing several constants, physical and mathematical **/
 namespace Constant {
 /** power of two */
-template <class T> [[gnu::const]]
-constexpr auto pow2(T x) noexcept -> decltype(x * x) {
+template <class T>
+[[gnu::const]] constexpr auto pow2(T x) noexcept -> decltype(x * x) {
   return x * x;
 }
 
 /** power of three */
-template <class T> [[gnu::const]]
-constexpr auto pow3(T x) noexcept -> decltype(x * x) {
+template <class T>
+[[gnu::const]] constexpr auto pow3(T x) noexcept -> decltype(x * x) {
   return pow2(x) * x;
 }
 
 /** power of four */
-template <class T> [[gnu::const]]
-constexpr auto pow4(T x) noexcept -> decltype(x * x) {
+template <class T>
+[[gnu::const]] constexpr auto pow4(T x) noexcept -> decltype(x * x) {
   return pow2(pow2(x));
 }
 
-template<class T> [[gnu::const]]
-constexpr auto pow5(T x) noexcept -> decltype(x * x) {
-  return pow3(x)*pow2(x);
+template <class T>
+[[gnu::const]] constexpr auto pow5(T x) noexcept -> decltype(x * x) {
+  return pow3(x) * pow2(x);
 }
 
-/** The following mathematical constants are generated in python Decimal package by the code:
-    * 
+/** The following mathematical constants are generated in python Decimal package
+  by the code:
+    *
     import decimal as d
-    pi_str = '3.141592653589793238462643383279502884197169399375105820974944592307816406286'
+    pi_str =
+  '3.141592653589793238462643383279502884197169399375105820974944592307816406286'
     d.getcontext().prec = len(pi_str) - 1
     pi = d.Decimal(pi_str)
     one = d.Decimal('1')
@@ -228,7 +230,7 @@ constexpr double electron_mass = 2 * h * R_inf / (c * pow2(alpha));
 /** Mass of resting electron convenience name [kg] **/
 constexpr double m_e = electron_mass;
 
-/** Unified atomic mass unit [kg] 
+/** Unified atomic mass unit [kg]
     From: https://physics.nist.gov/cgi-bin/cuu/Value?ukg
     Date: 2020-02-18
     Reported error: (50)
@@ -256,7 +258,8 @@ constexpr double proton_mass = electron_mass * mass_ratio_electrons_per_proton;
 constexpr double mass_ratio_electrons_per_neutron = 1'838.683'661'73;
 
 /** Mass of a neutron [kg] */
-constexpr double neutron_mass = electron_mass * mass_ratio_electrons_per_neutron;
+constexpr double neutron_mass =
+    electron_mass * mass_ratio_electrons_per_neutron;
 
 /** Bohr magneton [J/T] **/
 constexpr double bohr_magneton = e * h_bar / (2 * m_e);
@@ -269,13 +272,16 @@ constexpr double R = ideal_gas_constant;
 
 /** Doppler broadening constant squared [kg/T]^2 **/
 constexpr double doppler_broadening_const_squared = 2000 * R / pow2(c);
-}  // Constant
+}  // namespace Constant
 
-/** Namespace containing several practical unit conversions, physical and mathematical **/
+/** Namespace containing several practical unit conversions, physical and
+ * mathematical **/
 namespace Conversion {
 using namespace Constant;
 
-/** Conversion constant degrees to radians and back.  Use conversion formulae instead of pure constant if possible. NOTE:  No constexpr cos etal in ARTS yet. **/
+/** Conversion constant degrees to radians and back.  Use conversion formulae
+ * instead of pure constant if possible. NOTE:  No constexpr cos etal in ARTS
+ * yet. **/
 constexpr double DEG2RAD = pi / 180;
 constexpr double RAD2DEG = 1 / DEG2RAD;
 /** Converts degrees to radians  */
@@ -332,7 +338,8 @@ constexpr double atan2d(T1 y, T2 x) {
   return rad2deg(std::atan2(y, x));
 }
 
-/** Conversion constant Kayser wavenumber to frequency and back.  Use conversion formulae instead of pure constant if possible. **/
+/** Conversion constant Kayser wavenumber to frequency and back.  Use conversion
+ * formulae instead of pure constant if possible. **/
 constexpr double KAYCM2FREQ = 100 * c;
 constexpr double FREQ2KAYCM = 1 / KAYCM2FREQ;
 template <class T>
@@ -344,7 +351,8 @@ constexpr double freq2kaycm(T x) {
   return x * FREQ2KAYCM;
 }
 
-/** Conversion constant Angular wavenumber to frequency and back.  Use conversion formulae instead of pure constant if possible. **/
+/** Conversion constant Angular wavenumber to frequency and back.  Use
+ * conversion formulae instead of pure constant if possible. **/
 constexpr double ANGCM2FREQ = KAYCM2FREQ * inv_two_pi;
 constexpr double FREQ2ANGCM = 1 / ANGCM2FREQ;
 template <class T>
@@ -376,7 +384,8 @@ constexpr double freq2wavelen(T x) {
   return c / x;
 }
 
-/** Conversion constant 1 atmosphere to 1 Pascal and back.  Use conversion formulae instead of pure constant if possible. **/
+/** Conversion constant 1 atmosphere to 1 Pascal and back.  Use conversion
+ * formulae instead of pure constant if possible. **/
 constexpr double ATM2PA = 101'325;
 constexpr double PA2ATM = 1 / ATM2PA;
 template <class T>
@@ -388,7 +397,8 @@ constexpr double pa2atm(T x) {
   return x * PA2ATM;
 }
 
-/** Conversion constant 1 bar to 1 Pascal and back.  Use conversion formulae instead of pure constant if possible. **/
+/** Conversion constant 1 bar to 1 Pascal and back.  Use conversion formulae
+ * instead of pure constant if possible. **/
 constexpr double BAR2PA = 100'000;
 constexpr double PA2BAR = 1 / BAR2PA;
 template <class T>
@@ -400,7 +410,8 @@ constexpr double pa2bar(T x) {
   return x * PA2BAR;
 }
 
-/** Conversion constant 1 torr to 1 Pascal and back.  Use conversion formulae instead of pure constant if possible. **/
+/** Conversion constant 1 torr to 1 Pascal and back.  Use conversion formulae
+ * instead of pure constant if possible. **/
 constexpr double TORR2PA = ATM2PA / 760;
 constexpr double PA2TORR = 1 / TORR2PA;
 template <class T>
@@ -412,7 +423,8 @@ constexpr double pa2torr(T x) {
   return x * PA2TORR;
 }
 
-/** Conversion constant Celsius to Kelvin and back.  Use conversion formulae instead of pure constant if possible. **/
+/** Conversion constant Celsius to Kelvin and back.  Use conversion formulae
+ * instead of pure constant if possible. **/
 constexpr double CEL2KEL = 273.15;
 template <class T>
 constexpr double c2k(T x) {
@@ -423,9 +435,10 @@ constexpr double k2c(T x) {
   return x - CEL2KEL;
 }
 
-/** Conversion constant Farenheit to Kelvin and back.  Use conversion formulae instead of pure constant if possible. **/
+/** Conversion constant Farenheit to Kelvin and back.  Use conversion formulae
+ * instead of pure constant if possible. **/
 constexpr double FAR2KELoff = 459.67;
-constexpr double FAR2KELsca = 5.0/9.0;
+constexpr double FAR2KELsca = 5.0 / 9.0;
 template <class T>
 constexpr double f2k(T x) {
   return (x + FAR2KELoff) * FAR2KELsca;
@@ -435,7 +448,8 @@ constexpr double k2f(T x) {
   return x / FAR2KELsca - FAR2KELoff;
 }
 
-/** Conversion constant Electron Vold to Kelvin and back.  Use conversion formulae instead of pure constant if possible. **/
+/** Conversion constant Electron Vold to Kelvin and back.  Use conversion
+ * formulae instead of pure constant if possible. **/
 template <class T>
 constexpr double ev2k(T x) {
   return x * (e / k);
@@ -445,7 +459,8 @@ constexpr double k2ev(T x) {
   return x / (e / k);
 }
 
-/** Conversion constant Tesla to Gauss and back.  Use conversion formulae instead of pure constant if possible. **/
+/** Conversion constant Tesla to Gauss and back.  Use conversion formulae
+ * instead of pure constant if possible. **/
 template <class T>
 constexpr double t2g(T x) {
   return x * 10e4;
@@ -499,6 +514,6 @@ template <class T>
 constexpr T meter2angstrom(T x) {
   return x * 1e10;
 }
-}  // Conversion
+}  // namespace Conversion
 
 #endif  // constants_h

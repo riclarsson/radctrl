@@ -1,4 +1,3 @@
 #include "zeeman.h"
 
-namespace Absorption {
-};
+namespace Absorption {};

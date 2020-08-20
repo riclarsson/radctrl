@@ -1,6 +1,5 @@
 #include "backend.h"
 
 namespace Instrument {
-namespace Spectrometer {
-}  // Spectrometer
-}  // Instrument
+namespace Spectrometer {}  // namespace Spectrometer
+}  // namespace Instrument

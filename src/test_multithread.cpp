@@ -4,17 +4,16 @@
 std::mutex mtx;  // Global mutex to lock-guard important things
 
 int test001(double time, int n, char x) {
-  
-  for (int i=0; i<n; i++) {
+  for (int i = 0; i < n; i++) {
     std::this_thread::sleep_for(TimeStep(time));
     mtx.lock();
-    std::cout<<x<<i<<'\n';
+    std::cout << x << i << '\n';
     mtx.unlock();
   }
   return n;
 }
 
-int main () {
+int main() {
   auto x1 = Async(test001, 0.00005, 120, 'x');
   auto x2 = Async(test001, 0.0001, 60, 'a');
   auto x3 = Async(test001, 0.0002, 30, 'b');

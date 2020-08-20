@@ -1,10 +1,8 @@
 #include "housekeeping.h"
 
 namespace Instrument {
-namespace Housekeeping {
-
-}  // Housekeeping
-}  // Instrument
+namespace Housekeeping {}  // namespace Housekeeping
+}  // namespace Instrument
 
 void testAgilent34970A() {
   auto a = Instrument::Housekeeping::Agilent34970A();
@@ -14,8 +12,8 @@ void testAgilent34970A() {
   a.get_data();
   auto d = a.data();
   a.close();
-  
-  for (auto& x: d) std::cout<<x.first<<' '<<x.second<<'\n';
+
+  for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
 }
 
-int main() {testAgilent34970A();}
+int main() { testAgilent34970A(); }

@@ -1,18 +1,17 @@
 #include "gui.h"
 
-static int mini(int x, int y) {return x < y ? x : y;}
-static int maxi(int x, int y) {return x > y ? x : y;}
+static int mini(int x, int y) { return x < y ? x : y; }
+static int maxi(int x, int y) { return x > y ? x : y; }
 
 namespace GUI {
-GLFWmonitor* get_current_monitor(GLFWwindow *window)
-{
+GLFWmonitor* get_current_monitor(GLFWwindow* window) {
   int nmonitors, i;
   int wx, wy, ww, wh;
   int mx, my;
   int bestoverlap;
-  GLFWmonitor *bestmonitor;
-  GLFWmonitor **monitors;
-  const GLFWvidmode *mode;
+  GLFWmonitor* bestmonitor;
+  GLFWmonitor** monitors;
+  const GLFWvidmode* mode;
 
   bestoverlap = 0;
   bestmonitor = NULL;
@@ -24,13 +23,12 @@ GLFWmonitor* get_current_monitor(GLFWwindow *window)
   for (i = 0; i < nmonitors; i++) {
     mode = glfwGetVideoMode(monitors[i]);
     glfwGetMonitorPos(monitors[i], &mx, &my);
-    
+
     int mw = mode->width;
     int mh = mode->height;
 
-    int overlap =
-      maxi(0, mini(wx + ww, mx + mw) - maxi(wx, mx)) *
-      maxi(0, mini(wy + wh, my + mh) - maxi(wy, my));
+    int overlap = maxi(0, mini(wx + ww, mx + mw) - maxi(wx, mx)) *
+                  maxi(0, mini(wy + wh, my + mh) - maxi(wy, my));
 
     if (bestoverlap < overlap) {
       bestoverlap = overlap;
@@ -40,4 +38,4 @@ GLFWmonitor* get_current_monitor(GLFWwindow *window)
 
   return bestmonitor;
 }
-}
+}  // namespace GUI

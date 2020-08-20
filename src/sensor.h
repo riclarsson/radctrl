@@ -2,8 +2,7 @@
 #define sensor_h
 
 namespace Instrument {
-class Sensor {
-};
-}
+class Sensor {};
+}  // namespace Instrument
 
 #endif  // sensor_h

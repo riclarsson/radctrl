@@ -1,6 +1,5 @@
 #include "wobbler.h"
 
 namespace Instrument {
-namespace Wobbler {
-}  // Wobbler
-}  // Instrument
+namespace Wobbler {}  // namespace Wobbler
+}  // namespace Instrument
