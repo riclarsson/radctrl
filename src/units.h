@@ -120,10 +120,12 @@ class Magnetism {
   }
 public:
   constexpr Magnetism(std::array<double, 3> m) noexcept : M(m) {}
-  constexpr Magnetism(const Magnetism<MagnetismType::T>& m) noexcept : M(m.M) {t2self();}
-  constexpr Magnetism(const Magnetism<MagnetismType::G>& m) noexcept : M({Conversion::g2t(m.M[0]), Conversion::g2t(m.M[1]), Conversion::g2t(m.M[2])}) {t2self();}
+  Magnetism& operator=(const Magnetism& m) = default;
+  Magnetism(const Magnetism<MagnetismType::T>& m) noexcept : M(m.M) {t2self();}
+  Magnetism(const Magnetism<MagnetismType::G>& m) noexcept : M({Conversion::g2t(m.M[0]), Conversion::g2t(m.M[1]), Conversion::g2t(m.M[2])}) {t2self();}
   
   constexpr std::array<double, 3> value() const noexcept {return M;}
+  double Strength() const noexcept {return std::hypot(M[0], M[1], M[2]);}
   Magnetism& operator*=(double x) noexcept {for (auto& m: M) m *= x; return *this;}
   Magnetism& operator+=(Magnetism x) noexcept {M[0] += x.M[0]; M[1] += x.M[1]; M[2] += x.M[2]; return *this;}
   friend std::ostream& operator<<(std::ostream& os, Magnetism m) {return os << m.M[0] << ' ' << m.M[1] << ' ' << m.M[2];}
@@ -143,9 +145,11 @@ class Wind {
   }
 public:
   constexpr Wind(std::array<double, 3> w) noexcept : W(w) {}
-  constexpr Wind(const Wind<WindType::meters_per_second>& w) noexcept : W(w.W) {ms2self();}
+  Wind& operator=(const Wind& w) = default;
+  Wind(const Wind<WindType::meters_per_second>& w) noexcept : W(w.W) {ms2self();}
   
   constexpr std::array<double, 3> value() const noexcept {return W;}
+  double Strength() const noexcept {return std::hypot(W[0], W[1], W[2]);}
   Wind& operator*=(double x) noexcept {for (auto& w: W) w *= x; return *this;}
   Wind& operator+=(Wind x) noexcept {W[0] += x.W[0]; W[1] += x.W[1]; W[2] += x.W[2]; return *this;}
   friend std::ostream& operator<<(std::ostream& os, Wind w) {return os << w.W[0] << ' ' << w.W[1] << ' ' << w.W[2];}
@@ -170,13 +174,13 @@ public:
   
   constexpr Species::Species Species() const noexcept {return I.Spec();}
   constexpr double value() const noexcept {return R;}
+  double& value() noexcept {return R;}
   constexpr Species::Isotope isot() const noexcept {return I;}
   void isot(Species::Isotope i) noexcept {I=i;}
   VMR& operator*=(double x) noexcept {R *= x; return *this;}
   VMR& operator+=(VMR x) noexcept {if (x.I == I) {R += x.R;} return *this;}
   friend std::ostream& operator<<(std::ostream& os, VMR r) {return os << r.I << ' ' << r.R;}
   friend std::istream& operator>>(std::istream& is, VMR& r) {return is >> r.I >> r.R;}
-  template <typename Input> friend void readRatioOnly(Input& file, VMR& r) {file >> r.R;}
 };  // VMR
 
 ENUMCLASS(DistanceType, char,
@@ -223,6 +227,8 @@ public:
 
 ENUMCLASS(CoordinateType, char,
           deg,
+          lon,
+          lat,
           rad
 )  // AltType
 
@@ -231,10 +237,14 @@ class Coordinate final {
   SCALAR(Coordinate)
   void deg2self() noexcept {
     if constexpr (X == CoordinateType::deg) {}
+    if constexpr (X == CoordinateType::lat) {}
+    if constexpr (X == CoordinateType::lon) {}
     if constexpr (X == CoordinateType::rad) {val=Conversion::deg2rad(val);}
   }
 public:
   constexpr Coordinate(const Coordinate<CoordinateType::deg>& d) noexcept : val(d.value()) {deg2self();}
+  constexpr Coordinate(const Coordinate<CoordinateType::lon>& d) noexcept : val(d.value()) {deg2self(); while (val >= 360) val-=360; while (val < 0) val+=360;}
+  constexpr Coordinate(const Coordinate<CoordinateType::lat>& d) noexcept : val(d.value()) {deg2self(); if(val > 90) val=90; else if (val<-90) val = -90;}
   constexpr Coordinate(const Coordinate<CoordinateType::rad>& d) noexcept : val(Conversion::rad2deg(d.value())) {deg2self();}
 };  // Coordinate
 

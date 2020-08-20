@@ -291,6 +291,22 @@ public:
     child.append_attribute(name.c_str()) = os.str().c_str();
   }
   
+  template <class T, size_t N>
+  void add_attribute(const std::string& name, const std::array<T, N>& values) {
+    static_assert(Y == Type::Xml and (X == Operation::Write or
+                                      X == Operation::WriteBinary or
+                                      X == Operation::Append or
+                                      X == Operation::AppendBinary));
+    std::ostringstream os;
+    os << std::boolalpha << std::setprecision(PREC);
+    for (size_t i=0; i<N; i++) {
+      os << values[i];
+      if (i < values.size()-1)
+        os << ',';
+    }
+    child.append_attribute(name.c_str()) = os.str().c_str();
+  }
+  
   pugi::xml_attribute get_attribute(const std::string& name) {
     static_assert(Y == Type::Xml);
     return child.attribute(name.c_str());
@@ -309,6 +325,21 @@ public:
       ss << y;
       ss >> z;
       out.push_back(z);
+    }
+    return out;
+  }
+  
+  template <typename T, size_t N>
+  std::array<T, N> get_array_attribute(const std::string& name) {
+    std::array<T, N> out;
+    std::stringstream x(get_attribute(name).as_string());
+    for(size_t i=0; i<N; i++) {
+      std::stringstream ss;
+      std::string y;
+      
+      std::getline(x, y, ',');
+      ss << y;
+      ss >> out[i];
     }
     return out;
   }

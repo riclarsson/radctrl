@@ -392,6 +392,8 @@ struct Output {
          G,
          DV;
   constexpr Output() noexcept : G0(0), D0(0), G2(0), D2(0), FVC(0), ETA(0), Y(0), G(0), DV(0) {}
+  constexpr Output(double g0, double d0, double g2, double d2, double fvc, double eta, double y, double g, double dv) noexcept :
+  G0(g0), D0(d0), G2(g2), D2(d2), FVC(fvc), ETA(eta), Y(y), G(g), DV(dv) {}
   double& operator[](Parameter p) {
     if (p == Parameter::G0) return G0;
     else if (p == Parameter::D0) return D0;
@@ -405,6 +407,10 @@ struct Output {
     else std::exit(1);
   }
 };
+
+constexpr Output mirrored(Output x) noexcept {
+  return {x.G0, -x.D0, x.G2, -x.D2, x.FVC, x.ETA, x.Y, x.G, -x.DV};
+}
 
 
 struct ModelHelper {

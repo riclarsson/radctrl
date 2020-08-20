@@ -5,6 +5,7 @@
 
 #include "enums.h"
 #include "quantum.h"
+#include "species_partfun.h"
 
 namespace Species {
 /** named species */
@@ -325,8 +326,9 @@ struct IsotopeRecord {
   std::array<ChargedAtom, N> atoms;
   double mass;
   long gi;
+  long afgl;
   constexpr IsotopeRecord() noexcept : atoms(), mass(0), gi(0) {}
-  constexpr IsotopeRecord(std::array<ChargedAtom, N> a, double b, long c) noexcept : atoms(a), mass(b), gi(c) {}
+  constexpr IsotopeRecord(std::array<ChargedAtom, N> a, double b, long c, long d) noexcept : atoms(a), mass(b), gi(c), afgl(d) {}
 };
 
 /** Static data variable for looking up information about the species at runtime and at compile time */
@@ -338,229 +340,278 @@ isotopeRecords() {
   using SA = std::array<CA, IR::N>;
   if constexpr (S == Species::Water) { // H2O
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::O16}}, 18.010565 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::O18}}, 20.014811 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::O17}}, 19.01478 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::D}, CA{Atom::O16}}, 19.01674 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::D}, CA{Atom::O18}}, 21.020985 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::D}, CA{Atom::O17}}, 20.020956 /*grams/mol*/, 36 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::D}, CA{Atom::O16}}, 20.022915 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::O16}, }, 18.010565 /*grams/mol*/, 1 /*gi*/, 161 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::O18}, }, 20.014811 /*grams/mol*/, 1 /*gi*/, 181 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::O17}, }, 19.01478 /*grams/mol*/, 6 /*gi*/, 171 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::D}, CA{Atom::O16}, }, 19.01674 /*grams/mol*/, 6 /*gi*/, 162 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::D}, CA{Atom::O18}, }, 21.020985 /*grams/mol*/, 6 /*gi*/, 182 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::D}, CA{Atom::O17}, }, 20.020956 /*grams/mol*/, 36 /*gi*/, 172 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::D}, CA{Atom::O16}, }, 20.022915 /*grams/mol*/, 1 /*gi*/, 262 /*afgl*/},
+    };
   } else if constexpr (S == Species::CarbonDioxide) { // CO2
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}, CA{Atom::O16}}, 43.98983 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O16}, CA{Atom::O16}}, 44.993185 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::O18}}, 45.994076 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::O17}}, 44.994045 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C13}, CA{Atom::O18}}, 46.997431 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C13}, CA{Atom::O17}}, 45.9974 /*grams/mol*/, 12 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O18}, CA{Atom::O18}}, 47.998322 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O17}, CA{Atom::C12}, CA{Atom::O18}}, 46.998291 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O17}, CA{Atom::O17}}, 45.998262 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O18}, CA{Atom::O18}}, 49.001675 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O18}, CA{Atom::C13}, CA{Atom::O17}}, 48.001646 /*grams/mol*/, 12 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O17}, CA{Atom::O17}}, 47.0016182378 /*grams/mol*/, 2 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}, CA{Atom::O16}, }, 43.98983 /*grams/mol*/, 1 /*gi*/, 626 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O16}, CA{Atom::O16}, }, 44.993185 /*grams/mol*/, 2 /*gi*/, 636 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::O18}, }, 45.994076 /*grams/mol*/, 1 /*gi*/, 628 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::O17}, }, 44.994045 /*grams/mol*/, 6 /*gi*/, 627 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C13}, CA{Atom::O18}, }, 46.997431 /*grams/mol*/, 2 /*gi*/, 638 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C13}, CA{Atom::O17}, }, 45.9974 /*grams/mol*/, 12 /*gi*/, 637 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O18}, CA{Atom::O18}, }, 47.998322 /*grams/mol*/, 1 /*gi*/, 828 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O17}, CA{Atom::C12}, CA{Atom::O18}, }, 46.998291 /*grams/mol*/, 6 /*gi*/, 827 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O17}, CA{Atom::O17}, }, 45.998262 /*grams/mol*/, 1 /*gi*/, 727 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O18}, CA{Atom::O18}, }, 49.001675 /*grams/mol*/, 2 /*gi*/, 838 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O18}, CA{Atom::C13}, CA{Atom::O17}, }, 48.001646 /*grams/mol*/, 12 /*gi*/, 837 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O17}, CA{Atom::O17}, }, 47.0016182378 /*grams/mol*/, 2 /*gi*/, 737 /*afgl*/},
+    };
   } else if constexpr (S == Species::Ozone) { // O3
     return {
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O16}}, 47.984745 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O18}}, 49.988991 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O18}, CA{Atom::O16}}, 49.988991 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O17}}, 48.98896 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O17}, CA{Atom::O16}}, 48.98896 /*grams/mol*/, 6 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O16}, }, 47.984745 /*grams/mol*/, 1 /*gi*/, 666 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O18}, }, 49.988991 /*grams/mol*/, 1 /*gi*/, 668 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O18}, CA{Atom::O16}, }, 49.988991 /*grams/mol*/, 1 /*gi*/, 686 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O17}, }, 48.98896 /*grams/mol*/, 6 /*gi*/, 667 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O17}, CA{Atom::O16}, }, 48.98896 /*grams/mol*/, 6 /*gi*/, 676 /*afgl*/},
+    };
   } else if constexpr (S == Species::NitrogenOxide) { // N2O
     return {
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N14}, CA{Atom::O16}}, 44.001062 /*grams/mol*/, 9 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N15}, CA{Atom::O16}}, 44.998096 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::N15}, CA{Atom::N14}, CA{Atom::O16}}, 44.998096 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N14}, CA{Atom::O18}}, 46.005308 /*grams/mol*/, 9 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N14}, CA{Atom::O17}}, 45.005278 /*grams/mol*/, 54 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N14}, CA{Atom::O16}, }, 44.001062 /*grams/mol*/, 9 /*gi*/, 446 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N15}, CA{Atom::O16}, }, 44.998096 /*grams/mol*/, 6 /*gi*/, 456 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::N15}, CA{Atom::N14}, CA{Atom::O16}, }, 44.998096 /*grams/mol*/, 6 /*gi*/, 546 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N14}, CA{Atom::O18}, }, 46.005308 /*grams/mol*/, 9 /*gi*/, 448 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N14}, CA{Atom::O17}, }, 45.005278 /*grams/mol*/, 54 /*gi*/, 447 /*afgl*/},
+    };
   } else if constexpr (S == Species::CarbonMonoxide) { // CO
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}}, 27.994915 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O16}}, 28.99827 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O18}}, 29.999161 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O17}}, 28.99913 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O18}}, 31.002516 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O17}}, 30.002485 /*grams/mol*/, 12 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}, }, 27.994915 /*grams/mol*/, 1 /*gi*/, 26 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O16}, }, 28.99827 /*grams/mol*/, 2 /*gi*/, 36 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O18}, }, 29.999161 /*grams/mol*/, 1 /*gi*/, 28 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O17}, }, 28.99913 /*grams/mol*/, 6 /*gi*/, 27 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O18}, }, 31.002516 /*grams/mol*/, 2 /*gi*/, 38 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O17}, }, 30.002485 /*grams/mol*/, 12 /*gi*/, 37 /*afgl*/},
+    };
   } else if constexpr (S == Species::Methane) { // CH4
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}}, 16.0313 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}}, 17.034655 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::D}}, 17.037475 /*grams/mol*/, 3 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::D}}, 18.04083 /*grams/mol*/, 6 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, }, 16.0313 /*grams/mol*/, 1 /*gi*/, 211 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, }, 17.034655 /*grams/mol*/, 2 /*gi*/, 311 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::D}, }, 17.037475 /*grams/mol*/, 3 /*gi*/, 212 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::D}, }, 18.04083 /*grams/mol*/, 6 /*gi*/, 312 /*afgl*/},
+    };
   } else if constexpr (S == Species::Oxygen) { // O2
     return {
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O16}}, 31.98983 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O18}}, 33.994076 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O17}}, 32.994045 /*grams/mol*/, 6 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O16}, }, 31.98983 /*grams/mol*/, 1 /*gi*/, 66 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O18}, }, 33.994076 /*grams/mol*/, 1 /*gi*/, 68 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::O17}, }, 32.994045 /*grams/mol*/, 6 /*gi*/, 67 /*afgl*/},
+    };
   } else if constexpr (S == Species::NitricOxide) { // NO
     return {
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::O16}}, 29.997989 /*grams/mol*/, 3 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::N15}, CA{Atom::O16}}, 30.995023 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::O18}}, 32.002234 /*grams/mol*/, 3 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::O16}, }, 29.997989 /*grams/mol*/, 3 /*gi*/, 46 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::N15}, CA{Atom::O16}, }, 30.995023 /*grams/mol*/, 2 /*gi*/, 56 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::O18}, }, 32.002234 /*grams/mol*/, 3 /*gi*/, 48 /*afgl*/},
+    };
   } else if constexpr (S == Species::SulfurDioxide) { // SO2
     return {
-      IR{/*atoms=*/SA{CA{Atom::S32}, CA{Atom::O16}, CA{Atom::O16}}, 63.961901 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::S34}, CA{Atom::O16}, CA{Atom::O16}}, 65.957695 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::S32}, CA{Atom::O16}, CA{Atom::O16}, }, 63.961901 /*grams/mol*/, 1 /*gi*/, 626 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::S34}, CA{Atom::O16}, CA{Atom::O16}, }, 65.957695 /*grams/mol*/, 1 /*gi*/, 646 /*afgl*/},
+    };
   } else if constexpr (S == Species::NitrogenDioxide) { // NO2
     return {
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::O16}, CA{Atom::O16}}, 45.992904 /*grams/mol*/, 3 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::N15}, CA{Atom::O16}, CA{Atom::O16}}, 46.989938 /*grams/mol*/, 2 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::O16}, CA{Atom::O16}, }, 45.992904 /*grams/mol*/, 3 /*gi*/, 646 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::N15}, CA{Atom::O16}, CA{Atom::O16}, }, 46.989938 /*grams/mol*/, 2 /*gi*/, 656 /*afgl*/},
+    };
   } else if constexpr (S == Species::Ammonia) { // NH3
     return {
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}}, 17.026549 /*grams/mol*/, 3 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::N15}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}}, 18.023583 /*grams/mol*/, 2 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, }, 17.026549 /*grams/mol*/, 3 /*gi*/, 4111 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::N15}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, }, 18.023583 /*grams/mol*/, 2 /*gi*/, 5111 /*afgl*/},
+    };
   } else if constexpr (S == Species::NitricAcid) { // HNO3
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::N14}, CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O16}}, 62.995644 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::N15}, CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O16}}, 63.99268 /*grams/mol*/, 4 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::N14}, CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O16}, }, 62.995644 /*grams/mol*/, 6 /*gi*/, 146 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::N15}, CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O16}, }, 63.99268 /*grams/mol*/, 4 /*gi*/, 156 /*afgl*/},
+    };
   } else if constexpr (S == Species::Hydroxyl) { // OH
     return {
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::H}}, 17.00274 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O18}, CA{Atom::H}}, 19.006986 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::D}}, 18.008915 /*grams/mol*/, 3 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::H}, }, 17.00274 /*grams/mol*/, 2 /*gi*/, 61 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O18}, CA{Atom::H}, }, 19.006986 /*grams/mol*/, 2 /*gi*/, 81 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::D}, }, 18.008915 /*grams/mol*/, 3 /*gi*/, 62 /*afgl*/},
+    };
   } else if constexpr (S == Species::HydrogenFluoride) { // HF
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::F19}}, 20.006229 /*grams/mol*/, 4 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::F19}}, 21.012404 /*grams/mol*/, 6 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::F19}, }, 20.006229 /*grams/mol*/, 4 /*gi*/, 19 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::F19}, }, 21.012404 /*grams/mol*/, 6 /*gi*/, 29 /*afgl*/},
+    };
   } else if constexpr (S == Species::HydrogenChloride) { // HCl
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::Cl35}}, 35.976678 /*grams/mol*/, 8 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::Cl37}}, 37.973729 /*grams/mol*/, 8 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::Cl35}}, 36.982853 /*grams/mol*/, 12 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::Cl37}}, 38.979904 /*grams/mol*/, 12 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::Cl35}, }, 35.976678 /*grams/mol*/, 8 /*gi*/, 15 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::Cl37}, }, 37.973729 /*grams/mol*/, 8 /*gi*/, 17 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::Cl35}, }, 36.982853 /*grams/mol*/, 12 /*gi*/, 25 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::Cl37}, }, 38.979904 /*grams/mol*/, 12 /*gi*/, 27 /*afgl*/},
+    };
   } else if constexpr (S == Species::HydrogenBromide) { // HBr
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::Br79}}, 79.92616 /*grams/mol*/, 8 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::Br81}}, 81.924115 /*grams/mol*/, 8 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::Br79}}, 80.932336 /*grams/mol*/, 12 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::Br81}}, 82.930289 /*grams/mol*/, 12 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::Br79}, }, 79.92616 /*grams/mol*/, 8 /*gi*/, 19 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::Br81}, }, 81.924115 /*grams/mol*/, 8 /*gi*/, 11 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::Br79}, }, 80.932336 /*grams/mol*/, 12 /*gi*/, 29 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::Br81}, }, 82.930289 /*grams/mol*/, 12 /*gi*/, 21 /*afgl*/},
+    };
   } else if constexpr (S == Species::HydrogenIodide) { // HI
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::I127}}, 127.912297 /*grams/mol*/, 12 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::I127}}, 128.918472 /*grams/mol*/, 18 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::I127}, }, 127.912297 /*grams/mol*/, 12 /*gi*/, 17 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::D}, CA{Atom::I127}, }, 128.918472 /*grams/mol*/, 18 /*gi*/, 27 /*afgl*/},
+    };
   } else if constexpr (S == Species::ChlorineMonoxide) { // ClO
     return {
-      IR{/*atoms=*/SA{CA{Atom::Cl35}, CA{Atom::O16}}, 50.963768 /*grams/mol*/, 4 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::Cl37}, CA{Atom::O16}}, 52.960819 /*grams/mol*/, 4 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::Cl35}, CA{Atom::O16}, }, 50.963768 /*grams/mol*/, 4 /*gi*/, 56 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::Cl37}, CA{Atom::O16}, }, 52.960819 /*grams/mol*/, 4 /*gi*/, 76 /*afgl*/},
+    };
   } else if constexpr (S == Species::CarbonylSulfide) { // OCS
     return {
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::S32}}, 59.966986 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::S34}}, 61.96278 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C13}, CA{Atom::S32}}, 60.970341 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::S33}}, 60.966371 /*grams/mol*/, 4 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::O18}, CA{Atom::C12}, CA{Atom::S32}}, 61.971231 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::S32}, }, 59.966986 /*grams/mol*/, 1 /*gi*/, 622 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::S34}, }, 61.96278 /*grams/mol*/, 1 /*gi*/, 624 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C13}, CA{Atom::S32}, }, 60.970341 /*grams/mol*/, 2 /*gi*/, 632 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O16}, CA{Atom::C12}, CA{Atom::S33}, }, 60.966371 /*grams/mol*/, 4 /*gi*/, 623 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::O18}, CA{Atom::C12}, CA{Atom::S32}, }, 61.971231 /*grams/mol*/, 1 /*gi*/, 822 /*afgl*/},
+    };
   } else if constexpr (S == Species::Formaldehyde) { // H2CO
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::C12}, CA{Atom::O16}}, 30.010565 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::C13}, CA{Atom::O16}}, 31.01392 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::C12}, CA{Atom::O18}}, 32.014811 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::C12}, CA{Atom::O16}, }, 30.010565 /*grams/mol*/, 1 /*gi*/, 126 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::C13}, CA{Atom::O16}, }, 31.01392 /*grams/mol*/, 2 /*gi*/, 136 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::C12}, CA{Atom::O18}, }, 32.014811 /*grams/mol*/, 1 /*gi*/, 128 /*afgl*/},
+    };
   } else if constexpr (S == Species::HypochlorousAcid) { // HOCl
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::Cl35}}, 51.971593 /*grams/mol*/, 8 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::Cl37}}, 53.968644 /*grams/mol*/, 8 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::Cl35}, }, 51.971593 /*grams/mol*/, 8 /*gi*/, 165 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::Cl37}, }, 53.968644 /*grams/mol*/, 8 /*gi*/, 167 /*afgl*/},
+    };
   } else if constexpr (S == Species::Nitrogen) { // N2
     return {
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N14}}, 28.006148 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N15}}, 29.003182 /*grams/mol*/, 6 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N14}, }, 28.006148 /*grams/mol*/, 1 /*gi*/, 44 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::N15}, }, 29.003182 /*grams/mol*/, 6 /*gi*/, 45 /*afgl*/},
+    };
   } else if constexpr (S == Species::HydrogenCyanide) { // HCN
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::N14}}, 27.010899 /*grams/mol*/, 6 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C13}, CA{Atom::N14}}, 28.014254 /*grams/mol*/, 12 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::N15}}, 28.007933 /*grams/mol*/, 4 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::N14}, }, 27.010899 /*grams/mol*/, 6 /*gi*/, 124 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C13}, CA{Atom::N14}, }, 28.014254 /*grams/mol*/, 12 /*gi*/, 134 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::N15}, }, 28.007933 /*grams/mol*/, 4 /*gi*/, 125 /*afgl*/},
+    };
   } else if constexpr (S == Species::MethylChloride) { // CH3Cl
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::Cl35}}, 49.992328 /*grams/mol*/, 4 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::Cl37}}, 51.989379 /*grams/mol*/, 4 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::Cl35}, }, 49.992328 /*grams/mol*/, 4 /*gi*/, 215 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::Cl37}, }, 51.989379 /*grams/mol*/, 4 /*gi*/, 217 /*afgl*/},
+    };
   } else if constexpr (S == Species::HydrogenPeroxide) { // H2O2
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::O16}, CA{Atom::O16}}, 34.00548 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::O16}, CA{Atom::O16}, }, 34.00548 /*grams/mol*/, 1 /*gi*/, 1661 /*afgl*/},
+    };
   } else if constexpr (S == Species::Acetylene) { // C2H2
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}}, 26.01565 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::C13}, CA{Atom::H}}, 27.019005 /*grams/mol*/, 8 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::D}}, 27.021825 /*grams/mol*/, 6 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, }, 26.01565 /*grams/mol*/, 1 /*gi*/, 1221 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::C13}, CA{Atom::H}, }, 27.019005 /*grams/mol*/, 8 /*gi*/, 1231 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::D}, }, 27.021825 /*grams/mol*/, 6 /*gi*/, 1222 /*afgl*/},
+    };
   } else if constexpr (S == Species::Ethane) { // C2H6
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}}, 30.04695 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::C13}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}}, 31.050305 /*grams/mol*/, 2 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, }, 30.04695 /*grams/mol*/, 1 /*gi*/, 1221 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::C13}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, }, 31.050305 /*grams/mol*/, 2 /*gi*/, 1231 /*afgl*/},
+    };
   } else if constexpr (S == Species::Phosphine) { // PH3
     return {
-      IR{/*atoms=*/SA{CA{Atom::P31}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}}, 33.997238 /*grams/mol*/, 2 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::P31}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, }, 33.997238 /*grams/mol*/, 2 /*gi*/, 1111 /*afgl*/},
+    };
   } else if constexpr (S == Species::CarbonylFluoride) { // COF2
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}, CA{Atom::F19}, CA{Atom::F19}}, 65.991722 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O16}, CA{Atom::F19}, CA{Atom::F19}}, 66.995083 /*grams/mol*/, 2 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}, CA{Atom::F19}, CA{Atom::F19}, }, 65.991722 /*grams/mol*/, 1 /*gi*/, 269 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::O16}, CA{Atom::F19}, CA{Atom::F19}, }, 66.995083 /*grams/mol*/, 2 /*gi*/, 369 /*afgl*/},
+    };
   } else if constexpr (S == Species::SulfurHexafluoride) { // SF6
     return {
-      IR{/*atoms=*/SA{CA{Atom::S32}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}}, 145.962492 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::S32}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, }, 145.962492 /*grams/mol*/, 1 /*gi*/, 29 /*afgl*/},
+    };
   } else if constexpr (S == Species::HydrogenSulfide) { // H2S
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::S32}}, 33.987721 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::S34}}, 35.983515 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::S33}}, 34.987105 /*grams/mol*/, 4 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::S32}, }, 33.987721 /*grams/mol*/, 1 /*gi*/, 121 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::S34}, }, 35.983515 /*grams/mol*/, 1 /*gi*/, 141 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, CA{Atom::S33}, }, 34.987105 /*grams/mol*/, 4 /*gi*/, 131 /*afgl*/},
+    };
   } else if constexpr (S == Species::FormicAcid) { // HCOOH
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::O16}, CA{Atom::O16}, CA{Atom::H}}, 46.00548 /*grams/mol*/, 4 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::O16}, CA{Atom::O16}, CA{Atom::H}, }, 46.00548 /*grams/mol*/, 4 /*gi*/, 126 /*afgl*/},
+    };
   } else if constexpr (S == Species::Hydroperoxyl) { // HO2
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::O16}}, 32.997655 /*grams/mol*/, 2 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::O16}, }, 32.997655 /*grams/mol*/, 2 /*gi*/, 166 /*afgl*/},
+    };
   } else if constexpr (S == Species::OxygenAtom) { // O
     return {
-      IR{/*atoms=*/SA{CA{Atom::O16}}, 15.994915 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::O16}, }, 15.994915 /*grams/mol*/, 1 /*gi*/, 6 /*afgl*/},
+    };
   } else if constexpr (S == Species::ChlorineNitrate) { // ClONO2
     return {
-      IR{/*atoms=*/SA{CA{Atom::Cl35}, CA{Atom::O16}, CA{Atom::N14}, CA{Atom::O16}, CA{Atom::O16}}, 96.956672 /*grams/mol*/, 12 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::Cl37}, CA{Atom::O16}, CA{Atom::N14}, CA{Atom::O16}, CA{Atom::O16}}, 98.953723 /*grams/mol*/, 12 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::Cl35}, CA{Atom::O16}, CA{Atom::N14}, CA{Atom::O16}, CA{Atom::O16}, }, 96.956672 /*grams/mol*/, 12 /*gi*/, 5646 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::Cl37}, CA{Atom::O16}, CA{Atom::N14}, CA{Atom::O16}, CA{Atom::O16}, }, 98.953723 /*grams/mol*/, 12 /*gi*/, 7646 /*afgl*/},
+    };
   } else if constexpr (S == Species::NitricOxideCation) { // NO+
     return {
-      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::O16, +1}}, 29.997989 /*grams/mol*/, 3 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::N14}, CA{Atom::O16, 1}, }, 29.997989 /*grams/mol*/, 3 /*gi*/, 46 /*afgl*/},
+    };
   } else if constexpr (S == Species::HypobromousAcid) { // HOBr
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::Br79}}, 95.921076 /*grams/mol*/, 8 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::Br81}}, 97.919027 /*grams/mol*/, 8 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::Br79}, }, 95.921076 /*grams/mol*/, 8 /*gi*/, 169 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::O16}, CA{Atom::Br81}, }, 97.919027 /*grams/mol*/, 8 /*gi*/, 161 /*afgl*/},
+    };
   } else if constexpr (S == Species::Ethylene) { // C2H4
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}}, 28.0313 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::C13}, CA{Atom::H}, CA{Atom::H}}, 29.034655 /*grams/mol*/, 2 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, }, 28.0313 /*grams/mol*/, 1 /*gi*/, 221 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::C13}, CA{Atom::H}, CA{Atom::H}, }, 29.034655 /*grams/mol*/, 2 /*gi*/, 231 /*afgl*/},
+    };
   } else if constexpr (S == Species::Methanol) { // CH3OH
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::O16}, CA{Atom::H}}, 32.026215 /*grams/mol*/, 2 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::O16}, CA{Atom::H}, }, 32.026215 /*grams/mol*/, 2 /*gi*/, 2161 /*afgl*/},
+    };
   } else if constexpr (S == Species::MethylBromide) { // CH3Br
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::Br79}}, 93.941811 /*grams/mol*/, 4 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::Br81}}, 95.939764 /*grams/mol*/, 4 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::Br79}, }, 93.941811 /*grams/mol*/, 4 /*gi*/, 219 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::Br81}, }, 95.939764 /*grams/mol*/, 4 /*gi*/, 211 /*afgl*/},
+    };
   } else if constexpr (S == Species::Acetonitrile) { // CH3CN
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::C12}, CA{Atom::N14}}, 41.026549 /*grams/mol*/, 3 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, CA{Atom::H}, CA{Atom::C12}, CA{Atom::N14}, }, 41.026549 /*grams/mol*/, 3 /*gi*/, 2124 /*afgl*/},
+    };
   } else if constexpr (S == Species::Pfc14) { // CF4
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}}, 87.993616 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, CA{Atom::F19}, }, 87.993616 /*grams/mol*/, 1 /*gi*/, 29 /*afgl*/},
+    };
   } else if constexpr (S == Species::Diacetylene) { // C4H2
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}}, 50.01565 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::H}, CA{Atom::H}, }, 50.01565 /*grams/mol*/, 1 /*gi*/, 2211 /*afgl*/},
+    };
   } else if constexpr (S == Species::Cyanoacetylene) { // HC3N
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::N14}}, 51.010899 /*grams/mol*/, 6 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::C12}, CA{Atom::N14}, }, 51.010899 /*grams/mol*/, 6 /*gi*/, 1224 /*afgl*/},
+    };
   } else if constexpr (S == Species::Hydrogen) { // H2
     return {
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}}, 2.01565 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::D}}, 3.021825 /*grams/mol*/, 6 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::H}, }, 2.01565 /*grams/mol*/, 1 /*gi*/, 11 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::H}, CA{Atom::D}, }, 3.021825 /*grams/mol*/, 6 /*gi*/, 12 /*afgl*/},
+    };
   } else if constexpr (S == Species::CarbonMonosulfide) { // CS
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::S32}}, 43.971036 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::S34}}, 45.966787 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::S32}}, 44.974368 /*grams/mol*/, 2 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::S33}}, 44.970399 /*grams/mol*/, 4 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::S32}, }, 43.971036 /*grams/mol*/, 1 /*gi*/, 22 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::S34}, }, 45.966787 /*grams/mol*/, 1 /*gi*/, 24 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C13}, CA{Atom::S32}, }, 44.974368 /*grams/mol*/, 2 /*gi*/, 32 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::S33}, }, 44.970399 /*grams/mol*/, 4 /*gi*/, 23 /*afgl*/},
+    };
   } else if constexpr (S == Species::SulfurTrioxide) { // SO3
     return {
-      IR{/*atoms=*/SA{CA{Atom::S32}, CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O16}}, 79.95682 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::S32}, CA{Atom::O16}, CA{Atom::O16}, CA{Atom::O16}, }, 79.95682 /*grams/mol*/, 1 /*gi*/, 26 /*afgl*/},
+    };
   } else if constexpr (S == Species::Cyanogen) { // C2N2
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::N14}, CA{Atom::N14}}, 52.006148 /*grams/mol*/, 1 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::C12}, CA{Atom::N14}, CA{Atom::N14}, }, 52.006148 /*grams/mol*/, 1 /*gi*/, 4224 /*afgl*/},
+    };
   } else if constexpr (S == Species::Phosgene) { // COCl2
     return {
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}, CA{Atom::Cl35}, CA{Atom::Cl35}}, 97.9326199796 /*grams/mol*/, 1 /*gi*/},
-      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}, CA{Atom::Cl35}, CA{Atom::Cl37}}, 99.9296698896 /*grams/mol*/, 16 /*gi*/}};
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}, CA{Atom::Cl35}, CA{Atom::Cl35}, }, 97.9326199796 /*grams/mol*/, 1 /*gi*/, 2655 /*afgl*/},
+      IR{/*atoms=*/SA{CA{Atom::C12}, CA{Atom::O16}, CA{Atom::Cl35}, CA{Atom::Cl37}, }, 99.9296698896 /*grams/mol*/, 16 /*gi*/, 2657 /*afgl*/},
+    };
   } else {
     return {};
   }
@@ -1198,6 +1249,51 @@ constexpr bool check_quantumnumbers(const std::array<Quantum::Type, N>& data) {
   return true;
 }
 
+template <Species S, size_t N>
+constexpr bool check_unique_afgl(const std::array<IsotopeRecord<S>, N>& data) {
+  if constexpr (N > 1) {
+    for (size_t i=0; i<N; i++) {
+      for (size_t j=0; j<N; j++) {
+        if (j not_eq i and data[i].afgl == data[j].afgl) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+template <Species S, size_t N>
+constexpr bool check_unique_atoms(const std::array<IsotopeRecord<S>, N>& data) {
+  if constexpr (N > 1) {
+    for (size_t i=0; i<N; i++) {
+      for (size_t j=0; j<N; j++) {
+        if (j not_eq i) {
+          size_t matches = 0;
+          for (size_t k=0; k<data[i].atoms.size(); k++) {
+            matches += data[i].atoms[k] == data[j].atoms[k];
+          }
+          if (matches == data[i].atoms.size())
+            return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+template <Species S, size_t N>
+constexpr bool check_positive_gi(const std::array<IsotopeRecord<S>, N>& data) {
+  if constexpr (N > 1) {
+    for (size_t i=0; i<N; i++) {
+      if (data[i].gi < 1) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 /** A class of static isotope data */
 template <Species S>
 class Isotopologue {
@@ -1208,6 +1304,9 @@ class Isotopologue {
   static constexpr IsotopologueRecord<S> data{};
   static_assert(check_quantumnumbers(data.local), "Error, quantum numbers must be in increasing order (you might be missing a number)");
   static_assert(check_quantumnumbers(data.global), "Error, quantum numbers must be in increasing order (you might be missing a number)");
+  static_assert(check_unique_afgl(data.isot), "Error, AFGL numbers are copies");
+  static_assert(check_positive_gi(data.isot), "Error, non-positive gi");
+  static_assert(check_unique_atoms(data.isot), "Error, non-unique atom configuration");
 public:
   constexpr Isotopologue() noexcept {}
   
@@ -1238,7 +1337,7 @@ public:
     }
     
     // Placeholder for out of range
-    return NA;
+    return NI;
   }
   
   unsigned char findNum(const std::vector<ChargedAtom>& atoms) const noexcept {
@@ -1276,14 +1375,451 @@ public:
     }
     return false;
   }
+  
+  constexpr size_t get_local_pos(Quantum::Type t) const noexcept {
+    for (size_t i=0; i<data.local.size(); i++) {
+      if (data.local[i] == t) {
+        return i;
+      }
+    }
+    return std::numeric_limits<size_t>::max();
+  }
+  
+  constexpr size_t get_global_pos(Quantum::Type t) const noexcept {
+    for (size_t i=0; i<data.global.size(); i++) {
+      if (data.global[i] == t) {
+        return i;
+      }
+    }
+    return std::numeric_limits<size_t>::max();
+  }
+  
+  constexpr double QT(double T, unsigned char num) const noexcept {
+    if constexpr (S == Species::Water) {
+      if (data.isot[num].afgl == 161) {
+        return PartitionFunction::compute_partfun_H2O161(T);
+      } else if (data.isot[num].afgl == 181) {
+        return PartitionFunction::compute_partfun_H2O181(T);
+      } else if (data.isot[num].afgl == 171) {
+        return PartitionFunction::compute_partfun_H2O171(T);
+      } else if (data.isot[num].afgl == 162) {
+        return PartitionFunction::compute_partfun_H2O162(T);
+      } else if (data.isot[num].afgl == 182) {
+        return PartitionFunction::compute_partfun_H2O182(T);
+      } else if (data.isot[num].afgl == 172) {
+        return PartitionFunction::compute_partfun_H2O172(T);
+      } else if (data.isot[num].afgl == 262) {
+        return PartitionFunction::compute_partfun_H2O262(T);
+      } else if (data.isot[num].afgl == 282) {
+        return PartitionFunction::compute_partfun_H2O282(T);
+      } else if (data.isot[num].afgl == 272) {
+        return PartitionFunction::compute_partfun_H2O272(T);
+      }
+    } else if constexpr (S == Species::CarbonDioxide) {
+      if (data.isot[num].afgl == 626) {
+        return PartitionFunction::compute_partfun_CO2626(T);
+      } else if (data.isot[num].afgl == 636) {
+        return PartitionFunction::compute_partfun_CO2636(T);
+      } else if (data.isot[num].afgl == 628) {
+        return PartitionFunction::compute_partfun_CO2628(T);
+      } else if (data.isot[num].afgl == 627) {
+        return PartitionFunction::compute_partfun_CO2627(T);
+      } else if (data.isot[num].afgl == 638) {
+        return PartitionFunction::compute_partfun_CO2638(T);
+      } else if (data.isot[num].afgl == 637) {
+        return PartitionFunction::compute_partfun_CO2637(T);
+      } else if (data.isot[num].afgl == 828) {
+        return PartitionFunction::compute_partfun_CO2828(T);
+      } else if (data.isot[num].afgl == 728) {
+        return PartitionFunction::compute_partfun_CO2728(T);
+      } else if (data.isot[num].afgl == 727) {
+        return PartitionFunction::compute_partfun_CO2727(T);
+      } else if (data.isot[num].afgl == 838) {
+        return PartitionFunction::compute_partfun_CO2838(T);
+      } else if (data.isot[num].afgl == 837) {
+        return PartitionFunction::compute_partfun_CO2837(T);
+      } else if (data.isot[num].afgl == 737) {
+        return PartitionFunction::compute_partfun_CO2737(T);
+      } else if (data.isot[num].afgl == 646) {
+        return PartitionFunction::compute_partfun_CO2646(T);
+      }
+    } else if constexpr (S == Species::Ozone) {
+      if (data.isot[num].afgl == 666) {
+        return PartitionFunction::compute_partfun_O3666(T);
+      } else if (data.isot[num].afgl == 668) {
+        return PartitionFunction::compute_partfun_O3668(T);
+      } else if (data.isot[num].afgl == 686) {
+        return PartitionFunction::compute_partfun_O3686(T);
+      } else if (data.isot[num].afgl == 667) {
+        return PartitionFunction::compute_partfun_O3667(T);
+      } else if (data.isot[num].afgl == 676) {
+        return PartitionFunction::compute_partfun_O3676(T);
+      } else if (data.isot[num].afgl == 886) {
+        return PartitionFunction::compute_partfun_O3886(T);
+      } else if (data.isot[num].afgl == 868) {
+        return PartitionFunction::compute_partfun_O3868(T);
+      } else if (data.isot[num].afgl == 678) {
+        return PartitionFunction::compute_partfun_O3678(T);
+      } else if (data.isot[num].afgl == 768) {
+        return PartitionFunction::compute_partfun_O3768(T);
+      } else if (data.isot[num].afgl == 786) {
+        return PartitionFunction::compute_partfun_O3786(T);
+      } else if (data.isot[num].afgl == 776) {
+        return PartitionFunction::compute_partfun_O3776(T);
+      } else if (data.isot[num].afgl == 767) {
+        return PartitionFunction::compute_partfun_O3767(T);
+      } else if (data.isot[num].afgl == 888) {
+        return PartitionFunction::compute_partfun_O3888(T);
+      } else if (data.isot[num].afgl == 887) {
+        return PartitionFunction::compute_partfun_O3887(T);
+      } else if (data.isot[num].afgl == 878) {
+        return PartitionFunction::compute_partfun_O3878(T);
+      } else if (data.isot[num].afgl == 778) {
+        return PartitionFunction::compute_partfun_O3778(T);
+      } else if (data.isot[num].afgl == 787) {
+        return PartitionFunction::compute_partfun_O3787(T);
+      } else if (data.isot[num].afgl == 777) {
+        return PartitionFunction::compute_partfun_O3777(T);
+      }
+    } else if constexpr (S == Species::NitrogenOxide) {
+      if (data.isot[num].afgl == 446) {
+        return PartitionFunction::compute_partfun_N2O446(T);
+      } else if (data.isot[num].afgl == 456) {
+        return PartitionFunction::compute_partfun_N2O456(T);
+      } else if (data.isot[num].afgl == 546) {
+        return PartitionFunction::compute_partfun_N2O546(T);
+      } else if (data.isot[num].afgl == 448) {
+        return PartitionFunction::compute_partfun_N2O448(T);
+      } else if (data.isot[num].afgl == 447) {
+        return PartitionFunction::compute_partfun_N2O447(T);
+      }
+    } else if constexpr (S == Species::CarbonMonoxide) {
+      if (data.isot[num].afgl == 26) {
+        return PartitionFunction::compute_partfun_CO26(T);
+      } else if (data.isot[num].afgl == 36) {
+        return PartitionFunction::compute_partfun_CO36(T);
+      } else if (data.isot[num].afgl == 28) {
+        return PartitionFunction::compute_partfun_CO28(T);
+      } else if (data.isot[num].afgl == 27) {
+        return PartitionFunction::compute_partfun_CO27(T);
+      } else if (data.isot[num].afgl == 38) {
+        return PartitionFunction::compute_partfun_CO38(T);
+      } else if (data.isot[num].afgl == 37) {
+        return PartitionFunction::compute_partfun_CO37(T);
+      } else if (data.isot[num].afgl == 46) {
+        return PartitionFunction::compute_partfun_CO46(T);
+      } else if (data.isot[num].afgl == 48) {
+        return PartitionFunction::compute_partfun_CO48(T);
+      } else if (data.isot[num].afgl == 47) {
+        return PartitionFunction::compute_partfun_CO47(T);
+      }
+    } else if constexpr (S == Species::Methane) {
+      if (data.isot[num].afgl == 211) {
+        return PartitionFunction::compute_partfun_CH4211(T);
+      } else if (data.isot[num].afgl == 311) {
+        return PartitionFunction::compute_partfun_CH4311(T);
+      } else if (data.isot[num].afgl == 212) {
+        return PartitionFunction::compute_partfun_CH4212(T);
+      } else if (data.isot[num].afgl == 312) {
+        return PartitionFunction::compute_partfun_CH4312(T);
+      }
+    } else if constexpr (S == Species::Oxygen) {
+      if (data.isot[num].afgl == 66) {
+        return PartitionFunction::compute_partfun_O266(T);
+      } else if (data.isot[num].afgl == 68) {
+        return PartitionFunction::compute_partfun_O268(T);
+      } else if (data.isot[num].afgl == 67) {
+        return PartitionFunction::compute_partfun_O267(T);
+      } else if (data.isot[num].afgl == 88) {
+        return PartitionFunction::compute_partfun_O288(T);
+      } else if (data.isot[num].afgl == 87) {
+        return PartitionFunction::compute_partfun_O287(T);
+      } else if (data.isot[num].afgl == 77) {
+        return PartitionFunction::compute_partfun_O277(T);
+      }
+    } else if constexpr (S == Species::NitricOxide) {
+      if (data.isot[num].afgl == 46) {
+        return PartitionFunction::compute_partfun_NO46(T);
+      } else if (data.isot[num].afgl == 56) {
+        return PartitionFunction::compute_partfun_NO56(T);
+      } else if (data.isot[num].afgl == 48) {
+        return PartitionFunction::compute_partfun_NO48(T);
+      }
+    } else if constexpr (S == Species::SulfurDioxide) {
+      if (data.isot[num].afgl == 626) {
+        return PartitionFunction::compute_partfun_SO2626(T);
+      } else if (data.isot[num].afgl == 646) {
+        return PartitionFunction::compute_partfun_SO2646(T);
+      }
+    } else if constexpr (S == Species::NitrogenDioxide) {
+      if (data.isot[num].afgl == 646) {
+        return PartitionFunction::compute_partfun_NO2646(T);
+      }
+    } else if constexpr (S == Species::Ammonia) {
+      if (data.isot[num].afgl == 4111) {
+        return PartitionFunction::compute_partfun_NH34111(T);
+      } else if (data.isot[num].afgl == 5111) {
+        return PartitionFunction::compute_partfun_NH35111(T);
+      }
+    } else if constexpr (S == Species::NitricAcid) {
+      if (data.isot[num].afgl == 146) {
+        return PartitionFunction::compute_partfun_HNO3146(T);
+      } else if (data.isot[num].afgl == 156) {
+        return PartitionFunction::compute_partfun_HNO3156(T);
+      }
+    } else if constexpr (S == Species::Hydroxyl) {
+      if (data.isot[num].afgl == 61) {
+        return PartitionFunction::compute_partfun_OH61(T);
+      } else if (data.isot[num].afgl == 81) {
+        return PartitionFunction::compute_partfun_OH81(T);
+      } else if (data.isot[num].afgl == 62) {
+        return PartitionFunction::compute_partfun_OH62(T);
+      }
+    } else if constexpr (S == Species::HydrogenFluoride) {
+      if (data.isot[num].afgl == 19) {
+        return PartitionFunction::compute_partfun_HF19(T);
+      } else if (data.isot[num].afgl == 29) {
+        return PartitionFunction::compute_partfun_HF29(T);
+      }
+    } else if constexpr (S == Species::HydrogenChloride) {
+      if (data.isot[num].afgl == 15) {
+        return PartitionFunction::compute_partfun_HCl15(T);
+      } else if (data.isot[num].afgl == 17) {
+        return PartitionFunction::compute_partfun_HCl17(T);
+      } else if (data.isot[num].afgl == 25) {
+        return PartitionFunction::compute_partfun_HCl25(T);
+      } else if (data.isot[num].afgl == 27) {
+        return PartitionFunction::compute_partfun_HCl27(T);
+      }
+    } else if constexpr (S == Species::HydrogenBromide) {
+      if (data.isot[num].afgl == 19) {
+        return PartitionFunction::compute_partfun_HBr19(T);
+      } else if (data.isot[num].afgl == 11) {
+        return PartitionFunction::compute_partfun_HBr11(T);
+      } else if (data.isot[num].afgl == 29) {
+        return PartitionFunction::compute_partfun_HBr29(T);
+      } else if (data.isot[num].afgl == 21) {
+        return PartitionFunction::compute_partfun_HBr21(T);
+      }
+    } else if constexpr (S == Species::HydrogenIodide) {
+      if (data.isot[num].afgl == 17) {
+        return PartitionFunction::compute_partfun_HI17(T);
+      } else if (data.isot[num].afgl == 27) {
+        return PartitionFunction::compute_partfun_HI27(T);
+      }
+    } else if constexpr (S == Species::ChlorineMonoxide) {
+      if (data.isot[num].afgl == 56) {
+        return PartitionFunction::compute_partfun_ClO56(T);
+      } else if (data.isot[num].afgl == 76) {
+        return PartitionFunction::compute_partfun_ClO76(T);
+      }
+    } else if constexpr (S == Species::CarbonylSulfide) {
+      if (data.isot[num].afgl == 622) {
+        return PartitionFunction::compute_partfun_OCS622(T);
+      } else if (data.isot[num].afgl == 624) {
+        return PartitionFunction::compute_partfun_OCS624(T);
+      } else if (data.isot[num].afgl == 632) {
+        return PartitionFunction::compute_partfun_OCS632(T);
+      } else if (data.isot[num].afgl == 623) {
+        return PartitionFunction::compute_partfun_OCS623(T);
+      } else if (data.isot[num].afgl == 822) {
+        return PartitionFunction::compute_partfun_OCS822(T);
+      }
+    } else if constexpr (S == Species::Formaldehyde) {
+      if (data.isot[num].afgl == 126) {
+        return PartitionFunction::compute_partfun_H2CO126(T);
+      } else if (data.isot[num].afgl == 136) {
+        return PartitionFunction::compute_partfun_H2CO136(T);
+      } else if (data.isot[num].afgl == 128) {
+        return PartitionFunction::compute_partfun_H2CO128(T);
+      }
+    } else if constexpr (S == Species::HypochlorousAcid) {
+      if (data.isot[num].afgl == 165) {
+        return PartitionFunction::compute_partfun_HOCl165(T);
+      } else if (data.isot[num].afgl == 167) {
+        return PartitionFunction::compute_partfun_HOCl167(T);
+      }
+    } else if constexpr (S == Species::Nitrogen) {
+      if (data.isot[num].afgl == 44) {
+        return PartitionFunction::compute_partfun_N244(T);
+      } else if (data.isot[num].afgl == 45) {
+        return PartitionFunction::compute_partfun_N245(T);
+      } else if (data.isot[num].afgl == 55) {
+        return PartitionFunction::compute_partfun_N255(T);
+      }
+    } else if constexpr (S == Species::HydrogenCyanide) {
+      if (data.isot[num].afgl == 124) {
+        return PartitionFunction::compute_partfun_HCN124(T);
+      } else if (data.isot[num].afgl == 134) {
+        return PartitionFunction::compute_partfun_HCN134(T);
+      } else if (data.isot[num].afgl == 125) {
+        return PartitionFunction::compute_partfun_HCN125(T);
+      }
+    } else if constexpr (S == Species::MethylChloride) {
+      if (data.isot[num].afgl == 215) {
+        return PartitionFunction::compute_partfun_CH3Cl215(T);
+      } else if (data.isot[num].afgl == 217) {
+        return PartitionFunction::compute_partfun_CH3Cl217(T);
+      }
+    } else if constexpr (S == Species::HydrogenPeroxide) {
+      if (data.isot[num].afgl == 1661) {
+        return PartitionFunction::compute_partfun_H2O21661(T);
+      }
+    } else if constexpr (S == Species::Acetylene) {
+      if (data.isot[num].afgl == 1221) {
+        return PartitionFunction::compute_partfun_C2H21221(T);
+      } else if (data.isot[num].afgl == 1231) {
+        return PartitionFunction::compute_partfun_C2H21231(T);
+      } else if (data.isot[num].afgl == 1222) {
+        return PartitionFunction::compute_partfun_C2H21222(T);
+      }
+    } else if constexpr (S == Species::Ethane) {
+      if (data.isot[num].afgl == 1221) {
+        return PartitionFunction::compute_partfun_C2H61221(T);
+      } else if (data.isot[num].afgl == 1231) {
+        return PartitionFunction::compute_partfun_C2H61231(T);
+      }
+    } else if constexpr (S == Species::Phosphine) {
+      if (data.isot[num].afgl == 1111) {
+        return PartitionFunction::compute_partfun_PH31111(T);
+      }
+    } else if constexpr (S == Species::CarbonylFluoride) {
+      if (data.isot[num].afgl == 269) {
+        return PartitionFunction::compute_partfun_COF2269(T);
+      } else if (data.isot[num].afgl == 369) {
+        return PartitionFunction::compute_partfun_COF2369(T);
+      }
+    } else if constexpr (S == Species::SulfurHexafluoride) {
+      if (data.isot[num].afgl == 29) {
+        return PartitionFunction::compute_partfun_SF629(T);
+      }
+    } else if constexpr (S == Species::HydrogenSulfide) {
+      if (data.isot[num].afgl == 121) {
+        return PartitionFunction::compute_partfun_H2S121(T);
+      } else if (data.isot[num].afgl == 141) {
+        return PartitionFunction::compute_partfun_H2S141(T);
+      } else if (data.isot[num].afgl == 131) {
+        return PartitionFunction::compute_partfun_H2S131(T);
+      }
+    } else if constexpr (S == Species::FormicAcid) {
+      if (data.isot[num].afgl == 126) {
+        return PartitionFunction::compute_partfun_HCOOH126(T);
+      }
+    } else if constexpr (S == Species::Hydroperoxyl) {
+      if (data.isot[num].afgl == 166) {
+        return PartitionFunction::compute_partfun_HO2166(T);
+      }
+    } else if constexpr (S == Species::OxygenAtom) {
+      if (data.isot[num].afgl == 6) {
+        return PartitionFunction::compute_partfun_O6(T);
+      }
+    } else if constexpr (S == Species::ChlorineNitrate) {
+      if (data.isot[num].afgl == 5646) {
+        return PartitionFunction::compute_partfun_ClONO25646(T);
+      } else if (data.isot[num].afgl == 7646) {
+        return PartitionFunction::compute_partfun_ClONO27646(T);
+      }
+    } else if constexpr (S == Species::NitricOxideCation) {
+      if (data.isot[num].afgl == 46) {
+        return PartitionFunction::compute_partfun_NO46_plus(T);
+      }
+    } else if constexpr (S == Species::HypobromousAcid) {
+      if (data.isot[num].afgl == 169) {
+        return PartitionFunction::compute_partfun_HOBr169(T);
+      } else if (data.isot[num].afgl == 161) {
+        return PartitionFunction::compute_partfun_HOBr161(T);
+      }
+    } else if constexpr (S == Species::Ethylene) {
+      if (data.isot[num].afgl == 221) {
+        return PartitionFunction::compute_partfun_C2H4221(T);
+      } else if (data.isot[num].afgl == 231) {
+        return PartitionFunction::compute_partfun_C2H4231(T);
+      }
+    } else if constexpr (S == Species::Methanol) {
+      if (data.isot[num].afgl == 2161) {
+        return PartitionFunction::compute_partfun_CH3OH2161(T);
+      }
+    } else if constexpr (S == Species::MethylBromide) {
+      if (data.isot[num].afgl == 219) {
+        return PartitionFunction::compute_partfun_CH3Br219(T);
+      } else if (data.isot[num].afgl == 211) {
+        return PartitionFunction::compute_partfun_CH3Br211(T);
+      }
+    } else if constexpr (S == Species::Acetonitrile) {
+      if (data.isot[num].afgl == 2124) {
+        return PartitionFunction::compute_partfun_CH3CN2124(T);
+      } else if (data.isot[num].afgl == 3124) {
+        return PartitionFunction::compute_partfun_CH3CN3124(T);
+      } else if (data.isot[num].afgl == 2134) {
+        return PartitionFunction::compute_partfun_CH3CN2134(T);
+      } else if (data.isot[num].afgl == 3134) {
+        return PartitionFunction::compute_partfun_CH3CN3134(T);
+      }
+    } else if constexpr (S == Species::Pfc14) {
+      if (data.isot[num].afgl == 29) {
+        return PartitionFunction::compute_partfun_CF429(T);
+      }
+    } else if constexpr (S == Species::Diacetylene) {
+      if (data.isot[num].afgl == 2211) {
+        return PartitionFunction::compute_partfun_C4H22211(T);
+      }
+    } else if constexpr (S == Species::Cyanoacetylene) {
+      if (data.isot[num].afgl == 12224) {
+        return PartitionFunction::compute_partfun_HC3N12224(T);
+      } else if (data.isot[num].afgl == 12225) {
+        return PartitionFunction::compute_partfun_HC3N12225(T);
+      } else if (data.isot[num].afgl == 12234) {
+        return PartitionFunction::compute_partfun_HC3N12234(T);
+      } else if (data.isot[num].afgl == 12324) {
+        return PartitionFunction::compute_partfun_HC3N12324(T);
+      } else if (data.isot[num].afgl == 13224) {
+        return PartitionFunction::compute_partfun_HC3N13224(T);
+      } else if (data.isot[num].afgl == 22224) {
+        return PartitionFunction::compute_partfun_HC3N22224(T);
+      }
+    } else if constexpr (S == Species::Hydrogen) {
+      if (data.isot[num].afgl == 11) {
+        return PartitionFunction::compute_partfun_H211(T);
+      } else if (data.isot[num].afgl == 12) {
+        return PartitionFunction::compute_partfun_H212(T);
+      }
+    } else if constexpr (S == Species::CarbonMonosulfide) {
+      if (data.isot[num].afgl == 22) {
+        return PartitionFunction::compute_partfun_CS22(T);
+      } else if (data.isot[num].afgl == 24) {
+        return PartitionFunction::compute_partfun_CS24(T);
+      } else if (data.isot[num].afgl == 32) {
+        return PartitionFunction::compute_partfun_CS32(T);
+      } else if (data.isot[num].afgl == 23) {
+        return PartitionFunction::compute_partfun_CS23(T);
+      }
+    } else if constexpr (S == Species::SulfurTrioxide) {
+      if (data.isot[num].afgl == 26) {
+        return PartitionFunction::compute_partfun_SO326(T);
+      }
+    } else if constexpr (S == Species::Cyanogen) {
+      if (data.isot[num].afgl == 4224) {
+        return PartitionFunction::compute_partfun_C2N24224(T);
+      } else if (data.isot[num].afgl == 5225) {
+        return PartitionFunction::compute_partfun_C2N25225(T);
+      }
+    } else if constexpr (S == Species::Phosgene) {
+      if (data.isot[num].afgl == 2655) {
+        return PartitionFunction::compute_partfun_COCl22655(T);
+      } else if (data.isot[num].afgl == 2657) {
+        return PartitionFunction::compute_partfun_COCl22657(T);
+      }
+    }
+    std::exit(1);
+  }
 };
 
 class Isotope {
   Species s;
-  char num;
-
+  unsigned char num;
+  
 public:
-  constexpr Isotope(Species S, long n) noexcept : s(S), num(n) {}
+  constexpr Isotope(Species S, unsigned char n) noexcept : s(S), num(n) {}
   constexpr Isotope() noexcept : s(Species::FINAL), num(-1) {}
   Isotope(Species S, const std::vector<ChargedAtom>& ca) : s(S), num(0) {
     switch(s) {
@@ -1471,6 +2007,63 @@ public:
     return {};
   }
   
+  constexpr double QT(double T) const noexcept {
+    switch(s) {
+      case Species::Water: return Isotopologue<Species::Water>().QT(T, num);
+      case Species::CarbonDioxide: return Isotopologue<Species::CarbonDioxide>().QT(T, num);
+      case Species::Ozone: return Isotopologue<Species::Ozone>().QT(T, num);
+      case Species::NitrogenOxide: return Isotopologue<Species::NitrogenOxide>().QT(T, num);
+      case Species::CarbonMonoxide: return Isotopologue<Species::CarbonMonoxide>().QT(T, num);
+      case Species::Methane: return Isotopologue<Species::Methane>().QT(T, num);
+      case Species::Oxygen: return Isotopologue<Species::Oxygen>().QT(T, num);
+      case Species::NitricOxide: return Isotopologue<Species::NitricOxide>().QT(T, num);
+      case Species::SulfurDioxide: return Isotopologue<Species::SulfurDioxide>().QT(T, num);
+      case Species::NitrogenDioxide: return Isotopologue<Species::NitrogenDioxide>().QT(T, num);
+      case Species::Ammonia: return Isotopologue<Species::Ammonia>().QT(T, num);
+      case Species::NitricAcid: return Isotopologue<Species::NitricAcid>().QT(T, num);
+      case Species::Hydroxyl: return Isotopologue<Species::Hydroxyl>().QT(T, num);
+      case Species::HydrogenFluoride: return Isotopologue<Species::HydrogenFluoride>().QT(T, num);
+      case Species::HydrogenChloride: return Isotopologue<Species::HydrogenChloride>().QT(T, num);
+      case Species::HydrogenBromide: return Isotopologue<Species::HydrogenBromide>().QT(T, num);
+      case Species::HydrogenIodide: return Isotopologue<Species::HydrogenIodide>().QT(T, num);
+      case Species::ChlorineMonoxide: return Isotopologue<Species::ChlorineMonoxide>().QT(T, num);
+      case Species::CarbonylSulfide: return Isotopologue<Species::CarbonylSulfide>().QT(T, num);
+      case Species::Formaldehyde: return Isotopologue<Species::Formaldehyde>().QT(T, num);
+      case Species::HypochlorousAcid: return Isotopologue<Species::HypochlorousAcid>().QT(T, num);
+      case Species::Nitrogen: return Isotopologue<Species::Nitrogen>().QT(T, num);
+      case Species::HydrogenCyanide: return Isotopologue<Species::HydrogenCyanide>().QT(T, num);
+      case Species::MethylChloride: return Isotopologue<Species::MethylChloride>().QT(T, num);
+      case Species::HydrogenPeroxide: return Isotopologue<Species::HydrogenPeroxide>().QT(T, num);
+      case Species::Acetylene: return Isotopologue<Species::Acetylene>().QT(T, num);
+      case Species::Ethane: return Isotopologue<Species::Ethane>().QT(T, num);
+      case Species::Phosphine: return Isotopologue<Species::Phosphine>().QT(T, num);
+      case Species::CarbonylFluoride: return Isotopologue<Species::CarbonylFluoride>().QT(T, num);
+      case Species::SulfurHexafluoride: return Isotopologue<Species::SulfurHexafluoride>().QT(T, num);
+      case Species::HydrogenSulfide: return Isotopologue<Species::HydrogenSulfide>().QT(T, num);
+      case Species::FormicAcid: return Isotopologue<Species::FormicAcid>().QT(T, num);
+      case Species::Hydroperoxyl: return Isotopologue<Species::Hydroperoxyl>().QT(T, num);
+      case Species::OxygenAtom: return Isotopologue<Species::OxygenAtom>().QT(T, num);
+      case Species::ChlorineNitrate: return Isotopologue<Species::ChlorineNitrate>().QT(T, num);
+      case Species::NitricOxideCation: return Isotopologue<Species::NitricOxideCation>().QT(T, num);
+      case Species::HypobromousAcid: return Isotopologue<Species::HypobromousAcid>().QT(T, num);
+      case Species::Ethylene: return Isotopologue<Species::Ethylene>().QT(T, num);
+      case Species::Methanol: return Isotopologue<Species::Methanol>().QT(T, num);
+      case Species::MethylBromide: return Isotopologue<Species::MethylBromide>().QT(T, num);
+      case Species::Acetonitrile: return Isotopologue<Species::Acetonitrile>().QT(T, num);
+      case Species::Pfc14: return Isotopologue<Species::Pfc14>().QT(T, num);
+      case Species::Diacetylene: return Isotopologue<Species::Diacetylene>().QT(T, num);
+      case Species::Cyanoacetylene: return Isotopologue<Species::Cyanoacetylene>().QT(T, num);
+      case Species::Hydrogen: return Isotopologue<Species::Hydrogen>().QT(T, num);
+      case Species::CarbonMonosulfide: return Isotopologue<Species::CarbonMonosulfide>().QT(T, num);
+      case Species::SulfurTrioxide: return Isotopologue<Species::SulfurTrioxide>().QT(T, num);
+      case Species::Cyanogen: return Isotopologue<Species::Cyanogen>().QT(T, num);
+      case Species::Phosgene: return Isotopologue<Species::Phosgene>().QT(T, num);
+      case Species::Bath:
+      case Species::FINAL:  {/* leave last */}
+    }
+    return {};
+  }
+  
   std::vector<ChargedAtom> atoms() const noexcept {
     switch(s) {
       case Species::Bath: {};
@@ -1531,6 +2124,130 @@ public:
   constexpr unsigned char localQuantumNumberCount() const noexcept {return getLocalQuantumNumberCount(s);}
   
   constexpr unsigned char globalQuantumNumberCount() const noexcept {return getGlobalQuantumNumberCount(s);}
+
+  Quantum::Number get_local(const std::vector<Quantum::Number>& v, Quantum::Type t) const noexcept {
+    size_t pos = std::numeric_limits<size_t>::max();
+    switch(s) {
+      case Species::Bath: break;
+      case Species::Water: pos = Isotopologue<Species::Water>().get_local_pos(t); break;
+      case Species::CarbonDioxide: pos = Isotopologue<Species::CarbonDioxide>().get_local_pos(t); break;
+      case Species::Ozone: pos = Isotopologue<Species::Ozone>().get_local_pos(t); break;
+      case Species::NitrogenOxide: pos = Isotopologue<Species::NitrogenOxide>().get_local_pos(t); break;
+      case Species::CarbonMonoxide: pos = Isotopologue<Species::CarbonMonoxide>().get_local_pos(t); break;
+      case Species::Methane: pos = Isotopologue<Species::Methane>().get_local_pos(t); break;
+      case Species::Oxygen: pos = Isotopologue<Species::Oxygen>().get_local_pos(t); break;
+      case Species::NitricOxide: pos = Isotopologue<Species::NitricOxide>().get_local_pos(t); break;
+      case Species::SulfurDioxide: pos = Isotopologue<Species::SulfurDioxide>().get_local_pos(t); break;
+      case Species::NitrogenDioxide: pos = Isotopologue<Species::NitrogenDioxide>().get_local_pos(t); break;
+      case Species::Ammonia: pos = Isotopologue<Species::Ammonia>().get_local_pos(t); break;
+      case Species::NitricAcid: pos = Isotopologue<Species::NitricAcid>().get_local_pos(t); break;
+      case Species::Hydroxyl: pos = Isotopologue<Species::Hydroxyl>().get_local_pos(t); break;
+      case Species::HydrogenFluoride: pos = Isotopologue<Species::HydrogenFluoride>().get_local_pos(t); break;
+      case Species::HydrogenChloride: pos = Isotopologue<Species::HydrogenChloride>().get_local_pos(t); break;
+      case Species::HydrogenBromide: pos = Isotopologue<Species::HydrogenBromide>().get_local_pos(t); break;
+      case Species::HydrogenIodide: pos = Isotopologue<Species::HydrogenIodide>().get_local_pos(t); break;
+      case Species::ChlorineMonoxide: pos = Isotopologue<Species::ChlorineMonoxide>().get_local_pos(t); break;
+      case Species::CarbonylSulfide: pos = Isotopologue<Species::CarbonylSulfide>().get_local_pos(t); break;
+      case Species::Formaldehyde: pos = Isotopologue<Species::Formaldehyde>().get_local_pos(t); break;
+      case Species::HypochlorousAcid: pos = Isotopologue<Species::HypochlorousAcid>().get_local_pos(t); break;
+      case Species::Nitrogen: pos = Isotopologue<Species::Nitrogen>().get_local_pos(t); break;
+      case Species::HydrogenCyanide: pos = Isotopologue<Species::HydrogenCyanide>().get_local_pos(t); break;
+      case Species::MethylChloride: pos = Isotopologue<Species::MethylChloride>().get_local_pos(t); break;
+      case Species::HydrogenPeroxide: pos = Isotopologue<Species::HydrogenPeroxide>().get_local_pos(t); break;
+      case Species::Acetylene: pos = Isotopologue<Species::Acetylene>().get_local_pos(t); break;
+      case Species::Ethane: pos = Isotopologue<Species::Ethane>().get_local_pos(t); break;
+      case Species::Phosphine: pos = Isotopologue<Species::Phosphine>().get_local_pos(t); break;
+      case Species::CarbonylFluoride: pos = Isotopologue<Species::CarbonylFluoride>().get_local_pos(t); break;
+      case Species::SulfurHexafluoride: pos = Isotopologue<Species::SulfurHexafluoride>().get_local_pos(t); break;
+      case Species::HydrogenSulfide: pos = Isotopologue<Species::HydrogenSulfide>().get_local_pos(t); break;
+      case Species::FormicAcid: pos = Isotopologue<Species::FormicAcid>().get_local_pos(t); break;
+      case Species::Hydroperoxyl: pos = Isotopologue<Species::Hydroperoxyl>().get_local_pos(t); break;
+      case Species::OxygenAtom: pos = Isotopologue<Species::OxygenAtom>().get_local_pos(t); break;
+      case Species::ChlorineNitrate: pos = Isotopologue<Species::ChlorineNitrate>().get_local_pos(t); break;
+      case Species::NitricOxideCation: pos = Isotopologue<Species::NitricOxideCation>().get_local_pos(t); break;
+      case Species::HypobromousAcid: pos = Isotopologue<Species::HypobromousAcid>().get_local_pos(t); break;
+      case Species::Ethylene: pos = Isotopologue<Species::Ethylene>().get_local_pos(t); break;
+      case Species::Methanol: pos = Isotopologue<Species::Methanol>().get_local_pos(t); break;
+      case Species::MethylBromide: pos = Isotopologue<Species::MethylBromide>().get_local_pos(t); break;
+      case Species::Acetonitrile: pos = Isotopologue<Species::Acetonitrile>().get_local_pos(t); break;
+      case Species::Pfc14: pos = Isotopologue<Species::Pfc14>().get_local_pos(t); break;
+      case Species::Diacetylene: pos = Isotopologue<Species::Diacetylene>().get_local_pos(t); break;
+      case Species::Cyanoacetylene: pos = Isotopologue<Species::Cyanoacetylene>().get_local_pos(t); break;
+      case Species::Hydrogen: pos = Isotopologue<Species::Hydrogen>().get_local_pos(t); break;
+      case Species::CarbonMonosulfide: pos = Isotopologue<Species::CarbonMonosulfide>().get_local_pos(t); break;
+      case Species::SulfurTrioxide: pos = Isotopologue<Species::SulfurTrioxide>().get_local_pos(t); break;
+      case Species::Cyanogen: pos = Isotopologue<Species::Cyanogen>().get_local_pos(t); break;
+      case Species::Phosgene: pos = Isotopologue<Species::Phosgene>().get_local_pos(t); break;
+      case Species::FINAL: {/*leave last*/}
+    }
+    
+    if (pos not_eq std::numeric_limits<size_t>::max())
+      return v[pos];
+    else
+      return Rational(0, 0);
+  }
+  
+  Quantum::Number get_global(const std::vector<Quantum::Number>& v, Quantum::Type t) const noexcept {
+    size_t pos = std::numeric_limits<size_t>::max();
+    switch(s) {
+      case Species::Bath: break;
+      case Species::Water: pos = Isotopologue<Species::Water>().get_global_pos(t); break;
+      case Species::CarbonDioxide: pos = Isotopologue<Species::CarbonDioxide>().get_global_pos(t); break;
+      case Species::Ozone: pos = Isotopologue<Species::Ozone>().get_global_pos(t); break;
+      case Species::NitrogenOxide: pos = Isotopologue<Species::NitrogenOxide>().get_global_pos(t); break;
+      case Species::CarbonMonoxide: pos = Isotopologue<Species::CarbonMonoxide>().get_global_pos(t); break;
+      case Species::Methane: pos = Isotopologue<Species::Methane>().get_global_pos(t); break;
+      case Species::Oxygen: pos = Isotopologue<Species::Oxygen>().get_global_pos(t); break;
+      case Species::NitricOxide: pos = Isotopologue<Species::NitricOxide>().get_global_pos(t); break;
+      case Species::SulfurDioxide: pos = Isotopologue<Species::SulfurDioxide>().get_global_pos(t); break;
+      case Species::NitrogenDioxide: pos = Isotopologue<Species::NitrogenDioxide>().get_global_pos(t); break;
+      case Species::Ammonia: pos = Isotopologue<Species::Ammonia>().get_global_pos(t); break;
+      case Species::NitricAcid: pos = Isotopologue<Species::NitricAcid>().get_global_pos(t); break;
+      case Species::Hydroxyl: pos = Isotopologue<Species::Hydroxyl>().get_global_pos(t); break;
+      case Species::HydrogenFluoride: pos = Isotopologue<Species::HydrogenFluoride>().get_global_pos(t); break;
+      case Species::HydrogenChloride: pos = Isotopologue<Species::HydrogenChloride>().get_global_pos(t); break;
+      case Species::HydrogenBromide: pos = Isotopologue<Species::HydrogenBromide>().get_global_pos(t); break;
+      case Species::HydrogenIodide: pos = Isotopologue<Species::HydrogenIodide>().get_global_pos(t); break;
+      case Species::ChlorineMonoxide: pos = Isotopologue<Species::ChlorineMonoxide>().get_global_pos(t); break;
+      case Species::CarbonylSulfide: pos = Isotopologue<Species::CarbonylSulfide>().get_global_pos(t); break;
+      case Species::Formaldehyde: pos = Isotopologue<Species::Formaldehyde>().get_global_pos(t); break;
+      case Species::HypochlorousAcid: pos = Isotopologue<Species::HypochlorousAcid>().get_global_pos(t); break;
+      case Species::Nitrogen: pos = Isotopologue<Species::Nitrogen>().get_global_pos(t); break;
+      case Species::HydrogenCyanide: pos = Isotopologue<Species::HydrogenCyanide>().get_global_pos(t); break;
+      case Species::MethylChloride: pos = Isotopologue<Species::MethylChloride>().get_global_pos(t); break;
+      case Species::HydrogenPeroxide: pos = Isotopologue<Species::HydrogenPeroxide>().get_global_pos(t); break;
+      case Species::Acetylene: pos = Isotopologue<Species::Acetylene>().get_global_pos(t); break;
+      case Species::Ethane: pos = Isotopologue<Species::Ethane>().get_global_pos(t); break;
+      case Species::Phosphine: pos = Isotopologue<Species::Phosphine>().get_global_pos(t); break;
+      case Species::CarbonylFluoride: pos = Isotopologue<Species::CarbonylFluoride>().get_global_pos(t); break;
+      case Species::SulfurHexafluoride: pos = Isotopologue<Species::SulfurHexafluoride>().get_global_pos(t); break;
+      case Species::HydrogenSulfide: pos = Isotopologue<Species::HydrogenSulfide>().get_global_pos(t); break;
+      case Species::FormicAcid: pos = Isotopologue<Species::FormicAcid>().get_global_pos(t); break;
+      case Species::Hydroperoxyl: pos = Isotopologue<Species::Hydroperoxyl>().get_global_pos(t); break;
+      case Species::OxygenAtom: pos = Isotopologue<Species::OxygenAtom>().get_global_pos(t); break;
+      case Species::ChlorineNitrate: pos = Isotopologue<Species::ChlorineNitrate>().get_global_pos(t); break;
+      case Species::NitricOxideCation: pos = Isotopologue<Species::NitricOxideCation>().get_global_pos(t); break;
+      case Species::HypobromousAcid: pos = Isotopologue<Species::HypobromousAcid>().get_global_pos(t); break;
+      case Species::Ethylene: pos = Isotopologue<Species::Ethylene>().get_global_pos(t); break;
+      case Species::Methanol: pos = Isotopologue<Species::Methanol>().get_global_pos(t); break;
+      case Species::MethylBromide: pos = Isotopologue<Species::MethylBromide>().get_global_pos(t); break;
+      case Species::Acetonitrile: pos = Isotopologue<Species::Acetonitrile>().get_global_pos(t); break;
+      case Species::Pfc14: pos = Isotopologue<Species::Pfc14>().get_global_pos(t); break;
+      case Species::Diacetylene: pos = Isotopologue<Species::Diacetylene>().get_global_pos(t); break;
+      case Species::Cyanoacetylene: pos = Isotopologue<Species::Cyanoacetylene>().get_global_pos(t); break;
+      case Species::Hydrogen: pos = Isotopologue<Species::Hydrogen>().get_global_pos(t); break;
+      case Species::CarbonMonosulfide: pos = Isotopologue<Species::CarbonMonosulfide>().get_global_pos(t); break;
+      case Species::SulfurTrioxide: pos = Isotopologue<Species::SulfurTrioxide>().get_global_pos(t); break;
+      case Species::Cyanogen: pos = Isotopologue<Species::Cyanogen>().get_global_pos(t); break;
+      case Species::Phosgene: pos = Isotopologue<Species::Phosgene>().get_global_pos(t); break;
+      case Species::FINAL: {/*leave last*/}
+    }
+    
+    if (pos not_eq std::numeric_limits<size_t>::max())
+      return v[pos];
+    else
+      return Rational(0, 0);
+  }
   
   bool set_local(std::vector<Quantum::Number>& v, const Quantum::Number& n, Quantum::Type t) const noexcept {
     switch(s) {

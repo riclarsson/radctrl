@@ -175,6 +175,9 @@ constexpr double boltzmann_constant = 1.380649e-23;
 /** Boltzmann constant convenience name [J/K] **/
 constexpr double k = boltzmann_constant;
 
+/** Inverse of Boltzmann constant convenience name [K/J] **/
+constexpr double inv_k = 1 / boltzmann_constant;
+
 /** Avogadro constant [1/mol]
    From: https://en.wikipedia.org/wiki/2019_redefinition_of_SI_base_units
    Date: 2019-04-01

@@ -66,6 +66,8 @@ public:
   }
   
   constexpr bool defined() const noexcept {return istext or value != rational_undefined();}
+  
+  constexpr Rational rat() const noexcept {return value;}
 };  // Number
 }  // Quantum
 

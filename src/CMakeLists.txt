@@ -1,5 +1,5 @@
 # Global compile time options
-add_compile_options(-Wall -Wextra -Wdouble-promotion -Wimplicit-fallthrough=5  -Wno-ignored-attributes -pedantic -O3 -march=native -fvisibility=hidden -flto)
+add_compile_options(-Wall -Wextra -Wdouble-promotion -Wimplicit-fallthrough=5 -Wno-ignored-attributes -O3 -march=native -fvisibility=hidden -flto)
 
 # Sub directories
 
@@ -20,8 +20,14 @@ target_include_directories(gui PUBLIC ../3rdparty/gui/imgui/ ../3rdparty/gui/imp
 add_library (math STATIC
              mathhelpers.cpp
              rational.cpp
+             wigner.cpp
              )
-target_include_directories(math PUBLIC ../3rdparty/Eigen/)
+target_include_directories(math PUBLIC ../3rdparty/Eigen/ ../3rdparty/wigner/)
+if(FASTWIGNER)
+target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_3J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.3j\"")
+target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_6J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.6j\"")
+endif()
+
 ########################################################################################
 
 ########################################################################################
@@ -111,6 +117,15 @@ add_library (geom STATIC
 target_link_libraries(geom PUBLIC species files)
 ########################################################################################
 
+
+########################################################################################
+# Atmospheric Pathing Library
+add_library (atmpath STATIC
+             atmpath.cpp
+             )
+target_link_libraries(atmpath PUBLIC atm geom)
+########################################################################################
+
 ########################################################################################
 # Absorption Library:  For equations and classes for computing the path and geometry
 add_library (absorption STATIC
@@ -120,6 +135,14 @@ add_library (absorption STATIC
              )
 target_include_directories(absorption PUBLIC ../3rdparty/Faddeeva/)
 target_link_libraries(absorption PUBLIC species files)
+########################################################################################
+
+########################################################################################
+# Cross-section line-by-line library:  For computing cross-sections of absorption lines
+add_library (xsec_lbl STATIC
+             xsec_lbl.cpp
+             )
+target_link_libraries(xsec_lbl PUBLIC atmpath absorption)
 ########################################################################################
 
 ########################################################################################
@@ -173,8 +196,6 @@ install (TARGETS iram RUNTIME DESTINATION bin)
 ########################################################################################
 
 ########################################################################################
-
-########################################################################################
 # Test multithreading
 add_executable(test_multithread test_multithread.cpp)
 target_link_libraries(test_multithread PUBLIC multithread)
@@ -220,6 +241,12 @@ target_link_libraries(test_atm PUBLIC atm)
 # Test GUI interface
 add_executable(test_gui test_gui.cpp)
 target_link_libraries(test_gui PUBLIC gui)
+########################################################################################
+
+########################################################################################
+# Test atmosphere pathing interface
+add_executable(test_atmpath test_atmpath.cpp)
+target_link_libraries(test_atmpath PUBLIC atmpath)
 ########################################################################################
 
 ########################################################################################

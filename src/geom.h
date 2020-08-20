@@ -17,6 +17,8 @@ public:
   constexpr Ellipsoid() noexcept : ell({0, 0}) {}
   constexpr Ellipsoid(const Ellipsoid&) noexcept = default;
   constexpr Ellipsoid(Ellipsoid&&) noexcept = default;
+  constexpr Ellipsoid& operator=(const Ellipsoid&) noexcept = default;
+  constexpr Ellipsoid& operator=(Ellipsoid&&) noexcept = default;
   constexpr Ellipsoid(Length<LengthType::meter> a, double e) noexcept : ell({a.value(), e}) {}
   constexpr double a() const noexcept {return ell[0];}
   constexpr double e() const noexcept {return ell[1];}
@@ -140,7 +142,7 @@ public:
   }
   
   void add_time(double dist, double v=Constant::speed_of_light) noexcept {
-    time += TimeStep(std::abs(dist/v));
+    time += TimeStep(dist/v);
   }
   
   Altitude<AltitudeType::meter> altitude(Ellipsoid ell) const noexcept {
@@ -382,9 +384,10 @@ public:
   template <PosType P, LosType L>
   Nav(Pos<P> p0, Los<L> l0, Ellipsoid e) noexcept : pos(p0, e), los(l0, p0, e), ell(std::move(e)) {}
   
-  Nav(const Nav& old, Distance<DistanceType::meter> d) noexcept : pos(old.pos), los(old.los), ell(old.ell) {
+  bool move(Distance<DistanceType::meter> d) {
     double dist = d.value();
-    const auto intersect = old.line_ellipsoid_intersect(0, dist >= 0);
+    const auto intersect = line_ellipsoid_intersect(0, dist >= 0);
+    bool hit_surface = true;
     if (intersect.type == MovingTarget::BackwardInside and dist < intersect.min_step) {
       dist = intersect.min_step;
     } else if (intersect.type == MovingTarget::BackwardOutside and dist < intersect.max_step) {
@@ -393,26 +396,50 @@ public:
       dist = intersect.min_step;
     } else if (intersect.type == MovingTarget::ForwardOutside and dist > intersect.max_step) {
       dist = intersect.max_step;
+    } else {
+      hit_surface = false;
     }
-    pos = Pos<PosType::Xyz>(old.pos, Pos<PosType::Xyz>(dist * old.los), old.ell);
+    pos = Pos<PosType::Xyz>(pos, Pos<PosType::Xyz>(dist * los), ell);
     pos.add_time(dist);
+    
+    return hit_surface;
   }
   
-  Nav(const Nav& old, Altitude<AltitudeType::meter> alt) noexcept : pos(old.pos), los(old.los), ell(old.ell) {
-    const auto intersect = old.line_ellipsoid_intersect(alt.value(), true);
-    if (intersect.type == MovingTarget::CompleteMiss) {}
+  Nav(const Nav& old, Distance<DistanceType::meter> d) noexcept : pos(old.pos), los(old.los), ell(old.ell) {
+    move(d);
+  }
+  
+  bool move(Altitude<AltitudeType::meter> alt, bool forward_first=true) {
+    auto intersect = line_ellipsoid_intersect(alt.value(), forward_first);
+    if (intersect.type == MovingTarget::ForwardMiss or intersect.type == MovingTarget::BackwardMiss)
+      intersect = line_ellipsoid_intersect(alt.value(), not forward_first);
+    
+    bool hit=true;
+    if (intersect.type == MovingTarget::CompleteMiss) {hit = false;}
     else {
       const double dist = (std::abs(intersect.min_step) < std::abs(intersect.max_step)) ? intersect.min_step : intersect.max_step;
       if (not std::isnan(dist)) {
-        pos = Pos<PosType::Xyz>(old.pos, Pos<PosType::Xyz>(dist * old.los), old.ell);
+        pos = Pos<PosType::Xyz>(pos, Pos<PosType::Xyz>(dist * los), ell);
         pos.add_time(dist);
       }
     }
+    return hit;
   }
+  
+  Nav(const Nav& old, Altitude<AltitudeType::meter> alt) : pos(old.pos), los(old.los), ell(old.ell) {
+    if (not move(alt)) throw std::runtime_error("Cannot init because you miss the atmosphere");
+  }
+  
+  Nav(Nav&&) = default;
+  Nav(const Nav&) = default;
+  Nav& operator=(const Nav&) = default;
+  Nav& operator=(Nav&&) = default;
   
   friend std::ostream& operator<<(std::ostream& os, Nav n) {return os << n.pos << ' ' << n.los << ' ' << n.ell;}
   
   friend std::istream& operator>>(std::istream& is, Nav& n) {return is >> n.pos >> n.los >> n.ell;}
+  
+  Pos<PosType::Ellipsoidal> ellipsoidPos() const {return Pos<PosType::Ellipsoidal>{pos, ell};}
 };  // Nav
 
 void readNav(File::File<File::Operation::Read, File::Type::Xml>& in, Nav& n);
