@@ -4,9 +4,10 @@
 
 namespace Absorption {
 namespace Xsec {
+namespace Lbl {
 template <class LineShape>
 void compute_lineshape(std::vector<Complex>& comp_x,
-                       const std::vector<Frequency<FrequencyType::Freq>>& f,
+                       const std::vector<double>& f,
                        const Complex lm,
                        Frequency<FrequencyType::Freq> cutoff_low,
                        Frequency<FrequencyType::Freq> cutoff_upp,
@@ -28,7 +29,7 @@ void compute_lineshape(std::vector<Complex>& comp_x,
 
 template <class LineShape>
 void compute_mirrored_lineshape(std::vector<Complex>& comp_x,
-                                const std::vector<Frequency<FrequencyType::Freq>>& f,
+                                const std::vector<double>& f,
                                 const Complex lm,
                                 Frequency<FrequencyType::Freq> cutoff_low,
                                 Frequency<FrequencyType::Freq> cutoff_upp,
@@ -52,17 +53,17 @@ void compute_mirrored_lineshape(std::vector<Complex>& comp_x,
 }
 
 double boltzman_ratio(double T, double T0, double E0) {
-  return std::exp(E0 * Constant::inv_k * (T - T0) / (T * T0));
+  return exp(E0 * (T - T0) / (Constant::k * T * T0));
 }
 
 double stimulated_emission(double T, double F0) {
-  return std::exp((-Constant::h / Constant::k) * F0 / T);
+  return std::exp(- (Constant::h / Constant::k) * F0 / T);
 }
 
 double stimulated_relative_emission(double gamma,
                                     double gamma_ref) {
   return (1. - gamma) / (1. - gamma_ref);
-                                     }
+}
 
 double compute_lte_linestrength(double S0, double SZ, double E0, double F0,
                                 double QT0, double T0, double QT, double T) {
@@ -72,7 +73,7 @@ double compute_lte_linestrength(double S0, double SZ, double E0, double F0,
 
 void compute(std::vector<Complex>& x,
              std::vector<Complex>& comp_x,
-             const std::vector<Frequency<FrequencyType::Freq>>& f,
+             const std::vector<double>& f,
              const Band& band,
              const Path::Point& atm,
              const Absorption::Zeeman::Polarization polarization)
@@ -193,5 +194,6 @@ void compute(std::vector<Complex>& x,
     }
   }
 }
+}  // Lbl
 }  // Xsec
 }  // Absorption

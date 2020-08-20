@@ -1,5 +1,6 @@
 #include "mathhelpers.h"
 
+
 std::vector<double> linspace(double s, double e, int count) {
   std::vector<double> ls(count);
   

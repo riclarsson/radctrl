@@ -206,6 +206,7 @@ public:
   Quantum::Number globalLowerQuantumNumber(size_t i) const noexcept {return global_lower[i];}
   std::vector<Quantum::Type> localQuantumNumbers() const noexcept {return spec.get_localquantumnumbers();}
   const std::vector<Line>& Lines() const noexcept {return lines;}
+  std::vector<Line>& Lines() noexcept {return lines;}
   double GD_giv_F0(Temperature<TemperatureType::K> T) const {return std::sqrt(Constant::doppler_broadening_const_squared * T / spec.mass());}
   Frequency<FrequencyType::Freq> CutoffUpper(size_t iline) const noexcept {
     switch (cutoff) {

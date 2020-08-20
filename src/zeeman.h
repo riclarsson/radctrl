@@ -1,6 +1,7 @@
 #ifndef zeeman_h
 #define zeeman_h
 
+#include "constants.h"
 #include "rational.h"
 #include "wigner.h"
 

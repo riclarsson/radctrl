@@ -22,7 +22,8 @@ add_library (math STATIC
              rational.cpp
              wigner.cpp
              )
-target_include_directories(math PUBLIC ../3rdparty/Eigen/ ../3rdparty/wigner/)
+target_include_directories(math PUBLIC ../3rdparty/Eigen/ ../3rdparty/wigner/ ../3rdparty/Faddeeva/)
+target_link_libraries(math PUBLIC wigner Faddeeva)
 if(FASTWIGNER)
 target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_3J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.3j\"")
 target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_6J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.6j\"")
@@ -132,9 +133,9 @@ add_library (absorption STATIC
              propmat.cpp
              lbl.cpp
              lineshapes.cpp
+             zeeman.cpp
              )
-target_include_directories(absorption PUBLIC ../3rdparty/Faddeeva/)
-target_link_libraries(absorption PUBLIC species files)
+target_link_libraries(absorption PUBLIC species files math)
 ########################################################################################
 
 ########################################################################################
@@ -142,7 +143,7 @@ target_link_libraries(absorption PUBLIC species files)
 add_library (xsec_lbl STATIC
              xsec_lbl.cpp
              )
-target_link_libraries(xsec_lbl PUBLIC atmpath absorption)
+target_link_libraries(xsec_lbl PUBLIC atmpath absorption multithread)
 ########################################################################################
 
 ########################################################################################
@@ -164,8 +165,9 @@ target_link_libraries(python PUBLIC ${PYTHON_LIBRARIES} pybind11::embed)
 ########################################################################################
 # Multithreading interfaces
 find_package (Threads REQUIRED)
+find_package (TBB REQUIRED)
 add_library (multithread STATIC multithread.cpp)
-target_link_libraries(multithread PUBLIC Threads::Threads)
+target_link_libraries(multithread PUBLIC Threads::Threads tbb)
 ########################################################################################
 
 ########################################################################################
@@ -247,6 +249,12 @@ target_link_libraries(test_gui PUBLIC gui)
 # Test atmosphere pathing interface
 add_executable(test_atmpath test_atmpath.cpp)
 target_link_libraries(test_atmpath PUBLIC atmpath)
+########################################################################################
+
+########################################################################################
+# Test lbl calculations
+add_executable(test_xsec_lbl test_xsec_lbl.cpp)
+target_link_libraries(test_xsec_lbl PUBLIC xsec_lbl)
 ########################################################################################
 
 ########################################################################################

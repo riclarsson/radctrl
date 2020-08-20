@@ -12,8 +12,6 @@
 
 #include "rational.h"
 
-
-
 /** Ready Wigner
   * 
   * @param[in] largest
