@@ -190,7 +190,7 @@ class DBR {
       : manual(false), mname("DBR"), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
-      os << "Cannot find Chopper python file at:\n\t" << path << '\n';
+      os << "Cannot find frontend file python file at:\n\t" << path << '\n';
       throw std::runtime_error(os.str());
     }
     py::eval_file(path.c_str());
