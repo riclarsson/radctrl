@@ -53,9 +53,8 @@ void runonce(std::string& dev, int baud, const std::string& python_file) {
     std::exit(1);
   }
 
-  std::cout << Time();
-  for (auto& x : d) std::cout << ' ' << x.first << ' ' << x.second;
-  std::cout << '\n';
+  std::cout << Time() << '\n';
+  for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
 }
 
 template <class Housekeeping>
@@ -112,8 +111,7 @@ void run(std::string& dev, int baud, const std::string& python_file,
     }
 
     std::cout << Time();
-    for (auto& x : d) std::cout << ' ' << x.first << ' ' << x.second;
-    std::cout << '\n';
+    for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
 
     Sleep(wait_until);
   }
