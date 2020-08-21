@@ -16,6 +16,13 @@ target_include_directories(gui PUBLIC ../3rdparty/gui/imgui/ ../3rdparty/gui/imp
 ########################################################################################
 
 ########################################################################################
+# CLI parsing: For parsing argc and argv nicely
+add_library (cli STATIC cli_parsing.cpp cli_runtime.cpp)
+target_include_directories(cli PUBLIC ../3rdparty/cmd/CLI11/include/CLI/ ../3rdparty/cmd/cli/include/cli/)
+
+########################################################################################
+
+########################################################################################
 # Math Library: For basic mathematical constructs
 add_library (math STATIC
              mathhelpers.cpp
@@ -72,7 +79,10 @@ target_link_libraries(network PUBLIC multithread)
 add_library (chopper STATIC
              chopper.cpp
              )
-target_link_libraries(chopper PUBLIC gui python)
+target_link_libraries(chopper PUBLIC gui python cli)
+add_executable (chopper_bin chopper.cpp)
+target_link_libraries(chopper_bin PUBLIC chopper)
+set_target_properties(chopper_bin PROPERTIES OUTPUT_NAME "chopper")
 ########################################################################################
 
 ########################################################################################
@@ -104,7 +114,7 @@ target_link_libraries(frontend PUBLIC gui python)
 add_library (housekeeping STATIC
              housekeeping.cpp
              )
-target_link_libraries(housekeeping PUBLIC gui python network)
+target_link_libraries(housekeeping PUBLIC gui python network cli)
 add_executable (housekeeping_bin housekeeping.cpp)
 target_link_libraries(housekeeping_bin PUBLIC housekeeping)
 set_target_properties(housekeeping_bin PROPERTIES OUTPUT_NAME "housekeeping")
@@ -128,22 +138,30 @@ target_link_libraries(atmpath PUBLIC atm geom)
 ########################################################################################
 
 ########################################################################################
-# Absorption Library:  For equations and classes for computing the path and geometry
-add_library (absorption STATIC
-             propmat.cpp
-             lbl.cpp
-             lineshapes.cpp
-             zeeman.cpp
-             )
-target_link_libraries(absorption PUBLIC species files math)
-########################################################################################
-
-########################################################################################
 # Cross-section line-by-line library:  For computing cross-sections of absorption lines
 add_library (xsec_lbl STATIC
              xsec_lbl.cpp
+             lineshapes.cpp
+             lbl.cpp
+             zeeman.cpp
              )
-target_link_libraries(xsec_lbl PUBLIC atmpath absorption multithread)
+target_link_libraries(xsec_lbl PUBLIC atmpath multithread math)
+########################################################################################
+
+########################################################################################
+# Cross-section library:  For computing cross-sections of any kind
+add_library (xsec STATIC
+             xsec.cpp
+             )
+target_link_libraries(xsec PUBLIC xsec_lbl)
+########################################################################################
+
+########################################################################################
+# Absorption Library:  For equations and classes for computing the path and geometry
+add_library (absorption STATIC
+             propmat.cpp
+             )
+target_link_libraries(absorption PUBLIC species files xsec)
 ########################################################################################
 
 ########################################################################################
@@ -173,7 +191,7 @@ target_link_libraries(multithread PUBLIC Threads::Threads tbb)
 ########################################################################################
 # Instrument GUI libraries
 add_library (instrument_gui_controller STATIC dummy_gui.cpp)
-target_link_libraries(instrument_gui_controller PUBLIC gui python files chopper wobbler housekeeping backend multithread frontend)
+target_link_libraries(instrument_gui_controller PUBLIC gui python files chopper wobbler housekeeping backend multithread frontend cli)
 ########################################################################################
 
 ########################################################################################

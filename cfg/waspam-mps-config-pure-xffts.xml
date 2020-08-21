@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <RADCTRL>
-<Chopper path="/home/dabrowski/software/radctrl/python/chopper/chopper.py" dev="/dev/ttyUSB0" offset="1000" sleeptime="0.2" />
-<Wobbler path="/home/dabrowski/software/radctrl/python/wobbler/WVR.py" dev="/dev/ttyUSB1" baudrate="115200" address="0" start="3000" end="13000" />
-<Housekeeping path="/home/dabrowski/software/radctrl/python/housekeeping/Agilent.py" dev="/dev/ttyS0" baudrate="57600" />
+<Chopper path="../python/chopper/chopper.py" dev="/dev/ttyUSB0" offset="1000" sleeptime="0.2" />
+<Wobbler path="../python/wobbler/WVR.py" dev="/dev/ttyUSB1" baudrate="115200" address="0" start="3000" end="13000" />
+<Housekeeping path="../python/housekeeping/Agilent.py" dev="/dev/ttyS0" baudrate="57600" />
 <Frontend path="None" server="None" port="12345" />
-<Backends size="1" spectormeter1=" XFFTS-V2 " config1="/home/dabrowski/software/radctrl/cfg/xffts-v2-500.xml" path1="/home/dabrowski/software/radctrl/python/backend/XFW.py" />
+<Backends size="1" spectormeter1=" XFFTS-V2 " config1="xffts-v2-500.xml" path1="../python/backend/XFW.py" />
 <Operations integration_time="5000" blank_time="50" />
 <Savepath path="/mnt/Data/xmldata/" />
 </RADCTRL>

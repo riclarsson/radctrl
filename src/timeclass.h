@@ -130,6 +130,8 @@ class Time {
 
     return is;
   }
+  
+  friend void Sleep(Time t);
 };  // Time
 
 /** Debug output for duration */
@@ -139,6 +141,10 @@ inline std::ostream& operator<<(std::ostream& os, const TimeStep& dt) {
 
 inline void Sleep(double duration) {
   std::this_thread::sleep_for(TimeStep(duration));
+}
+
+inline void Sleep(Time t) {
+  std::this_thread::sleep_until(t.mtime);
 }
 
 #endif  // timeclass_h

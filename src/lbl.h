@@ -20,7 +20,7 @@ ENUMCLASS(Normalization, unsigned char, None, VVH, VVW, RosenkranzQuadratic)
 
 ENUMCLASS(Population, unsigned char, ByLTE, ByNLTE)
 
-ENUMCLASS(Cutoff, unsigned char, None, LineByLineOffset, BandFixedFrequency)
+ENUMCLASS(Cutoff, unsigned char, None, ByLineOffset, ByFixedFrequency)
 
 ENUMCLASS(Shape, unsigned char, DP, LP, VP, SDVP, SDHCVP, HTP)
 
@@ -234,9 +234,9 @@ class Band {
     switch (cutoff) {
       case Cutoff::None:
         return std::numeric_limits<double>::max();
-      case Cutoff::BandFixedFrequency:
+      case Cutoff::ByFixedFrequency:
         return fcut;
-      case Cutoff::LineByLineOffset:
+      case Cutoff::ByLineOffset:
         return lines[iline].F0() + fcut;
       case Cutoff::FINAL: { /*leave last*/
       }
@@ -256,9 +256,9 @@ class Band {
     switch (cutoff) {
       case Cutoff::None:
         return -std::numeric_limits<double>::max();
-      case Cutoff::BandFixedFrequency:
+      case Cutoff::ByFixedFrequency:
         return fcut - 2 * MeanFreq();
-      case Cutoff::LineByLineOffset:
+      case Cutoff::ByLineOffset:
         return lines[iline].F0() - fcut;
       case Cutoff::FINAL: { /*leave last*/
       }

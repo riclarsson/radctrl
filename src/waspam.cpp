@@ -1,5 +1,6 @@
 #include "backend.h"
 #include "chopper.h"
+#include "cli_parsing.h"
 #include "frontend.h"
 #include "gui.h"
 #include "housekeeping.h"
@@ -9,7 +10,7 @@
 #include "wobbler.h"
 #include "xml_config.h"
 
-int main(int argc, char* argv[]) try {
+int run(File::ConfigParser parser) try {
   constexpr size_t height_of_window = 7;  // Any size larger than part_for_plot
   constexpr size_t part_for_plot = 6;     // multiple of 2 and 3
   static_assert(part_for_plot % 6 == 0, "part_of_plot must be a multiple of 6");
@@ -20,12 +21,7 @@ int main(int argc, char* argv[]) try {
   // Start the window and give it a name
   InitializeGUI("WASPAM");
 
-  // Our global states are stored in configs
-  if (argc not_eq 2)
-    throw std::runtime_error("Bad parguments, please include the XML file");
-  File::ConfigParser parser(
-      argv[1], {"Chopper", "Wobbler", "Housekeeping", "Frontend", "Backends",
-                "Operations", "Savepath"});
+  // Our global states are stored in config
   GUI::Config config;
 
   // Chopper declaration
@@ -415,4 +411,17 @@ int main(int argc, char* argv[]) try {
   os << "Terminated with errors:\n" << e.what() << '\n';
   std::cerr << os.str();
   return EXIT_FAILURE;
+}
+
+int main(int argc, char ** argv) {
+  CommandLine::App rad("Run the WASPAM Radiometer");
+  
+  std::string xmlfilename;
+  rad.NewRequiredOption("--xml", xmlfilename, "Configuration file for the Radiometer");
+  
+  rad.Parse(argc, argv);
+  
+  run(File::ConfigParser(xmlfilename, {"Chopper", "Wobbler", "Housekeeping",
+                                       "Frontend", "Backends",
+                                       "Operations", "Savepath"}));
 }

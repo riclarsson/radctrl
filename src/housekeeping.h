@@ -335,8 +335,13 @@ class Agilent34970A {
         has_new_data(false) {}
 
   void startup(const std::string& dev, unsigned int baud) {
-    port.open(dev);
-    port.set_baudrate(baud);
+    try {
+      port.open(dev);
+      port.set_baudrate(baud);
+    } catch (const std::exception& e) {
+      error = e.what();
+      error_found = true;
+    }
   }
 
   void init(bool manual_press = false) {

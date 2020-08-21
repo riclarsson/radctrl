@@ -8,7 +8,7 @@
 namespace Absorption {
 struct Zeeman {
   /** Zeeman polarization selection */
-  enum class Polarization { SigmaMinus, Pi, SigmaPlus };
+  enum class Polarization : char { SigmaMinus, Pi, SigmaPlus, None };
 
   double gu, gl;
   constexpr Zeeman(double u = 0, double l = 0) noexcept : gu(u), gl(l) {}
@@ -29,6 +29,7 @@ struct Zeeman {
     switch (type) {
       case Polarization::SigmaMinus:
         return -1;
+      case Polarization::None:
       case Polarization::Pi:
         return 0;
       case Polarization::SigmaPlus:
@@ -65,6 +66,8 @@ struct Zeeman {
         return -std::min(Ju, Jl);
       case Polarization::SigmaPlus:
         return -Ju;
+      case Polarization::None:
+        return 0;
     }
     return Rational(std::numeric_limits<int>::max());
   }
@@ -97,6 +100,8 @@ struct Zeeman {
           return Ju;
         else
           return Jl;
+      case Polarization::None:
+        return 0;
     }
     return Rational(std::numeric_limits<int>::max());
   }
@@ -156,6 +161,8 @@ struct Zeeman {
         return 1.5;
       case Polarization::SigmaPlus:
         return .75;
+      case Polarization::None:
+        return 1.0;
     }
     return std::numeric_limits<double>::max();
   }

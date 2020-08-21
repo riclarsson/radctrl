@@ -13,8 +13,11 @@ void compute_lineshape(std::vector<Complex>& comp_x,
                        LineShape ls) {
   const size_t nv = f.size();
   for (size_t iv = 0; iv < nv; iv++) {
-    if (cutoff_low <= f[iv] and f[iv] <= cutoff_upp)
+    if (cutoff_low <= f[iv] and f[iv] <= cutoff_upp) {
       comp_x[iv] = lm * ls(f[iv]);
+    } else {
+      comp_x[iv] = Complex(0, 0);
+    }
   }
 
   if (cutoff_upp > 0.0) {
@@ -35,9 +38,6 @@ void compute_mirrored_lineshape(std::vector<Complex>& comp_x,
   for (size_t iv = 0; iv < nv; iv++) {
     if (cutoff_low <= f[iv] and f[iv] <= cutoff_upp)
       comp_x[iv] += lm * conj(ls(f[iv]));
-    else {
-      comp_x[iv] = Complex(0, 0);
-    }
   }
 
   if (cutoff_upp > 0.0) {
@@ -77,6 +77,7 @@ void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
   const double GDpart = band.GD_giv_F0(atm.atm.Temp());
   const double QT0 = band.QT0();
   const double QT = band.QT(atm.atm.Temp());
+  const double vmr = atm.atm.VolumeMixingRatio(band.Isotopologue());
 
   for (size_t iline = 0; iline < band.n_lines(); iline++) {
     const auto& line = band.Lines()[iline];
@@ -207,7 +208,7 @@ void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
       // Apply line strength by whatever method is necessary
       switch (band.PopType()) {
         case Population::ByLTE: {
-          const double S =
+          const double S = vmr *
               compute_lte_linestrength(line.I0(), SZ, line.E0(), line.F0(), QT0,
                                        band.T0(), QT, atm.atm.Temp());
           std::transform(std::execution::par_unseq, comp_x.begin(),
@@ -220,7 +221,7 @@ void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
         }
       }
 
-      // Sum up before returning
+      // Sum up before going to the next line (or returning)
       std::transform(std::execution::par_unseq, comp_x.cbegin(), comp_x.cend(),
                      x.begin(), x.begin(),
                      [](auto& a, auto& b) { return a + b; });
