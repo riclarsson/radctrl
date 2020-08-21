@@ -5,10 +5,9 @@
 
 namespace Absorption {
 namespace Xsec {
-  void compute(std::vector<Complex>& xsec,
-               const std::vector<double>& f,
-               std::vector<Band>& bands);
+void compute(std::vector<Complex>& xsec, const std::vector<double>& f,
+             std::vector<Band>& bands);
 }
-}
+}  // namespace Absorption
 
 #endif  // absorption_h

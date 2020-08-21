@@ -17,9 +17,10 @@ class ConfigParser {
                const std::string& return_on_no_data = "NODATA")
       : nodata(return_on_no_data) {
     File<Operation::Read, Type::Xml> file(filepath);
-    
-    const std::filesystem::path relpath{std::filesystem::path(filepath).remove_filename()};
-    
+
+    const std::filesystem::path relpath{
+        std::filesystem::path(filepath).remove_filename()};
+
     for (auto& key : targets) {
       if (key == std::string{"default"})
         throw std::runtime_error("Cannot give default values in config");
@@ -33,8 +34,10 @@ class ConfigParser {
         std::string val{x->value()};
         if (key == std::string{"default"}) {
           throw std::runtime_error("Cannot give default values in config");
-        } else if (key.substr(0, 4) == "path" or key.substr(0, 6) == "config") {  // Special code for paths and other config files
-          if (val.size() and val[0] not_eq '/') { //relative path
+        } else if (key.substr(0, 4) == "path" or
+                   key.substr(0, 6) == "config") {  // Special code for paths
+                                                    // and other config files
+          if (val.size() and val[0] not_eq '/') {   // relative path
             auto thispath = relpath;
             thispath /= val;
             attr_map[key] = thispath.string();

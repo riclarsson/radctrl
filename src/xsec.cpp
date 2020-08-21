@@ -1,4 +1,3 @@
 #include "xsec.h"
 
-namespace Absorption {
-}
+namespace Absorption {}

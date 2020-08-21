@@ -10,13 +10,15 @@ class Runtime;
 class RuntimeSetup {
   bool ok;
   std::unique_ptr<cli::Menu> main;
-public:
-  RuntimeSetup(const std::string& menu) : ok(true), main(std::make_unique<cli::Menu>(menu)) {}
-  
+
+ public:
+  RuntimeSetup(const std::string& menu)
+      : ok(true), main(std::make_unique<cli::Menu>(menu)) {}
+
   template <class Function>
   void Insert(const std::string& cmd, Function&& f, const std::string& desc) {
     if (ok) {
-      main -> Insert(cmd.c_str(), f, desc.c_str());
+      main->Insert(cmd.c_str(), f, desc.c_str());
     } else {
       std::cerr << "Bad option\n";
       std::exit(1);
@@ -24,30 +26,31 @@ public:
   }
   void Insert(RuntimeSetup& c) {
     if (ok and c.ok) {
-      main -> Insert(std::move(c.main));
+      main->Insert(std::move(c.main));
       c.ok = false;
     } else {
       std::cerr << "Bad option\n";
       std::exit(1);
     }
   }
-  
+
   [[nodiscard]] Runtime Run();
-  
-//   void Run() {
-//     runner = std::move(cli::Cli(std::move(main)));
-//     cli.ExitAction([](auto& out){out << "Thanks for using.  Exiting\n"});
-//     session = CliFileSession(runner);
-//     session.Start();
-//   }
+
+  //   void Run() {
+  //     runner = std::move(cli::Cli(std::move(main)));
+  //     cli.ExitAction([](auto& out){out << "Thanks for using.  Exiting\n"});
+  //     session = CliFileSession(runner);
+  //     session.Start();
+  //   }
 };  // RuntimeSetup
 
 class Runtime {
   cli::CliFileSession input;
-public:
-  Runtime(cli::Cli&& c) : input(c) {input.Start();}
+
+ public:
+  Runtime(cli::Cli&& c) : input(c) { input.Start(); }
 };
 
-}  // CommandLine
+}  // namespace CommandLine
 
 #endif  // cli_runttime_h

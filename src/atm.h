@@ -71,10 +71,12 @@ class Point {
     return vmr;
   }
   double VolumeMixingRatio(Species::Isotope s) const {
-    if (auto v = std::find_if(vmr.cbegin(), vmr.cend(), [s](auto& v){return v.isot() == s;}); v == vmr.cend())
+    if (auto v = std::find_if(vmr.cbegin(), vmr.cend(),
+                              [s](auto& v) { return v.isot() == s; });
+        v == vmr.cend())
       return 0;
     else
-      return v -> value();
+      return v->value();
   }
 
   friend Point operator*(double x, const Point& ap) noexcept {

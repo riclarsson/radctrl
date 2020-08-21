@@ -413,15 +413,16 @@ int run(File::ConfigParser parser) try {
   return EXIT_FAILURE;
 }
 
-int main(int argc, char ** argv) {
+int main(int argc, char** argv) {
   CommandLine::App rad("Run the WASPAM Radiometer");
-  
+
   std::string xmlfilename;
-  rad.NewRequiredOption("--xml", xmlfilename, "Configuration file for the Radiometer");
-  
+  rad.NewRequiredOption("--xml", xmlfilename,
+                        "Configuration file for the Radiometer");
+
   rad.Parse(argc, argv);
-  
-  run(File::ConfigParser(xmlfilename, {"Chopper", "Wobbler", "Housekeeping",
-                                       "Frontend", "Backends",
-                                       "Operations", "Savepath"}));
+
+  run(File::ConfigParser(xmlfilename,
+                         {"Chopper", "Wobbler", "Housekeeping", "Frontend",
+                          "Backends", "Operations", "Savepath"}));
 }

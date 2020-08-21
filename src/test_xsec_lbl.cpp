@@ -77,10 +77,10 @@ void test002() {
       getGlobalQuantumNumberCount(Species::Species::Oxygen));
   const std::vector<Quantum::Number> l(
       getLocalQuantumNumberCount(Species::Species::Oxygen));
-  Absorption::Band band(O266, Absorption::Mirroring::None,
-                        Absorption::Normalization::None,
-                        Absorption::Population::ByLTE, Absorption::Cutoff::ByLineOffset,
-                        Absorption::Shape::VP, 296, 1e9, g, g, 1);
+  Absorption::Band band(
+      O266, Absorption::Mirroring::None, Absorption::Normalization::None,
+      Absorption::Population::ByLTE, Absorption::Cutoff::ByLineOffset,
+      Absorption::Shape::VP, 296, 1e9, g, g, 1);
   Absorption::LineShape::Model m{Species::Species::Oxygen, 10e3, 15e3, 0, 0.7};
   band.Lines()[0] =
       Absorption::Line(O266, 100e9, 1e-20, 1e-20, {0, 0}, 1, 1, 1e-20, l, l, m);
