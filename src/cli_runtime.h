@@ -20,7 +20,8 @@ class RuntimeSetup {
     if (ok) {
       main->Insert(cmd.c_str(), f, desc.c_str());
     } else {
-      std::cerr << "Bad option\n";
+      std::cerr << "Bad option addition, "
+                << "*this has been made invalid [DEV ERROR]\n";
       std::exit(1);
     }
   }
@@ -29,7 +30,8 @@ class RuntimeSetup {
       main->Insert(std::move(c.main));
       c.ok = false;
     } else {
-      std::cerr << "Bad option\n";
+      std::cerr << "Bad menu addition, "
+                << "*this has been made invalid [DEV ERROR]\n";
       std::exit(1);
     }
   }
