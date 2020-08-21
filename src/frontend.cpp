@@ -60,7 +60,7 @@ void runonce(std::string& server, int port, const std::string& python_file) {
 
 template <class Frontend>
 void run(std::string& server, int port, const std::string& python_file,
-         const TimeStep dt) {
+         const TimeStep dt, bool clear_terminal) {
   if (dt.count() > 7 * 86400 or dt.count() < 0) {
     std::cerr
         << "Bad time: " << dt
@@ -111,6 +111,7 @@ void run(std::string& server, int port, const std::string& python_file,
       std::exit(1);
     }
 
+    if (clear_terminal) std::printf("\033c");
     std::cout << Time() << '\n';
     for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
 
@@ -146,6 +147,10 @@ int main(int argc, char** argv) {
   double minimum_waittime = 5.0;
   fe.NewDefaultOption("-w,--waittime", minimum_waittime,
                       "Minimum wait time in seconds when running continuously");
+  bool clear_terminal = false;
+  fe.NewDefaultOption(
+      "-c,--clear", clear_terminal,
+      "Clear terminal setting\n\t0: Do not clear\n\t1: Do clear");
   std::string pythonfile;
   fe.NewPlainOption("-p,--pythondriver", pythonfile,
                     "Python driving file for the machine (if applicable)");
@@ -155,8 +160,8 @@ int main(int argc, char** argv) {
 
   if (machine == 0) {
     if (continue_running) {
-      run<Instrument::Frontend::DBR>(server, port, pythonfile,
-                                     TimeStep{minimum_waittime});
+      run<Instrument::Frontend::DBR>(
+          server, port, pythonfile, TimeStep{minimum_waittime}, clear_terminal);
     } else {
       runonce<Instrument::Frontend::DBR>(server, port, pythonfile);
     }

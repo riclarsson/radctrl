@@ -59,7 +59,7 @@ void runonce(std::string& dev, int baud, const std::string& python_file) {
 
 template <class Housekeeping>
 void run(std::string& dev, int baud, const std::string& python_file,
-         const TimeStep dt) {
+         const TimeStep dt, bool clear_terminal) {
   if (dt.count() > 7 * 86400 or dt.count() < 0) {
     std::cerr
         << "Bad time: " << dt
@@ -110,6 +110,7 @@ void run(std::string& dev, int baud, const std::string& python_file,
       std::exit(1);
     }
 
+    if (clear_terminal) std::printf("\033c");
     std::cout << Time();
     for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
 
@@ -138,6 +139,10 @@ int main(int argc, char** argv) {
   hk.NewDefaultOption("-r,--run", continue_running,
                       "Runtime setting\n\t0: Shutdown after one run\n\t1: Run "
                       "until external interruption");
+  bool clear_terminal = false;
+  hk.NewDefaultOption(
+      "-c,--clear", clear_terminal,
+      "Clear terminal setting\n\t0: Do not clear\n\t1: Do clear");
   double minimum_waittime = 5.0;
   hk.NewDefaultOption("-w,--waittime", minimum_waittime,
                       "Minimum wait time in seconds when running continuously");
@@ -150,8 +155,8 @@ int main(int argc, char** argv) {
 
   if (machine == 0) {
     if (continue_running) {
-      run<Instrument::Housekeeping::Agilent34970A>(dev, baud, pythonfile,
-                                                   TimeStep{minimum_waittime});
+      run<Instrument::Housekeeping::Agilent34970A>(
+          dev, baud, pythonfile, TimeStep{minimum_waittime}, clear_terminal);
     } else {
       runonce<Instrument::Housekeeping::Agilent34970A>(dev, baud, pythonfile);
     }
