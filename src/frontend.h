@@ -205,7 +205,7 @@ class DBR {
     get_status = Python::Function{PyInst("get_status_as_dict")};
   }
 
-  void init(bool manual_press=false) {
+  void init(bool manual_press = false) {
     manual = manual_press;
     initfun();
   }

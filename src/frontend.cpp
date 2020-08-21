@@ -1,5 +1,6 @@
-#include "cli_parsing.h"
 #include "frontend.h"
+
+#include "cli_parsing.h"
 #include "timeclass.h"
 
 namespace Instrument {
@@ -14,7 +15,7 @@ void runonce(std::string& server, int port, const std::string& python_file) {
   if (fe.has_error()) {
     std::cerr << "Failure calling fe.startup(\"" << server << "\", " << port
               << ").  Error:\n";
-              std::cerr << fe.error_string() << '\n';
+    std::cerr << fe.error_string() << '\n';
     std::exit(1);
   }
 
@@ -59,7 +60,8 @@ void runonce(std::string& server, int port, const std::string& python_file) {
 }
 
 template <class Frontend>
-void run(std::string& server, int port, const std::string& python_file, const TimeStep dt) {
+void run(std::string& server, int port, const std::string& python_file,
+         const TimeStep dt) {
   if (dt.count() > 7 * 86400 or dt.count() < 0) {
     std::cerr
         << "Bad time: " << dt
@@ -73,7 +75,7 @@ void run(std::string& server, int port, const std::string& python_file, const Ti
   if (fe.has_error()) {
     std::cerr << "Failure calling fe.startup(\"" << server << "\", " << port
               << ").  Error:\n";
-              std::cerr << fe.error_string() << '\n';
+    std::cerr << fe.error_string() << '\n';
     std::exit(1);
   }
 
@@ -128,18 +130,17 @@ void run(std::string& server, int port, const std::string& python_file, const Ti
 int main(int argc, char** argv) {
   // Start a python interpreter in case python code will be executed
   auto py = Python::createPython();
-  
+
   CommandLine::App fe("Run a chopper machine");
-  
+
   int machine;
   fe.NewRequiredOption("-m,--machine", machine,
                        "The class\n\t0: DBR (req. python driver)");
   std::string server;
   fe.NewRequiredOption("-s,--server", server,
-                         "Device for the machine to connect to");
+                       "Device for the machine to connect to");
   int port = 1080;
-  fe.NewDefaultOption("--port", port,
-                      "Port for the frontend");
+  fe.NewDefaultOption("--port", port, "Port for the frontend");
   bool continue_running = false;
   fe.NewDefaultOption("-r,--run", continue_running,
                       "Runtime setting\n\t0: Shutdown after one run\n\t1: Run "
@@ -149,11 +150,11 @@ int main(int argc, char** argv) {
                       "Minimum wait time in seconds when running continuously");
   std::string pythonfile;
   fe.NewPlainOption("-p,--pythondriver", pythonfile,
-                      "Python driving file for the machine (if applicable)");
-  
+                    "Python driving file for the machine (if applicable)");
+
   // Parse input options
   fe.Parse(argc, argv);
-  
+
   if (machine == 0) {
     if (continue_running) {
       run<Instrument::Frontend::DBR>(server, port, pythonfile,

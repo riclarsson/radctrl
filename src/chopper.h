@@ -287,7 +287,7 @@ class PythonOriginal {
   DataType get_data_raw() {
     try {
       return toChopperPos(
-        (Python::Object<Python::Type::String>{get()}).toString());
+          (Python::Object<Python::Type::String>{get()}).toString());
     } catch (const std::exception& e) {
       error = e.what();
       error_found = true;

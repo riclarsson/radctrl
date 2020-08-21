@@ -22,84 +22,84 @@ void run(const std::string& dev, int offset, double sleeptime,
 
   CommandLine::RuntimeSetup setup("chop");
   setup.Insert(
-    "init",
-    [&](std::ostream& out) {
-      chop.init();
-      if (chop.has_error()) {
-        std::cerr << chop.error_string() << '\n';
-        chop.delete_error();
-      } else {
-        out << "Initialized\n";
-      }
-    },
-    "Initialize the machine");
+      "init",
+      [&](std::ostream& out) {
+        chop.init();
+        if (chop.has_error()) {
+          std::cerr << chop.error_string() << '\n';
+          chop.delete_error();
+        } else {
+          out << "Initialized\n";
+        }
+      },
+      "Initialize the machine");
   setup.Insert(
-    "cold",
-    [&](std::ostream& out) {
-      chop.run(Instrument::Chopper::ChopperPos::Cold);
-      if (chop.has_error()) {
-        std::cerr << chop.error_string() << '\n';
-        chop.delete_error();
-      } else {
-        out << "Moved to cold position\n";
-      }
-    },
-    "Point at cold position");
+      "cold",
+      [&](std::ostream& out) {
+        chop.run(Instrument::Chopper::ChopperPos::Cold);
+        if (chop.has_error()) {
+          std::cerr << chop.error_string() << '\n';
+          chop.delete_error();
+        } else {
+          out << "Moved to cold position\n";
+        }
+      },
+      "Point at cold position");
   setup.Insert(
-    "hot",
-    [&](std::ostream& out) {
-      chop.run(Instrument::Chopper::ChopperPos::Hot);
-      if (chop.has_error()) {
-        std::cerr << chop.error_string() << '\n';
-        chop.delete_error();
-      } else {
-        out << "Moved to hot position\n";
-      }
-    },
-    "Point at hot position");
+      "hot",
+      [&](std::ostream& out) {
+        chop.run(Instrument::Chopper::ChopperPos::Hot);
+        if (chop.has_error()) {
+          std::cerr << chop.error_string() << '\n';
+          chop.delete_error();
+        } else {
+          out << "Moved to hot position\n";
+        }
+      },
+      "Point at hot position");
   setup.Insert(
-    "ant",
-    [&](std::ostream& out) {
-      chop.run(Instrument::Chopper::ChopperPos::Antenna);
-      if (chop.has_error()) {
-        std::cerr << chop.error_string() << '\n';
-        chop.delete_error();
-      } else {
-        out << "Moved to antenna position\n";
-      }
-    },
-    "Point at antenna position");
+      "ant",
+      [&](std::ostream& out) {
+        chop.run(Instrument::Chopper::ChopperPos::Antenna);
+        if (chop.has_error()) {
+          std::cerr << chop.error_string() << '\n';
+          chop.delete_error();
+        } else {
+          out << "Moved to antenna position\n";
+        }
+      },
+      "Point at antenna position");
   setup.Insert(
-    "ref",
-    [&](std::ostream& out) {
-      chop.run(Instrument::Chopper::ChopperPos::Reference);
-      if (chop.has_error()) {
-        std::cerr << chop.error_string() << '\n';
-        chop.delete_error();
-      } else {
-        out << "Moved to reference position\n";
-      }
-    },
-    "Point at reference position");
+      "ref",
+      [&](std::ostream& out) {
+        chop.run(Instrument::Chopper::ChopperPos::Reference);
+        if (chop.has_error()) {
+          std::cerr << chop.error_string() << '\n';
+          chop.delete_error();
+        } else {
+          out << "Moved to reference position\n";
+        }
+      },
+      "Point at reference position");
   setup.Insert(
-    "close",
-    [&](std::ostream& out) {
-      chop.close();
-      if (chop.has_error()) {
-        std::cerr << chop.error_string() << '\n';
-        chop.delete_error();
-      } else {
-        out << "Closed down\n";
-      }
-    },
-    "Close the machine");
+      "close",
+      [&](std::ostream& out) {
+        chop.close();
+        if (chop.has_error()) {
+          std::cerr << chop.error_string() << '\n';
+          chop.delete_error();
+        } else {
+          out << "Closed down\n";
+        }
+      },
+      "Close the machine");
   auto rt = setup.Run();
 }
 
 int main(int argc, char** argv) {
   // Start a python interpreter in case python code will be executed
   auto py = Python::createPython();
-  
+
   CommandLine::App chop("Run a chopper machine");
 
   int machine;
