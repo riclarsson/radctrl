@@ -122,17 +122,17 @@ int main(int argc, char ** argv) {
   CommandLine::App hk("Run a housekeeping machine");
   
   int machine;
-  hk.NewRequiredOption("-m,--machine", machine, "The housekeeping class\n\tOptions:\n\t\t0: Agilent34970A (no python driver)");
+  hk.NewRequiredOption("-m,--machine", machine, "The class\n\t0: Agilent34970A (no python driver)");
   std::string dev;
   hk.NewRequiredOption("-d,--dev", dev, "Device for the machine to connect to");
   int baud;
   hk.NewRequiredOption("-b,--baud", baud, "Baud rate");
   bool continue_running=false;
-  hk.NewDefaultOption("-r,--run", continue_running, "0: Shutdown after one run\n1: Run until external interruption");
+  hk.NewDefaultOption("-r,--run", continue_running, "Runtime setting\n\t0: Shutdown after one run\n\t1: Run until external interruption");
   double minimum_waittime=5.0;
   hk.NewDefaultOption("-w,--waittime", minimum_waittime, "Minimum wait time in seconds when running continuously");
   std::string pythonfile;
-  hk.NewPlainOption("-p,--pythondriver", pythonfile, "Python driving file for the Housekeeping machine (if applicable)");
+  hk.NewPlainOption("-p,--pythondriver", pythonfile, "Python driving file for the machine (if applicable)");
   
   // Parse input options
   hk.Parse(argc, argv);
