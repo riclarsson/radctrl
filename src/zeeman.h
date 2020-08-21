@@ -1,6 +1,9 @@
 #ifndef zeeman_h
 #define zeeman_h
 
+#include <Eigen/Core>
+#include <cmath>
+
 #include "constants.h"
 #include "rational.h"
 #include "wigner.h"
@@ -211,6 +214,45 @@ struct Zeeman {
 
     return C * (double(Ml(Ju, Jl, type, n)) * gl -
                 double(Mu(Ju, Jl, type, n)) * gu);
+  }
+
+  static inline Eigen::Vector3d los_xyz_by_uvw_local(double u, double v,
+                                                     double w) {
+    return Eigen::Vector3d(v, u, w).normalized();
+  }
+
+  static inline Eigen::Vector3d los_xyz_by_za_local(double z, double a) {
+    using Conversion::cosd;
+    using Conversion::sind;
+    return Eigen::Vector3d(cosd(a) * sind(z), sind(a) * sind(z), cosd(z));
+  }
+
+  static inline Eigen::Vector3d ev_xyz_by_za_local(double z, double a) {
+    using Conversion::cosd;
+    using Conversion::sind;
+    return Eigen::Vector3d(cosd(a) * cosd(z), sind(a) * cosd(z), -sind(z));
+  }
+
+  struct Angles {
+    double theta;
+    double eta;
+  };
+
+  static inline Angles angles(double u, double v, double w, double z,
+                              double a) noexcept {
+    // XYZ vectors normalized
+    const Eigen::Vector3d n = los_xyz_by_za_local(z, a);
+    const Eigen::Vector3d ev = ev_xyz_by_za_local(z, a);
+    const Eigen::Vector3d nH = los_xyz_by_uvw_local(u, v, w);
+    const Eigen::Vector3d inplane = nH - nH.dot(n) * n;
+
+    // If there is no magnetic field, bailout quickly
+    double H = std::hypot(u, v, w);
+    if (H == 0)
+      return {0, 0};
+    else
+      return {Conversion::acosd(n.dot(nH)),
+              Conversion::atan2d(ev.dot(inplane), ev.cross(inplane).dot(n))};
   }
 };
 }  // namespace Absorption

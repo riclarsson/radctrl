@@ -142,6 +142,7 @@ class Band {
   Population population;
   Cutoff cutoff;
   Shape shape;
+  bool do_zeeman;
   Temperature<TemperatureType::K> t0;
   Frequency<FrequencyType::Freq> fcut;
   std::vector<Quantum::Number> global_lower;
@@ -153,7 +154,7 @@ class Band {
 
   // Init band
   Band(Species::Isotope s, Mirroring m, Normalization n, Population p, Cutoff c,
-       Shape sh, Temperature<TemperatureType::K> T0,
+       Shape sh, bool dz, Temperature<TemperatureType::K> T0,
        Frequency<FrequencyType::Freq> FCut,
        const std::vector<Quantum::Number>& gl,
        const std::vector<Quantum::Number>& gu, long N = 0) noexcept
@@ -163,6 +164,7 @@ class Band {
         population(p),
         cutoff(c),
         shape(sh),
+        do_zeeman(dz),
         t0(T0),
         fcut(FCut),
         global_lower(gl),
@@ -178,9 +180,9 @@ class Band {
   bool operator==(const Band& b) const noexcept {
     return spec == b.spec and mirroring == b.mirroring and
            normalization == b.normalization and population == b.population and
-           cutoff == b.cutoff and shape == b.shape and t0 == b.t0 and
-           fcut == b.fcut and global_lower == b.global_lower and
-           global_upper == b.global_upper;
+           cutoff == b.cutoff and shape == b.shape and
+           do_zeeman == b.do_zeeman and t0 == b.t0 and fcut == b.fcut and
+           global_lower == b.global_lower and global_upper == b.global_upper;
   }
 
   void appendLine(Line line) noexcept { lines.push_back(std::move(line)); }
@@ -269,6 +271,7 @@ class Band {
   double QT(Temperature<TemperatureType::K> T) const noexcept {
     return spec.QT(T);
   }
+  bool doZeeman() const noexcept { return do_zeeman; }
 
   friend void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
                        Band& band, const std::string& key);

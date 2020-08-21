@@ -10,9 +10,9 @@
 #include "units.h"
 
 namespace RTE {
-template <unsigned n>
+template <size_t n>
 class RadVec {
-  static constexpr unsigned N = n;
+  static constexpr size_t N = n;
   static_assert(N < 5 and N > 0);
   std::array<double, N> b;
 
@@ -41,12 +41,12 @@ class RadVec {
     }
   }
 
-  constexpr double operator[](unsigned i) const noexcept { return b[i]; }
+  constexpr double operator[](size_t i) const noexcept { return b[i]; }
 };  // RadVec
 
-template <unsigned n>
+template <size_t n>
 class TraMat {
-  static constexpr unsigned N = n;
+  static constexpr size_t N = n;
   static_assert(N < 5 and N > 0);
   std::array<double, N * N> a;
 
@@ -87,8 +87,8 @@ class TraMat {
   }
 
   friend std::ostream& operator<<(std::ostream& os, TraMat a) {
-    for (unsigned i = 0; i < TraMat::N; i++) {
-      for (unsigned j = 0; j < TraMat::N; j++) {
+    for (size_t i = 0; i < TraMat::N; i++) {
+      for (size_t j = 0; j < TraMat::N; j++) {
         if (j < N - 1)
           os << a(i, j) << ' ';
         else if (i < N - 1)
@@ -100,7 +100,7 @@ class TraMat {
     return os;
   }
 
-  constexpr double operator()(unsigned i, unsigned j) const noexcept {
+  constexpr double operator()(size_t i, size_t j) const noexcept {
     return a[i * N + j];
   }
 
@@ -117,7 +117,7 @@ class TraMat {
 };  // TraMat
 
 /** Returns T (I - J) + J */
-template <unsigned int N>
+template <size_t N>
 constexpr RadVec<N> update(const RadVec<N> I, const TraMat<N> T,
                            const RadVec<N> J) noexcept {
   if constexpr (N == 4)
@@ -145,7 +145,7 @@ constexpr RadVec<N> update(const RadVec<N> I, const TraMat<N> T,
 }
 
 /** Returns dT (I - J) + dJ - T dJ */
-template <unsigned int N>
+template <size_t N>
 constexpr RadVec<N> dupdate(const RadVec<N> I, const TraMat<N> T,
                             const TraMat<N> dT, const RadVec<N> J,
                             const RadVec<N> dJ) noexcept {
@@ -208,7 +208,7 @@ double dBdf(Temperature<TemperatureType::K> T,
  *
  * FIXME:  B should not be a double...
  */
-template <unsigned int N>
+template <size_t N>
 constexpr RadVec<N> source(const Absorption::PropMat<N> K, const RadVec<N> S,
                            const RadVec<N> A, const double B) noexcept {
   using Constant::pow2;
@@ -292,7 +292,7 @@ constexpr RadVec<N> source(const Absorption::PropMat<N> K, const RadVec<N> S,
  *
  * FIXME:  B should not be a double...
  */
-template <unsigned int N>
+template <size_t N>
 constexpr RadVec<N> dsource(const Absorption::PropMat<N> K,
                             const Absorption::PropMat<N> dK, const RadVec<N> J,
                             const RadVec<N> dS, const RadVec<N> A,
@@ -417,7 +417,7 @@ constexpr RadVec<N> dsource(const Absorption::PropMat<N> K,
   }
 }
 
-template <unsigned int N>
+template <size_t N>
 constexpr TraMat<N> transmat(const Absorption::PropMat<N> K,
                              const double r) noexcept {
   using Constant::inv_sqrt_2;
@@ -582,7 +582,7 @@ constexpr TraMat<N> transmat(const Absorption::PropMat<N> K,
   }
 }
 
-template <unsigned int N>
+template <size_t N>
 constexpr TraMat<N> dtransmat(const TraMat<N> T, const Absorption::PropMat<N> K,
                               const Absorption::PropMat<N> dK, const double r,
                               const double dr) noexcept {

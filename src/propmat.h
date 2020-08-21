@@ -5,13 +5,17 @@
 #include <iostream>
 #include <vector>
 
+#include "complex.h"
 #include "constants.h"
 
 namespace Absorption {
-template <unsigned int n>
+template <size_t n>
 class PropMat {
-  static constexpr unsigned int N = n;
-  static constexpr unsigned int SIZE = ((N == 4) ? 7 : ((N == 3) ? 4 : N));
+ public:
+  static constexpr size_t N = n;
+  static constexpr size_t SIZE = ((N == 4) ? 7 : ((N == 3) ? 4 : N));
+
+ private:
   static_assert(N < 5 and N > 0);
 
   std::array<double, SIZE> p;
@@ -30,6 +34,7 @@ class PropMat {
     static_assert(N == 2);
   }
   constexpr PropMat(double a) noexcept : p({a}) { static_assert(N == 1); }
+  PropMat() noexcept { p.fill(0); }
 
   friend std::ostream& operator<<(std::ostream& os, PropMat pm) {
     if constexpr (N == 4)
@@ -42,6 +47,18 @@ class PropMat {
     else if constexpr (N == 1)
       std::cout << pm[0];
     return os;
+  }
+
+  PropMat& add_unpolarized(Complex c) noexcept {
+    p[0] += c.real();
+    return *this;
+  }
+
+  PropMat& add_polarized(Complex c,
+                         const std::array<double, SIZE>& x) noexcept {
+    for (size_t i = 0; i < N; i++) p[i] *= c.real() * x[i];
+    for (size_t i = N; i < SIZE; i++) p[i] *= c.imag() * x[i];
+    return *this;
   }
 
   constexpr double operator[](unsigned i) const noexcept { return p[i]; }

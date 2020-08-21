@@ -48,6 +48,7 @@ std::vector<Band> parse_hitran_with_qns(
            Population::ByLTE,
            Cutoff::None,
            Shape::VP,
+           false,
            296,
            -1,
            gu,
@@ -94,6 +95,7 @@ void saveBand(File::File<File::Operation::Write, File::Type::Xml>& file,
   file.add_attribute("Population", band.PopType());
   file.add_attribute("CutoffType", band.CutType());
   file.add_attribute("Shape", band.ShapeType());
+  file.add_attribute("Zeeman", band.doZeeman());
   file.add_attribute("T0", band.T0());
   file.add_attribute("CutoffFrequency", band.FCut());
   file.add_attribute("BroadeningSpecies", band.broadspec());
@@ -151,6 +153,7 @@ void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
   band.population = toPopulation(file.get_attribute("Population").as_string());
   band.cutoff = toCutoff(file.get_attribute("CutoffType").as_string());
   band.shape = toShape(file.get_attribute("Shape").as_string());
+  band.do_zeeman = file.get_attribute("Zeeman").as_bool();
   band.t0 = file.get_attribute("T0").as_double();
   band.fcut = file.get_attribute("CutoffFrequency").as_double();
 
@@ -222,6 +225,7 @@ void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
   file.add_attribute("Population", band.PopType());
   file.add_attribute("CutoffType", band.CutType());
   file.add_attribute("Shape", band.ShapeType());
+  file.add_attribute("Zeeman", band.doZeeman());
   file.add_attribute("T0", band.T0());
   file.add_attribute("CutoffFrequency", band.FCut());
   file.add_attribute("BroadeningSpecies", band.broadspec());
@@ -283,6 +287,7 @@ void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
   band.population = toPopulation(file.get_attribute("Population").as_string());
   band.cutoff = toCutoff(file.get_attribute("CutoffType").as_string());
   band.shape = toShape(file.get_attribute("Shape").as_string());
+  band.do_zeeman = file.get_attribute("Zeeman").as_bool();
   band.t0 = file.get_attribute("T0").as_double();
   band.fcut = file.get_attribute("CutoffFrequency").as_double();
 
