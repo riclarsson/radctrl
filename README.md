@@ -3,6 +3,8 @@
 Intended to control radiometer
 
 # Setup (Ubuntu 20.04; incomplete list)
+-- doxygen
+-- graphviz
 -- libglew-dev
 -- libglfw3-dev
 -- libtbb-dev

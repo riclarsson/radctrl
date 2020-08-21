@@ -35,13 +35,6 @@ class RuntimeSetup {
   }
 
   [[nodiscard]] Runtime Run();
-
-  //   void Run() {
-  //     runner = std::move(cli::Cli(std::move(main)));
-  //     cli.ExitAction([](auto& out){out << "Thanks for using.  Exiting\n"});
-  //     session = CliFileSession(runner);
-  //     session.Start();
-  //   }
 };  // RuntimeSetup
 
 class Runtime {

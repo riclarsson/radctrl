@@ -254,11 +254,18 @@ class PythonOriginal {
   }
 
   // Call upon exit for clean getaway
-  void close() { shutdown(); }
+  void close() {
+    try {
+      shutdown();
+    } catch (const std::exception& e) {
+      error = e.what();
+      error_found = true;
+    }
+  }
 
   // Main operation
   void run(ChopperPos x) {
-    if (pos not_eq x) {
+    try {
       if (x == ChopperPos::Antenna) {
         ant();
       } else if (x == ChopperPos::Reference) {
@@ -268,15 +275,24 @@ class PythonOriginal {
       } else if (x == ChopperPos::Cold) {
         cold();
       }
-    }
 
-    pos = x;
+      pos = x;
+    } catch (const std::exception& e) {
+      error = e.what();
+      error_found = true;
+    }
   }
 
   // Queries
   DataType get_data_raw() {
-    return toChopperPos(
+    try {
+      return toChopperPos(
         (Python::Object<Python::Type::String>{get()}).toString());
+    } catch (const std::exception& e) {
+      error = e.what();
+      error_found = true;
+      return ChopperPos::FINAL;
+    }
   }
   DataType get_data() { return pos; }
 
