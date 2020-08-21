@@ -106,7 +106,10 @@ target_link_libraries(backend PUBLIC files gui python math)
 add_library (frontend STATIC
              frontend.cpp
              )
-target_link_libraries(frontend PUBLIC gui python)
+target_link_libraries(frontend PUBLIC gui python cli)
+add_executable (frontend_bin frontend.cpp)
+target_link_libraries(frontend_bin PUBLIC frontend)
+set_target_properties(frontend_bin PROPERTIES OUTPUT_NAME "frontend")
 ########################################################################################
 
 ########################################################################################
