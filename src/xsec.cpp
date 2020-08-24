@@ -9,35 +9,58 @@ namespace Xsec {
 template <size_t N>
 void internal_compute(std::vector<PropMat<N>>& pm, const std::vector<double>& f,
                       const std::vector<Band>& bands, const Path::Point& atm) {
-  std::vector<Complex> x(f.size(), {0, 0});
-  std::vector<Complex> xpart(f.size());
+  const auto mag = atm.atm.MagField();
+  const auto los = atm.nav.sphericalLos();
+  [[maybe_unused]] const auto a =
+      Zeeman::angles(mag.u(), mag.v(), mag.w(), los.za(), los.aa());
 
-  for (auto& band : bands) {
-    if (band.doZeeman()) {
-      if constexpr (N == 4) {
-        for (auto z :
-             {Zeeman::Polarization::SigmaMinus, Zeeman::Polarization::SigmaPlus,
-              Zeeman::Polarization::Pi}) {
-          Lbl::compute(x, xpart, f, band, atm, z);
-          std::array<double, PropMat<N>::SIZE> polar;
-          if (z == Zeeman::Polarization::SigmaMinus) {
-          } else if (z == Zeeman::Polarization::SigmaPlus) {
-          } else if (z == Zeeman::Polarization::Pi) {
-          }
-          std::transform(std::execution::par_unseq, x.cbegin(), x.cend(),
-                         pm.begin(), pm.begin(), [&polar](auto& dx, auto& p) {
-                           return p.add_polarized(dx, polar);
-                         });
-        }
-      } else {
-        std::cerr << "Zeeman lines declared but Stokes dimensionality is bad\n";
-        std::exit(1);
+  std::vector<Complex> x(f.size());
+  std::vector<Complex> xpart(f.size());
+  for (auto z : {Polarization::SigmaMinus, Polarization::Pi,
+                 Polarization::SigmaPlus, Polarization::None}) {
+    if constexpr (N not_eq 4) {
+      if (z == Polarization::SigmaMinus or z == Polarization::Pi or
+          z == Polarization::SigmaPlus) {
+        continue;
       }
-    } else {
-      Lbl::compute(x, xpart, f, band, atm);
+    }
+
+    // Empty x since polarizations must be treated independently
+    std::fill(std::execution::par_unseq, x.begin(), x.end(), Complex(0, 0));
+
+    // Add all bands
+    for (auto& band : bands) {
+      Lbl::compute(x, xpart, f, band, atm, z);
+    }
+
+    // FIXME: Add other types of cross-sections here
+
+    // Sum up this polarization in the propagation matrix
+    if (z == Polarization::None) {
       std::transform(std::execution::par_unseq, x.cbegin(), x.cend(),
                      pm.begin(), pm.begin(),
                      [](auto& dx, auto& p) { return p.add_unpolarized(dx); });
+    } else if (z == Polarization::SigmaMinus) {
+      if constexpr (N == 4)
+        std::transform(
+            std::execution::par_unseq, x.cbegin(), x.cend(), pm.begin(),
+            pm.begin(),
+            [sm = Zeeman::PolarizationVector<Polarization::SigmaMinus>(a)](
+                auto& dx, auto& p) { return p.add_polarized(dx, sm); });
+    } else if (z == Polarization::Pi) {
+      if constexpr (N == 4)
+        std::transform(
+            std::execution::par_unseq, x.cbegin(), x.cend(), pm.begin(),
+            pm.begin(),
+            [pi = Zeeman::PolarizationVector<Polarization::Pi>(a)](
+                auto& dx, auto& p) { return p.add_polarized(dx, pi); });
+    } else if (z == Polarization::SigmaPlus) {
+      if constexpr (N == 4)
+        std::transform(
+            std::execution::par_unseq, x.cbegin(), x.cend(), pm.begin(),
+            pm.begin(),
+            [sp = Zeeman::PolarizationVector<Polarization::SigmaPlus>(a)](
+                auto& dx, auto& p) { return p.add_polarized(dx, sp); });
     }
   }
 }

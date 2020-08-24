@@ -78,8 +78,7 @@ class Line {
   }
   Energy<EnergyType::Joule> E0() const noexcept { return e0; }
   Zeeman Ze() const noexcept { return zeeman; }
-  std::pair<int, int> ZeemanRange(Zeeman::Polarization p,
-                                  Species::Isotope s) const {
+  std::pair<int, int> ZeemanRange(Polarization p, Species::Isotope s) const {
     auto l = s.get_local(local_lower, Quantum::Type::F).rat();
     auto u = s.get_local(local_upper, Quantum::Type::F).rat();
     if (l.ok() and u.ok())
@@ -92,7 +91,7 @@ class Line {
 
     return std::pair<int, int>{0, 0};  // No Zeeman effect means one line!
   }
-  Frequency<FrequencyType::Freq> ZeemanSplitting(Zeeman::Polarization p,
+  Frequency<FrequencyType::Freq> ZeemanSplitting(Polarization p,
                                                  Species::Isotope s,
                                                  int i) const {
     auto l = s.get_local(local_lower, Quantum::Type::F).rat();
@@ -105,8 +104,7 @@ class Line {
 
     return 0.0;  // No Zeeman effect means no splitting!
   }
-  double ZeemanStrength(Zeeman::Polarization p, Species::Isotope s,
-                        int i) const {
+  double ZeemanStrength(Polarization p, Species::Isotope s, int i) const {
     auto l = s.get_local(local_lower, Quantum::Type::F).rat();
     auto u = s.get_local(local_upper, Quantum::Type::F).rat();
     if (l.ok() and u.ok()) return zeeman.Strength(u, l, p, i);

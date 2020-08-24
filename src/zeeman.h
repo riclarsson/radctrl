@@ -1,7 +1,7 @@
 #ifndef zeeman_h
 #define zeeman_h
 
-#include <Eigen/Core>
+#include <array>
 #include <cmath>
 
 #include "constants.h"
@@ -9,10 +9,10 @@
 #include "wigner.h"
 
 namespace Absorption {
-struct Zeeman {
-  /** Zeeman polarization selection */
-  enum class Polarization : char { SigmaMinus, Pi, SigmaPlus, None };
+/** Polarization selection */
+enum class Polarization : char { SigmaMinus, Pi, SigmaPlus, None };
 
+struct Zeeman {
   double gu, gl;
   constexpr Zeeman(double u = 0, double l = 0) noexcept : gu(u), gl(l) {}
   friend std::ostream& operator<<(std::ostream& os, Zeeman z) {
@@ -216,22 +216,27 @@ struct Zeeman {
                 double(Mu(Ju, Jl, type, n)) * gu);
   }
 
-  static inline Eigen::Vector3d los_xyz_by_uvw_local(double u, double v,
-                                                     double w) {
-    return Eigen::Vector3d(v, u, w).normalized();
-  }
-
-  static inline Eigen::Vector3d los_xyz_by_za_local(double z, double a) {
-    using Conversion::cosd;
-    using Conversion::sind;
-    return Eigen::Vector3d(cosd(a) * sind(z), sind(a) * sind(z), cosd(z));
-  }
-
-  static inline Eigen::Vector3d ev_xyz_by_za_local(double z, double a) {
-    using Conversion::cosd;
-    using Conversion::sind;
-    return Eigen::Vector3d(cosd(a) * cosd(z), sind(a) * cosd(z), -sind(z));
-  }
+  struct vec3 {
+    double x, y, z;
+    constexpr vec3(double mx, double my, double mz) noexcept
+        : x(mx), y(my), z(mz) {}
+    static std::pair<vec3, double> norm(double mx, double my, double mz) {
+      const double d = std::hypot(mx, my, mz);
+      return {vec3{mx / d, my / d, mz / d}, d};
+    }
+    constexpr double dot(const vec3 o) const {
+      return o.x * x + o.y * y + o.z * z;
+    }
+    constexpr vec3 cross(const vec3 o) const {
+      return vec3(y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x);
+    }
+    friend constexpr vec3 operator*(double m, vec3 v) {
+      return {m * v.x, m * v.y, m * v.z};
+    }
+    constexpr vec3 operator-(vec3 v) const {
+      return {x - v.x, y - v.y, z - v.z};
+    }
+  };
 
   struct Angles {
     double theta;
@@ -240,19 +245,40 @@ struct Zeeman {
 
   static inline Angles angles(double u, double v, double w, double z,
                               double a) noexcept {
-    // XYZ vectors normalized
-    const Eigen::Vector3d n = los_xyz_by_za_local(z, a);
-    const Eigen::Vector3d ev = ev_xyz_by_za_local(z, a);
-    const Eigen::Vector3d nH = los_xyz_by_uvw_local(u, v, w);
-    const Eigen::Vector3d inplane = nH - nH.dot(n) * n;
+    using Conversion::cosd;
+    using Conversion::sind;
 
-    // If there is no magnetic field, bailout quickly
-    double H = std::hypot(u, v, w);
-    if (H == 0)
+    // XYZ vectors normalized
+    const vec3 n{cosd(a) * sind(z), sind(a) * sind(z), cosd(z)};
+    const vec3 ev{cosd(a) * cosd(z), sind(a) * cosd(z), -sind(z)};
+    const auto normalized = vec3::norm(u, v, w);
+    const vec3 inplane = normalized.first - normalized.first.dot(n) * n;
+
+    if (normalized.second == 0)
       return {0, 0};
     else
-      return {Conversion::acosd(n.dot(nH)),
+      return {Conversion::acosd(n.dot(normalized.first)),
               Conversion::atan2d(ev.dot(inplane), ev.cross(inplane).dot(n))};
+  }
+
+  template <Polarization pol>
+  static constexpr std::array<double, 7> PolarizationVector(Angles a) {
+    using namespace Conversion;
+    const double ST = sind(a.theta), CT = cosd(a.theta), ST2 = ST * ST,
+                 CT2 = CT * CT, ST2C2E = ST2 * cosd(2 * a.eta),
+                 ST2S2E = ST2 * sind(2 * a.eta);
+
+    if constexpr (pol == Polarization::SigmaMinus)
+      return {1 + CT2, ST2C2E, ST2S2E, 2 * CT, 4 * CT, 2 * ST2S2E, -2 * ST2C2E};
+    else if constexpr (pol == Polarization::Pi)
+      return {ST2, -ST2C2E, -ST2S2E, 0, 0, -2 * ST2S2E, 2 * ST2C2E};
+    else if constexpr (pol == Polarization::SigmaPlus)
+      return {1 + CT2, ST2C2E,     ST2S2E,     -2 * CT,
+              -4 * CT, 2 * ST2S2E, -2 * ST2C2E};
+    else if constexpr (pol == Polarization::None)
+      return {1, 0, 0, 0, 0, 0};
+    else
+      std::exit(1);
   }
 };
 }  // namespace Absorption

@@ -247,6 +247,10 @@ class Magnetism {
   friend std::istream& operator>>(std::istream& is, Magnetism& m) {
     return is >> m.M[0] >> m.M[1] >> m.M[2];
   }
+
+  constexpr double u() const { return M[0]; }
+  constexpr double v() const { return M[1]; }
+  constexpr double w() const { return M[2]; }
 };  // Magnetism
 
 ENUMCLASS(WindType, char,

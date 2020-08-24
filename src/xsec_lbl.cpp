@@ -50,14 +50,14 @@ void compute_mirrored_lineshape(std::vector<Complex>& comp_x,
 }
 
 double boltzman_ratio(double T, double T0, double E0) {
-  return exp(E0 * (T - T0) / (Constant::k * T * T0));
+  return std::exp(E0 * (T - T0) / (Constant::k * T * T0));
 }
 
 double stimulated_emission(double T, double F0) {
   return std::exp(-(Constant::h / Constant::k) * F0 / T);
 }
 
-double stimulated_relative_emission(double gamma, double gamma_ref) {
+constexpr double stimulated_relative_emission(double gamma, double gamma_ref) {
   return (1. - gamma) / (1. - gamma_ref);
 }
 
@@ -71,13 +71,18 @@ double compute_lte_linestrength(double S0, double SZ, double E0, double F0,
 
 void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
              const std::vector<double>& f, const Band& band,
-             const Path::Point& atm,
-             const Absorption::Zeeman::Polarization polarization) {
+             const Path::Point& atm, const Polarization polarization) {
   const double H = atm.atm.MagField().Strength();
   const double GDpart = band.GD_giv_F0(atm.atm.Temp());
   const double QT0 = band.QT0();
   const double QT = band.QT(atm.atm.Temp());
   const double vmr = atm.atm.VolumeMixingRatio(band.Isotopologue());
+
+  // Skip Zeeman copies if Zeeman or without
+  if (band.doZeeman() and polarization == Polarization::None)
+    return;
+  else if (not band.doZeeman() and polarization not_eq Polarization::None)
+    return;
 
   for (size_t iline = 0; iline < band.n_lines(); iline++) {
     const auto& line = band.Lines()[iline];

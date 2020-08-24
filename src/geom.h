@@ -497,6 +497,10 @@ class Nav {
   Pos<PosType::Ellipsoidal> ellipsoidPos() const {
     return Pos<PosType::Ellipsoidal>{pos, ell};
   }
+
+  Los<LosType::Spherical> sphericalLos() const {
+    return Los<LosType::Spherical>{los, pos, ell};
+  }
 };  // Nav
 
 void readNav(File::File<File::Operation::Read, File::Type::Xml>& in, Nav& n);
