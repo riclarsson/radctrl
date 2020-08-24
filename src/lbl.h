@@ -30,7 +30,7 @@ class Line {
   Frequency<FrequencyType::Freq> f0;
   LineStrength<FrequencyType::Freq, AreaType::m2> i0;
   Energy<EnergyType::Joule> e0;
-  Zeeman zeeman;
+  Zeeman::Model zeeman;
   double gu;
   double gl;
   double a;
@@ -52,7 +52,7 @@ class Line {
 
   Line(Species::Isotope s, Frequency<FrequencyType::Freq> f,
        LineStrength<FrequencyType::Freq, AreaType::m2> i,
-       Energy<EnergyType::Joule> e, Zeeman z, double Gu, double Gl, double A,
+       Energy<EnergyType::Joule> e, Zeeman::Model z, double Gu, double Gl, double A,
        std::vector<Quantum::Number> ll, std::vector<Quantum::Number> lu,
        LineShape::Model m) noexcept
       : f0(f),
@@ -77,17 +77,17 @@ class Line {
     return i0;
   }
   Energy<EnergyType::Joule> E0() const noexcept { return e0; }
-  Zeeman Ze() const noexcept { return zeeman; }
+  Zeeman::Model Ze() const noexcept { return zeeman; }
   std::pair<int, int> ZeemanRange(Polarization p, Species::Isotope s) const {
     auto l = s.get_local(local_lower, Quantum::Type::F).rat();
     auto u = s.get_local(local_upper, Quantum::Type::F).rat();
     if (l.ok() and u.ok())
-      return std::pair<int, int>{zeeman.start(u, l, p), zeeman.end(u, l, p)};
+      return std::pair<int, int>{Zeeman::start(u, l, p), Zeeman::end(u, l, p)};
 
     l = s.get_local(local_lower, Quantum::Type::J).rat();
     u = s.get_local(local_upper, Quantum::Type::J).rat();
     if (l.ok() and u.ok())
-      return std::pair<int, int>{zeeman.start(u, l, p), zeeman.end(u, l, p)};
+      return std::pair<int, int>{Zeeman::start(u, l, p), Zeeman::end(u, l, p)};
 
     return std::pair<int, int>{0, 0};  // No Zeeman effect means one line!
   }

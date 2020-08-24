@@ -63,7 +63,7 @@ std::vector<Band> parse_hitran_with_qns(
            hitpar.v,
            hitpar.S,
            hitpar.Elow,
-           Zeeman{},
+           Zeeman::Model{},
            hitpar.gupp,
            hitpar.glow,
            hitpar.A,

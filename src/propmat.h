@@ -38,15 +38,25 @@ class PropMat {
 
   friend std::ostream& operator<<(std::ostream& os, PropMat pm) {
     if constexpr (N == 4)
-      std::cout << pm[0] << ' ' << pm[1] << ' ' << pm[2] << ' ' << pm[3] << ' '
+      return os << pm[0] << ' ' << pm[1] << ' ' << pm[2] << ' ' << pm[3] << ' '
                 << pm[4] << ' ' << pm[5] << ' ' << pm[6];
     else if constexpr (N == 3)
-      std::cout << pm[0] << ' ' << pm[1] << ' ' << pm[2] << ' ' << pm[3];
+      return os << pm[0] << ' ' << pm[1] << ' ' << pm[2] << ' ' << pm[3];
     else if constexpr (N == 2)
-      std::cout << pm[0] << ' ' << pm[1];
+      return os << pm[0] << ' ' << pm[1];
     else if constexpr (N == 1)
-      std::cout << pm[0];
-    return os;
+      return os << pm[0];
+  }
+
+  friend std::istream& operator>>(std::istream& is, PropMat& pm) {
+    if constexpr (N == 4)
+      return is >> pm[0] >> pm[1] >> pm[2] >> pm[3] >> pm[4] >> pm[5] >> pm[6];
+    else if constexpr (N == 3)
+      return is >> pm[0] >> pm[1] >> pm[2] >> pm[3];
+    else if constexpr (N == 2)
+      return is >> pm[0] >> pm[1];
+    else if constexpr (N == 1)
+      return is >> pm[0];
   }
 
   PropMat& add_unpolarized(Complex c) noexcept {

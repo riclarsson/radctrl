@@ -12,23 +12,14 @@ namespace Absorption {
 /** Polarization selection */
 enum class Polarization : char { SigmaMinus, Pi, SigmaPlus, None };
 
-struct Zeeman {
-  double gu, gl;
-  constexpr Zeeman(double u = 0, double l = 0) noexcept : gu(u), gl(l) {}
-  friend std::ostream& operator<<(std::ostream& os, Zeeman z) {
-    return os << z.gu << ' ' << z.gl;
-  }
-  friend std::istream& operator>>(std::istream& os, Zeeman& z) {
-    return os >> z.gu >> z.gl;
-  }
-
+namespace Zeeman {
   /** Gives the change of M given a polarization type
    *
    * @param[in] type The polarization type
    *
    * @return The change in M
    */
-  static constexpr int dM(Polarization type) noexcept {
+  constexpr int dM(Polarization type) noexcept {
     switch (type) {
       case Polarization::SigmaMinus:
         return -1;
@@ -55,7 +46,7 @@ struct Zeeman {
    *
    * @return The lowest M value
    */
-  static constexpr Rational start(Rational Ju, Rational Jl,
+  constexpr Rational start(Rational Ju, Rational Jl,
                                   Polarization type) noexcept {
     switch (type) {
       case Polarization::SigmaMinus:
@@ -89,7 +80,7 @@ struct Zeeman {
    *
    * @return The largest M value
    */
-  static constexpr Rational end(Rational Ju, Rational Jl,
+  constexpr Rational end(Rational Ju, Rational Jl,
                                 Polarization type) noexcept {
     switch (type) {
       case Polarization::SigmaMinus:
@@ -122,7 +113,7 @@ struct Zeeman {
    *
    * @return The upper state M
    */
-  static constexpr Rational Mu(Rational Ju, Rational Jl, Polarization type,
+  constexpr Rational Mu(Rational Ju, Rational Jl, Polarization type,
                                int n) noexcept {
     return start(Ju, Jl, type) + n;
   }
@@ -140,7 +131,7 @@ struct Zeeman {
    *
    * @return The lower state M
    */
-  static constexpr Rational Ml(Rational Ju, Rational Jl, Polarization type,
+  constexpr Rational Ml(Rational Ju, Rational Jl, Polarization type,
                                int n) noexcept {
     return Mu(Ju, Jl, type, n) + dM(type);
   }
@@ -156,7 +147,7 @@ struct Zeeman {
    *
    * @return Rescale factor
    */
-  static constexpr double PolarizationFactor(Polarization type) noexcept {
+  constexpr double PolarizationFactor(Polarization type) noexcept {
     switch (type) {
       case Polarization::SigmaMinus:
         return .75;
@@ -168,52 +159,6 @@ struct Zeeman {
         return 1.0;
     }
     return std::numeric_limits<double>::max();
-  }
-
-  /** Gives the strength of one subline of a given polarization
-   *
-   * The user has to ensure that Ju and Jl is a valid transition
-   *
-   * The user has to ensure n is less than the number of elements
-   *
-   * @param[in] Ju J of the upper state
-   * @param[in] Jl J of the upper state
-   * @param[in] type The polarization type
-   * @param[in] n The position
-   *
-   * @return The relative strength of the Zeeman subline
-   */
-  double Strength(Rational Ju, Rational Jl, Polarization type, int n) const {
-    using Constant::pow2;
-
-    auto ml = Ml(Ju, Jl, type, n);
-    auto mu = Mu(Ju, Jl, type, n);
-    auto dm = Rational(dM(type));
-    return PolarizationFactor(type) *
-           pow2(wigner3j(Jl, Rational(1), Ju, ml, -dm, -mu));
-  }
-
-  /** Gives the splitting of one subline of a given polarization
-   *
-   * The user has to ensure that Ju and Jl is a valid transition
-   *
-   * The user has to ensure n is less than the number of elements
-   *
-   * @param[in] Ju J of the upper state
-   * @param[in] Jl J of the upper state
-   * @param[in] type The polarization type
-   * @param[in] n The position
-   *
-   * @return The splitting of the Zeeman subline
-   */
-  constexpr double Splitting(Rational Ju, Rational Jl, Polarization type,
-                             int n) const noexcept {
-    using Constant::bohr_magneton;
-    using Constant::h;
-    constexpr double C = bohr_magneton / h;
-
-    return C * (double(Ml(Ju, Jl, type, n)) * gl -
-                double(Mu(Ju, Jl, type, n)) * gu);
   }
 
   struct vec3 {
@@ -243,26 +188,11 @@ struct Zeeman {
     double eta;
   };
 
-  static inline Angles angles(double u, double v, double w, double z,
-                              double a) noexcept {
-    using Conversion::cosd;
-    using Conversion::sind;
-
-    // XYZ vectors normalized
-    const vec3 n{cosd(a) * sind(z), sind(a) * sind(z), cosd(z)};
-    const vec3 ev{cosd(a) * cosd(z), sind(a) * cosd(z), -sind(z)};
-    const auto normalized = vec3::norm(u, v, w);
-    const vec3 inplane = normalized.first - normalized.first.dot(n) * n;
-
-    if (normalized.second == 0)
-      return {0, 0};
-    else
-      return {Conversion::acosd(n.dot(normalized.first)),
-              Conversion::atan2d(ev.dot(inplane), ev.cross(inplane).dot(n))};
-  }
+  Angles angles(double u, double v, double w, double z,
+                              double a) noexcept;
 
   template <Polarization pol>
-  static constexpr std::array<double, 7> PolarizationVector(Angles a) {
+  constexpr std::array<double, 7> PolarizationVector(Angles a) {
     using namespace Conversion;
     const double ST = sind(a.theta), CT = cosd(a.theta), ST2 = ST * ST,
                  CT2 = CT * CT, ST2C2E = ST2 * cosd(2 * a.eta),
@@ -280,7 +210,65 @@ struct Zeeman {
     else
       std::exit(1);
   }
-};
+  
+  struct Model {
+    double gu, gl;
+    constexpr Model(double u = 0, double l = 0) noexcept : gu(u), gl(l) {}
+    friend std::ostream& operator<<(std::ostream& os, Model z) {
+      return os << z.gu << ' ' << z.gl;
+    }
+    friend std::istream& operator>>(std::istream& os, Model& z) {
+      return os >> z.gu >> z.gl;
+    }
+    
+
+  /** Gives the strength of one subline of a given polarization
+   *
+   * The user has to ensure that Ju and Jl is a valid transition
+   *
+   * The user has to ensure n is less than the number of elements
+   *
+   * @param[in] Ju J of the upper state
+   * @param[in] Jl J of the upper state
+   * @param[in] type The polarization type
+   * @param[in] n The position
+   *
+   * @return The relative strength of the Zeeman sub-line
+   */
+  double Strength(Rational Ju, Rational Jl, Polarization type, int n) const {
+    using Constant::pow2;
+
+    auto ml = Ml(Ju, Jl, type, n);
+    auto mu = Mu(Ju, Jl, type, n);
+    auto dm = Rational(dM(type));
+    return PolarizationFactor(type) *
+           pow2(wigner3j(Jl, Rational(1), Ju, ml, -dm, -mu));
+  }
+
+  /** Gives the splitting of one subline of a given polarization
+   *
+   * The user has to ensure that Ju and Jl is a valid transition
+   *
+   * The user has to ensure n is less than the number of elements
+   *
+   * @param[in] Ju J of the upper state
+   * @param[in] Jl J of the upper state
+   * @param[in] type The polarization type
+   * @param[in] n The position
+   *
+   * @return The splitting of the Zeeman sub-line
+   */
+  constexpr double Splitting(Rational Ju, Rational Jl, Polarization type,
+                             int n) const noexcept {
+    using Constant::bohr_magneton;
+    using Constant::h;
+    constexpr double C = bohr_magneton / h;
+
+    return C * (double(Ml(Ju, Jl, type, n)) * gl -
+                double(Mu(Ju, Jl, type, n)) * gu);
+  }
+  };
+}
 }  // namespace Absorption
 
 #endif  // zeeman_h
