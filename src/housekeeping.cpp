@@ -111,7 +111,7 @@ void run(std::string& dev, int baud, const std::string& python_file,
     }
 
     if (clear_terminal) std::printf("\033c");
-    std::cout << Time();
+    std::cout << Time() << '\n';
     for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
 
     Sleep(wait_until);
