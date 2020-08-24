@@ -216,8 +216,7 @@ void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
           const double S = vmr * compute_lte_linestrength(
                                      line.I0(), SZ, line.E0(), line.F0(), QT0,
                                      band.T0(), QT, atm.atm.Temp());
-          std::transform(std::execution::par_unseq, comp_x.begin(),
-                         comp_x.end(), comp_x.begin(),
+          std::transform(comp_x.begin(), comp_x.end(), comp_x.begin(),
                          [S](auto& a) { return S * a; });
         } break;
         case Population::ByNLTE:

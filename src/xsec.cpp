@@ -26,7 +26,7 @@ void internal_compute(std::vector<PropMat<N>>& pm, const std::vector<double>& f,
     }
 
     // Empty x since polarizations must be treated independently
-    std::fill(std::execution::par_unseq, x.begin(), x.end(), Complex(0, 0));
+    std::fill(x.begin(), x.end(), Complex(0, 0));
 
     // Add all bands
     for (auto& band : bands) {
@@ -37,28 +37,24 @@ void internal_compute(std::vector<PropMat<N>>& pm, const std::vector<double>& f,
 
     // Sum up this polarization in the propagation matrix
     if (z == Polarization::None) {
-      std::transform(std::execution::par_unseq, x.cbegin(), x.cend(),
-                     pm.begin(), pm.begin(),
+      std::transform(x.cbegin(), x.cend(), pm.begin(), pm.begin(),
                      [](auto& dx, auto& p) { return p.add_unpolarized(dx); });
     } else if (z == Polarization::SigmaMinus) {
       if constexpr (N == 4)
         std::transform(
-            std::execution::par_unseq, x.cbegin(), x.cend(), pm.begin(),
-            pm.begin(),
+            x.cbegin(), x.cend(), pm.begin(), pm.begin(),
             [sm = Zeeman::PolarizationVector<Polarization::SigmaMinus>(a)](
                 auto& dx, auto& p) { return p.add_polarized(dx, sm); });
     } else if (z == Polarization::Pi) {
       if constexpr (N == 4)
         std::transform(
-            std::execution::par_unseq, x.cbegin(), x.cend(), pm.begin(),
-            pm.begin(),
+            x.cbegin(), x.cend(), pm.begin(), pm.begin(),
             [pi = Zeeman::PolarizationVector<Polarization::Pi>(a)](
                 auto& dx, auto& p) { return p.add_polarized(dx, pi); });
     } else if (z == Polarization::SigmaPlus) {
       if constexpr (N == 4)
         std::transform(
-            std::execution::par_unseq, x.cbegin(), x.cend(), pm.begin(),
-            pm.begin(),
+            x.cbegin(), x.cend(), pm.begin(), pm.begin(),
             [sp = Zeeman::PolarizationVector<Polarization::SigmaPlus>(a)](
                 auto& dx, auto& p) { return p.add_polarized(dx, sp); });
     }
