@@ -17,7 +17,7 @@ Results<N> internal_compute(const std::vector<RadVec<N>>& rad0,
   const std::vector<double> f{linspace(flow, fupp, size)};
 
   // Output
-  Results<N> rad(rad0, std::vector<Derivative::Target>{}, path, f, 1);
+  Results<N> rad(rad0, {}, path, f, {});
 
   // Propagation matrix on levels before (1) and after (2)
   Absorption::Xsec::Results<N> K1(size), K2(size);

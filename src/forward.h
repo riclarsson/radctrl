@@ -16,10 +16,11 @@ struct Results {
   Results(const std::vector<RadVec<N>>& rad0,
           const std::vector<Derivative::Target>& targets,
           const std::vector<Path::Point>& path,
-          const std::vector<double>& freqs, std::size_t n) noexcept
-      : x(Grid<RadVec<N>, 2>::initLastFromVector(rad0, std::size_t(path.size()),
-                                                 std::size_t(freqs.size()))),
-        dx(targets, path, freqs, n) {}
+          const std::vector<double>& freqs,
+          const std::vector<Derivative::Polarization>& polarization) noexcept
+      : x(Grid<RadVec<N>, 2>::initLastFromVector(rad0, path.size(),
+                                                 freqs.size())),
+        dx(targets, path, freqs, polarization) {}
 };
 
 Results<1> compute(const std::vector<RadVec<1>>& rad0,
