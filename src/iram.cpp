@@ -1,5 +1,6 @@
 #include "backend.h"
 #include "chopper.h"
+#include "cli_parsing.h"
 #include "frontend.h"
 #include "gui.h"
 #include "housekeeping.h"
@@ -9,7 +10,7 @@
 #include "wobbler.h"
 #include "xml_config.h"
 
-int main(int argc, char* argv[]) try {
+int run(File::ConfigParser parser) try {
   constexpr size_t height_of_window = 7;  // Any size larger than part_for_plot
   constexpr size_t part_for_plot = 6;     // multiple of 2 and 3
   static_assert(part_for_plot % 6 == 0, "part_of_plot must be a multiple of 6");
@@ -21,10 +22,6 @@ int main(int argc, char* argv[]) try {
   InitializeGUI("IRAM");
 
   // Our global states are stored in configs
-  if (argc not_eq 2)
-    throw std::runtime_error("Bad parguments, please include the XML file");
-  File::ConfigParser parser(argv[1], {"Chopper", "Wobbler", "Housekeeping",
-                                      "Frontend", "Backends", "Savepath"});
   GUI::Config config;
 
   // Chopper declaration
@@ -48,7 +45,7 @@ int main(int argc, char* argv[]) try {
                       std::stoi(parser("Wobbler", "end"))};
 
   // Housekeeping declaration
-  Instrument::Housekeeping::Dummy hk{parser("Housekeeping", "path")};
+  Instrument::Housekeeping::PythonSensors hk{parser("Housekeeping", "path")};
   Instrument::Housekeeping::Controller housekeeping_ctrl{
       parser("Housekeeping", "dev"),
       std::stoi(parser("Housekeeping", "baudrate"))};
@@ -56,21 +53,21 @@ int main(int argc, char* argv[]) try {
   // Frontend declaration
   Instrument::Frontend::DBR frontend{parser("Frontend", "path")};
   Instrument::Frontend::Controller frontend_ctrl{
-      parser("Frontend", "server"), std::stoi(parser("Frontend", "port"))};
+    parser("Frontend", "server"), std::stoi(parser("Frontend", "port"))};
+    
+    // Spectrometers declarations
+    int integration_time_microseconds =
+    std::stoi(parser("Operations", "integration_time"));
+    int blank_time_microseconds = std::stoi(parser("Operations", "blank_time"));
 
   // Spectrometers declarations
   Instrument::Spectrometer::Backends backends{
-      Instrument::Spectrometer::Dummy(parser("Backends", "spectormeter1")),
-      Instrument::Spectrometer::Dummy(parser("Backends", "spectormeter2"))};
+    Instrument::Spectrometer::XFFTS(parser("Backends", "spectormeter1"), parser("Backends", "path1")),
+    Instrument::Spectrometer::RCTS104(parser("Backends", "spectormeter2"), parser("Backends", "path2"))};
   std::array<Instrument::Spectrometer::Controller, backends.N> backend_ctrls{
-      Instrument::Spectrometer::Controller(
-          "Dummy Data 1", "Dummy3", 0, 0,
-          (Eigen::MatrixXd(2, 2) << 0, 1e9, 0, 100e9).finished(),
-          (Eigen::VectorXi(2) << 1000, 1000).finished(), 100, 1, false),
-      Instrument::Spectrometer::Controller(
-          "Dummy Data 2", "Dummy4", 0, 0,
-          (Eigen::MatrixXd(2, 2) << 0, 1e9, 0, 100e9).finished(),
-          (Eigen::VectorXi(2) << 1000, 1000).finished(), 100, 1, false)};
+      Instrument::Spectrometer::Controller(parser("Backends", "spectormeter1"), parser("Backends", "config1"), integration_time_microseconds, blank_time_microseconds),
+      Instrument::Spectrometer::Controller(parser("Backends", "spectormeter2"), parser("Backends", "config2"), integration_time_microseconds, blank_time_microseconds)
+  };
   std::array<Instrument::Data, backends.N> backend_data;
   std::array<GUI::Plotting::CAHA<height_of_window, part_for_plot>, backends.N>
       backend_frames{GUI::Plotting::CAHA<height_of_window, part_for_plot>{
@@ -418,4 +415,18 @@ int main(int argc, char* argv[]) try {
   os << "Terminated with errors:\n" << e.what() << '\n';
   std::cerr << os.str();
   return EXIT_FAILURE;
+}
+
+int main(int argc, char** argv) {
+  CommandLine::App rad("Run the IRAM Radiometer");
+  
+  std::string xmlfilename;
+  rad.NewRequiredOption("--xml", xmlfilename,
+                        "Configuration file for the Radiometer");
+  
+  rad.Parse(argc, argv);
+  
+  run(File::ConfigParser(xmlfilename,
+                         {"Chopper", "Wobbler", "Housekeeping", "Frontend",
+                           "Backends", "Operations", "Savepath"}));
 }

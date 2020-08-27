@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<RADCTRL>
+<CTS210 name="SOFIA 4" host="sofia4" tcp="1788" udp="-1" Nboards="1" mirror="false">
+7504 1995e6 2105e6
+</CTS210>
+</RADCTRL>
+

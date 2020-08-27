@@ -126,11 +126,16 @@ void run(std::string& dev, int baud, const std::string& python_file,
 }
 
 int main(int argc, char** argv) {
+  // Start a python interpreter in case python code will be executed
+  auto py = Python::createPython();
+  
   CommandLine::App hk("Run a housekeeping machine");
 
   int machine;
   hk.NewRequiredOption("-m,--machine", machine,
-                       "The class\n\t0: Agilent34970A (no python driver)");
+                       "The class\n"
+                       "\t0: Agilent34970A (no python driver)"
+                       "\t1: PythonSensors (req. python driver)");
   std::string dev;
   hk.NewRequiredOption("-d,--dev", dev, "Device for the machine to connect to");
   int baud;
@@ -159,6 +164,13 @@ int main(int argc, char** argv) {
           dev, baud, pythonfile, TimeStep{minimum_waittime}, clear_terminal);
     } else {
       runonce<Instrument::Housekeeping::Agilent34970A>(dev, baud, pythonfile);
+    }
+  } else if (machine == 1) {
+    if (continue_running) {
+      run<Instrument::Housekeeping::PythonSensors>(
+        dev, baud, pythonfile, TimeStep{minimum_waittime}, clear_terminal);
+    } else {
+      runonce<Instrument::Housekeeping::PythonSensors>(dev, baud, pythonfile);
     }
   } else {
     std::cerr << "Bad machine, see --help\n";

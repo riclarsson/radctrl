@@ -452,7 +452,73 @@ class Agilent34970A {
     }
   }
   DataType data() const { return database; }
-};  // AgilentPython
+};  // Agilent34970A
+
+
+
+class PythonSensors {
+  bool manual;
+  bool error_found;
+  bool new_data;
+  std::map<std::string, double> database;
+  std::string error;
+  
+  Python::ClassInterface PyClass;
+  Python::ClassInstance PyInst;
+  Python::Function initfun;
+  Python::Function shutdown;
+  Python::Function download;
+  
+  Python::Object<Python::Type::Dict> status;
+  
+public:
+  using DataType = std::map<std::string, double>;
+  PythonSensors(const std::filesystem::path& path)
+  : manual(false), error_found(false), new_data(false), error("") {
+    if (not std::filesystem::exists(path)) {
+      std::ostringstream os;
+      os << "Cannot find python sensors file at:\n\t" << path << '\n';
+      throw std::runtime_error(os.str());
+    }
+    py::eval_file(path.c_str());
+    PyClass = Python::ClassInterface{"sensors"};
+  };
+  
+  void startup(const std::string& dev, int /*baud*/) {
+    PyInst = Python::ClassInstance{PyClass(dev)};
+    initfun = Python::Function{PyInst("init")};
+    shutdown = Python::Function{PyInst("close")};
+    download = Python::Function{PyInst("get_status_as_dict")};
+  }
+  void init(bool manual_press = false) {
+    manual = manual_press;
+    try {
+    initfun();
+    } catch (const std::exception& e) {
+      error_found = true;
+      error += std::string_view{e.what()};
+    }
+  }
+  void run() { status=download(); }
+  
+  void close() { shutdown(); }
+  
+    bool manual_run() { return manual; }
+    const std::string& error_string() const { return error; }
+    bool has_error() { return error_found; }
+    void delete_error() {
+      error_found = false;
+      error = "";
+    }
+    
+    void get_data() {
+      auto keys = status.keysDict();
+      for (auto& key : keys)
+        database[key] = status.fromDict<Python::Type::Double>(key).toDouble();
+    }
+    
+    DataType data() const { return database; }
+};  // Dummy
 
 }  // namespace Housekeeping
 }  // namespace Instrument

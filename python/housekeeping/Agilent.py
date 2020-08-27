@@ -7,7 +7,7 @@ Last modification: 19.06.2018
 Author: Borys Dabrowski
 """
 import serial
-from time import time,sleep,strftime
+import time
 from scipy.interpolate import make_interp_spline
 
 class Agilent34970A:
@@ -95,8 +95,8 @@ class Agilent34970A:
         """
         while self._serial.in_waiting==0:
             self.write(cmd)
-            t0=time()
-            while self._serial.in_waiting==0 and time()-t0<timeout: sleep(.1)
+            t0=time.time()
+            while self._serial.in_waiting==0 and time.time()-t0<timeout: time.sleep(.1)
 
         return self.read()
 
@@ -161,7 +161,7 @@ class Agilent34970A:
         self.command_interpret("ROUTE:CLOSE? (@201:220)")
 
         # wait until executed
-        while self._output is None: sleep(.1)
+        while self._output is None: time.sleep(.1)
         answer=self._output
         answer=[int(n)>0 for n in answer.split(b',')]
         return answer

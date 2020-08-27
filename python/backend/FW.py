@@ -11,7 +11,7 @@ Connection to fast fourier transform spectrometer
 import socket
 import struct
 import numpy as np
-from time import sleep
+import time
 
 
 class FW:
@@ -74,12 +74,12 @@ class FW:
         self._udp_sock=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self._udp_addr=(self._ip,self._udp_port)
         self._udp_sock.sendto(b'AFFTS:cmdMode INTERNAL ',self._udp_addr)
-        sleep(0.1)
+        time.sleep(0.1)
 
         self._set_integration_time(self._integration_time)
-        sleep(0.1)
+        time.sleep(0.1)
         self._set_blank_time(self._blank_time)
-        sleep(0.1)
+        time.sleep(0.1)
         s=''
         for i in range(len(self._channels)):
             s += '1 '
@@ -91,12 +91,12 @@ class FW:
             self._udp_sock.sendto(('AFFTS:Band'+str(i+1)+':cmdBandWidth '
                 + str(self.frequency[i][1]) +
                 ' MHz ').encode("ascii"),self._udp_addr)
-            sleep(0.1)
+            time.sleep(0.1)
         self._udp_sock.sendto(('AFFTS:cmdUsedsections '+s).encode("ascii"),
             self._udp_addr)
-        sleep(0.1)
+        time.sleep(0.1)
         self._udp_sock.sendto(b'AFFTS:configure ',self._udp_addr)
-        sleep(0.3)
+        time.sleep(0.3)
         self._udp_sock.sendto(b'AFFTS:calADC ',self._udp_addr)
         self._initialized=True
         self._sent=False
@@ -105,7 +105,7 @@ class FW:
 #                self._data.append(np.array([]))
         for i in range(self._copies_of_vectors):
             self._data.append(np.zeros((self._channels[0]), dtype=np.float64))
-        sleep(3.0)
+        time.sleep(3.0)
 
 
     def _set_integration_time(self,time):
@@ -188,7 +188,7 @@ class affts_commands:
         
     def send(self, info, ZzZ=0.1):
         self._sock.sendto(b'AFFTS:' + info.encode('ascii') + b' ', self._addr)
-        sleep(ZzZ)
+        time.sleep(ZzZ)
         
     def configure(self):
         self.send('configure', 0.3)

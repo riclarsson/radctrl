@@ -6,7 +6,7 @@ Last modification: 19.06.2018
 Author: Borys Dabrowski, dabrowski@mps.mpg.de
 """
 import serial
-from time import time,sleep
+import time
 
 class wobbler:
 	def __init__(self,device='/dev/wobbler',baud=115200,address="None"):
@@ -67,8 +67,8 @@ class wobbler:
 		self._serial.flushOutput()
 		while self._serial.in_waiting==0:
 			self._write(cmd)
-			t0=time()
-			while self._serial.in_waiting==0 and time()-t0<timeout: sleep(.1)
+			t0=time.time()
+			while self._serial.in_waiting==0 and time.time()-t0<timeout: time.sleep(.1)
 
 		return self._read()
 
@@ -90,8 +90,8 @@ class wobbler:
 		return self._wait(timeout)
 
 	def _wait(self, timeout=0):
-		t0=time()
-		while self._serial.in_waiting==0 and time()-t0<timeout: sleep(.01)
+		t0=time.time()
+		while self._serial.in_waiting==0 and time.time()-t0<timeout: time.sleep(.01)
 		self._read()
 		assert self._pos==self._getPosition(), "Wobbler position not accurate"
 

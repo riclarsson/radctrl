@@ -469,7 +469,7 @@ void InitAll(Chopper& chop, ChopperController& chopper_ctrl, Wobbler& wob,
   std::cout << Time() << ' ' << "Binding wobbler\n";
   wob.startup(wobbler_ctrl.dev, wobbler_ctrl.baudrate, wobbler_ctrl.address);
   std::cout << Time() << ' ' << "Initializing wobbler\n";
-  wob.init(false);
+  wob.init(wobbler_ctrl.pos[0], false);
   if (wob.has_error()) {
     std::cout << Time() << ' ' << "Error wobbler\n";
     wobbler_ctrl.error = true;
