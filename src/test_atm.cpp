@@ -85,7 +85,7 @@ void test004() {
           VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0),
                               400e-06}});
   Atmosphere::Atm atm({Time(), Time() + TimeStep(1)}, {0, 1}, {0, 2}, {0, 4},
-                      Grid<Atmosphere::Point, 4>(a, {2, 2, 2, 2}));
+                      Grid<Atmosphere::Point, 4>(a, 2, 2, 2, 2));
   std::cout << "Write:\n" << atm << '\n';
 
   Atmosphere::Atm batm(2, 2, 2, 2, 3);
@@ -119,7 +119,7 @@ void test005() {
                               600e-06}});
   Time t;
   Atmosphere::Atm atm({t, t + TimeStep(1)}, {0, 1}, {0, 2}, {0, 4},
-                      Grid<Atmosphere::Point, 4>(a, {2, 2, 2, 2}));
+                      Grid<Atmosphere::Point, 4>(a, 2, 2, 2, 2));
   std::cout << "Write (original):\n" << atm << '\n';
   atm(0, 0, 0, 0) = b;
 
@@ -183,7 +183,7 @@ void test006() {
                               600e-06}});
   Time t;
   Atmosphere::Atm atm({t, t + TimeStep(1)}, {0, 1}, {0, 2}, {0, 364},
-                      Grid<Atmosphere::Point, 4>(a, {2, 2, 2, 2}));
+                      Grid<Atmosphere::Point, 4>(a, 2, 2, 2, 2));
   atm(0, 0, 0, 0) = b;
   std::cout << "Write (original):\n" << atm << '\n';
 
@@ -223,7 +223,7 @@ void test007() {
                               600e-06}});
   Time t;
   Atmosphere::Atm atm({t, t + TimeStep(1)}, {0, 1}, {0, 2}, {0, 364},
-                      Grid<Atmosphere::Point, 4>(a, {2, 2, 2, 2}));
+                      Grid<Atmosphere::Point, 4>(a, 2, 2, 2, 2));
   atm(0, 0, 0, 0) = b;
   std::cout << "Write (original):\n" << atm << '\n';
 
@@ -263,7 +263,7 @@ void test008() {
                               600e-06}});
   Time t;
   Atmosphere::Atm atm({t}, {0, 100e3}, {0}, {0},
-                      Grid<Atmosphere::Point, 4>(a, {1, 2, 1, 1}));
+                      Grid<Atmosphere::Point, 4>(a, 1, 2, 1, 1));
   atm(0, 0, 0, 0) = b;
   std::cout << "Write (original atmosphere):\n" << atm << '\n';
 

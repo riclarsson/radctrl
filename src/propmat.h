@@ -1,6 +1,7 @@
 #ifndef propmat_h
 #define propmat_h
 
+#include <algorithm>
 #include <array>
 #include <iostream>
 #include <vector>
@@ -9,6 +10,12 @@
 #include "constants.h"
 
 namespace Absorption {
+constexpr std::array<double, 7> ZeemanPropMat4x4(
+    Complex c, const std::array<double, 7>& v) {
+  return {v[0] * c.real(), v[1] * c.real(), v[2] * c.real(), v[3] * c.real(),
+          v[4] * c.imag(), v[5] * c.imag(), v[6] * c.imag()};
+}
+
 template <size_t n>
 class PropMat {
  public:
@@ -34,7 +41,10 @@ class PropMat {
     static_assert(N == 2);
   }
   constexpr PropMat(double a) noexcept : p({a}) { static_assert(N == 1); }
-  PropMat() noexcept { p.fill(0); }
+  constexpr PropMat(const std::array<double, SIZE>& a) noexcept : p(a) {}
+  constexpr PropMat() noexcept {
+    for (size_t i = 0; i < SIZE; i++) p[i] = 0;
+  }
 
   friend std::ostream& operator<<(std::ostream& os, PropMat pm) {
     if constexpr (N == 4)
@@ -59,16 +69,24 @@ class PropMat {
       return is >> pm[0];
   }
 
-  PropMat& add_unpolarized(Complex c) noexcept {
-    p[0] += c.real();
-    return *this;
+  constexpr PropMat operator+(double x) const noexcept {
+    auto newp = PropMat(p);
+    newp.p[0] += x;
+    return newp;
   }
 
-  PropMat& add_polarized(Complex c,
-                         const std::array<double, SIZE>& x) noexcept {
-    for (size_t i = 0; i < N; i++) p[i] *= c.real() * x[i];
-    for (size_t i = N; i < SIZE; i++) p[i] *= c.imag() * x[i];
-    return *this;
+  constexpr PropMat operator*(double x) const noexcept {
+    auto newp = PropMat(p);
+    std::transform(newp.p.cbegin(), newp.p.cend(), newp.p.begin(),
+                   [x](auto& c) { return x * c; });
+    return newp;
+  }
+
+  constexpr PropMat operator+(const std::array<double, SIZE> x) const noexcept {
+    PropMat newp(p);
+    std::transform(x.cbegin(), x.cend(), p.cbegin(), newp.p.begin(),
+                   [](auto& a, auto& b) { return a + b; });
+    return newp;
   }
 
   constexpr double operator[](unsigned i) const noexcept { return p[i]; }

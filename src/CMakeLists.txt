@@ -168,6 +168,14 @@ target_link_libraries(absorption PUBLIC species files xsec)
 ########################################################################################
 
 ########################################################################################
+# Cross-section library:  For computing cross-sections of any kind
+add_library (forward STATIC
+             forward.cpp
+             )
+target_link_libraries(forward PUBLIC absorption rte)
+########################################################################################
+
+########################################################################################
 # Radiative Transfer Library:  For equations and classes for computing the path and geometry
 add_library (rte STATIC
              rte.cpp

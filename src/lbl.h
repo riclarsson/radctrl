@@ -27,16 +27,19 @@ ENUMCLASS(Shape, unsigned char, DP, LP, VP, SDVP, SDHCVP, HTP)
 class Band;
 
 class Line {
-  Frequency<FrequencyType::Freq> f0;
-  LineStrength<FrequencyType::Freq, AreaType::m2> i0;
-  Energy<EnergyType::Joule> e0;
-  Zeeman::Model zeeman;
-  double gu;
-  double gl;
-  double a;
-  std::vector<Quantum::Number> local_lower;
-  std::vector<Quantum::Number> local_upper;
-  LineShape::Model model;
+  Frequency<FrequencyType::Freq> f0;  // Central frequency
+  LineStrength<FrequencyType::Freq, AreaType::m2>
+      i0;                        // Reference line strength
+  Energy<EnergyType::Joule> e0;  // Lower state energy
+  Zeeman::Model zeeman;          // Zeeman model
+  double gl;                     // Lower degeneracy
+  double gu;                     // Upper degeneracy
+  double a;                      // Einstein coefficient
+  std::pair<std::size_t, std::size_t>
+      ids;  // ID, only initialized if necessary (lower, upper)
+  std::vector<Quantum::Number> local_lower;  // Lower local quantum
+  std::vector<Quantum::Number> local_upper;  // Upper local quantum
+  LineShape::Model lineshape;                // Line shape model
 
  public:
   Line(Species::Isotope s) noexcept
@@ -44,27 +47,27 @@ class Line {
         i0(0),
         e0(0),
         zeeman(),
-        gu(0),
         gl(0),
+        gu(0),
         a(0),
         local_lower(s.localQuantumNumberCount()),
         local_upper(s.localQuantumNumberCount()) {}
 
   Line(Species::Isotope s, Frequency<FrequencyType::Freq> f,
        LineStrength<FrequencyType::Freq, AreaType::m2> i,
-       Energy<EnergyType::Joule> e, Zeeman::Model z, double Gu, double Gl, double A,
-       std::vector<Quantum::Number> ll, std::vector<Quantum::Number> lu,
-       LineShape::Model m) noexcept
+       Energy<EnergyType::Joule> e, Zeeman::Model z, double Gu, double Gl,
+       double A, std::vector<Quantum::Number> ll,
+       std::vector<Quantum::Number> lu, LineShape::Model m) noexcept
       : f0(f),
         i0(i),
         e0(e),
         zeeman(z),
-        gu(Gu),
         gl(Gl),
+        gu(Gu),
         a(A),
         local_lower(ll),
         local_upper(lu),
-        model(m) {
+        lineshape(m) {
     size_t size = s.localQuantumNumberCount();
     if (size not_eq ll.size() or size not_eq lu.size()) {
       std::cerr << "Bad quantum number sizes\n";
@@ -124,7 +127,7 @@ class Line {
   Quantum::Number localLowerQuantumNumber(size_t i) const noexcept {
     return local_lower[i];
   }
-  const LineShape::Model& ShapeModel() const noexcept { return model; }
+  const LineShape::Model& ShapeModel() const noexcept { return lineshape; }
 
   friend void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
                        Band& band, const std::string& key);

@@ -51,8 +51,8 @@ std::vector<Band> parse_hitran_with_qns(
            false,
            296,
            -1,
-           gu,
-           gl};
+           gl,
+           gu};
     auto band = std::find(database.begin(), database.end(), b);
     if (band == database.end()) {
       database.push_back(b);
@@ -64,8 +64,8 @@ std::vector<Band> parse_hitran_with_qns(
            hitpar.S,
            hitpar.Elow,
            Zeeman::Model{},
-           hitpar.gupp,
            hitpar.glow,
+           hitpar.gupp,
            hitpar.A,
            ll,
            lu,
@@ -104,8 +104,8 @@ void saveBand(File::File<File::Operation::Write, File::Type::Xml>& file,
   auto gqn = band.globalQuantumNumbers();
   globalqn << gqn.size();
   for (size_t i = 0; i < gqn.size(); i++) {
-    globalqn << ' ' << gqn[i] << ' ' << band.globalUpperQuantumNumber(i) << ' '
-             << band.globalLowerQuantumNumber(i);
+    globalqn << ' ' << gqn[i] << ' ' << band.globalLowerQuantumNumber(i) << ' '
+             << band.globalUpperQuantumNumber(i);
   }
   file.add_attribute("GlobalQuantumNumbers", globalqn.str());
 
@@ -126,8 +126,8 @@ void saveBand(File::File<File::Operation::Write, File::Type::Xml>& file,
     file << ' ' << x.ShapeModel();
     for (size_t i = 0; i < lqn.size(); i++) {
       if (i) file << ' ';
-      file << x.localUpperQuantumNumber(i) << ' '
-           << x.localLowerQuantumNumber(i);
+      file << x.localLowerQuantumNumber(i) << ' '
+           << x.localUpperQuantumNumber(i);
     }
     file << '\n';
   }
@@ -169,14 +169,14 @@ void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
       file.get_attribute("GlobalQuantumNumbers").as_string());
   int ngqn;
   globalqn >> ngqn;
-  band.global_upper.resize(Species::getGlobalQuantumNumberCount(spec));
   band.global_lower.resize(Species::getGlobalQuantumNumberCount(spec));
+  band.global_upper.resize(Species::getGlobalQuantumNumberCount(spec));
   for (int i = 0; i < ngqn; i++) {
     std::string a, b, c;
     globalqn >> a >> b >> c;
     auto qt = Quantum::toType(a);
-    band.spec.set_global(band.global_upper, b, qt);
-    band.spec.set_global(band.global_lower, c, qt);
+    band.spec.set_global(band.global_lower, b, qt);
+    band.spec.set_global(band.global_upper, c, qt);
   }
 
   std::stringstream localqn(
@@ -194,14 +194,14 @@ void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
   band.lines =
       std::vector<Line>(file.get_attribute("N").as_ullong(), {band.spec});
   for (auto& line : band.lines) {
-    line.model = model;
-    is >> line.f0 >> line.i0 >> line.e0 >> line.zeeman >> line.gu >> line.gl >>
-        line.a >> line.model;
+    line.lineshape = model;
+    is >> line.f0 >> line.i0 >> line.e0 >> line.zeeman >> line.gl >> line.gu >>
+        line.a >> line.lineshape;
     for (int i = 0; i < nlqn; i++) {
       std::string b, c;
       is >> b >> c;
-      band.spec.set_local(line.local_upper, b, lqn[i]);
       band.spec.set_local(line.local_lower, c, lqn[i]);
+      band.spec.set_local(line.local_upper, b, lqn[i]);
     }
   }
   file.leave_child();
@@ -234,8 +234,8 @@ void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
   auto gqn = band.globalQuantumNumbers();
   globalqn << gqn.size();
   for (size_t i = 0; i < gqn.size(); i++) {
-    globalqn << ' ' << gqn[i] << ' ' << band.globalUpperQuantumNumber(i) << ' '
-             << band.globalLowerQuantumNumber(i);
+    globalqn << ' ' << gqn[i] << ' ' << band.globalLowerQuantumNumber(i) << ' '
+             << band.globalUpperQuantumNumber(i);
   }
   file.add_attribute("GlobalQuantumNumbers", globalqn.str());
 
@@ -254,16 +254,16 @@ void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
     file.write(x.I0());
     file.write(x.E0());
     file.write(x.Ze());
-    file.write(x.Gu());
     file.write(x.Gl());
+    file.write(x.Gu());
     file.write(x.A());
 
     const auto& model = x.ShapeModel();
     for (size_t i = 0; i < model.n_spec(); i++) file.write(model[i]);
 
     for (size_t i = 0; i < lqn.size(); i++) {
-      file.write(x.localUpperQuantumNumber(i));
       file.write(x.localLowerQuantumNumber(i));
+      file.write(x.localUpperQuantumNumber(i));
     }
   }
   file.leave_child();
@@ -299,14 +299,14 @@ void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
       file.get_attribute("GlobalQuantumNumbers").as_string());
   int ngqn;
   globalqn >> ngqn;
-  band.global_upper.resize(Species::getGlobalQuantumNumberCount(spec));
   band.global_lower.resize(Species::getGlobalQuantumNumberCount(spec));
+  band.global_upper.resize(Species::getGlobalQuantumNumberCount(spec));
   for (int i = 0; i < ngqn; i++) {
     std::string a, b, c;
     globalqn >> a >> b >> c;
     auto qt = Quantum::toType(a);
-    band.spec.set_global(band.global_upper, b, qt);
-    band.spec.set_global(band.global_lower, c, qt);
+    band.spec.set_global(band.global_lower, b, qt);
+    band.spec.set_global(band.global_upper, c, qt);
   }
 
   band.lines =
@@ -316,16 +316,17 @@ void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
     file.read(line.i0);
     file.read(line.e0);
     file.read(line.zeeman);
-    file.read(line.gu);
     file.read(line.gl);
+    file.read(line.gu);
     file.read(line.a);
 
-    line.model.resize(nbs);
-    for (size_t i = 0; i < line.model.n_spec(); i++) file.read(line.model[i]);
+    line.lineshape.resize(nbs);
+    for (size_t i = 0; i < line.lineshape.n_spec(); i++)
+      file.read(line.lineshape[i]);
 
     for (size_t i = 0; i < line.local_lower.size(); i++) {
-      file.read(line.local_upper[i]);
       file.read(line.local_lower[i]);
+      file.read(line.local_upper[i]);
     }
   }
   file.leave_child();

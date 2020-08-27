@@ -69,7 +69,25 @@ double compute_lte_linestrength(double S0, double SZ, double E0, double F0,
          QT0 / QT;
 }
 
-void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
+std::pair<double, double> compute_nlte_linestrength(double SZ, double F0,
+                                                    double Gl, double Gu,
+                                                    double A, double r2,
+                                                    double r1, double T) {
+  constexpr double c0 = 2.0 * Constant::h / Constant::pow2(Constant::c);
+  constexpr double c1 = Constant::h / (4 * Constant::pi);
+
+  const double c2 = c0 * Constant::pow3(F0);
+  const double c3 = c1 * F0;
+  const double k = c3 * (r1 * Gl / Gu - r2) * (A / c2);
+  const double e = c3 * r2 * A;
+  const double exp_T = std::exp(Constant::h / Constant::k * F0 / T);
+  const double b = c2 / (exp_T - 1);
+  const double ratio = e / b - k;
+
+  return {SZ * k, SZ * ratio};
+}
+
+void compute(Results& res, Results& src, Results& comp,
              const std::vector<double>& f, const Band& band,
              const Path::Point& atm, const Polarization polarization) {
   const double H = atm.atm.MagField().Strength();
@@ -104,32 +122,32 @@ void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
       switch (band.ShapeType()) {
         case Shape::DP:
           compute_lineshape(
-              comp_x, f, lm, cutoff_low, cutoff_upp,
+              comp.x, f, lm, cutoff_low, cutoff_upp,
               LineShape::Base::Doppler(line.F0(), X, GDpart, DZ * H));
           break;
         case Shape::LP:
           compute_lineshape(
-              comp_x, f, lm, cutoff_low, cutoff_upp,
+              comp.x, f, lm, cutoff_low, cutoff_upp,
               LineShape::Base::Lorentz(line.F0(), X, GDpart, DZ * H));
           break;
         case Shape::VP:
           compute_lineshape(
-              comp_x, f, lm, cutoff_low, cutoff_upp,
+              comp.x, f, lm, cutoff_low, cutoff_upp,
               LineShape::Base::Voigt(line.F0(), X, GDpart, DZ * H));
           break;
         case Shape::SDVP:
-          compute_lineshape(comp_x, f, lm, cutoff_low, cutoff_upp,
+          compute_lineshape(comp.x, f, lm, cutoff_low, cutoff_upp,
                             LineShape::Base::SpeedDependentVoigt(
                                 line.F0(), X, GDpart, DZ * H));
           break;
         case Shape::SDHCVP:
-          compute_lineshape(comp_x, f, lm, cutoff_low, cutoff_upp,
+          compute_lineshape(comp.x, f, lm, cutoff_low, cutoff_upp,
                             LineShape::Base::SpeedDependentHardCollisionVoigt(
                                 line.F0(), X, GDpart, DZ * H));
           break;
         case Shape::HTP:
           compute_lineshape(
-              comp_x, f, lm, cutoff_low, cutoff_upp,
+              comp.x, f, lm, cutoff_low, cutoff_upp,
               LineShape::Base::HartmannTran(line.F0(), X, GDpart, DZ * H));
           break;
         case Shape::FINAL: { /* leave last */
@@ -142,37 +160,37 @@ void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
           switch (band.ShapeType()) {
             case Shape::DP:
               compute_mirrored_lineshape(
-                  comp_x, f, lm, cutoff_low, cutoff_upp,
+                  comp.x, f, lm, cutoff_low, cutoff_upp,
                   LineShape::Base::Doppler(-line.F0(), mirrored(X), -GDpart,
                                            DZ * H));
               break;
             case Shape::LP:
               compute_mirrored_lineshape(
-                  comp_x, f, lm, cutoff_low, cutoff_upp,
+                  comp.x, f, lm, cutoff_low, cutoff_upp,
                   LineShape::Base::Lorentz(-line.F0(), mirrored(X), -GDpart,
                                            DZ * H));
               break;
             case Shape::VP:
               compute_mirrored_lineshape(
-                  comp_x, f, lm, cutoff_low, cutoff_upp,
+                  comp.x, f, lm, cutoff_low, cutoff_upp,
                   LineShape::Base::Voigt(-line.F0(), mirrored(X), -GDpart,
                                          DZ * H));
               break;
             case Shape::SDVP:
               compute_mirrored_lineshape(
-                  comp_x, f, lm, cutoff_low, cutoff_upp,
+                  comp.x, f, lm, cutoff_low, cutoff_upp,
                   LineShape::Base::SpeedDependentVoigt(-line.F0(), mirrored(X),
                                                        -GDpart, DZ * H));
               break;
             case Shape::SDHCVP:
               compute_mirrored_lineshape(
-                  comp_x, f, lm, cutoff_low, cutoff_upp,
+                  comp.x, f, lm, cutoff_low, cutoff_upp,
                   LineShape::Base::SpeedDependentHardCollisionVoigt(
                       -line.F0(), mirrored(X), -GDpart, DZ * H));
               break;
             case Shape::HTP:
               compute_mirrored_lineshape(
-                  comp_x, f, lm, cutoff_low, cutoff_upp,
+                  comp.x, f, lm, cutoff_low, cutoff_upp,
                   LineShape::Base::HartmannTran(-line.F0(), mirrored(X),
                                                 -GDpart, DZ * H));
               break;
@@ -182,7 +200,7 @@ void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
           break;
         case Mirroring::Lorentz:
           compute_mirrored_lineshape(
-              comp_x, f, lm, cutoff_low, cutoff_upp,
+              comp.x, f, lm, cutoff_low, cutoff_upp,
               LineShape::Base::Lorentz(-line.F0(), mirrored(X), -GDpart,
                                        DZ * H));
           break;
@@ -216,19 +234,29 @@ void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
           const double S = vmr * compute_lte_linestrength(
                                      line.I0(), SZ, line.E0(), line.F0(), QT0,
                                      band.T0(), QT, atm.atm.Temp());
-          std::transform(comp_x.begin(), comp_x.end(), comp_x.begin(),
-                         [S](auto& a) { return S * a; });
+          std::transform(comp.x.cbegin(), comp.x.cend(), res.x.cbegin(),
+                         res.x.begin(),
+                         [S](auto& a, auto& b) { return S * a + b; });
         } break;
-        case Population::ByNLTE:
-          break;
+        case Population::ByNLTE: {
+          double r1 = 0, r2 = 0;  // FIXME: Input the correct numbers when
+                                  // operating in NLTE mode
+
+          const std::pair<double, double> S =
+              compute_nlte_linestrength(SZ, line.F0(), line.Gl(), line.Gu(),
+                                        line.A(), r2, r1, atm.atm.Temp());
+
+          std::transform(comp.x.cbegin(), comp.x.cend(), res.x.cbegin(),
+                         res.x.begin(),
+                         [k = S.first](auto& a, auto& b) { return k * a + b; });
+
+          std::transform(
+              comp.x.cbegin(), comp.x.cend(), src.x.cbegin(), src.x.begin(),
+              [r = S.second](auto& a, auto& b) { return r * a + b; });
+        } break;
         case Population::FINAL: { /* leave last */
         }
       }
-
-      // Sum up before going to the next line (or returning)
-      std::transform(std::execution::par_unseq, comp_x.cbegin(), comp_x.cend(),
-                     x.begin(), x.begin(),
-                     [](auto& a, auto& b) { return a + b; });
     }
   }
 }
