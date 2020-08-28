@@ -29,6 +29,7 @@ void run_on_cpu(const Kernel& ker, int n, const Input& in, Output& out)
 
 template<typename Kernel, typename Input, typename Output>
 __global__
+EIGEN_HIP_LAUNCH_BOUNDS_1024
 void run_on_gpu_meta_kernel(const Kernel ker, int n, const Input* in, Output* out)
 {
   int i = threadIdx.x + blockIdx.x*blockDim.x;

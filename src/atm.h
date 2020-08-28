@@ -228,7 +228,7 @@ class Atm {
 
   bool ok() const {
     auto specs = operator()(0, 0, 0, 0).specs();
-    for (auto& x : data.data()) {
+    for (auto& x : data) {
       if (specs not_eq x.specs()) return false;
     }
     return true;
@@ -407,12 +407,13 @@ class Atm {
     file >> a.lon;
     file.leave_child();
 
-    a.data.reset(specs, a.tid.size(), a.alt.size(), a.lat.size(), a.lon.size());
+    a.data.resize(a.tid.size(), a.alt.size(), a.lat.size(), a.lon.size());
     auto data = std::istringstream(file.get_child("Data").text().as_string());
     for (decltype(a.tid.size()) i = 0; i < a.tid.size(); i++) {
       for (decltype(a.alt.size()) j = 0; j < a.alt.size(); j++) {
         for (decltype(a.lat.size()) k = 0; k < a.lat.size(); k++) {
           for (decltype(a.lon.size()) m = 0; m < a.lon.size(); m++) {
+            a(i, j, k, m) = specs;
             a(i, j, k, m).readPureAscii(data);
           }
         }
@@ -448,11 +449,12 @@ class Atm {
     file.read(a.lon);
     file.leave_child();
 
-    a.data.reset(specs, a.tid.size(), a.alt.size(), a.lat.size(), a.lon.size());
+    a.data.resize(a.tid.size(), a.alt.size(), a.lat.size(), a.lon.size());
     for (decltype(a.tid.size()) i = 0; i < a.tid.size(); i++) {
       for (decltype(a.alt.size()) j = 0; j < a.alt.size(); j++) {
         for (decltype(a.lat.size()) k = 0; k < a.lat.size(); k++) {
           for (decltype(a.lon.size()) m = 0; m < a.lon.size(); m++) {
+            a(i, j, k, m) = specs;
             a(i, j, k, m).readBinary(file);
           }
         }

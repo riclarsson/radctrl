@@ -21,7 +21,7 @@ struct Polarization {
     if (N == 4) {
       rotation(0, 0) = 1;
       rotation(1, 1) = rotation(2, 2) = std::cos(2 * circular_rotation);
-      rotation(1, 2) = - std::sin(2 * circular_rotation);
+      rotation(1, 2) = -std::sin(2 * circular_rotation);
       rotation(2, 1) = std::sin(2 * circular_rotation);
       rotation(3, 3) = 1;
     } else if (N == 3) {

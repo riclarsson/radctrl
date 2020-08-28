@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <numeric>
 #include <vector>
 
@@ -15,94 +16,111 @@ constexpr std::size_t mul(std::size_t val, Inds... inds) {
     return val * mul(inds...);
 }
 
-template <class base, std::size_t N>
+/** Row-major grid creation */
+template <typename base, std::size_t N>
 class Grid {
- private:
+  std::unique_ptr<base[]> ptr;
   std::array<std::size_t, N> gridsize;
-  std::vector<base> d;
+
+  std::size_t nelem() const {
+    return std::reduce(gridsize.cbegin(), gridsize.cend(), 1,
+                       std::multiplies<std::size_t>());
+  }
 
  public:
+  static constexpr std::size_t dim = N;
+
   template <typename... Inds>
   Grid(const base& fillval, Inds... inds)
-      : gridsize({std::size_t(inds)...}), d(mul(inds...), fillval) {
+      : ptr(std::make_unique<base[]>(mul(inds...))),
+        gridsize({std::size_t(inds)...}) {
     static_assert(sizeof...(Inds) == N,
                   "Must have same size for initialization");
+    for (auto& x : *this) x = fillval;
+  }
+
+  Grid(const Grid& g) noexcept
+      : ptr(std::make_unique<base[]>(
+            mul(std::reduce(g.gridsize.cbegin(), g.gridsize.cend(), 1,
+                            std::multiplies<std::size_t>())))),
+        gridsize(g.gridsize) {
+    const std::size_t end = nelem();
+    for (size_t i = 0; i < end; i++) ptr[i] = g.ptr[i];
+  }
+
+  Grid(Grid&& g) noexcept : ptr(g.ptr.release()), gridsize(g.gridsize) {
+    g.ptr = nullptr;
   }
 
   template <typename... Inds>
   base& operator()(Inds... inds) noexcept {
-    return d[index(
+    return ptr[index(
         std::array<std::size_t, sizeof...(Inds)>{std::size_t(inds)...})];
   }
 
   template <typename... Inds>
   const base& operator()(Inds... inds) const noexcept {
-    return d[index(
+    return ptr[index(
         std::array<std::size_t, sizeof...(Inds)>{std::size_t(inds)...})];
   }
 
   std::array<std::size_t, N> sizes() const { return gridsize; }
+  std::size_t size(std::size_t pos) const { return gridsize[pos]; }
 
-  const std::vector<base>& data() const { return d; }
+  const base* data() const { return ptr.get(); }
 
-  std::vector<base>& data() { return d; }
-
-  template <typename... Inds>
-  void reset(const base& fillval, Inds... inds) {
-    *this = Grid(fillval, inds...);
-  }
+  base* data() { return ptr.get(); }
 
   template <typename... Inds>
-  static Grid initLastFromVector(const std::vector<base>& v, Inds... inds) {
-    auto out = Grid(v[0], inds...);
-
-    if (out.gridsize.back() not_eq v.size())
-      throw std::runtime_error("Bad size of last vector");
-
-    for (std::size_t i = 0; i < out.d.size(); i += v.size())
-      std::copy(v.cbegin(), v.cend(), out.d.begin() + i);
-
-    return out;
+  void resize(Inds... inds) {
+    ptr = std::make_unique<base[]>(mul(inds...));
+    gridsize = {std::size_t(inds)...};
   }
+
+  auto begin() { return data(); }
+  auto end() { return data() + nelem(); }
+
+  auto begin() const { return data(); }
+  auto end() const { return data() + nelem(); }
+
+  const auto cbegin() const { return data(); }
+  auto cend() const { return data() + nelem(); }
 
   friend std::ostream& operator<<(std::ostream& os, const Grid& g) {
-    auto grid = g.gridsize;
-    grid.fill(0);
     std::size_t i = 0;
-    std::size_t n = grid.size();
-    for (;;) {
-      os << g.d[i];
-
+    const std::size_t n = g.nelem();
+    while (i < n) {
+      os << g.ptr[i];
       i++;
-      grid[n - 1]++;
-      if (grid[n - 1] == g.gridsize[n - 1]) {
-        for (std::size_t j = grid.size() - 1; j >= 0; j--) {
-          if (grid[j] == g.gridsize[j]) {
-            if (j == 0) {
-              return os;
-            } else {
-              grid[j] = 0;
-              grid[j - 1]++;
-            }
-          }
-        }
+      if (i not_eq 0 and i not_eq n and i % g.gridsize.back() == 0)
         os << '\n';
-      } else {
+      else if (i not_eq n)
         os << ' ';
-      }
     }
+
+    return os;
   }
 
  private:
-  template <std::size_t Nd>
-  std::size_t index(std::array<std::size_t, Nd>&& ind) const noexcept {
-    static_assert(Nd <= N, "Bad number of inputs");
-    std::size_t posmul{1};
-    std::size_t pos{0};
-    for (std::size_t i{0}; i < Nd; i++) {
+  std::size_t index(std::array<std::size_t, N> ind) const noexcept {
+    [[unlikely]] if (std::any_of(ind.cbegin(), ind.cend(),
+                                 [](auto& a) { return a < 0; }) or
+                     gridsize.back() <= ind.back()) {
+      std::cerr << "Out of range\n";
+      std::exit(1);
+    }
+
+    std::size_t posmul{gridsize.back()};
+    std::size_t pos{ind.back()};
+    for (std::size_t i{N - 2}; i < N; i--) {
       pos += posmul * ind[i];
       posmul *= gridsize[i];
+      [[unlikely]] if (ind[i] >= gridsize[i]) {
+        std::cerr << "Out of range\n";
+        std::exit(1);
+      }
     }
+    //     std::cout << pos << '\n';
     return pos;
   }
 };  // Grid
