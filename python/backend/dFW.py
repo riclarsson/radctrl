@@ -10,19 +10,18 @@ Connection to fast fourier transform spectrometer
 
 import socket
 import struct
-import time
 import numpy as np
+import time
 
-
-class XFW:
+class dFW:
     """Connection to fast fourier transform spectrometer
     """
     def __init__(self,
             host='localhost',
             tcp_port=25144,
             udp_port=16210,
-            frequency=[[0,2500]],
-            channels=np.array([32768]),
+            frequency=[[0,4000],[0,4000]],
+            channels=np.array([65538,65538]),
             integration_time=1000,
             blank_time=1,
             reverse_data=False):
@@ -75,7 +74,7 @@ class XFW:
 
         self._udp_sock=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self._udp_addr=(self._ip,self._udp_port)
-        self._udp_sock.sendto(b'XFFTS:cmdMode INTERNAL ',self._udp_addr)
+        self._udp_sock.sendto(b'FFTS:cmdMode INTERNAL ',self._udp_addr)
         time.sleep(0.1)
 
         self._set_integration_time(self._integration_time)
@@ -85,21 +84,21 @@ class XFW:
         s=''
         for i in range(len(self._channels)):
             s += '1 '
-            self._udp_sock.sendto(('XFFTS:Band'+str(i+1)+':cmdNumspecchan '
+            self._udp_sock.sendto(('FFTS:Band'+str(i+1)+':cmdNumspecchan '
                 + str(self._channels[i]) +
                 ' ').encode("ascii"),self._udp_addr)
             if self.frequency[i][0]:
                 raise RuntimeError("Must have 0 starting bandwidth")
-            self._udp_sock.sendto(('XFFTS:Band'+str(i+1)+':cmdBandWidth '
+            self._udp_sock.sendto(('FFTS:Band'+str(i+1)+':cmdBandWidth '
                 + str(self.frequency[i][1]) +
                 ' MHz ').encode("ascii"),self._udp_addr)
             time.sleep(0.1)
-        self._udp_sock.sendto(('XFFTS:cmdUsedsections '+s).encode("ascii"),
+        self._udp_sock.sendto(('FFTS:cmdUsedsections '+s).encode("ascii"),
             self._udp_addr)
         time.sleep(0.1)
-        self._udp_sock.sendto(b'XFFTS:configure ',self._udp_addr)
+        self._udp_sock.sendto(b'FFTS:configure ',self._udp_addr)
         time.sleep(0.3)
-        self._udp_sock.sendto(b'XFFTS:calADC ',self._udp_addr)
+        self._udp_sock.sendto(b'FFTS:calADC ',self._udp_addr)
         self._initialized=True
         self._sent=False
         self._data=[]
@@ -112,23 +111,13 @@ class XFW:
 
     def _set_integration_time(self,t):
         t=str(t)+' '
-        self._udp_sock.sendto(('XFFTS:cmdSynctime '+t).encode("ascii"),
+        self._udp_sock.sendto(('FFTS:cmdSynctime '+t).encode("ascii"),
             self._udp_addr)
 
     def _set_blank_time(self,t):
         t=str(t)+' '
-        self._udp_sock.sendto(('XFFTS:cmdBlanktime '+t).encode("ascii"),
+        self._udp_sock.sendto(('FFTS:cmdBlanktime '+t).encode("ascii"),
             self._udp_addr)
-
-    def run_no_extra(self):
-        """Runs the machine and fills requested channel
-
-        Must be initialized already and not have data not download.
-        """
-        assert self._initialized,"Cannot run uninitialized FFTS"
-        assert not self._sent,"Cannot resend data,download first"
-        self._udp_sock.sendto(b'XFFTS:dump 1 ',self._udp_addr)
-        self._sent=True
 
     def run(self):
         """Runs the machine and fills requested channel
@@ -137,32 +126,8 @@ class XFW:
         """
         assert self._initialized,"Cannot run uninitialized FFTS"
         assert not self._sent,"Cannot resend data,download first"
-        self._udp_sock.sendto(b'XFFTS:dump 2 ',self._udp_addr)
+        self._udp_sock.sendto(b'FFTS:dump 2 ',self._udp_addr)
         self._sent=True
-
-    def get_data_no_extra(self,i=0):
-        """
-        Must be initialized already and have data
-
-        Parameter:
-            i (int):
-                index of **what**
-        """
-        assert self._initialized,"Cannot run uninitialized FFTS"
-        assert i < self._copies_of_vectors and i > -1,"Bad index"
-        assert self._sent,"Cannot download data before running machine"
-
-        header=self._tcp_sock.recv(64,socket.MSG_WAITALL)
-        h=struct.unpack('4s4sI8s28s4I',header)
-        if h[2] > 64:
-            d=self._tcp_sock.recv(h[2]-64,socket.MSG_WAITALL)
-            d=struct.unpack(str((h[2]-64)//4)+'f',d)
-            self._data[i]=np.array(d,dtype=np.float32)
-            self._time=h[4].decode('utf8').strip()
-        self._sent=False
-
-        if self.reverse:
-            self._data[i] = self._data[i][::-1]
 
     def get_data(self,i=0):
         """
@@ -200,19 +165,19 @@ class XFW:
         return 1.0*self._data[i]
 
     def close(self):
-        """Disconnect from both servers of the XFFTS and sends stop to XFFTS
+        """Disconnect from both servers of the dFFTS and sends stop to dFFTS
 
         Must be initialized to be closed.
         """
         assert self._initialized,"Cannot close uninitialized FFTS"
 
         self._tcp_sock.close()
-        self._udp_sock.sendto(b'XFFTS:stop ',self._udp_addr)
+        self._udp_sock.sendto(b'FFTS:stop ',self._udp_addr)
         self._udp_sock.close()
         self._initialized=False
 
 
-class xffts_commands:
+class dffts_commands:
     def __init__(self, host='localhost', port=16210):
         
         self._port = port
@@ -223,7 +188,7 @@ class xffts_commands:
         self.send('cmdMode INTERNAL')
         
     def send(self, info, ZzZ=0.1):
-        self._sock.sendto(b'XFFTS:' + info.encode('ascii') + b' ', self._addr)
+        self._sock.sendto(b'FFTS:' + info.encode('ascii') + b' ', self._addr)
         time.sleep(ZzZ)
         
     def configure(self):
@@ -242,11 +207,11 @@ class xffts_commands:
             self.send('Band{}:cmdNumspecchan {}'.format(i+1, num_channels))
         self.send('cmdUsedsections' + s)
         
-    def sync_time(self, t=1000000):
-        self.send('cmdSynctime {}'.format(int(t)))
+    def sync_time(self, time=1000000):
+        self.send('cmdSynctime {}'.format(int(time)))
         
-    def blank_time(self, t=5000):
-        self.send('cmdBlanktime {}'.format(int(t)))
+    def blank_time(self, time=5000):
+        self.send('cmdBlanktime {}'.format(int(time)))
         
     def info(self, X=0):
         self.send('info {}'.format(int(X)))

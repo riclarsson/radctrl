@@ -35,7 +35,7 @@ int run(File::ConfigParser parser) try {
                    std::stod(parser("Chopper", "sleeptime"))};
 
   // Wobbler declaration
-  Instrument::Wobbler::PythonOriginalIRAM wob{parser("Wobbler", "path")};
+  Instrument::Wobbler::Dummy wob{parser("Wobbler", "path")};  // FIXME: THE WOBBLER IS BROKEN
   Instrument::Wobbler::Controller<4> wobbler_ctrl{
       parser("Wobbler", "dev"), std::stoi(parser("Wobbler", "baudrate")),
       parser("Wobbler", "address")[0]};
@@ -62,7 +62,7 @@ int run(File::ConfigParser parser) try {
 
   // Spectrometers declarations
   Instrument::Spectrometer::Backends backends{
-    Instrument::Spectrometer::XFFTS(parser("Backends", "spectormeter1"), parser("Backends", "path1")),
+    Instrument::Spectrometer::dFFTS(parser("Backends", "spectormeter1"), parser("Backends", "path1")),
     Instrument::Spectrometer::RCTS104(parser("Backends", "spectormeter2"), parser("Backends", "path2"))};
   std::array<Instrument::Spectrometer::Controller, backends.N> backend_ctrls{
       Instrument::Spectrometer::Controller(parser("Backends", "spectormeter1"), parser("Backends", "config1"), integration_time_microseconds, blank_time_microseconds),

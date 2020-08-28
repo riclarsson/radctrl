@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <RADCTRL>
 <dFFTS name="dFFTS" host="localhost" tcp="25144" udp="16210" Nboards="2" mirror="false">
-65446 0 4e9
-65446 0 4e9
+65538 0 4e9
+65538 0 4e9
 </dFFTS>
 </RADCTRL>
 
