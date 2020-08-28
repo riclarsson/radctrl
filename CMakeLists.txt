@@ -3,8 +3,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS ON)
 
-project (RADCALC CXX C)
-enable_language(CXX C)
+project (RADCALC CXX C Fortran)
+enable_language(CXX C Fortran)
 include(cmake/StandardProjectSettings.cmake)
 include(cmake/PreventInSourceBuilds.cmake)
 

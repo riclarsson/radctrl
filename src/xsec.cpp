@@ -7,15 +7,23 @@
 namespace Absorption {
 namespace Xsec {
 template <size_t N>
-void internal_compute(std::vector<PropMat<N>>& pm, const std::vector<double>& f,
+void internal_compute(Results<N>& res, Results<N>& src,
+                      const std::vector<double>& f,
                       const std::vector<Band>& bands, const Path::Point& atm) {
+  std::fill(res.x.begin(), res.x.end(), PropMat<N>());
+  std::fill(src.x.begin(), src.x.end(), PropMat<N>());
+  std::fill(res.dx.begin(), res.dx.end(), res.x);
+  std::fill(src.dx.begin(), src.dx.end(), src.x);
+
   const auto mag = atm.atm.MagField();
   const auto los = atm.nav.sphericalLos();
   [[maybe_unused]] const auto a =
       Zeeman::angles(mag.u(), mag.v(), mag.w(), los.za(), los.aa());
 
-  std::vector<Complex> x(f.size());
-  std::vector<Complex> xpart(f.size());
+  Lbl::Results lbl_res(f.size());
+  Lbl::Results lbl_src(f.size());
+  Lbl::Results lbl_clc(f.size());
+  bool first = true;
   for (auto z : {Polarization::SigmaMinus, Polarization::Pi,
                  Polarization::SigmaPlus, Polarization::None}) {
     if constexpr (N not_eq 4) {
@@ -25,57 +33,100 @@ void internal_compute(std::vector<PropMat<N>>& pm, const std::vector<double>& f,
       }
     }
 
-    // Empty x since polarizations must be treated independently
-    std::fill(x.begin(), x.end(), Complex(0, 0));
+    // Reset all since polarizations must be treated independently
+    if (not first) {
+      std::fill(lbl_res.x.begin(), lbl_res.x.end(), Complex(0, 0));
+      std::fill(lbl_src.x.begin(), lbl_src.x.end(), Complex(0, 0));
+      std::fill(lbl_res.dx.begin(), lbl_res.dx.end(), lbl_res.x);
+      std::fill(lbl_src.dx.begin(), lbl_src.dx.end(), lbl_src.x);
+    } else {
+      first = false;
+    }
 
     // Add all bands
-    for (auto& band : bands) {
-      Lbl::compute(x, xpart, f, band, atm, z);
+    for (const auto& band : bands) {
+      Lbl::compute(lbl_res, lbl_src, lbl_clc, f, band, atm, z);
     }
 
     // FIXME: Add other types of cross-sections here
 
     // Sum up this polarization in the propagation matrix
     if (z == Polarization::None) {
-      std::transform(x.cbegin(), x.cend(), pm.begin(), pm.begin(),
-                     [](auto& dx, auto& p) { return p.add_unpolarized(dx); });
-    } else if (z == Polarization::SigmaMinus) {
-      if constexpr (N == 4)
-        std::transform(
-            x.cbegin(), x.cend(), pm.begin(), pm.begin(),
-            [sm = Zeeman::PolarizationVector<Polarization::SigmaMinus>(a)](
-                auto& dx, auto& p) { return p.add_polarized(dx, sm); });
-    } else if (z == Polarization::Pi) {
-      if constexpr (N == 4)
-        std::transform(
-            x.cbegin(), x.cend(), pm.begin(), pm.begin(),
-            [pi = Zeeman::PolarizationVector<Polarization::Pi>(a)](
-                auto& dx, auto& p) { return p.add_polarized(dx, pi); });
-    } else if (z == Polarization::SigmaPlus) {
-      if constexpr (N == 4)
-        std::transform(
-            x.cbegin(), x.cend(), pm.begin(), pm.begin(),
-            [sp = Zeeman::PolarizationVector<Polarization::SigmaPlus>(a)](
-                auto& dx, auto& p) { return p.add_polarized(dx, sp); });
-    }
+      std::transform(lbl_res.x.cbegin(), lbl_res.x.cend(), res.x.begin(),
+                     res.x.begin(),
+                     [](Complex dx, PropMat<N> p) { return p + dx.real(); });
+
+      for (size_t i = 0; i < res.dx.size(); i++) {
+        std::transform(lbl_res.dx[i].cbegin(), lbl_res.dx[i].cend(),
+                       res.dx[i].cbegin(), res.dx[i].begin(),
+                       [](Complex dx, PropMat<N> p) { return p + dx.real(); });
+      }
+
+      std::transform(lbl_src.x.cbegin(), lbl_src.x.cend(), src.x.begin(),
+                     src.x.begin(),
+                     [](Complex dx, PropMat<N> p) { return p + dx.real(); });
+
+      for (size_t i = 0; i < src.dx.size(); i++) {
+        std::transform(lbl_src.dx[i].cbegin(), lbl_src.dx[i].cend(),
+                       src.dx[i].cbegin(), src.dx[i].begin(),
+                       [](Complex dx, PropMat<N> p) { return p + dx.real(); });
+      }
+    } else if (z == Polarization::SigmaMinus or z == Polarization::Pi or
+               z == Polarization::SigmaPlus) {
+      if constexpr (N == 4) {
+        const auto pol =
+            (z == Polarization::SigmaMinus)
+                ? Zeeman::PolarizationVector<Polarization::SigmaMinus>(a)
+                : (z == Polarization::Pi)
+                      ? Zeeman::PolarizationVector<Polarization::Pi>(a)
+                      : Zeeman::PolarizationVector<Polarization::SigmaPlus>(a);
+
+        std::transform(lbl_res.x.cbegin(), lbl_res.x.cend(), res.x.begin(),
+                       res.x.begin(), [pol](Complex dx, PropMat<N> p) {
+                         return p + ZeemanPropMat4x4(dx, pol);
+                       });
+
+        for (size_t i = 0; i < res.dx.size(); i++) {
+          std::transform(lbl_res.dx[i].cbegin(), lbl_res.dx[i].cend(),
+                         res.dx[i].cbegin(), res.dx[i].begin(),
+                         [pol](Complex dx, PropMat<N> p) {
+                           return p + ZeemanPropMat4x4(dx, pol);
+                         });
+        }
+
+        std::transform(lbl_src.x.cbegin(), lbl_src.x.cend(), src.x.begin(),
+                       src.x.begin(), [pol](Complex dx, PropMat<N> p) {
+                         return p + ZeemanPropMat4x4(dx, pol);
+                       });
+
+        for (size_t i = 0; i < src.dx.size(); i++) {
+          std::transform(lbl_src.dx[i].cbegin(), lbl_src.dx[i].cend(),
+                         src.dx[i].cbegin(), src.dx[i].begin(),
+                         [pol](Complex dx, PropMat<N> p) {
+                           return p + ZeemanPropMat4x4(dx, pol);
+                         });
+        }
+      }
+    }  // Add other types of polarizations (e.g., Faraday) here if and when
+       // necessary
   }
 }
 
-void compute(std::vector<PropMat<1>>& pm, const std::vector<double>& f,
+void compute(Results<1>& res, Results<1>& src, const std::vector<double>& f,
              const std::vector<Band>& bands, const Path::Point& atm) {
-  internal_compute(pm, f, bands, atm);
+  internal_compute(res, src, f, bands, atm);
 }
-void compute(std::vector<PropMat<2>>& pm, const std::vector<double>& f,
+void compute(Results<2>& res, Results<2>& src, const std::vector<double>& f,
              const std::vector<Band>& bands, const Path::Point& atm) {
-  internal_compute(pm, f, bands, atm);
+  internal_compute(res, src, f, bands, atm);
 }
-void compute(std::vector<PropMat<3>>& pm, const std::vector<double>& f,
+void compute(Results<3>& res, Results<3>& src, const std::vector<double>& f,
              const std::vector<Band>& bands, const Path::Point& atm) {
-  internal_compute(pm, f, bands, atm);
+  internal_compute(res, src, f, bands, atm);
 }
-void compute(std::vector<PropMat<4>>& pm, const std::vector<double>& f,
+void compute(Results<4>& res, Results<4>& src, const std::vector<double>& f,
              const std::vector<Band>& bands, const Path::Point& atm) {
-  internal_compute(pm, f, bands, atm);
+  internal_compute(res, src, f, bands, atm);
 }
 }  // namespace Xsec
 }  // namespace Absorption

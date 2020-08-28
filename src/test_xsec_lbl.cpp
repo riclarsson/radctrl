@@ -58,7 +58,7 @@ void test002() {
                               0.2095},
           VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0),
                               400e-06}});
-  Atmosphere::Atm atm({Time()}, A, {0}, {0}, {3, {1, N, 1, 1}});
+  Atmosphere::Atm atm({Time()}, A, {0}, {0}, {3, 1, N, 1, 1});
   for (size_t i = 0; i < N; i++)
     atm(0, i, 0, 0) = Atmosphere::Point(
         P[i], T[i], std::array<double, 3>{10e-6, 10e-6, 30e-6},
@@ -80,25 +80,26 @@ void test002() {
   Absorption::Band band(
       O266, Absorption::Mirroring::None, Absorption::Normalization::None,
       Absorption::Population::ByLTE, Absorption::Cutoff::ByLineOffset,
-      Absorption::Shape::VP, false, 296, 1e9, g, g, 1);
+      Absorption::Shape::VP, false, 296, 750e9, g, g, 1);
   Absorption::LineShape::Model m{Species::Species::Oxygen, 10e3, 15e3, 0, 0.7};
   band.Lines()[0] =
       Absorption::Line(O266, 100e9, 1e-20, 1e-20, {0, 0}, 1, 1, 1e-20, l, l, m);
 
   constexpr size_t M = 100;
-  std::vector<std::vector<Complex>> sumx(
-      N, std::vector<Complex>(M, Complex{0, 0}));
-  std::vector<Complex> partx(M, Complex{0, 0});
+  std::vector<Absorption::Xsec::Lbl::Results> sum(
+      N, Absorption::Xsec::Lbl::Results(M, 0));
+  Absorption::Xsec::Lbl::Results dummy_src(M, 0);
+  Absorption::Xsec::Lbl::Results comp(M, 0);
   auto f = linspace(90e9, 110e9, M);
 
   for (size_t i = 0; i < N; i++) {
-    Absorption::Xsec::Lbl::compute(sumx[i], partx, f, band, nav[i]);
+    Absorption::Xsec::Lbl::compute(sum[i], dummy_src, comp, f, band, nav[i]);
   }
 
   for (size_t j = 0; j < M; j++) {
     std::cout << f[j];
     for (size_t i = 0; i < N; i++) {
-      std::cout << ' ' << sumx[i][j].real() << ' ' << sumx[i][j].imag();
+      std::cout << ' ' << sum[i].x[j].real() << ' ' << sum[i].x[j].imag();
     }
     std::cout << '\n';
   }

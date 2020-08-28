@@ -6,6 +6,7 @@
 
 #include "complex.h"
 #include "constants.h"
+#include "enums.h"
 #include "propmat.h"
 #include "units.h"
 
@@ -29,6 +30,14 @@ class RadVec {
   }
   constexpr RadVec(double a1) noexcept : b({a1}) { static_assert(N == 1); }
 
+  constexpr RadVec(Absorption::PropMat<n> pm) noexcept {
+    for (size_t i = 0; i < N; i++) b[i] = pm[i];
+  }
+
+  constexpr RadVec() noexcept {
+    for (size_t i = 0; i < N; i++) b[i] = 0;
+  }
+
   friend std::ostream& operator<<(std::ostream& os, RadVec a) {
     if constexpr (RadVec::N == 4) {
       return os << a[0] << ' ' << a[1] << ' ' << a[2] << ' ' << a[3];
@@ -42,6 +51,22 @@ class RadVec {
   }
 
   constexpr double operator[](size_t i) const noexcept { return b[i]; }
+
+  constexpr RadVec operator+(RadVec rv) const {
+    RadVec out;
+    for (size_t i = 0; i < N; i++) out.b[i] = rv.b[i] + b[i];
+    return out;
+  }
+  constexpr RadVec operator*(double x) const {
+    RadVec out;
+    for (size_t i = 0; i < N; i++) out.b[i] = x * b[i];
+    return out;
+  }
+  friend constexpr RadVec operator*(double x, RadVec rv) {
+    RadVec out;
+    for (size_t i = 0; i < N; i++) out.b[i] = x * rv.b[i];
+    return out;
+  }
 };  // RadVec
 
 template <size_t n>
@@ -104,6 +129,8 @@ class TraMat {
     return a[i * N + j];
   }
 
+  double& operator()(size_t i, size_t j) noexcept { return a[i * N + j]; }
+
   constexpr RadVec<N> operator()(TraMat t) const noexcept {
     if constexpr (N == 4)
       return RadVec<N>{t(0, 0), t(0, 1), t(0, 2), t(0, 3)};
@@ -116,71 +143,108 @@ class TraMat {
   }
 };  // TraMat
 
+ENUMCLASS(PolarizationType, unsigned char, I, Q, U, V, IpQ, ImQ, IpU, ImU, IpV,
+          ImV)
+
+template <size_t N>
+struct Polarization {
+  PolarizationType pol;
+  TraMat<N> rotation;
+
+  Polarization(double circular_rotation [[maybe_unused]]) noexcept
+      : rotation(Absorption::PropMat<N>()) {
+    if constexpr (N == 4) {
+      rotation = TraMat<N>(1, 0, 0, 0, 0, 0, 0);
+      rotation(1, 1) = rotation(2, 2) = std::cos(2 * circular_rotation);
+      rotation(1, 2) = -std::sin(2 * circular_rotation);
+      rotation(2, 1) = std::sin(2 * circular_rotation);
+    } else if constexpr (N == 3) {
+      rotation = TraMat<N>(1, 0, 0, 0);
+      rotation(1, 1) = rotation(2, 2) = std::cos(2 * circular_rotation);
+      rotation(1, 2) = -std::sin(2 * circular_rotation);
+      rotation(2, 1) = std::sin(2 * circular_rotation);
+    } else if constexpr (N == 2) {
+      rotation = TraMat<N>(1, 0);
+      rotation(1, 1) = std::cos(2 * circular_rotation);  // Destructive...
+    } else if constexpr (N == 2) {
+      rotation = TraMat<N>(1);
+    }
+  }
+};
+
 /** Returns T (I - J) + J */
 template <size_t N>
-constexpr RadVec<N> update(const RadVec<N> I, const TraMat<N> T,
-                           const RadVec<N> J) noexcept {
+constexpr RadVec<N> update(const RadVec<N>& I, const TraMat<N>& T,
+                           const RadVec<N>& J) noexcept {
+  if constexpr (N == 1) return (I[0] - J[0]) * T(0, 0) + J[0];
+  if constexpr (N == 2)
+    return {(I[0] - J[0]) * T(0, 0) + (I[1] - J[1]) * T(0, 1) + J[0],
+            (I[0] - J[0]) * T(1, 0) + (I[1] - J[1]) * T(1, 1) + J[1]};
+  if constexpr (N == 3)
+    return {(I[0] - J[0]) * T(0, 0) + (I[1] - J[1]) * T(0, 1) +
+                (I[2] - J[2]) * T(0, 2) + J[0],
+            (I[0] - J[0]) * T(1, 0) + (I[1] - J[1]) * T(1, 1) +
+                (I[2] - J[2]) * T(1, 2) + J[1],
+            (I[0] - J[0]) * T(2, 0) + (I[1] - J[1]) * T(2, 1) +
+                (I[2] - J[2]) * T(2, 2) + J[2]};
   if constexpr (N == 4)
-    return RadVec<N>{
-        T(0, 0) * (I[0] - J[0]) + T(0, 1) * (I[1] - J[1]) +
-            T(0, 2) * (I[2] - J[2]) + T(0, 3) * (I[3] - J[3]) + J[0],
-        T(1, 0) * (I[0] - J[0]) + T(1, 1) * (I[1] - J[1]) +
-            T(1, 2) * (I[2] - J[2]) + T(1, 3) * (I[3] - J[3]) + J[1],
-        T(2, 0) * (I[0] - J[0]) + T(2, 1) * (I[1] - J[1]) +
-            T(2, 2) * (I[2] - J[2]) + T(2, 3) * (I[3] - J[3]) + J[2],
-        T(3, 0) * (I[0] - J[0]) + T(3, 1) * (I[1] - J[1]) +
-            T(3, 2) * (I[2] - J[2]) + T(3, 3) * (I[3] - J[3]) + J[3]};
-  else if constexpr (N == 3)
-    return RadVec<N>{T(0, 0) * (I[0] - J[0]) + T(0, 1) * (I[1] - J[1]) +
-                         T(0, 2) * (I[2] - J[2]) + J[0],
-                     T(1, 0) * (I[0] - J[0]) + T(1, 1) * (I[1] - J[1]) +
-                         T(1, 2) * (I[2] - J[2]) + J[1],
-                     T(2, 0) * (I[0] - J[0]) + T(2, 1) * (I[1] - J[1]) +
-                         T(2, 2) * (I[2] - J[2]) + J[2]};
-  else if constexpr (N == 2)
-    return RadVec<N>{T(0, 0) * (I[0] - J[0]) + T(0, 1) * (I[1] - J[1]) + J[0],
-                     T(1, 0) * (I[0] - J[0]) + T(1, 1) * (I[1] - J[1]) + J[1]};
-  else if constexpr (N == 1)
-    return RadVec<N>{T(0, 0) * (I[0] - J[0]) + J[0]};
+    return {(I[0] - J[0]) * T(0, 0) + (I[1] - J[1]) * T(0, 1) +
+                (I[2] - J[2]) * T(0, 2) + (I[3] - J[3]) * T(0, 3) + J[0],
+            (I[0] - J[0]) * T(1, 0) + (I[1] - J[1]) * T(1, 1) +
+                (I[2] - J[2]) * T(1, 2) + (I[3] - J[3]) * T(1, 3) + J[1],
+            (I[0] - J[0]) * T(2, 0) + (I[1] - J[1]) * T(2, 1) +
+                (I[2] - J[2]) * T(2, 2) + (I[3] - J[3]) * T(2, 3) + J[2],
+            (I[0] - J[0]) * T(3, 0) + (I[1] - J[1]) * T(3, 1) +
+                (I[2] - J[2]) * T(3, 2) + (I[3] - J[3]) * T(3, 3) + J[3]};
 }
 
 /** Returns dT (I - J) + dJ - T dJ */
 template <size_t N>
-constexpr RadVec<N> dupdate(const RadVec<N> I, const TraMat<N> T,
-                            const TraMat<N> dT, const RadVec<N> J,
-                            const RadVec<N> dJ) noexcept {
+constexpr RadVec<N> dupdate(const RadVec<N>& I, const TraMat<N>& T,
+                            const TraMat<N>& dT, const RadVec<N>& J,
+                            const RadVec<N>& dJ) noexcept {
+  if constexpr (N == 1)
+    return {
+        (I[0] - J[0]) * dT(0, 0) - T(0, 0) * dJ[0] + dJ[0],
+    };
+  if constexpr (N == 2)
+    return {
+        (I[0] - J[0]) * dT(0, 0) + (I[1] - J[1]) * dT(0, 1) - T(0, 0) * dJ[0] -
+            T(0, 1) * dJ[1] + dJ[0],
+        (I[0] - J[0]) * dT(1, 0) + (I[1] - J[1]) * dT(1, 1) - T(1, 0) * dJ[0] -
+            T(1, 1) * dJ[1] + dJ[1],
+    };
+  if constexpr (N == 3)
+    return {
+        (I[0] - J[0]) * dT(0, 0) + (I[1] - J[1]) * dT(0, 1) +
+            (I[2] - J[2]) * dT(0, 2) - T(0, 0) * dJ[0] - T(0, 1) * dJ[1] -
+            T(0, 2) * dJ[2] + dJ[0],
+        (I[0] - J[0]) * dT(1, 0) + (I[1] - J[1]) * dT(1, 1) +
+            (I[2] - J[2]) * dT(1, 2) - T(1, 0) * dJ[0] - T(1, 1) * dJ[1] -
+            T(1, 2) * dJ[2] + dJ[1],
+        (I[0] - J[0]) * dT(2, 0) + (I[1] - J[1]) * dT(2, 1) +
+            (I[2] - J[2]) * dT(2, 2) - T(2, 0) * dJ[0] - T(2, 1) * dJ[1] -
+            T(2, 2) * dJ[2] + dJ[2],
+    };
   if constexpr (N == 4)
-    return RadVec<N>{
-        -T(0, 0) * dJ[0] - T(0, 1) * dJ[1] - T(0, 2) * dJ[2] - T(0, 3) * dJ[3] +
-            dT(0, 0) * (I[0] - J[0]) + dT(0, 1) * (I[1] - J[1]) +
-            dT(0, 2) * (I[2] - J[2]) + dT(0, 3) * (I[3] - J[3]) + dJ[0],
-        -T(1, 0) * dJ[0] - T(1, 1) * dJ[1] - T(1, 2) * dJ[2] - T(1, 3) * dJ[3] +
-            dT(1, 0) * (I[0] - J[0]) + dT(1, 1) * (I[1] - J[1]) +
-            dT(1, 2) * (I[2] - J[2]) + dT(1, 3) * (I[3] - J[3]) + dJ[1],
-        -T(2, 0) * dJ[0] - T(2, 1) * dJ[1] - T(2, 2) * dJ[2] - T(2, 3) * dJ[3] +
-            dT(2, 0) * (I[0] - J[0]) + dT(2, 1) * (I[1] - J[1]) +
-            dT(2, 2) * (I[2] - J[2]) + dT(2, 3) * (I[3] - J[3]) + dJ[2],
-        -T(3, 0) * dJ[0] - T(3, 1) * dJ[1] - T(3, 2) * dJ[2] - T(3, 3) * dJ[3] +
-            dT(3, 0) * (I[0] - J[0]) + dT(3, 1) * (I[1] - J[1]) +
-            dT(3, 2) * (I[2] - J[2]) + dT(3, 3) * (I[3] - J[3]) + dJ[3]};
-  else if constexpr (N == 3)
-    return RadVec<N>{-T(0, 0) * dJ[0] - T(0, 1) * dJ[1] - T(0, 2) * dJ[2] +
-                         dT(0, 0) * (I[0] - J[0]) + dT(0, 1) * (I[1] - J[1]) +
-                         dT(0, 2) * (I[2] - J[2]) + dJ[0],
-                     -T(1, 0) * dJ[0] - T(1, 1) * dJ[1] - T(1, 2) * dJ[2] +
-                         dT(1, 0) * (I[0] - J[0]) + dT(1, 1) * (I[1] - J[1]) +
-                         dT(1, 2) * (I[2] - J[2]) + dJ[1],
-                     -T(2, 0) * dJ[0] - T(2, 1) * dJ[1] - T(2, 2) * dJ[2] +
-                         dT(2, 0) * (I[0] - J[0]) + dT(2, 1) * (I[1] - J[1]) +
-                         dT(2, 2) * (I[2] - J[2]) + dJ[2]};
-  else if constexpr (N == 2)
-    return RadVec<N>{
-        -T(0, 0) * dJ[0] - T(0, 1) * dJ[1] + dT(0, 0) * (I[0] - J[0]) +
-            dT(0, 1) * (I[1] - J[1]) + dJ[0],
-        -T(1, 0) * dJ[0] - T(1, 1) * dJ[1] + dT(1, 0) * (I[0] - J[0]) +
-            dT(1, 1) * (I[1] - J[1]) + dJ[1]};
-  else if constexpr (N == 1)
-    return RadVec<N>{-T(0, 0) * dJ[0] + dT(0, 0) * (I[0] - J[0]) + dJ[0]};
+    return {
+        (I[0] - J[0]) * dT(0, 0) + (I[1] - J[1]) * dT(0, 1) +
+            (I[2] - J[2]) * dT(0, 2) + (I[3] - J[3]) * dT(0, 3) -
+            T(0, 0) * dJ[0] - T(0, 1) * dJ[1] - T(0, 2) * dJ[2] -
+            T(0, 3) * dJ[3] + dJ[0],
+        (I[0] - J[0]) * dT(1, 0) + (I[1] - J[1]) * dT(1, 1) +
+            (I[2] - J[2]) * dT(1, 2) + (I[3] - J[3]) * dT(1, 3) -
+            T(1, 0) * dJ[0] - T(1, 1) * dJ[1] - T(1, 2) * dJ[2] -
+            T(1, 3) * dJ[3] + dJ[1],
+        (I[0] - J[0]) * dT(2, 0) + (I[1] - J[1]) * dT(2, 1) +
+            (I[2] - J[2]) * dT(2, 2) + (I[3] - J[3]) * dT(2, 3) -
+            T(2, 0) * dJ[0] - T(2, 1) * dJ[1] - T(2, 2) * dJ[2] -
+            T(2, 3) * dJ[3] + dJ[2],
+        (I[0] - J[0]) * dT(3, 0) + (I[1] - J[1]) * dT(3, 1) +
+            (I[2] - J[2]) * dT(3, 2) + (I[3] - J[3]) * dT(3, 3) -
+            T(3, 0) * dJ[0] - T(3, 1) * dJ[1] - T(3, 2) * dJ[2] -
+            T(3, 3) * dJ[3] + dJ[3],
+    };
 }
 
 /** Planck's law
@@ -191,26 +255,20 @@ double B(Temperature<TemperatureType::K> T,
          Frequency<FrequencyType::Freq> f) noexcept;
 
 /** Planck's law temperature derivative
- *
- * FIXME: should not return double but a proper unit
  */
 double dBdT(Temperature<TemperatureType::K> T,
             Frequency<FrequencyType::Freq> f) noexcept;
 
 /** Planck's law frequency derivative
- *
- * FIXME: should not return double but a proper unit
  */
 double dBdf(Temperature<TemperatureType::K> T,
             Frequency<FrequencyType::Freq> f) noexcept;
 
 /** Returns K^-1 (A B + S)
- *
- * FIXME:  B should not be a double...
  */
 template <size_t N>
-constexpr RadVec<N> source(const Absorption::PropMat<N> K, const RadVec<N> S,
-                           const RadVec<N> A, const double B) noexcept {
+constexpr RadVec<N> source(const Absorption::PropMat<N>& K, const RadVec<N>& S,
+                           const RadVec<N>& A, const double& B) noexcept {
   using Constant::pow2;
   if constexpr (N == 4) {
     const double invden = 1.0 / K.inverse_denominator();
@@ -289,15 +347,13 @@ constexpr RadVec<N> source(const Absorption::PropMat<N> K, const RadVec<N> S,
 /** Returns K^-1((dA B + A dB + dS) - dK K^-1 J)
  *
  * where J is K^-1 (A B + S) [e.g., source(K, S, A, B)]
- *
- * FIXME:  B should not be a double...
  */
 template <size_t N>
-constexpr RadVec<N> dsource(const Absorption::PropMat<N> K,
-                            const Absorption::PropMat<N> dK, const RadVec<N> J,
-                            const RadVec<N> dS, const RadVec<N> A,
-                            const RadVec<N> dA, const double B,
-                            const double dB) {
+constexpr RadVec<N> dsource(const Absorption::PropMat<N>& K,
+                            const Absorption::PropMat<N>& dK,
+                            const RadVec<N>& J, const RadVec<N>& dS,
+                            const RadVec<N>& A, const RadVec<N>& dA,
+                            const double& B, const double& dB) {
   using Constant::pow2;
   using Constant::pow4;
   if constexpr (N == 4) {
@@ -418,8 +474,9 @@ constexpr RadVec<N> dsource(const Absorption::PropMat<N> K,
 }
 
 template <size_t N>
-constexpr TraMat<N> transmat(const Absorption::PropMat<N> K,
-                             const double r) noexcept {
+constexpr TraMat<N> linear_transmat(const Absorption::PropMat<N>& K1,
+                                    const Absorption::PropMat<N>& K2,
+                                    const double& r) noexcept {
   using Constant::inv_sqrt_2;
   using Constant::pow2;
   using Constant::pow3;
@@ -430,8 +487,10 @@ constexpr TraMat<N> transmat(const Absorption::PropMat<N> K,
   using std::sinh;
   using std::sqrt;
   if constexpr (N == 4) {
-    const double a = -r * K[0], b = -r * K[1], c = -r * K[2], d = -r * K[3],
-                 u = -r * K[N], v = -r * K[5], w = -r * K[6];
+    const double a = -r * (K1[0] + K2[0]) * 0.5, b = -r * (K1[1] + K2[1]) * 0.5,
+                 c = -r * (K1[2] + K2[2]) * 0.5, d = -r * (K1[3] + K2[3]) * 0.5,
+                 u = -r * (K1[N] + K2[N]) * 0.5, v = -r * (K1[5] + K2[5]) * 0.5,
+                 w = -r * (K1[6] + K2[6]) * 0.5;
     const double b2 = b * b, c2 = c * c, d2 = d * d, u2 = u * u, v2 = v * v,
                  w2 = w * w;
     const double exp_a = exp(a);
@@ -532,7 +591,8 @@ constexpr TraMat<N> transmat(const Absorption::PropMat<N> K,
                                     w * (-d2 + v2 + w2))),
                      exp_a * (C0 + C2 * (d2 - v2 - w2))};
   } else if constexpr (N == 3) {
-    const double a = -r * K[0], b = -r * K[1], c = -r * K[2], u = -r * K[N];
+    const double a = -r * (K1[0] + K2[0]) * 0.5, b = -r * (K1[1] + K2[1]) * 0.5,
+                 c = -r * (K1[2] + K2[2]) * 0.5, u = -r * (K1[N] + K2[N]) * 0.5;
     const double exp_a = exp(a);
     const double a2 = a * a, b2 = b * b, c2 = c * c, u2 = u * u;
     const double Const = b2 + c2 - u2;
@@ -574,18 +634,29 @@ constexpr TraMat<N> transmat(const Absorption::PropMat<N> K,
                      (-C1 * u - C2 * (2 * a * u - b * c)) * exp_a * inv_x2,
                      (C0 + C1 * a + C2 * (a2 + c2 - u2)) * exp_a * inv_x2};
   } else if constexpr (N == 2) {
-    const double A = exp(-r * (K[0] - K[1])) / 2;
-    const double B = exp(-r * (K[0] + K[1])) / 2;
+    const double A =
+        exp(-r * ((K1[0] + K2[0]) * 0.5 - (K1[1] + K2[1]) * 0.5)) / 2;
+    const double B =
+        exp(-r * ((K1[0] + K2[0]) * 0.5 + (K1[1] + K2[1]) * 0.5)) / 2;
     return TraMat<N>{A + B, B - A, B - A, A + B};
   } else if constexpr (N == 1) {
-    return TraMat<N>{exp(-K[0] * r)};
+    return TraMat<N>{exp(-(K1[0] + K2[0]) * 0.5 * r)};
   }
 }
 
 template <size_t N>
-constexpr TraMat<N> dtransmat(const TraMat<N> T, const Absorption::PropMat<N> K,
-                              const Absorption::PropMat<N> dK, const double r,
-                              const double dr) noexcept {
+constexpr TraMat<N> single_transmat(const Absorption::PropMat<N>& K,
+                                    const double& r) noexcept {
+  return linear_transmat(K, K, r);
+}
+
+template <size_t N>
+constexpr TraMat<N> dlinear_transmat(const TraMat<N>& T,
+                                     const Absorption::PropMat<N>& K1,
+                                     const Absorption::PropMat<N>& K2,
+                                     const Absorption::PropMat<N>& dK,
+                                     const double& r,
+                                     const double& dr) noexcept {
   using Constant::inv_sqrt_2;
   using Constant::pow2;
   using Constant::pow3;
@@ -596,12 +667,17 @@ constexpr TraMat<N> dtransmat(const TraMat<N> T, const Absorption::PropMat<N> K,
   using std::sinh;
   using std::sqrt;
   if constexpr (N == 4) {
-    const double a = -r * K[0], b = -r * K[1], c = -r * K[2], d = -r * K[3],
-                 u = -r * K[N], v = -r * K[5], w = -r * K[6];
-    const double da = (-r * dK[0] - dr * K[0]), db = (-r * dK[1] - dr * K[1]),
-                 dc = (-r * dK[2] - dr * K[2]), dd = (-r * dK[3] - dr * K[3]),
-                 du = (-r * dK[N] - dr * K[N]), dv = (-r * dK[5] - dr * K[5]),
-                 dw = (-r * dK[6] - dr * K[6]);
+    const double a = -r * 0.5 * (K1[0] + K2[0]), b = -r * 0.5 * (K1[1] + K2[1]),
+                 c = -r * 0.5 * (K1[2] + K2[2]), d = -r * 0.5 * (K1[3] + K2[3]),
+                 u = -r * 0.5 * (K1[N] + K2[N]), v = -r * 0.5 * (K1[5] + K2[5]),
+                 w = -r * 0.5 * (K1[6] + K2[6]);
+    const double da = (-r * 0.5 * dK[0] - dr * 0.5 * (K1[0] + K2[0])),
+                 db = (-r * 0.5 * dK[1] - dr * 0.5 * (K1[1] + K2[1])),
+                 dc = (-r * 0.5 * dK[2] - dr * 0.5 * (K1[2] + K2[2])),
+                 dd = (-r * 0.5 * dK[3] - dr * 0.5 * (K1[3] + K2[3])),
+                 du = (-r * 0.5 * dK[N] - dr * 0.5 * (K1[N] + K2[N])),
+                 dv = (-r * 0.5 * dK[5] - dr * 0.5 * (K1[5] + K2[5])),
+                 dw = (-r * 0.5 * dK[6] - dr * 0.5 * (K1[6] + K2[6]));
     const double b2 = b * b, c2 = c * c, d2 = d * d, u2 = u * u, v2 = v * v,
                  w2 = w * w;
     const double db2 = 2 * db * b, dc2 = 2 * dc * c, dd2 = 2 * dd * d,
@@ -862,9 +938,12 @@ constexpr TraMat<N> dtransmat(const TraMat<N> T, const Absorption::PropMat<N> K,
         T[15] * da +
             exp_a * (dC0 + dC2 * (d2 - v2 - w2) + C2 * (dd2 - dv2 - dw2))};
   } else if constexpr (N == 3) {
-    const double a = -r * K[0], b = -r * K[1], c = -r * K[2], u = -r * K[N];
-    const double da = -r * dK[0] - dr * K[0], db = -r * dK[1] - dr * K[1],
-                 dc = -r * dK[2] - dr * K[2], du = -r * dK[N] - dr * K[N];
+    const double a = -r * 0.5 * (K1[0] + K2[0]), b = -r * 0.5 * (K1[1] + K2[1]),
+                 c = -r * 0.5 * (K1[2] + K2[2]), u = -r * 0.5 * (K1[N] + K2[N]);
+    const double da = -r * 0.5 * dK[0] - dr * 0.5 * (K1[0] + K2[0]),
+                 db = -r * 0.5 * dK[1] - dr * 0.5 * (K1[1] + K2[1]),
+                 dc = -r * 0.5 * dK[2] - dr * 0.5 * (K1[2] + K2[2]),
+                 du = -r * 0.5 * dK[N] - dr * 0.5 * (K1[N] + K2[N]);
     const double exp_a = exp(a);
     const double a2 = a * a, b2 = b * b, c2 = c * c, u2 = u * u;
     const double da2 = 2 * a * da, db2 = 2 * b * db, dc2 = 2 * c * dc,
@@ -947,14 +1026,18 @@ constexpr TraMat<N> dtransmat(const TraMat<N> T, const Absorption::PropMat<N> K,
                              (dC0 + dC1 * a + C1 * da + dC2 * (a2 + c2 - u2) +
                               C2 * (da2 + dc2 - du2))};
   } else if constexpr (N == 2) {
-    const double dA = (-r * (dK[0] - dK[1]) - dr * (K[0] - K[1])) *
-                      exp(-r * (K[0] - K[1])) / 2;
-    const double dB = (-r * (dK[0] + dK[1]) - dr * (K[0] + K[1])) *
-                      exp(-r * (K[0] + K[1])) / 2;
+    const double dA =
+        (-r * (0.5 * dK[0] - 0.5 * dK[1]) -
+         dr * (0.5 * (K1[0] + K2[0]) - 0.5 * (K1[1] + K2[1]))) *
+        exp(-r * (0.5 * (K1[0] + K2[0]) - 0.5 * (K1[1] + K2[1]))) / 2;
+    const double dB =
+        (-r * (0.5 * dK[0] + 0.5 * dK[1]) -
+         dr * (0.5 * (K1[0] + K2[0]) + 0.5 * (K1[1] + K2[1]))) *
+        exp(-r * (0.5 * (K1[0] + K2[0]) + 0.5 * (K1[1] + K2[1]))) / 2;
     return TraMat<N>{dA + dB, dB - dA, dB - dA, dA + dB};
     return TraMat<N>{};
   } else if constexpr (N == 1) {
-    const double a = K[0], da = dK[0];
+    const double a = 0.5 * (K1[0] + K2[0]), da = 0.5 * dK[0];
     return TraMat<N>{-(r * da + dr * a) * T[0]};
   }
 }

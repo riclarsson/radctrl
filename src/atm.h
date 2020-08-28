@@ -24,17 +24,18 @@ class Point {
   Magnetism<MagnetismType::T> M;
   Wind<WindType::meters_per_second> W;
   std::vector<VMR<VMRType::ratio>> vmr;
+  std::vector<NLTE<NLTEType::ratio>> nlte;
 
  public:
   Point(Pressure<PressureType::Pa> p, Temperature<TemperatureType::K> t,
         Magnetism<MagnetismType::T> m, Wind<WindType::meters_per_second> w,
         const std::vector<VMR<VMRType::ratio>>& v) noexcept
-      : P(p), T(t), M(m), W(w), vmr(v) {}
+      : P(p), T(t), M(m), W(w), vmr(v), nlte(0) {}
 
   Point(decltype(vmr)::size_type n = 0) noexcept
-      : M({0, 0, 0}), W({0, 0, 0}), vmr(n) {}
+      : M({0, 0, 0}), W({0, 0, 0}), vmr(n), nlte(0) {}
   Point(const std::vector<Species::Isotope>& s) noexcept
-      : M({0, 0, 0}), W({0, 0, 0}), vmr(s.size()) {
+      : M({0, 0, 0}), W({0, 0, 0}), vmr(s.size()), nlte(0) {
     for (size_t i = 0; i < s.size(); i++) vmr[i].isot(s[i]);
   }
 
@@ -78,6 +79,10 @@ class Point {
     else
       return v->value();
   }
+  std::pair<double, double> NonLTERatios(
+      std::pair<std::size_t, std::size_t> ids) const {
+    return {nlte[ids.first], nlte[ids.second]};
+  }
 
   friend Point operator*(double x, const Point& ap) noexcept {
     Point out{ap};
@@ -87,6 +92,7 @@ class Point {
     out.M *= x;
     out.W *= x;
     for (auto& v : out.vmr) v *= x;
+    for (auto& n : out.nlte) n *= x;
     return out;
   }
 
@@ -96,6 +102,7 @@ class Point {
     file.new_child("Point");
     file.add_attribute("size", ap.size());
     file.add_attribute("Species", ap.specs());
+    file.add_attribute("NLTE", ap.nlte.size());
     file << '\n';
     ap.savePureAscii(file);
     file << '\n';
@@ -108,6 +115,7 @@ class Point {
     file.new_child("Point");
     file.add_attribute("size", ap.size());
     file.add_attribute("Species", ap.specs());
+    file.add_attribute("NLTE", ap.nlte.size());
     ap.saveBinary(file);
     file.leave_child();
   }
@@ -117,6 +125,7 @@ class Point {
     auto child = file.get_child("Point");
     ap.vmr.resize(file.size());
     auto isot = file.get_vector_attribute<Species::Isotope>("Species");
+    ap.nlte.resize(file.get_attribute("Species").as_int());
     for (size_t i = 0; i < isot.size(); i++) {
       ap.vmr[i].isot(isot[i]);
     }
@@ -131,6 +140,7 @@ class Point {
     file.get_child("Point");
     ap.vmr.resize(file.size());
     auto isot = file.get_vector_attribute<Species::Isotope>("Species");
+    ap.nlte.resize(file.get_attribute("Species").as_int());
     for (size_t i = 0; i < isot.size(); i++) {
       ap.vmr[i].isot(isot[i]);
     }
@@ -148,6 +158,7 @@ class Point {
   void savePureAscii(Output& file) const {
     file << P << ' ' << T << ' ' << M << ' ' << W;
     for (auto x : vmr) file << ' ' << x.value();
+    for (auto n : nlte) file << ' ' << n.value();
   }
 
   template <typename Output>
@@ -157,12 +168,14 @@ class Point {
     file.write(M);
     file.write(W);
     for (auto x : vmr) file.write(x.value());
+    file.write(nlte);
   }
 
   template <typename Input>
   void readPureAscii(Input& file) {
     file >> P >> T >> M >> W;
     for (auto& x : vmr) file >> x.value();
+    for (auto& n : nlte) file >> n;
   }
 
   template <typename Input>
@@ -172,6 +185,7 @@ class Point {
     file.read(M);
     file.read(W);
     for (auto& x : vmr) file.read(x.value());
+    file.read(nlte);
   }
 };  // Point
 
@@ -214,7 +228,7 @@ class Atm {
 
   bool ok() const {
     auto specs = operator()(0, 0, 0, 0).specs();
-    for (auto& x : data.data()) {
+    for (auto& x : data) {
       if (specs not_eq x.specs()) return false;
     }
     return true;
@@ -231,7 +245,7 @@ class Atm {
   }
   Atm(std::size_t t = 0, std::size_t a = 0, std::size_t la = 0,
       std::size_t lo = 0, std::size_t s = 0)
-      : tid(t), alt(a), lat(la), lon(lo), data(s, {t, a, la, lo}) {}
+      : tid(t), alt(a), lat(la), lon(lo), data(s, t, a, la, lo) {}
 
   friend std::ostream& operator<<(std::ostream& os, const Atm& a) {
     if (not a.ok()) throw std::runtime_error("Bad atmosphere");
@@ -393,12 +407,13 @@ class Atm {
     file >> a.lon;
     file.leave_child();
 
-    a.data.reset(a.tid.size(), a.alt.size(), a.lat.size(), a.lon.size(), specs);
+    a.data.resize(a.tid.size(), a.alt.size(), a.lat.size(), a.lon.size());
     auto data = std::istringstream(file.get_child("Data").text().as_string());
     for (decltype(a.tid.size()) i = 0; i < a.tid.size(); i++) {
       for (decltype(a.alt.size()) j = 0; j < a.alt.size(); j++) {
         for (decltype(a.lat.size()) k = 0; k < a.lat.size(); k++) {
           for (decltype(a.lon.size()) m = 0; m < a.lon.size(); m++) {
+            a(i, j, k, m) = specs;
             a(i, j, k, m).readPureAscii(data);
           }
         }
@@ -434,11 +449,12 @@ class Atm {
     file.read(a.lon);
     file.leave_child();
 
-    a.data.reset(a.tid.size(), a.alt.size(), a.lat.size(), a.lon.size(), specs);
+    a.data.resize(a.tid.size(), a.alt.size(), a.lat.size(), a.lon.size());
     for (decltype(a.tid.size()) i = 0; i < a.tid.size(); i++) {
       for (decltype(a.alt.size()) j = 0; j < a.alt.size(); j++) {
         for (decltype(a.lat.size()) k = 0; k < a.lat.size(); k++) {
           for (decltype(a.lon.size()) m = 0; m < a.lon.size(); m++) {
+            a(i, j, k, m) = specs;
             a(i, j, k, m).readBinary(file);
           }
         }

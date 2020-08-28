@@ -203,6 +203,23 @@ class Temperature final {
   }
 };  // Temperature
 
+ENUMCLASS(NLTEType, char, ratio)  // TemperatureType
+
+template <NLTEType X>
+class NLTE final {
+  SCALAR(NLTE)
+  void ratio2self() noexcept {
+    if constexpr (X == NLTEType::ratio) {
+    }
+  }
+
+ public:
+  constexpr NLTE(const NLTE<NLTEType::ratio>& nlte) noexcept
+      : val(nlte.value()) {
+    ratio2self();
+  }
+};  // Temperature
+
 ENUMCLASS(MagnetismType, char, T,
           G)  // MagnetismType
 

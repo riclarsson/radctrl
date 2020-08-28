@@ -9,7 +9,15 @@
 namespace Absorption {
 namespace Xsec {
 namespace Lbl {
-void compute(std::vector<Complex>& x, std::vector<Complex>& comp_x,
+struct Results {
+  std::vector<Complex> x;
+  std::vector<std::vector<Complex>> dx;
+
+  Results(size_t nfreq = 0, size_t njac = 0) noexcept
+      : x(nfreq, Complex{0, 0}), dx(njac, x) {}
+};
+
+void compute(Results& res, Results& src, Results& comp,
              const std::vector<double>& f, const Band& band,
              const Path::Point& atm,
              const Polarization polarization = Polarization::None);

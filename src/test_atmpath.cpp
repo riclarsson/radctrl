@@ -48,7 +48,7 @@ void test001() {
                               0.2095},
           VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0),
                               400e-06}});
-  Atmosphere::Atm atm({Time()}, A, {0}, {0}, {3, {1, N, 1, 1}});
+  Atmosphere::Atm atm({Time()}, A, {0}, {0}, {3, 1, N, 1, 1});
 
   for (size_t i = 0; i < N; i++)
     atm(0, i, 0, 0) = Atmosphere::Point(

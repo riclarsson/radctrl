@@ -28,9 +28,10 @@ add_library (math STATIC
              mathhelpers.cpp
              rational.cpp
              wigner.cpp
+             openblas_interface.cpp
              )
 target_include_directories(math PUBLIC ../3rdparty/Eigen/ ../3rdparty/wigner/ ../3rdparty/Faddeeva/)
-target_link_libraries(math PUBLIC wigner Faddeeva)
+target_link_libraries(math PUBLIC wigner Faddeeva openblas lapack kernel)
 if(FASTWIGNER)
 target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_3J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.3j\"")
 target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_6J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.6j\"")
@@ -168,6 +169,14 @@ target_link_libraries(absorption PUBLIC species files xsec)
 ########################################################################################
 
 ########################################################################################
+# Cross-section library:  For computing cross-sections of any kind
+add_library (forward STATIC
+             forward.cpp
+             )
+target_link_libraries(forward PUBLIC absorption rte)
+########################################################################################
+
+########################################################################################
 # Radiative Transfer Library:  For equations and classes for computing the path and geometry
 add_library (rte STATIC
              rte.cpp
@@ -281,4 +290,15 @@ target_link_libraries(test_xsec_lbl PUBLIC xsec_lbl)
 ########################################################################################
 # Tests to understand std::filesystem
 add_executable(test_filesystem test_filesystem.cpp)
+########################################################################################
+
+########################################################################################
+# Tests to understand Grids
+add_executable(test_grids test_grids.cpp)
+########################################################################################
+
+########################################################################################
+# Tests to understand OpenBLAS
+add_executable(test_blas test_blas.cpp)
+target_link_libraries(test_blas PUBLIC math)
 ########################################################################################

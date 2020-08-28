@@ -78,10 +78,10 @@ void test005() {
   constexpr Absorption::PropMat<1> pm11{1};
   constexpr double r = 1e1;
 
-  std::cout << RTE::transmat(pm44, r) << '\n';
-  std::cout << RTE::transmat(pm33, r) << '\n';
-  std::cout << RTE::transmat(pm22, r) << '\n';
-  std::cout << RTE::transmat(pm11, r) << '\n';
+  std::cout << RTE::single_transmat(pm44, r) << '\n';
+  std::cout << RTE::single_transmat(pm33, r) << '\n';
+  std::cout << RTE::single_transmat(pm22, r) << '\n';
+  std::cout << RTE::single_transmat(pm11, r) << '\n';
 }
 
 void test006() {
