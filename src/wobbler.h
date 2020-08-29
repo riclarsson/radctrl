@@ -27,7 +27,7 @@ struct Controller {
   char address;
 
   std::array<int, N> pos;
-  Controller(const std::string& d, int b, char a) noexcept
+  Controller(const std::string &d, int b, char a) noexcept
       : init(false),
         error(false),
         quit(false),
@@ -42,8 +42,8 @@ struct Controller {
 };
 
 template <class Wobbler, size_t N>
-void GuiSetup(Wobbler& wob, Controller<N>& ctrl,
-              const std::vector<std::string>& devs) {
+void GuiSetup(Wobbler &wob, Controller<N> &ctrl,
+              const std::vector<std::string> &devs) {
   bool change = false;
   bool manual = false;
   if (not ctrl.init) {
@@ -83,7 +83,7 @@ void GuiSetup(Wobbler& wob, Controller<N>& ctrl,
   ImGui::PushItemWidth(120.0f);
   if (auto dev = ctrl.dev.c_str(); ImGui::BeginCombo("Device", dev)) {
     bool newselection = false;
-    for (auto& d : devs) {
+    for (auto &d : devs) {
       auto dev2 = d.c_str();
       bool is_selected =
           (dev == dev2);  // You can store your selection however you want,
@@ -187,7 +187,7 @@ class Dummy {
   template <typename... Whatever>
   constexpr Dummy(Whatever...)
       : manual(false), error_found(false), position(4000), error("") {}
-  void startup(const std::string&, int, char) {}
+  void startup(const std::string &, int, char) {}
   void init(int pos, bool manual_press = false) {
     manual = manual_press;
     position = pos;
@@ -199,7 +199,7 @@ class Dummy {
   void close() {}
   void move(int pos) { position = pos; }
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -226,7 +226,7 @@ class PythonOriginalWASPAM {
  public:
   using DataType = int;
 
-  PythonOriginalWASPAM(const std::filesystem::path& path)
+  PythonOriginalWASPAM(const std::filesystem::path &path)
       : manual(false), error_found(false), position(4000), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
@@ -237,7 +237,7 @@ class PythonOriginalWASPAM {
     PyClass = Python::ClassInterface{"wobbler"};
   }
 
-  void startup(std::string& dev, int baudrate, char address) {
+  void startup(std::string &dev, int baudrate, char address) {
     PyInst = Python::ClassInstance{PyClass(dev, baudrate, address)};
     initfun = Python::Function{PyInst("init")};
     movefun = Python::Function{PyInst("move")};
@@ -253,7 +253,7 @@ class PythonOriginalWASPAM {
     try {
       initfun(pos);
       position = pos;
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
       error = e.what();
       error_found = true;
     }
@@ -277,7 +277,7 @@ class PythonOriginalWASPAM {
 
   // Error handling
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -302,7 +302,7 @@ class PythonOriginalIRAM {
  public:
   using DataType = int;
 
-  PythonOriginalIRAM(const std::filesystem::path& path)
+  PythonOriginalIRAM(const std::filesystem::path &path)
       : manual(false), error_found(false), position(4000), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
@@ -313,7 +313,7 @@ class PythonOriginalIRAM {
     PyClass = Python::ClassInterface{"wobbler"};
   };
 
-  void startup(std::string& dev, int baudrate, char address) {
+  void startup(std::string &dev, int baudrate, char address) {
     PyInst = Python::ClassInstance{PyClass(dev, baudrate, address)};
     initfun = Python::Function{PyInst("init")};
     movefun = Python::Function{PyInst("move")};
@@ -329,7 +329,7 @@ class PythonOriginalIRAM {
     try {
       initfun(pos);
       position = pos;
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
       error = e.what();
       error_found = true;
     }
@@ -353,7 +353,7 @@ class PythonOriginalIRAM {
 
   // Error handling
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;

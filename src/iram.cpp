@@ -35,7 +35,8 @@ int run(File::ConfigParser parser) try {
                    std::stod(parser("Chopper", "sleeptime"))};
 
   // Wobbler declaration
-  Instrument::Wobbler::Dummy wob{parser("Wobbler", "path")};  // FIXME: THE WOBBLER IS BROKEN
+  Instrument::Wobbler::Dummy wob{
+      parser("Wobbler", "path")};  // FIXME: THE WOBBLER IS BROKEN
   Instrument::Wobbler::Controller<4> wobbler_ctrl{
       parser("Wobbler", "dev"), std::stoi(parser("Wobbler", "baudrate")),
       parser("Wobbler", "address")[0]};
@@ -53,21 +54,26 @@ int run(File::ConfigParser parser) try {
   // Frontend declaration
   Instrument::Frontend::DBR frontend{parser("Frontend", "path")};
   Instrument::Frontend::Controller frontend_ctrl{
-    parser("Frontend", "server"), std::stoi(parser("Frontend", "port"))};
-    
-    // Spectrometers declarations
-    int integration_time_microseconds =
-    std::stoi(parser("Operations", "integration_time"));
-    int blank_time_microseconds = std::stoi(parser("Operations", "blank_time"));
+      parser("Frontend", "server"), std::stoi(parser("Frontend", "port"))};
+
+  // Spectrometers declarations
+  int integration_time_microseconds =
+      std::stoi(parser("Operations", "integration_time"));
+  int blank_time_microseconds = std::stoi(parser("Operations", "blank_time"));
 
   // Spectrometers declarations
   Instrument::Spectrometer::Backends backends{
-    Instrument::Spectrometer::dFFTS(parser("Backends", "spectormeter1"), parser("Backends", "path1")),
-    Instrument::Spectrometer::RCTS104(parser("Backends", "spectormeter2"), parser("Backends", "path2"))};
+      Instrument::Spectrometer::dFFTS(parser("Backends", "spectormeter1"),
+                                      parser("Backends", "path1")),
+      Instrument::Spectrometer::RCTS104(parser("Backends", "spectormeter2"),
+                                        parser("Backends", "path2"))};
   std::array<Instrument::Spectrometer::Controller, backends.N> backend_ctrls{
-      Instrument::Spectrometer::Controller(parser("Backends", "spectormeter1"), parser("Backends", "config1"), integration_time_microseconds, blank_time_microseconds),
-      Instrument::Spectrometer::Controller(parser("Backends", "spectormeter2"), parser("Backends", "config2"), integration_time_microseconds, blank_time_microseconds)
-  };
+      Instrument::Spectrometer::Controller(
+          parser("Backends", "spectormeter1"), parser("Backends", "config1"),
+          integration_time_microseconds, blank_time_microseconds),
+      Instrument::Spectrometer::Controller(
+          parser("Backends", "spectormeter2"), parser("Backends", "config2"),
+          integration_time_microseconds, blank_time_microseconds)};
   std::array<Instrument::Data, backends.N> backend_data;
   std::array<GUI::Plotting::CAHA<height_of_window, part_for_plot>, backends.N>
       backend_frames{GUI::Plotting::CAHA<height_of_window, part_for_plot>{
@@ -151,12 +157,12 @@ int run(File::ConfigParser parser) try {
             not chopper_ctrl.init.load() and not wobbler_ctrl.init.load() and
             not frontend_ctrl.init.load() and
             std::none_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                         [](auto& x) { return x.init.load(); });
+                         [](auto &x) { return x.init.load(); });
         bool all_init =
             housekeeping_ctrl.init.load() and chopper_ctrl.init.load() and
             wobbler_ctrl.init.load() and frontend_ctrl.init.load() and
             std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                        [](auto& x) { return x.init.load(); });
+                        [](auto &x) { return x.init.load(); });
 
         if (ImGui::Button(" Initialize all ")) {
           if (none_init)
@@ -316,7 +322,7 @@ int run(File::ConfigParser parser) try {
       wobbler_ctrl.error = false;
       config.active_errors++;
     }
-    for (auto& backend_ctrl : backend_ctrls) {
+    for (auto &backend_ctrl : backend_ctrls) {
       if (backend_ctrl.error) {
         ImGui::OpenPopup("Error");
         backend_ctrl.error = false;
@@ -378,7 +384,7 @@ int run(File::ConfigParser parser) try {
 
   if (ImGui::BeginPopupModal("GUI Error")) {
     ImGui::Text("\tError! You performed invalid action(s)\t");
-    for (auto& t : config.gui_errors) {
+    for (auto &t : config.gui_errors) {
       ImGui::Text("%s\t", t.c_str());
     }
 
@@ -403,30 +409,30 @@ int run(File::ConfigParser parser) try {
   auto running_errors = runner.get();
   if (running_errors.size()) {
     std::cerr << "Errors while stopping runner:\n:";
-    for (auto& e : running_errors) std::cerr << e << '\n';
+    for (auto &e : running_errors) std::cerr << e << '\n';
     return 1;
   }
 
   CleanupGUI;
 
   return EXIT_SUCCESS;
-} catch (const std::exception& e) {
+} catch (const std::exception &e) {
   std::ostringstream os;
   os << "Terminated with errors:\n" << e.what() << '\n';
   std::cerr << os.str();
   return EXIT_FAILURE;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   CommandLine::App rad("Run the IRAM Radiometer");
-  
+
   std::string xmlfilename;
   rad.NewRequiredOption("--xml", xmlfilename,
                         "Configuration file for the Radiometer");
-  
+
   rad.Parse(argc, argv);
-  
+
   run(File::ConfigParser(xmlfilename,
                          {"Chopper", "Wobbler", "Housekeeping", "Frontend",
-                           "Backends", "Operations", "Savepath"}));
+                          "Backends", "Operations", "Savepath"}));
 }

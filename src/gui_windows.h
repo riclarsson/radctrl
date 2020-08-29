@@ -5,7 +5,7 @@ namespace Windows {
 template <unsigned WIDTH = 1, unsigned HEIGHT = 1, unsigned WIDTH_POS = 0,
           unsigned HEIGHT_POS = 0, unsigned WIDTH_EXTENT = 1,
           unsigned HEIGHT_EXTENT = 1>
-bool sub(GLFWwindow* window, const ImVec2 origpos, const char* name) {
+bool sub(GLFWwindow *window, const ImVec2 origpos, const char *name) {
   static_assert(WIDTH, "None size window not allowed");
   static_assert(HEIGHT, "None size window not allowed");
   static_assert(WIDTH_EXTENT, "None extent window not allowed");
@@ -37,7 +37,7 @@ bool sub(GLFWwindow* window, const ImVec2 origpos, const char* name) {
                           ImGuiWindowFlags_NoResize |
                           ImGuiWindowFlags_NoScrollbar);
 }
-inline bool full(GLFWwindow* window, const ImVec2 origpos, const char* name) {
+inline bool full(GLFWwindow *window, const ImVec2 origpos, const char *name) {
   return sub(window, origpos, name);
 }
 inline void end() { ImGui::End(); }

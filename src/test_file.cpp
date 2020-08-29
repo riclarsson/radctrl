@@ -4,8 +4,8 @@
 #include "xml_config.h"
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& x) {
-  for (auto& b : x) os << b << ' ';
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &x) {
+  for (auto &b : x) os << b << ' ';
   return os;
 }
 

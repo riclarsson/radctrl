@@ -70,7 +70,7 @@ struct Data {
   size_t avg_count;         //  Count of current averages
 
   Data() noexcept = default;
-  Data(const Data& other) noexcept
+  Data(const Data &other) noexcept
       : target(other.target),
         has_target(other.has_target),
         has_cold(other.has_cold),
@@ -94,7 +94,7 @@ struct Data {
         num_measurements(other.num_measurements),
         num_to_avg(other.num_to_avg),
         avg_count(other.avg_count) {}
-  Data& operator=(const Data& other) noexcept {
+  Data &operator=(const Data &other) noexcept {
     target = other.target;
     has_target = other.has_target;
     has_cold = other.has_cold;
@@ -122,7 +122,7 @@ struct Data {
   }
 
   template <typename T>
-  Data(const std::vector<std::vector<T>>& freq_grid) noexcept
+  Data(const std::vector<std::vector<T>> &freq_grid) noexcept
       : target(Chopper::ChopperPos::FINAL),
         has_target(false),
         has_cold(false),
@@ -165,7 +165,7 @@ struct Data {
 
   template <typename T>
   void update(Chopper::ChopperPos thistarget, double tc, double th,
-              const std::vector<std::vector<T>>& data) noexcept {
+              const std::vector<std::vector<T>> &data) noexcept {
     target = thistarget;
     num_measurements++;
 
@@ -342,14 +342,14 @@ class DataSaver {
   }
 
  public:
-  DataSaver(const std::string& dir, const std::string& basefilename) noexcept
+  DataSaver(const std::string &dir, const std::string &basefilename) noexcept
       : daily_copies(0),
         newfile(true),
         basename(basefilename),
         timename("not-a-time-starting-value"),
         savedir(dir) {}
 
-  void updatePath(const std::filesystem::path& newdir) {
+  void updatePath(const std::filesystem::path &newdir) {
     updatepath.lock();
     savedir = newdir;
     updatepath.unlock();
@@ -357,11 +357,11 @@ class DataSaver {
   }
 
   template <size_t N>
-  void save(const Chopper::ChopperPos& last,
-            const std::map<std::string, double>& hk_data,
-            const std::map<std::string, double>& frontend_data,
-            const std::array<std::vector<std::vector<float>>, N>& backends_data,
-            const std::array<std::string, N>& backend_names) noexcept {
+  void save(const Chopper::ChopperPos &last,
+            const std::map<std::string, double> &hk_data,
+            const std::map<std::string, double> &frontend_data,
+            const std::array<std::vector<std::vector<float>>, N> &backends_data,
+            const std::array<std::string, N> &backend_names) noexcept {
     update_time(not std::filesystem::exists(filename));
 
     if (newfile) {
@@ -381,7 +381,7 @@ class DataSaver {
       metadatafile.add_attribute("Type", "double");
       metadatafile.add_attribute("size", hk_data.size());
       size_t counter = 0;
-      for (auto& hk : hk_data) {
+      for (auto &hk : hk_data) {
         metadatafile.add_attribute(
             (std::string{"Data"} + std::to_string(counter)).c_str(),
             hk.first.c_str());
@@ -393,7 +393,7 @@ class DataSaver {
       metadatafile.add_attribute("Type", "double");
       metadatafile.add_attribute("size", frontend_data.size());
       counter = 0;
-      for (auto& fe : frontend_data) {
+      for (auto &fe : frontend_data) {
         metadatafile.add_attribute(
             (std::string{"Data"} + std::to_string(counter)).c_str(),
             fe.first.c_str());
@@ -426,9 +426,9 @@ class DataSaver {
     size_t n = 0;
     n += datafile.write(Time());
     n += datafile.write(int(last));
-    for (auto& hk : hk_data) n += datafile.write(hk.second);
-    for (auto& fe : frontend_data) n += datafile.write(fe.second);
-    for (auto& specdata : backends_data) n += datafile.write(specdata);
+    for (auto &hk : hk_data) n += datafile.write(hk.second);
+    for (auto &fe : frontend_data) n += datafile.write(fe.second);
+    for (auto &specdata : backends_data) n += datafile.write(specdata);
   }
 };
 
@@ -437,11 +437,11 @@ template <typename Chopper, typename ChopperController, typename Wobbler,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
           typename BackendControllers>
-void InitAll(Chopper& chop, ChopperController& chopper_ctrl, Wobbler& wob,
-             WobblerController& wobbler_ctrl, Housekeeping& hk,
-             HousekeepingController& housekeeping_ctrl, Frontend& frontend,
-             FrontendController& frontend_ctrl, Backends& backends,
-             BackendControllers& backend_ctrls) {
+void InitAll(Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
+             WobblerController &wobbler_ctrl, Housekeeping &hk,
+             HousekeepingController &housekeeping_ctrl, Frontend &frontend,
+             FrontendController &frontend_ctrl, Backends &backends,
+             BackendControllers &backend_ctrls) {
   std::cout << Time() << ' ' << "Binding housekeeping\n";
   hk.startup(housekeeping_ctrl.dev, housekeeping_ctrl.baudrate);
   std::cout << Time() << ' ' << "Initializing housekeeping\n";
@@ -515,11 +515,11 @@ template <typename Chopper, typename ChopperController, typename Wobbler,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
           typename BackendControllers>
-void CloseAll(Chopper& chop, ChopperController& chopper_ctrl, Wobbler& wob,
-              WobblerController& wobbler_ctrl, Housekeeping& hk,
-              HousekeepingController& housekeeping_ctrl, Frontend& frontend,
-              FrontendController& frontend_ctrl, Backends& backends,
-              BackendControllers& backend_ctrls) {
+void CloseAll(Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
+              WobblerController &wobbler_ctrl, Housekeeping &hk,
+              HousekeepingController &housekeeping_ctrl, Frontend &frontend,
+              FrontendController &frontend_ctrl, Backends &backends,
+              BackendControllers &backend_ctrls) {
   chop.close();
   chopper_ctrl.init = false;
 
@@ -541,45 +541,45 @@ void CloseAll(Chopper& chop, ChopperController& chopper_ctrl, Wobbler& wob,
 template <typename ChopperController, typename WobblerController,
           typename HousekeepingController, typename FrontendController,
           typename BackendControllers>
-void ReadyRunAll(ChopperController& chopper_ctrl,
-                 WobblerController& wobbler_ctrl,
-                 HousekeepingController& housekeeping_ctrl,
-                 FrontendController& frontend_ctrl,
-                 BackendControllers& backend_ctrls) noexcept {
+void ReadyRunAll(ChopperController &chopper_ctrl,
+                 WobblerController &wobbler_ctrl,
+                 HousekeepingController &housekeeping_ctrl,
+                 FrontendController &frontend_ctrl,
+                 BackendControllers &backend_ctrls) noexcept {
   chopper_ctrl.run = true;
   wobbler_ctrl.run = true;
   housekeeping_ctrl.run = true;
   frontend_ctrl.run = true;
-  for (auto& ctrl : backend_ctrls) ctrl.run = true;
+  for (auto &ctrl : backend_ctrls) ctrl.run = true;
 }
 
 template <typename ChopperController, typename WobblerController,
           typename HousekeepingController, typename FrontendController,
           typename BackendControllers>
-void UnreadyRunAll(ChopperController& chopper_ctrl,
-                   WobblerController& wobbler_ctrl,
-                   HousekeepingController& housekeeping_ctrl,
-                   FrontendController& frontend_ctrl,
-                   BackendControllers& backend_ctrls) noexcept {
+void UnreadyRunAll(ChopperController &chopper_ctrl,
+                   WobblerController &wobbler_ctrl,
+                   HousekeepingController &housekeeping_ctrl,
+                   FrontendController &frontend_ctrl,
+                   BackendControllers &backend_ctrls) noexcept {
   chopper_ctrl.run = false;
   wobbler_ctrl.run = false;
   housekeeping_ctrl.run = false;
   frontend_ctrl.run = false;
-  for (auto& ctrl : backend_ctrls) ctrl.run = false;
+  for (auto &ctrl : backend_ctrls) ctrl.run = false;
 }
 
 template <typename ChopperController, typename WobblerController,
           typename HousekeepingController, typename FrontendController,
           typename BackendControllers>
-void QuitAll(ChopperController& chopper_ctrl, WobblerController& wobbler_ctrl,
-             HousekeepingController& housekeeping_ctrl,
-             FrontendController& frontend_ctrl,
-             BackendControllers& backend_ctrls) noexcept {
+void QuitAll(ChopperController &chopper_ctrl, WobblerController &wobbler_ctrl,
+             HousekeepingController &housekeeping_ctrl,
+             FrontendController &frontend_ctrl,
+             BackendControllers &backend_ctrls) noexcept {
   chopper_ctrl.quit = true;
   wobbler_ctrl.quit = true;
   housekeeping_ctrl.quit = true;
   frontend_ctrl.quit = true;
-  for (auto& ctrl : backend_ctrls) ctrl.quit = true;
+  for (auto &ctrl : backend_ctrls) ctrl.quit = true;
 }
 
 template <typename Chopper, typename ChopperController, typename Wobbler,
@@ -587,13 +587,13 @@ template <typename Chopper, typename ChopperController, typename Wobbler,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
           typename BackendControllers>
-void AllInformation(Chopper& chop, ChopperController& chopper_ctrl,
-                    Wobbler& wob, WobblerController& wobbler_ctrl,
-                    Housekeeping& /*hk*/,
-                    HousekeepingController& housekeeping_ctrl,
-                    Frontend& frontend, FrontendController& frontend_ctrl,
-                    Backends& backends,
-                    BackendControllers& backend_ctrls) noexcept {
+void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
+                    Wobbler &wob, WobblerController &wobbler_ctrl,
+                    Housekeeping & /*hk*/,
+                    HousekeepingController &housekeeping_ctrl,
+                    Frontend &frontend, FrontendController &frontend_ctrl,
+                    Backends &backends,
+                    BackendControllers &backend_ctrls) noexcept {
   float x0 = ImGui::GetCursorPosX();
   float dx = ImGui::GetFontSize();
 
@@ -706,7 +706,7 @@ void AllInformation(Chopper& chop, ChopperController& chopper_ctrl,
       constexpr int sameline_number = 3;
       int sameline = sameline_number;
       float local_dx = 0.0f;
-      for (auto& data : housekeeping_ctrl.data) {
+      for (auto &data : housekeeping_ctrl.data) {
         sameline--;
         ImGui::Text("%s: %.3lf", data.first.c_str(), data.second);
         local_dx += dx * 30 * 0.7f;
@@ -725,7 +725,7 @@ void AllInformation(Chopper& chop, ChopperController& chopper_ctrl,
       constexpr int sameline_number = 3;
       int sameline = sameline_number;
       float local_dx = 0.0f;
-      for (auto& data : frontend_ctrl.data) {
+      for (auto &data : frontend_ctrl.data) {
         sameline--;
         ImGui::Text("%s: %.3lf", data.first.c_str(), data.second);
         local_dx += dx * 30 * 0.7f;
@@ -750,11 +750,11 @@ template <typename Chopper, typename ChopperController, typename Wobbler,
           typename FrontendController, typename Backends,
           typename BackendControllers>
 std::vector<std::string> RunExperiment(
-    Chopper& chop, ChopperController& chopper_ctrl, Wobbler& wob,
-    WobblerController& wobbler_ctrl, Housekeeping& hk,
-    HousekeepingController& housekeeping_ctrl, Frontend& frontend,
-    FrontendController& frontend_ctrl, Backends& backends,
-    BackendControllers& backend_ctrls) noexcept {
+    Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
+    WobblerController &wobbler_ctrl, Housekeeping &hk,
+    HousekeepingController &housekeeping_ctrl, Frontend &frontend,
+    FrontendController &frontend_ctrl, Backends &backends,
+    BackendControllers &backend_ctrls) noexcept {
   static_assert(ChopperController::N == WobblerController::N,
                 "Need the same number of positions");
 
@@ -775,17 +775,17 @@ loop:
   init = chopper_ctrl.init.load() and wobbler_ctrl.init.load() and
          housekeeping_ctrl.init.load() and frontend_ctrl.init.load() and
          std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                     [](auto& x) { return x.init.load(); });
+                     [](auto &x) { return x.init.load(); });
   run = chopper_ctrl.run.load() and wobbler_ctrl.run.load() and
         housekeeping_ctrl.run.load() and frontend_ctrl.run.load() and
         std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                    [](auto& x) { return x.run.load(); });
+                    [](auto &x) { return x.run.load(); });
   error = chop.has_error() or wob.has_error() or hk.has_error() or
           frontend.has_error() or backends.has_any_errors();
   quit = chopper_ctrl.quit.load() or wobbler_ctrl.quit.load() or
          housekeeping_ctrl.quit.load() or frontend_ctrl.quit.load() or
          std::any_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                     [](auto& x) { return x.quit.load(); });
+                     [](auto &x) { return x.quit.load(); });
 
   // Quit if any instrument wants it
   if (quit) goto stop;
@@ -848,13 +848,13 @@ loop:
   // Wait with loading the data if the storing device is having problems keeping
   // up
   while (std::any_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                     [](auto& x) { return x.newdata.load(); }) or
+                     [](auto &x) { return x.newdata.load(); }) or
          housekeeping_ctrl.newdata.load() or frontend_ctrl.newdata.load()) {
     Sleep(0.1);
     quit = chopper_ctrl.quit.load() or wobbler_ctrl.quit.load() or
            housekeeping_ctrl.quit.load() or frontend_ctrl.quit.load() or
            std::any_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                       [](auto& x) { return x.quit.load(); });
+                       [](auto &x) { return x.quit.load(); });
     if (quit) goto stop;
   }
 
@@ -883,7 +883,7 @@ loop:
 
   // Tell the storing device that there is new data
   std::cout << Time() << " Set all to done\n";
-  for (auto& x : backend_ctrls) x.newdata.store(true);
+  for (auto &x : backend_ctrls) x.newdata.store(true);
   chopper_ctrl.newdata.store(true);
   housekeeping_ctrl.newdata.store(true);
   frontend_ctrl.newdata.store(true);
@@ -903,32 +903,32 @@ loop:
 stop:
   try {
     if (chopper_ctrl.init) chop.close();
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
 
   try {
     if (wobbler_ctrl.init) wob.close();
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
 
   try {
     if (housekeeping_ctrl.init) hk.close();
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
 
   try {
     if (frontend_ctrl.init) frontend.close();
-  } catch (const std::exception& e) {
+  } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
 
   for (size_t i = 0; i < backends.N; i++) {
     try {
       if (backend_ctrls[i].init) backends.close(i);
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
       errors.push_back(e.what());
     }
   }
@@ -939,11 +939,11 @@ stop:
 template <size_t N, typename ChopperController, typename HousekeepingController,
           typename FrontendController, size_t CAHA_N, size_t CAHA_M>
 void ExchangeData(
-    std::array<Spectrometer::Controller, N>& backend_ctrls,
-    ChopperController& chopper_ctrl, HousekeepingController& housekeeping_ctrl,
-    FrontendController& frontend_ctrl, std::array<Data, N>& data,
-    DataSaver& saver,
-    std::array<GUI::Plotting::CAHA<CAHA_N, CAHA_M>, N>& rawplots) noexcept {
+    std::array<Spectrometer::Controller, N> &backend_ctrls,
+    ChopperController &chopper_ctrl, HousekeepingController &housekeeping_ctrl,
+    FrontendController &frontend_ctrl, std::array<Data, N> &data,
+    DataSaver &saver,
+    std::array<GUI::Plotting::CAHA<CAHA_N, CAHA_M>, N> &rawplots) noexcept {
   bool allnew = false;
   bool quit = false;
   Chopper::ChopperPos last;
@@ -966,10 +966,10 @@ wait:
 loop:
   allnew = housekeeping_ctrl.newdata.load() and frontend_ctrl.newdata.load() and
            std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                       [](auto& x) { return x.newdata.load(); });
+                       [](auto &x) { return x.newdata.load(); });
   quit = housekeeping_ctrl.quit.load() and frontend_ctrl.quit.load() and
          std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                     [](auto& x) { return x.quit.load(); });
+                     [](auto &x) { return x.quit.load(); });
 
   if (quit) goto stop;
   if (not allnew) goto wait;
@@ -982,7 +982,7 @@ loop:
   chopper_ctrl.newdata.store(false);
   housekeeping_ctrl.newdata.store(false);
   frontend_ctrl.newdata.store(false);
-  for (auto& ctrl : backend_ctrls) ctrl.newdata.store(false);
+  for (auto &ctrl : backend_ctrls) ctrl.newdata.store(false);
 
   // Save the raw data to file
   saver.save(last, hk_data, frontend_data, backends_data, backend_names);

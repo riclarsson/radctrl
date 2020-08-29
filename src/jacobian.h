@@ -46,9 +46,9 @@ class Jacobian {
   std::vector<Polarization> polarization;
 
  public:
-  Jacobian(const std::vector<Target>& t, const std::vector<Path::Point>& p,
-           const std::vector<double>& g,
-           const std::vector<Polarization>& polar) noexcept
+  Jacobian(const std::vector<Target> &t, const std::vector<Path::Point> &p,
+           const std::vector<double> &g,
+           const std::vector<Polarization> &polar) noexcept
       : mjac(Eigen::MatrixXd::Zero(polar.size() * g.size(),
                                    t.size() * p.size())),
         targets(t),

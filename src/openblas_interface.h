@@ -1,10 +1,9 @@
 #ifndef openblas_interface_h
 #define openblas_interface_h
 
-#include "complex.h"
-
 #include <Eigen/Dense>
 
+#include "complex.h"
 #include "grids.h"
 
 namespace OpenBLAS {
@@ -30,10 +29,10 @@ struct Inverse {
     }
   }
 
-  int* size() noexcept { return &n; }
-  int* lsize() noexcept { return &lwork; }
-  base* workdata() noexcept { return work.data(); }
-  int* ipivdata() noexcept { return ipiv.data(); }
+  int *size() noexcept { return &n; }
+  int *lsize() noexcept { return &lwork; }
+  base *workdata() noexcept { return work.data(); }
+  int *ipivdata() noexcept { return ipiv.data(); }
 };
 
 struct EigComplex {
@@ -48,7 +47,7 @@ struct EigComplex {
 
   explicit EigComplex() noexcept : n(0) {}
 
-  bool resize_if_smaller(const Eigen::MatrixXcd& orig) {
+  bool resize_if_smaller(const Eigen::MatrixXcd &orig) {
     const bool resize = orig.cols() > n;
     copy.noalias() = orig;
     if (resize) {
@@ -65,25 +64,25 @@ struct EigComplex {
     }
   }
 
-  int* size() noexcept { return &n; }
-  int* ldr() noexcept { return &ldvr; }
-  int* ldl() noexcept { return &ldvl; }
-  int* ld() noexcept { return &lda; }
-  int* lsize() noexcept { return &lwork; }
-  Complex* copydata() noexcept { return copy.data(); }
-  Complex* workdata() noexcept { return work.data(); }
-  double* rightwork() noexcept { return rwork.data(); }
+  int *size() noexcept { return &n; }
+  int *ldr() noexcept { return &ldvr; }
+  int *ldl() noexcept { return &ldvl; }
+  int *ld() noexcept { return &lda; }
+  int *lsize() noexcept { return &lwork; }
+  Complex *copydata() noexcept { return copy.data(); }
+  Complex *workdata() noexcept { return work.data(); }
+  double *rightwork() noexcept { return rwork.data(); }
 };
 }  // namespace Helper
 
 /** In-place inverse */
-Eigen::MatrixXd& inv(Eigen::MatrixXd& m, Helper::Inverse<double>& comp);
+Eigen::MatrixXd &inv(Eigen::MatrixXd &m, Helper::Inverse<double> &comp);
 
 /** In-place inverse */
-Eigen::MatrixXcd& inv(Eigen::MatrixXcd& m, Helper::Inverse<Complex>& comp);
+Eigen::MatrixXcd &inv(Eigen::MatrixXcd &m, Helper::Inverse<Complex> &comp);
 
-void eig(Eigen::VectorXcd& E, Eigen::MatrixXcd& L, Eigen::MatrixXcd& R,
-         Eigen::MatrixXcd& A, Helper::EigComplex& comp);
+void eig(Eigen::VectorXcd &E, Eigen::MatrixXcd &L, Eigen::MatrixXcd &R,
+         Eigen::MatrixXcd &A, Helper::EigComplex &comp);
 }  // namespace OpenBLAS
 
 #endif  // openblas_interface_h

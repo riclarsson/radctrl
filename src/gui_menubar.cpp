@@ -2,15 +2,15 @@
 
 namespace GUI {
 namespace MainMenu {
-void fullscreen(Config& cfg, GLFWwindow* window) {
+void fullscreen(Config &cfg, GLFWwindow *window) {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem(" Fullscreen ", "F11")) {
         if (not cfg.fullscreen) {
           glfwGetWindowSize(window, &cfg.width, &cfg.height);
           glfwGetWindowPos(window, &cfg.xpos, &cfg.ypos);
-          auto* monitor = GUI::get_current_monitor(window);
-          const auto* mode = glfwGetVideoMode(monitor);
+          auto *monitor = GUI::get_current_monitor(window);
+          const auto *mode = glfwGetVideoMode(monitor);
           glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height,
                                0);
         } else
@@ -31,8 +31,8 @@ void fullscreen(Config& cfg, GLFWwindow* window) {
       glfwGetWindowSize(window, &cfg.width, &cfg.height);
       glfwGetWindowPos(window, &cfg.xpos, &cfg.ypos);
       glfwGetWindowPos(window, &cfg.xpos, &cfg.ypos);
-      auto* monitor = GUI::get_current_monitor(window);
-      const auto* mode = glfwGetVideoMode(monitor);
+      auto *monitor = GUI::get_current_monitor(window);
+      const auto *mode = glfwGetVideoMode(monitor);
       glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, 0);
     } else
       glfwSetWindowMonitor(window, NULL, cfg.xpos, cfg.ypos, cfg.width,
@@ -41,7 +41,7 @@ void fullscreen(Config& cfg, GLFWwindow* window) {
   }
 }
 
-void quitscreen(const Config& cfg, GLFWwindow* window) {
+void quitscreen(const Config &cfg, GLFWwindow *window) {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("File")) {
       if (ImGui::MenuItem(" Quit ", "Ctrl+X"))
@@ -57,7 +57,7 @@ void quitscreen(const Config& cfg, GLFWwindow* window) {
   }
 }
 
-size_t tabselect(Config& cfg) {
+size_t tabselect(Config &cfg) {
   if (ImGui::BeginMainMenuBar()) {
     ImGui::Separator();
 

@@ -30,7 +30,7 @@ class Time {
   explicit Time(std::tm t) : Time(std::mktime(&t)) {}
 
   // Data
-  const std::chrono::system_clock::time_point& Data() const { return mtime; }
+  const std::chrono::system_clock::time_point &Data() const { return mtime; }
 
   // Conversions
   std::time_t toTimeT() const {
@@ -38,12 +38,12 @@ class Time {
   }
   std::tm toStruct() const {
     std::time_t x = toTimeT();
-    std::tm* y = std::localtime(&x);
+    std::tm *y = std::localtime(&x);
     return *y;
   }
   std::tm toGMTStruct() const {
     std::time_t x = toTimeT();
-    std::tm* y = std::gmtime(&x);
+    std::tm *y = std::gmtime(&x);
     return *y;
   }
   TimeStep seconds_into_day() const {
@@ -54,25 +54,25 @@ class Time {
   InternalTimeStep EpochTime() const { return mtime.time_since_epoch(); }
 
   // Operations
-  InternalTimeStep operator-(const Time& t) const { return mtime - t.mtime; }
-  bool operator<(const Time& t) const { return mtime < t.mtime; }
-  bool operator==(const Time& t) const { return mtime == t.mtime; }
+  InternalTimeStep operator-(const Time &t) const { return mtime - t.mtime; }
+  bool operator<(const Time &t) const { return mtime < t.mtime; }
+  bool operator==(const Time &t) const { return mtime == t.mtime; }
   template <typename T, typename R>
-  Time& operator+=(const std::chrono::duration<T, R>& dt) {
+  Time &operator+=(const std::chrono::duration<T, R> &dt) {
     mtime += std::chrono::duration_cast<InternalTimeStep>(dt);
     return *this;
   }
   template <typename T, typename R>
-  Time& operator-=(const std::chrono::duration<T, R>& dt) {
+  Time &operator-=(const std::chrono::duration<T, R> &dt) {
     mtime -= std::chrono::duration_cast<InternalTimeStep>(dt);
     return *this;
   }
   template <typename T, typename R>
-  Time operator+(const std::chrono::duration<T, R>& dt) const {
+  Time operator+(const std::chrono::duration<T, R> &dt) const {
     return (Time(*this) += dt);
   }
   template <typename T, typename R>
-  Time operator-(const std::chrono::duration<T, R>& dt) const {
+  Time operator-(const std::chrono::duration<T, R> &dt) const {
     return (Time(*this) -= dt);
   }
 
@@ -84,7 +84,7 @@ class Time {
   void Seconds(TimeStep::rep x) { operator+=(TimeStep(x - Seconds())); }
   TimeStep::rep PartOfSecond() const { return std::fmod(Seconds(), 1.0); }
 
-  friend std::ostream& operator<<(std::ostream& os, const Time& t) {
+  friend std::ostream &operator<<(std::ostream &os, const Time &t) {
     std::tm x = t.toStruct();
 
     // Deal with seconds
@@ -100,7 +100,7 @@ class Time {
               << x.tm_min << ':' << std::setfill('0') << std::setw(12) << sec;
   }
 
-  friend std::istream& operator>>(std::istream& is, Time& t) {
+  friend std::istream &operator>>(std::istream &is, Time &t) {
     std::string ymd, hms;
     is >> ymd >> hms;
 
@@ -135,7 +135,7 @@ class Time {
 };  // Time
 
 /** Debug output for duration */
-inline std::ostream& operator<<(std::ostream& os, const TimeStep& dt) {
+inline std::ostream &operator<<(std::ostream &os, const TimeStep &dt) {
   return os << dt.count() << " seconds";
 }
 

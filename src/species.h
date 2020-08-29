@@ -23,7 +23,7 @@ ENUMCLASS(Species, unsigned char, Bath, Water, CarbonDioxide, Ozone,
           Phosgene)  // Species
 
 std::string toShortName(Species x) noexcept;
-Species fromShortName(const std::string& x) noexcept;
+Species fromShortName(const std::string &x) noexcept;
 
 /** named atoms */
 ENUMCLASS(Atom, unsigned char, H, D, T, He4, He3, Li7, Li6, Be9, B11, B10, C12,
@@ -497,10 +497,10 @@ struct ChargedAtom {
   constexpr ChargedAtom() noexcept : atom(Atom::FINAL), charge(0) {}
   constexpr ChargedAtom(Atom a, char c = 0) noexcept : atom(a), charge(c) {}
 
-  friend std::ostream& operator<<(std::ostream& os, ChargedAtom ca) {
+  friend std::ostream &operator<<(std::ostream &os, ChargedAtom ca) {
     return os << ca.atom << ' ' << int(ca.charge);
   }
-  friend std::istream& operator>>(std::istream& is, ChargedAtom& ca) {
+  friend std::istream &operator>>(std::istream &is, ChargedAtom &ca) {
     return is >> ca.atom >> ca.charge;
   }
   friend constexpr bool operator==(ChargedAtom a, ChargedAtom b) {
@@ -1881,7 +1881,7 @@ struct IsotopologueRecord {
 };
 
 template <size_t N>
-constexpr bool check_quantumnumbers(const std::array<Quantum::Type, N>& data) {
+constexpr bool check_quantumnumbers(const std::array<Quantum::Type, N> &data) {
   if constexpr (N > 1) {
     for (size_t i = 0; i < N - 1; i++) {
       if (long(data[i]) >= long(data[i + 1])) {
@@ -1893,7 +1893,7 @@ constexpr bool check_quantumnumbers(const std::array<Quantum::Type, N>& data) {
 }
 
 template <Species S, size_t N>
-constexpr bool check_unique_afgl(const std::array<IsotopeRecord<S>, N>& data) {
+constexpr bool check_unique_afgl(const std::array<IsotopeRecord<S>, N> &data) {
   if constexpr (N > 1) {
     for (size_t i = 0; i < N; i++) {
       for (size_t j = 0; j < N; j++) {
@@ -1907,7 +1907,7 @@ constexpr bool check_unique_afgl(const std::array<IsotopeRecord<S>, N>& data) {
 }
 
 template <Species S, size_t N>
-constexpr bool check_unique_atoms(const std::array<IsotopeRecord<S>, N>& data) {
+constexpr bool check_unique_atoms(const std::array<IsotopeRecord<S>, N> &data) {
   if constexpr (N > 1) {
     for (size_t i = 0; i < N; i++) {
       for (size_t j = 0; j < N; j++) {
@@ -1925,7 +1925,7 @@ constexpr bool check_unique_atoms(const std::array<IsotopeRecord<S>, N>& data) {
 }
 
 template <Species S, size_t N>
-constexpr bool check_positive_gi(const std::array<IsotopeRecord<S>, N>& data) {
+constexpr bool check_positive_gi(const std::array<IsotopeRecord<S>, N> &data) {
   if constexpr (N > 1) {
     for (size_t i = 0; i < N; i++) {
       if (data[i].gi < 1) {
@@ -1997,7 +1997,7 @@ class Isotopologue {
     return NI;
   }
 
-  unsigned char findNum(const std::vector<ChargedAtom>& atoms) const noexcept {
+  unsigned char findNum(const std::vector<ChargedAtom> &atoms) const noexcept {
     std::array<ChargedAtom, NA> a;
     for (unsigned char i = 0; i < NA; i++) a[i] = atoms[i];
     return findNum(a);
@@ -2013,7 +2013,7 @@ class Isotopologue {
   std::string Name() const noexcept { return toString(S); }
   std::string ShortName() const noexcept { return toShortName(S); }
 
-  bool set_local(std::vector<Quantum::Number>& v, const Quantum::Number& n,
+  bool set_local(std::vector<Quantum::Number> &v, const Quantum::Number &n,
                  Quantum::Type t) noexcept {
     for (size_t i = 0; i < data.local.size(); i++) {
       if (data.local[i] == t) {
@@ -2024,7 +2024,7 @@ class Isotopologue {
     return false;
   }
 
-  bool set_global(std::vector<Quantum::Number>& v, const Quantum::Number& n,
+  bool set_global(std::vector<Quantum::Number> &v, const Quantum::Number &n,
                   Quantum::Type t) noexcept {
     for (size_t i = 0; i < data.global.size(); i++) {
       if (data.global[i] == t) {
@@ -2480,7 +2480,7 @@ class Isotope {
  public:
   constexpr Isotope(Species S, unsigned char n) noexcept : s(S), num(n) {}
   constexpr Isotope() noexcept : s(Species::FINAL), num(-1) {}
-  Isotope(Species S, const std::vector<ChargedAtom>& ca) : s(S), num(0) {
+  Isotope(Species S, const std::vector<ChargedAtom> &ca) : s(S), num(0) {
     switch (s) {
       case Species::Bath:
         num = 0;
@@ -2640,10 +2640,10 @@ class Isotope {
       throw std::runtime_error("Cannot find atoms");
   }
 
-  friend std::ostream& operator<<(std::ostream& os, Isotope x) {
+  friend std::ostream &operator<<(std::ostream &os, Isotope x) {
     return os << x.s << '-' << int(x.num);
   }
-  friend std::istream& operator>>(std::istream& is, Isotope& x) {
+  friend std::istream &operator>>(std::istream &is, Isotope &x) {
     std::string isot;
     is >> isot;
     size_t bindes = isot.find('-');
@@ -3096,7 +3096,7 @@ class Isotope {
     return getGlobalQuantumNumberCount(s);
   }
 
-  Quantum::Number get_local(const std::vector<Quantum::Number>& v,
+  Quantum::Number get_local(const std::vector<Quantum::Number> &v,
                             Quantum::Type t) const noexcept {
     size_t pos = std::numeric_limits<size_t>::max();
     switch (s) {
@@ -3259,7 +3259,7 @@ class Isotope {
       return Rational(0, 0);
   }
 
-  Quantum::Number get_global(const std::vector<Quantum::Number>& v,
+  Quantum::Number get_global(const std::vector<Quantum::Number> &v,
                              Quantum::Type t) const noexcept {
     size_t pos = std::numeric_limits<size_t>::max();
     switch (s) {
@@ -3422,7 +3422,7 @@ class Isotope {
       return Rational(0, 0);
   }
 
-  bool set_local(std::vector<Quantum::Number>& v, const Quantum::Number& n,
+  bool set_local(std::vector<Quantum::Number> &v, const Quantum::Number &n,
                  Quantum::Type t) const noexcept {
     switch (s) {
       case Species::Bath:
@@ -3531,7 +3531,7 @@ class Isotope {
     return {};
   }
 
-  bool set_global(std::vector<Quantum::Number>& v, const Quantum::Number& n,
+  bool set_global(std::vector<Quantum::Number> &v, const Quantum::Number &n,
                   Quantum::Type t) const noexcept {
     switch (s) {
       case Species::Bath:

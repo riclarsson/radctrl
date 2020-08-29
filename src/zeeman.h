@@ -208,10 +208,10 @@ constexpr std::array<double, 7> PolarizationVector(Angles a) {
 struct Model {
   double gu, gl;
   constexpr Model(double u = 0, double l = 0) noexcept : gu(u), gl(l) {}
-  friend std::ostream& operator<<(std::ostream& os, Model z) {
+  friend std::ostream &operator<<(std::ostream &os, Model z) {
     return os << z.gu << ' ' << z.gl;
   }
-  friend std::istream& operator>>(std::istream& os, Model& z) {
+  friend std::istream &operator>>(std::istream &os, Model &z) {
     return os >> z.gu >> z.gl;
   }
 

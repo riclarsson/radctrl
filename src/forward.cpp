@@ -5,9 +5,9 @@
 namespace RTE {
 namespace ForwardCalculations {
 template <size_t N>
-Results<N> internal_compute(const std::vector<RadVec<N>>& rad0,
-                            const std::vector<Path::Point>& path,
-                            const std::vector<Absorption::Band>& bands,
+Results<N> internal_compute(const std::vector<RadVec<N>> &rad0,
+                            const std::vector<Path::Point> &path,
+                            const std::vector<Absorption::Band> &bands,
                             const Frequency<FrequencyType::Freq> flow,
                             const Frequency<FrequencyType::Freq> fupp,
                             const size_t size) {
@@ -50,36 +50,36 @@ Results<N> internal_compute(const std::vector<RadVec<N>>& rad0,
   return rad;
 }
 
-Results<1> compute(const std::vector<RadVec<1>>& rad0,
-                   const std::vector<Path::Point>& path,
-                   const std::vector<Absorption::Band>& bands,
+Results<1> compute(const std::vector<RadVec<1>> &rad0,
+                   const std::vector<Path::Point> &path,
+                   const std::vector<Absorption::Band> &bands,
                    const Frequency<FrequencyType::Freq> flow,
                    const Frequency<FrequencyType::Freq> fupp,
                    const size_t size) {
   return internal_compute(rad0, path, bands, flow, fupp, size);
 }
 
-Results<2> compute(const std::vector<RadVec<2>>& rad0,
-                   const std::vector<Path::Point>& path,
-                   const std::vector<Absorption::Band>& bands,
+Results<2> compute(const std::vector<RadVec<2>> &rad0,
+                   const std::vector<Path::Point> &path,
+                   const std::vector<Absorption::Band> &bands,
                    const Frequency<FrequencyType::Freq> flow,
                    const Frequency<FrequencyType::Freq> fupp,
                    const size_t size) {
   return internal_compute(rad0, path, bands, flow, fupp, size);
 }
 
-Results<3> compute(const std::vector<RadVec<3>>& rad0,
-                   const std::vector<Path::Point>& path,
-                   const std::vector<Absorption::Band>& bands,
+Results<3> compute(const std::vector<RadVec<3>> &rad0,
+                   const std::vector<Path::Point> &path,
+                   const std::vector<Absorption::Band> &bands,
                    const Frequency<FrequencyType::Freq> flow,
                    const Frequency<FrequencyType::Freq> fupp,
                    const size_t size) {
   return internal_compute(rad0, path, bands, flow, fupp, size);
 }
 
-Results<4> compute(const std::vector<RadVec<4>>& rad0,
-                   const std::vector<Path::Point>& path,
-                   const std::vector<Absorption::Band>& bands,
+Results<4> compute(const std::vector<RadVec<4>> &rad0,
+                   const std::vector<Path::Point> &path,
+                   const std::vector<Absorption::Band> &bands,
                    const Frequency<FrequencyType::Freq> flow,
                    const Frequency<FrequencyType::Freq> fupp,
                    const size_t size) {

@@ -59,7 +59,7 @@ class SingleParameter {
                             unsigned char p, std::array<double, N> c) noexcept
       : spec(s), temp(t), pres(p), coefs(c) {}
 
-  friend std::ostream& operator<<(std::ostream& os, SingleParameter x) {
+  friend std::ostream &operator<<(std::ostream &os, SingleParameter x) {
     switch (x.temp) {
       case TemperatureModel::None:
         break;
@@ -93,7 +93,7 @@ class SingleParameter {
     return os;
   }
 
-  friend std::istream& operator>>(std::istream& is, SingleParameter& x) {
+  friend std::istream &operator>>(std::istream &is, SingleParameter &x) {
     switch (x.temp) {
       case TemperatureModel::None:
         break;
@@ -459,10 +459,10 @@ class SingleParameter {
     return pres * pow(P, pres - 1) * out;
   }
 
-  double& X0() noexcept { return x0; }
-  double& X1() noexcept { return x1; }
-  double& X2() noexcept { return x2; }
-  double& X3() noexcept { return x3; }
+  double &X0() noexcept { return x0; }
+  double &X1() noexcept { return x1; }
+  double &X2() noexcept { return x2; }
+  double &X3() noexcept { return x3; }
 
 #undef x0
 #undef x1
@@ -494,7 +494,7 @@ struct Output {
         Y(y),
         G(g),
         DV(dv) {}
-  double& operator[](Parameter p) {
+  double &operator[](Parameter p) {
     if (p == Parameter::G0)
       return G0;
     else if (p == Parameter::D0)
@@ -533,26 +533,26 @@ class Model {
   static constexpr unsigned char N{(unsigned char)Parameter::FINAL};
   std::vector<std::array<SingleParameter, N>> data;
 
-  SingleParameter& G0(int i) noexcept {
+  SingleParameter &G0(int i) noexcept {
     return data[i][(unsigned char)Parameter::G0];
   }
-  SingleParameter& D0(int i) noexcept {
+  SingleParameter &D0(int i) noexcept {
     return data[i][(unsigned char)Parameter::D0];
   }
 
  public:
   Model() noexcept : data(0) {}
-  Model(const std::vector<ModelHelper>& vmh) noexcept : data(vmh.size()) {
+  Model(const std::vector<ModelHelper> &vmh) noexcept : data(vmh.size()) {
     for (size_t i = 0; i < data.size(); i++) {
-      for (auto& param : data[i]) param.Species(vmh[i].s);
-      for (auto& help : vmh) {
+      for (auto &param : data[i]) param.Species(vmh[i].s);
+      for (auto &help : vmh) {
         data[i][size_t(help.p)].Temperature(help.tm);
         data[i][size_t(help.p)].Pressure(help.pres);
       }
     }
   }
-  Model(const std::vector<std::array<SingleParameter, N>>& d) : data(d) {
-    for (auto& a : d) {
+  Model(const std::vector<std::array<SingleParameter, N>> &d) : data(d) {
+    for (auto &a : d) {
       for (size_t i = 0; i < size_t(Parameter::FINAL); i++) {
         if (d[0][0].Species() not_eq a[i].Species())
           throw std::runtime_error("Bad species");
@@ -571,8 +571,8 @@ class Model {
         PressureBroadening<FrequencyType::Freq, PressureType::Pa> d0air,
         double nair) noexcept
       : data(2) {
-    for (auto& x : data[0]) x.Species(Species::Species::Bath);
-    for (auto& x : data[1]) x.Species(self);
+    for (auto &x : data[0]) x.Species(Species::Species::Bath);
+    for (auto &x : data[1]) x.Species(self);
     G0(0).Species(Species::Species::Bath);
     G0(0).X0() = g0air;
     G0(0).X1() = nair;
@@ -593,15 +593,15 @@ class Model {
     D0(1).Pressure(1);
   }
 
-  const std::array<SingleParameter, N>& operator[](size_t i) const noexcept {
+  const std::array<SingleParameter, N> &operator[](size_t i) const noexcept {
     return data[i];
   }
-  std::array<SingleParameter, N>& operator[](size_t i) noexcept {
+  std::array<SingleParameter, N> &operator[](size_t i) noexcept {
     return data[i];
   }
   void resize(size_t n) noexcept { data.resize(n); }
 
-  friend std::ostream& operator<<(std::ostream& os, const Model& x) {
+  friend std::ostream &operator<<(std::ostream &os, const Model &x) {
     for (auto arr : x.data) {
       for (size_t i = 0; i < size_t(Parameter::FINAL); i++) {
         if (arr[i].Temperature() not_eq TemperatureModel::None) {
@@ -613,8 +613,8 @@ class Model {
     return os;
   }
 
-  friend std::istream& operator>>(std::istream& is, Model& x) {
-    for (auto& arr : x.data) {
+  friend std::istream &operator>>(std::istream &is, Model &x) {
+    for (auto &arr : x.data) {
       for (size_t i = 0; i < size_t(Parameter::FINAL); i++) {
         if (arr[i].Temperature() not_eq TemperatureModel::None) {
           is >> arr[i];
@@ -629,7 +629,7 @@ class Model {
   std::string description() const noexcept {
     std::ostringstream os;
     os << n_spec();
-    for (auto& arr : data) {
+    for (auto &arr : data) {
       if (arr[0].Temperature() not_eq TemperatureModel::None)
         os << ' ' << arr[0].Species();
     }
@@ -645,18 +645,18 @@ class Model {
     return os.str();
   }
 
-  const SingleParameter& Param(size_t i, Parameter X) const noexcept {
+  const SingleParameter &Param(size_t i, Parameter X) const noexcept {
     return data[i][size_t(X)];
   }
 
   Output operator()(
       Temperature<TemperatureType::K> T, Temperature<TemperatureType::K> T0,
       Pressure<PressureType::Pa> P,
-      const std::vector<VMR<VMRType::ratio>>& vmr) const noexcept {
+      const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
     double vmrsum = 0;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
+    for (auto &params : data) {
+      for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
           vmrsum += v.value();
           for (unsigned char i = 0; i < N; i++) {
@@ -678,13 +678,13 @@ class Model {
 
   Output dX0(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr,
+             const std::vector<VMR<VMRType::ratio>> &vmr,
              Species::Species spec) const noexcept {
     Output out;
     double vmrsum = 0;
     bool done = false;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
+    for (auto &params : data) {
+      for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
           vmrsum += v.value();
           if (not done and spec == v.Species()) {
@@ -709,13 +709,13 @@ class Model {
 
   Output dX1(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr,
+             const std::vector<VMR<VMRType::ratio>> &vmr,
              Species::Species spec) const noexcept {
     Output out;
     double vmrsum = 0;
     bool done = false;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
+    for (auto &params : data) {
+      for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
           vmrsum += v.value();
           if (not done and spec == v.Species()) {
@@ -740,13 +740,13 @@ class Model {
 
   Output dX2(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr,
+             const std::vector<VMR<VMRType::ratio>> &vmr,
              Species::Species spec) const noexcept {
     Output out;
     double vmrsum = 0;
     bool done = false;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
+    for (auto &params : data) {
+      for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
           vmrsum += v.value();
           if (not done and spec == v.Species()) {
@@ -771,13 +771,13 @@ class Model {
 
   Output dX3(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr,
+             const std::vector<VMR<VMRType::ratio>> &vmr,
              Species::Species spec) const noexcept {
     Output out;
     double vmrsum = 0;
     bool done = false;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
+    for (auto &params : data) {
+      for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
           vmrsum += v.value();
           if (not done and spec == v.Species()) {
@@ -802,11 +802,11 @@ class Model {
 
   Output dT(Temperature<TemperatureType::K> T,
             Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-            const std::vector<VMR<VMRType::ratio>>& vmr) const noexcept {
+            const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
     double vmrsum = 0;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
+    for (auto &params : data) {
+      for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
           vmrsum += v.value();
           for (unsigned char i = 0; i < N; i++) {
@@ -828,11 +828,11 @@ class Model {
 
   Output dT0(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr) const noexcept {
+             const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
     double vmrsum = 0;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
+    for (auto &params : data) {
+      for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
           vmrsum += v.value();
           for (unsigned char i = 0; i < N; i++) {
@@ -854,11 +854,11 @@ class Model {
 
   Output dP(Temperature<TemperatureType::K> T,
             Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-            const std::vector<VMR<VMRType::ratio>>& vmr) const noexcept {
+            const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
     double vmrsum = 0;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
+    for (auto &params : data) {
+      for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
           vmrsum += v.value();
           for (unsigned char i = 0; i < N; i++) {
@@ -2384,7 +2384,7 @@ class HartmannTran {
 
   double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(deltax)[1] = mF0 - f;
     x = deltax / ((1 - ETA) * Complex(G2, D2));
     sqrtxy = std::sqrt(x + sqrty * sqrty);
@@ -3047,7 +3047,7 @@ class SpeedDependentHardCollisionVoigt {
 
   double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(dx)[1] = mF0 - f;
     x = dx * invc2;
     update_calcs();
@@ -3581,7 +3581,7 @@ class SpeedDependentVoigt {
 
   double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(dx)[1] = mF0 - f;
     x = dx * invc2;
     update_calcs();
@@ -3688,7 +3688,7 @@ class Voigt {
 
   double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(z)[0] = invGD * (f - mF0);
     F = Constant::inv_sqrt_pi * invGD * Faddeeva::w(z);
     dF = 2 * invGD * (Complex(0, Constant::inv_pi * invGD) - z * F);
@@ -3739,7 +3739,7 @@ class Lorentz {
 
   constexpr double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(z)[1] = Constant::pi * (mF0 - f);
     F = 1.0 / z;
     dF = -Constant::pi * Constant::pow2(F);
@@ -3788,7 +3788,7 @@ class Doppler {
 
   double F0() const noexcept { return mF0; }
 
-  double& operator()(double f) noexcept {
+  double &operator()(double f) noexcept {
     x = (f - mF0) * invGD;
     F = invGD * Constant::inv_sqrt_pi * std::exp(-Constant::pow2(x));
     return F;

@@ -8,8 +8,8 @@ namespace Chopper {}  // namespace Chopper
 }  // namespace Instrument
 
 template <class ChopperClass>
-void run(const std::string& dev, int offset, double sleeptime,
-         const std::string& python_file) {
+void run(const std::string &dev, int offset, double sleeptime,
+         const std::string &python_file) {
   ChopperClass chop(python_file);
 
   chop.startup(dev, offset, sleeptime);
@@ -23,7 +23,7 @@ void run(const std::string& dev, int offset, double sleeptime,
   CommandLine::RuntimeSetup setup("chop");
   setup.Insert(
       "init",
-      [&](std::ostream& out) {
+      [&](std::ostream &out) {
         chop.init();
         if (chop.has_error()) {
           std::cerr << chop.error_string() << '\n';
@@ -35,7 +35,7 @@ void run(const std::string& dev, int offset, double sleeptime,
       "Initialize the machine");
   setup.Insert(
       "cold",
-      [&](std::ostream& out) {
+      [&](std::ostream &out) {
         chop.run(Instrument::Chopper::ChopperPos::Cold);
         if (chop.has_error()) {
           std::cerr << chop.error_string() << '\n';
@@ -47,7 +47,7 @@ void run(const std::string& dev, int offset, double sleeptime,
       "Point at cold position");
   setup.Insert(
       "hot",
-      [&](std::ostream& out) {
+      [&](std::ostream &out) {
         chop.run(Instrument::Chopper::ChopperPos::Hot);
         if (chop.has_error()) {
           std::cerr << chop.error_string() << '\n';
@@ -59,7 +59,7 @@ void run(const std::string& dev, int offset, double sleeptime,
       "Point at hot position");
   setup.Insert(
       "ant",
-      [&](std::ostream& out) {
+      [&](std::ostream &out) {
         chop.run(Instrument::Chopper::ChopperPos::Antenna);
         if (chop.has_error()) {
           std::cerr << chop.error_string() << '\n';
@@ -71,7 +71,7 @@ void run(const std::string& dev, int offset, double sleeptime,
       "Point at antenna position");
   setup.Insert(
       "ref",
-      [&](std::ostream& out) {
+      [&](std::ostream &out) {
         chop.run(Instrument::Chopper::ChopperPos::Reference);
         if (chop.has_error()) {
           std::cerr << chop.error_string() << '\n';
@@ -83,7 +83,7 @@ void run(const std::string& dev, int offset, double sleeptime,
       "Point at reference position");
   setup.Insert(
       "close",
-      [&](std::ostream& out) {
+      [&](std::ostream &out) {
         chop.close();
         if (chop.has_error()) {
           std::cerr << chop.error_string() << '\n';
@@ -96,7 +96,7 @@ void run(const std::string& dev, int offset, double sleeptime,
   auto rt = setup.Run();
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   // Start a python interpreter in case python code will be executed
   auto py = Python::createPython();
 

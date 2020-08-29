@@ -2,7 +2,7 @@
 
 namespace Path {
 std::vector<Point> calc_single_geometric_path(
-    Geom::Nav nav, const Atmosphere::Atm& atm,
+    Geom::Nav nav, const Atmosphere::Atm &atm,
     const Distance<DistanceType::meter> dist,
     const Altitude<AltitudeType::meter> alt_of_atm) {
   if (dist == 0.0)

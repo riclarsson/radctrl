@@ -6,8 +6,8 @@ namespace Absorption {
 namespace Xsec {
 namespace Lbl {
 template <class LineShape>
-void compute_lineshape(std::vector<Complex>& comp_x,
-                       const std::vector<double>& f, const Complex lm,
+void compute_lineshape(std::vector<Complex> &comp_x,
+                       const std::vector<double> &f, const Complex lm,
                        Frequency<FrequencyType::Freq> cutoff_low,
                        Frequency<FrequencyType::Freq> cutoff_upp,
                        LineShape ls) {
@@ -29,8 +29,8 @@ void compute_lineshape(std::vector<Complex>& comp_x,
 }
 
 template <class LineShape>
-void compute_mirrored_lineshape(std::vector<Complex>& comp_x,
-                                const std::vector<double>& f, const Complex lm,
+void compute_mirrored_lineshape(std::vector<Complex> &comp_x,
+                                const std::vector<double> &f, const Complex lm,
                                 Frequency<FrequencyType::Freq> cutoff_low,
                                 Frequency<FrequencyType::Freq> cutoff_upp,
                                 LineShape ls) {
@@ -87,9 +87,9 @@ std::pair<double, double> compute_nlte_linestrength(double SZ, double F0,
   return {SZ * k, SZ * ratio};
 }
 
-void compute(Results& res, Results& src, Results& comp,
-             const std::vector<double>& f, const Band& band,
-             const Path::Point& atm, const Polarization polarization) {
+void compute(Results &res, Results &src, Results &comp,
+             const std::vector<double> &f, const Band &band,
+             const Path::Point &atm, const Polarization polarization) {
   const double H = atm.atm.MagField().Strength();
   const double GDpart = band.GD_giv_F0(atm.atm.Temp());
   const double QT0 = band.QT0();
@@ -103,7 +103,7 @@ void compute(Results& res, Results& src, Results& comp,
     return;
 
   for (size_t iline = 0; iline < band.n_lines(); iline++) {
-    const auto& line = band.Lines()[iline];
+    const auto &line = band.Lines()[iline];
     const auto zeeman_range =
         line.ZeemanRange(polarization, band.Isotopologue());
     const auto X = line.ShapeModel()(atm.atm.Temp(), band.T0(), atm.atm.Pres(),
@@ -236,7 +236,7 @@ void compute(Results& res, Results& src, Results& comp,
                                      band.T0(), QT, atm.atm.Temp());
           std::transform(comp.x.cbegin(), comp.x.cend(), res.x.cbegin(),
                          res.x.begin(),
-                         [S](auto& a, auto& b) { return S * a + b; });
+                         [S](auto &a, auto &b) { return S * a + b; });
         } break;
         case Population::ByNLTE: {
           double r1 = 0, r2 = 0;  // FIXME: Input the correct numbers when
@@ -248,11 +248,11 @@ void compute(Results& res, Results& src, Results& comp,
 
           std::transform(comp.x.cbegin(), comp.x.cend(), res.x.cbegin(),
                          res.x.begin(),
-                         [k = S.first](auto& a, auto& b) { return k * a + b; });
+                         [k = S.first](auto &a, auto &b) { return k * a + b; });
 
           std::transform(
               comp.x.cbegin(), comp.x.cend(), src.x.cbegin(), src.x.begin(),
-              [r = S.second](auto& a, auto& b) { return r * a + b; });
+              [r = S.second](auto &a, auto &b) { return r * a + b; });
         } break;
         case Population::FINAL: { /* leave last */
         }

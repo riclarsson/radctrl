@@ -28,12 +28,12 @@ class Object {
  public:
   py::object Obj;
   Object() noexcept {}
-  Object(py::object&& x) noexcept : Obj(std::move(x)) {}
-  Object& operator=(py::object&& x) noexcept {
+  Object(py::object &&x) noexcept : Obj(std::move(x)) {}
+  Object &operator=(py::object &&x) noexcept {
     Obj(std::move(x));
     return *this;
   }
-  Object(Object<Type::None>&& x) noexcept : Obj(std::move(x.Obj)) {}
+  Object(Object<Type::None> &&x) noexcept : Obj(std::move(x.Obj)) {}
 
   std::string toString() const {
     static_assert(X == Type::String);
@@ -53,14 +53,14 @@ class Object {
   }
 
   template <Type Y>
-  Object<Y> fromDict(const std::string& key) const {
+  Object<Y> fromDict(const std::string &key) const {
     static_assert(X == Type::Dict);
     return Object<Y>{Obj[key.c_str()]};
   }
   std::vector<std::string> keysDict() const {
     static_assert(X == Type::Dict);
     std::vector<std::string> out;
-    for (auto& key : Obj) out.push_back(key.cast<std::string>());
+    for (auto &key : Obj) out.push_back(key.cast<std::string>());
     return out;
   }
 
@@ -77,11 +77,11 @@ class Function {
 
  public:
   Function() {}
-  Function(py::object&& X) noexcept : Fun(std::move(X)) {}
+  Function(py::object &&X) noexcept : Fun(std::move(X)) {}
 
   // template <const char * KEY>
-  Function(const char* const KEY) try : Fun(getScope()[KEY]) {
-  } catch (const std::exception& c) {
+  Function(const char *const KEY) try : Fun(getScope()[KEY]) {
+  } catch (const std::exception &c) {
     std::ostringstream os;
     os << "Cannot generate function with error:\n" << c.what();
     throw std::runtime_error(os.str());
@@ -90,7 +90,7 @@ class Function {
   template <typename... A>
   Object<> operator()(A... a) const try {
     return Object<>(Fun(a...));
-  } catch (const std::exception& c) {
+  } catch (const std::exception &c) {
     std::ostringstream os;
     os << "Cannot call function with error:\n" << c.what();
     throw std::runtime_error(os.str());
@@ -102,17 +102,17 @@ class ClassInstance {
 
  public:
   ClassInstance() noexcept {}
-  ClassInstance(py::object&& X) try : Inst(std::move(X)) {
-  } catch (const std::exception& c) {
+  ClassInstance(py::object &&X) try : Inst(std::move(X)) {
+  } catch (const std::exception &c) {
     std::ostringstream os;
     os << "Cannot generate instance with error:\n" << c.what();
     throw std::runtime_error(os.str());
   }
 
   // template <const char * KEY>
-  Function operator()(const char* const KEY) const try {
+  Function operator()(const char *const KEY) const try {
     return Function(Inst.attr(KEY));
-  } catch (const std::exception& c) {
+  } catch (const std::exception &c) {
     std::ostringstream os;
     os << "Cannot generate function with error:\n" << c.what();
     throw std::runtime_error(os.str());
@@ -125,8 +125,8 @@ class ClassInterface {
 
  public:
   ClassInterface() {}
-  ClassInterface(const char* const KEY) try : Obj(getScope()[KEY]) {
-  } catch (const std::exception& c) {
+  ClassInterface(const char *const KEY) try : Obj(getScope()[KEY]) {
+  } catch (const std::exception &c) {
     std::ostringstream os;
     os << "Cannot generate class with error:\n" << c.what();
     throw std::runtime_error(os.str());
@@ -135,7 +135,7 @@ class ClassInterface {
   template <typename... A>
   ClassInstance operator()(A... a) const try {
     return ClassInstance(Obj(a...));
-  } catch (const std::exception& c) {
+  } catch (const std::exception &c) {
     std::ostringstream os;
     os << "Cannot generate instance with error:\n" << c.what();
     throw std::runtime_error(os.str());

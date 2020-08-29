@@ -33,7 +33,7 @@ struct Controller {
 
   ChopperPos lasttarget;
   std::array<ChopperPos, N> pos{StartPos...};
-  Controller(const std::string& d, int o, double s) noexcept
+  Controller(const std::string &d, int o, double s) noexcept
       : init(false),
         error(false),
         quit(false),
@@ -48,8 +48,8 @@ struct Controller {
 };
 
 template <class Chopper, ChopperPos... Pos>
-void GuiSetup(Chopper& chop, Controller<Pos...>& ctrl,
-              const std::vector<std::string>& devs) {
+void GuiSetup(Chopper &chop, Controller<Pos...> &ctrl,
+              const std::vector<std::string> &devs) {
   bool change = false;
   bool manual = false;
   if (not ctrl.init) {
@@ -89,7 +89,7 @@ void GuiSetup(Chopper& chop, Controller<Pos...>& ctrl,
   auto dev = ctrl.dev.c_str();
   if (ImGui::BeginCombo("Device", dev)) {
     bool newselection = false;
-    for (auto& d : devs) {
+    for (auto &d : devs) {
       auto dev2 = d.c_str();
       bool is_selected =
           (dev == dev2);  // You can store your selection however you want,
@@ -175,7 +175,7 @@ class Dummy {
   template <typename... Whatever>
   constexpr Dummy(Whatever...)
       : manual(false), pos(ChopperPos::Cold), error_found(false), error("") {}
-  void startup(const std::string&, int, double) {}
+  void startup(const std::string &, int, double) {}
   void init(bool manual_press) {
     manual = manual_press;
     if (not manual) {
@@ -191,7 +191,7 @@ class Dummy {
   DataType get_data_raw() { return ChopperPos::FINAL; }
   DataType get_data() { return pos; }
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -219,18 +219,19 @@ class PythonOriginal {
  public:
   using DataType = ChopperPos;
 
-  PythonOriginal(const std::filesystem::path& path)
+  PythonOriginal(const std::filesystem::path &path)
       : manual(false), pos(ChopperPos::Cold), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
-      os << "Cannot find Chopper python file at:\n\t" << path.relative_path() << '\n';
+      os << "Cannot find Chopper python file at:\n\t" << path.relative_path()
+         << '\n';
       throw std::runtime_error(os.str());
     }
     py::eval_file(path.c_str());
     PyClass = Python::ClassInterface{"chopper"};
   };
 
-  void startup(const std::string& dev, int offset, double sleeptime) {
+  void startup(const std::string &dev, int offset, double sleeptime) {
     PyInst = Python::ClassInstance{PyClass(dev, offset, sleeptime)};
     initfun = Python::Function{PyInst("init")};
     shutdown = Python::Function{PyInst("close")};
@@ -247,7 +248,7 @@ class PythonOriginal {
 
     try {
       initfun();
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
       error = e.what();
       error_found = true;
     }
@@ -257,7 +258,7 @@ class PythonOriginal {
   void close() {
     try {
       shutdown();
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
       error = e.what();
       error_found = true;
     }
@@ -277,7 +278,7 @@ class PythonOriginal {
       }
 
       pos = x;
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
       error = e.what();
       error_found = true;
     }
@@ -288,7 +289,7 @@ class PythonOriginal {
     try {
       return toChopperPos(
           (Python::Object<Python::Type::String>{get()}).toString());
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
       error = e.what();
       error_found = true;
       return ChopperPos::FINAL;
@@ -298,7 +299,7 @@ class PythonOriginal {
 
   // Error handling
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;

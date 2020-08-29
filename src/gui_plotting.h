@@ -18,11 +18,11 @@ class Data {
   mutable std::mutex mtx;
 
  public:
-  Data(const std::vector<double>& d) : use_second(true), data({d, d}) {}
+  Data(const std::vector<double> &d) : use_second(true), data({d, d}) {}
   Data(size_t n)
       : use_second(true),
         data({std::vector<double>(n, 0), std::vector<double>(n, 0)}) {}
-  Data(const Data& x) : use_second(true), data(x.data) {}
+  Data(const Data &x) : use_second(true), data(x.data) {}
 
   double get(size_t i) const {
     mtx.lock();
@@ -31,7 +31,7 @@ class Data {
     return x;
   }
 
-  void set(const std::vector<double>& newdata) {
+  void set(const std::vector<double> &newdata) {
     data[not use_second] = newdata;
     mtx.lock();
     use_second = not use_second;
@@ -47,7 +47,7 @@ class Data {
 };  // Data
 
 /** LineGetter is a function pointer required by the plotting tool */
-typedef ImPlotPoint (*LineGetter)(void*, int);
+typedef ImPlotPoint (*LineGetter)(void *, int);
 
 class Line {
   mutable std::mutex mtx;
@@ -105,11 +105,11 @@ class Line {
   }
 
   LineGetter avgfun() const {
-    return [](void* data, int i) { return static_cast<Line*>(data)->avg(i); };
+    return [](void *data, int i) { return static_cast<Line *>(data)->avg(i); };
   }
 
  public:
-  Line(const std::string& name, const Data& X, const Data& Y)
+  Line(const std::string &name, const Data &X, const Data &Y)
       : mname(name),
         xval(X),
         yval(Y),
@@ -120,7 +120,7 @@ class Line {
         yoffset(0) {
     if (X.N() not_eq Y.N()) throw std::runtime_error("Bad data size");
   }
-  Line(const Line& other) noexcept
+  Line(const Line &other) noexcept
       : mname(other.mname),
         xval(other.xval),
         yval(other.yval),
@@ -130,8 +130,8 @@ class Line {
         xoffset(other.xoffset),
         yoffset(other.yoffset) {}
 
-  void setX(const std::vector<double>& x) { xval.set(x); }
-  void setY(const std::vector<double>& y) { yval.set(y); }
+  void setX(const std::vector<double> &x) { xval.set(x); }
+  void setY(const std::vector<double> &y) { yval.set(y); }
   int size() const {
     mtx.lock();
     const int val = yval.N() / running_avg;
@@ -139,7 +139,7 @@ class Line {
     return val;
   }
   LineGetter getter() const { return avgfun(); }
-  const std::string& name() const { return mname; }
+  const std::string &name() const { return mname; }
   void Xscale(double x) {
     mtx.lock();
     xscale = x;
@@ -204,23 +204,23 @@ class Frame {
   std::vector<Line> frame;
 
  public:
-  Frame(const std::string& title, const std::string& xlabel,
-        const std::string& ylabel, const std::vector<Line>& plotdata)
+  Frame(const std::string &title, const std::string &xlabel,
+        const std::string &ylabel, const std::vector<Line> &plotdata)
       : mtitle(title), mxlabel(xlabel), mylabel(ylabel), frame(plotdata) {}
   size_t size() const { return frame.size(); }
-  const std::string& title() const { return mtitle; }
-  const std::string& xlabel() const { return mxlabel; }
-  const std::string& ylabel() const { return mylabel; }
+  const std::string &title() const { return mtitle; }
+  const std::string &xlabel() const { return mxlabel; }
+  const std::string &ylabel() const { return mylabel; }
   decltype(frame.begin()) begin() { return frame.begin(); }
   decltype(frame.end()) end() { return frame.end(); }
   decltype(frame.cbegin()) cbegin() const { return frame.cbegin(); }
   decltype(frame.cend()) cend() const { return frame.cend(); }
-  Line& operator[](size_t i) { return frame[i]; }
+  Line &operator[](size_t i) { return frame[i]; }
 };  // Frame
 
-void plot_frame(Frame& frame);
+void plot_frame(Frame &frame);
 
-void frame_menuitem(Frame& frame);
+void frame_menuitem(Frame &frame);
 
 template <size_t Height, size_t PartOfHeight>
 class CAHA {
@@ -235,7 +235,7 @@ class CAHA {
   static constexpr size_t M = PartOfHeight;
   static_assert(N >= M);
 
-  CAHA(std::string plotname, const std::vector<std::vector<double>>& f)
+  CAHA(std::string plotname, const std::vector<std::vector<double>> &f)
       : mname(plotname),
         raw("tmp", "tmp", "tmp", {}),
         noise("tmp", "tmp", "tmp", {}),
@@ -268,17 +268,17 @@ class CAHA {
         Frame("Integration", "Frequency", "Temperature [K]", integrations);
   }
 
-  Frame& Raw() { return raw; }
-  Frame& Noise() { return noise; }
-  Frame& Averaging() { return averaging; }
-  Frame& Integration() { return integration; }
+  Frame &Raw() { return raw; }
+  Frame &Noise() { return noise; }
+  Frame &Averaging() { return averaging; }
+  Frame &Integration() { return integration; }
 
-  const Frame& Raw() const { return raw; }
-  const Frame& Noise() const { return noise; }
-  const Frame& Averaging() const { return averaging; }
-  const Frame& Integration() const { return integration; }
+  const Frame &Raw() const { return raw; }
+  const Frame &Noise() const { return noise; }
+  const Frame &Averaging() const { return averaging; }
+  const Frame &Integration() const { return integration; }
 
-  void plot(GLFWwindow* window, const ImVec2 startpos) {
+  void plot(GLFWwindow *window, const ImVec2 startpos) {
     if (GUI::Windows::sub<2, Height, 0, 0, 1, PartOfHeight / 2>(
             window, startpos, (mname + std::string{"raw"}).c_str())) {
       plot_frame(raw);
@@ -301,22 +301,22 @@ class CAHA {
     GUI::Windows::end();
   }
 
-  const std::string& name() const { return mname; }
+  const std::string &name() const { return mname; }
 };
 
 template <size_t Height, size_t PartOfHeight, size_t N>
-void plot_combined(GLFWwindow* window, const ImVec2 startpos,
-                   std::array<CAHA<Height, PartOfHeight>, N>& cahas) {
+void plot_combined(GLFWwindow *window, const ImVec2 startpos,
+                   std::array<CAHA<Height, PartOfHeight>, N> &cahas) {
   if (GUI::Windows::sub<1, Height, 0, 0, 1, PartOfHeight / 3>(
           window, startpos, "Combined Last Measurement Integration TILE")) {
     if (ImPlot::BeginPlot(cahas[0].Integration().title().c_str(),
                           cahas[0].Integration().xlabel().c_str(),
                           cahas[0].Integration().ylabel().c_str(), {-1, -1})) {
-      for (auto& caha : cahas)
-        for (auto& line : caha.Integration())
+      for (auto &caha : cahas)
+        for (auto &line : caha.Integration())
           ImPlot::PlotLine(
               (caha.name() + std::string{" "} + line.name()).c_str(),
-              line.getter(), (void*)&line, line.size());
+              line.getter(), (void *)&line, line.size());
       ImPlot::EndPlot();
     }
   }
@@ -326,11 +326,11 @@ void plot_combined(GLFWwindow* window, const ImVec2 startpos,
     if (ImPlot::BeginPlot(cahas[0].Averaging().title().c_str(),
                           cahas[0].Averaging().xlabel().c_str(),
                           cahas[0].Averaging().ylabel().c_str(), {-1, -1})) {
-      for (auto& caha : cahas)
-        for (auto& line : caha.Averaging())
+      for (auto &caha : cahas)
+        for (auto &line : caha.Averaging())
           ImPlot::PlotLine(
               (caha.name() + std::string{" "} + line.name()).c_str(),
-              line.getter(), (void*)&line, line.size());
+              line.getter(), (void *)&line, line.size());
       ImPlot::EndPlot();
     }
   }
@@ -341,11 +341,11 @@ void plot_combined(GLFWwindow* window, const ImVec2 startpos,
     if (ImPlot::BeginPlot(cahas[0].Noise().title().c_str(),
                           cahas[0].Noise().xlabel().c_str(),
                           cahas[0].Noise().ylabel().c_str(), {-1, -1})) {
-      for (auto& caha : cahas)
-        for (auto& line : caha.Noise())
+      for (auto &caha : cahas)
+        for (auto &line : caha.Noise())
           ImPlot::PlotLine(
               (caha.name() + std::string{" "} + line.name()).c_str(),
-              line.getter(), (void*)&line, line.size());
+              line.getter(), (void *)&line, line.size());
       ImPlot::EndPlot();
     }
   }
@@ -353,7 +353,7 @@ void plot_combined(GLFWwindow* window, const ImVec2 startpos,
 }
 
 template <size_t Height, size_t PartOfHeight>
-void caha_menuitem(CAHA<Height, PartOfHeight>& caha) {
+void caha_menuitem(CAHA<Height, PartOfHeight> &caha) {
   if (ImGui::BeginMenu(caha.name().c_str())) {
     frame_menuitem(caha.Raw());
     ImGui::Separator();
@@ -367,10 +367,10 @@ void caha_menuitem(CAHA<Height, PartOfHeight>& caha) {
 }
 
 template <size_t Height, size_t PartOfHeight, size_t N>
-void caha_mainmenu(std::array<CAHA<Height, PartOfHeight>, N>& cahas) {
+void caha_mainmenu(std::array<CAHA<Height, PartOfHeight>, N> &cahas) {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("Plots")) {
-      for (auto& caha : cahas) {
+      for (auto &caha : cahas) {
         caha_menuitem(caha);
         ImGui::Separator();
       }

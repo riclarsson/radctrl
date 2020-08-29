@@ -127,13 +127,13 @@ class Line {
   Quantum::Number localLowerQuantumNumber(size_t i) const noexcept {
     return local_lower[i];
   }
-  const LineShape::Model& ShapeModel() const noexcept { return lineshape; }
+  const LineShape::Model &ShapeModel() const noexcept { return lineshape; }
 
-  friend void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
-                       Band& band, const std::string& key);
+  friend void readBand(File::File<File::Operation::Read, File::Type::Xml> &file,
+                       Band &band, const std::string &key);
   friend void readBand(
-      File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
-      Band& band, const std::string& key);
+      File::File<File::Operation::ReadBinary, File::Type::Xml> &file,
+      Band &band, const std::string &key);
 };  // Line
 
 class Band {
@@ -157,8 +157,8 @@ class Band {
   Band(Species::Isotope s, Mirroring m, Normalization n, Population p, Cutoff c,
        Shape sh, bool dz, Temperature<TemperatureType::K> T0,
        Frequency<FrequencyType::Freq> FCut,
-       const std::vector<Quantum::Number>& gl,
-       const std::vector<Quantum::Number>& gu, long N = 0) noexcept
+       const std::vector<Quantum::Number> &gl,
+       const std::vector<Quantum::Number> &gu, long N = 0) noexcept
       : spec(s),
         mirroring(m),
         normalization(n),
@@ -178,7 +178,7 @@ class Band {
     }
   }
 
-  bool operator==(const Band& b) const noexcept {
+  bool operator==(const Band &b) const noexcept {
     return spec == b.spec and mirroring == b.mirroring and
            normalization == b.normalization and population == b.population and
            cutoff == b.cutoff and shape == b.shape and
@@ -227,8 +227,8 @@ class Band {
   std::vector<Quantum::Type> localQuantumNumbers() const noexcept {
     return spec.get_localquantumnumbers();
   }
-  const std::vector<Line>& Lines() const noexcept { return lines; }
-  std::vector<Line>& Lines() noexcept { return lines; }
+  const std::vector<Line> &Lines() const noexcept { return lines; }
+  std::vector<Line> &Lines() noexcept { return lines; }
   double GD_giv_F0(Temperature<TemperatureType::K> T) const {
     return std::sqrt(Constant::doppler_broadening_const_squared * T /
                      spec.mass());
@@ -249,10 +249,10 @@ class Band {
   Frequency<FrequencyType::Freq> MeanFreq() const noexcept {
     const double val = std::inner_product(
         lines.cbegin(), lines.cend(), lines.cbegin(), 0.0, std::plus<double>(),
-        [](const auto& a, const auto& b) { return a.F0() * b.I0(); });
+        [](const auto &a, const auto &b) { return a.F0() * b.I0(); });
     const double div = std::accumulate(
         lines.cbegin(), lines.cend(), 0.0,
-        [](const auto& a, const auto& b) { return a + b.I0(); });
+        [](const auto &a, const auto &b) { return a + b.I0(); });
     return val / div;
   }
   Frequency<FrequencyType::Freq> CutoffLower(size_t iline) const noexcept {
@@ -274,30 +274,30 @@ class Band {
   }
   bool doZeeman() const noexcept { return do_zeeman; }
 
-  friend void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
-                       Band& band, const std::string& key);
+  friend void readBand(File::File<File::Operation::Read, File::Type::Xml> &file,
+                       Band &band, const std::string &key);
   friend void readBand(
-      File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
-      Band& band, const std::string& key);
+      File::File<File::Operation::ReadBinary, File::Type::Xml> &file,
+      Band &band, const std::string &key);
 };  // Band
 
 std::vector<Band> parse_hitran_with_qns(
-    File::File<File::Operation::Read, File::Type::Raw>& hitranfile,
+    File::File<File::Operation::Read, File::Type::Raw> &hitranfile,
     Frequency<FrequencyType::Freq> flow,
     Frequency<FrequencyType::Freq> fupp) noexcept;
 
-void saveBand(File::File<File::Operation::Write, File::Type::Xml>& file,
-              const Band& band, const std::string& key = "Band");
-void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
-              const Band& band, const std::string& key = "Band");
-void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
-              Band& band, const std::string& key = "Band");
-void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
-              Band& band, const std::string& key = "Band");
+void saveBand(File::File<File::Operation::Write, File::Type::Xml> &file,
+              const Band &band, const std::string &key = "Band");
+void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml> &file,
+              const Band &band, const std::string &key = "Band");
+void readBand(File::File<File::Operation::Read, File::Type::Xml> &file,
+              Band &band, const std::string &key = "Band");
+void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml> &file,
+              Band &band, const std::string &key = "Band");
 
 template <File::Operation X>
-void saveBands(File::File<X, File::Type::Xml>& file,
-               const std::vector<Band>& bands) {
+void saveBands(File::File<X, File::Type::Xml> &file,
+               const std::vector<Band> &bands) {
   file.add_attribute("size", bands.size());
   for (size_t i = 0; i < bands.size(); i++)
     saveBand(file, bands[i], std::string{"Band"} + std::to_string(i + 1));

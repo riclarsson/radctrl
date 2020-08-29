@@ -645,7 +645,7 @@ std::vector<IsotopologueData> getIsotopologueData(Species::Species x) {
     return out;
 }
 
-ParForm parse_parform(const std::string& line,
+ParForm parse_parform(const std::string &line,
                       const unsigned long offset) noexcept {
   ParForm out;
 
@@ -709,7 +709,7 @@ ParForm parse_parform(const std::string& line,
 }
 
 std::pair<unsigned long, std::vector<std::array<std::string, 2>>>
-split_quantum_numbers_from_hitran_online(const std::string& qns,
+split_quantum_numbers_from_hitran_online(const std::string &qns,
                                          const unsigned long offset) noexcept {
   auto start = qns.cbegin() + offset;  // start point
   auto first_tab =
@@ -735,9 +735,9 @@ split_quantum_numbers_from_hitran_online(const std::string& qns,
 }
 
 std::array<Quantum::Number, size_t(QuantumTypes::FINAL)> process_qns_strings(
-    const std::vector<std::array<std::string, 2>>& qnspairs) noexcept {
+    const std::vector<std::array<std::string, 2>> &qnspairs) noexcept {
   std::array<Quantum::Number, size_t(QuantumTypes::FINAL)> out;
-  for (auto& keyval : qnspairs) {
+  for (auto &keyval : qnspairs) {
     out[(unsigned char)toQuantumTypes(keyval[0])] = Quantum::Number(
         keyval[1]);  // FIXME:  If there are too many F#, it might fail...
   }
@@ -745,7 +745,7 @@ std::array<Quantum::Number, size_t(QuantumTypes::FINAL)> process_qns_strings(
 }
 
 std::array<std::array<Quantum::Number, size_t(QuantumTypes::FINAL)>, 2>
-parse_quantum(const std::string& line, const unsigned long offset) noexcept {
+parse_quantum(const std::string &line, const unsigned long offset) noexcept {
   const auto upper = split_quantum_numbers_from_hitran_online(line, offset);
   const auto lower =
       split_quantum_numbers_from_hitran_online(line, upper.first);

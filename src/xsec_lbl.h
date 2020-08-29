@@ -17,9 +17,9 @@ struct Results {
       : x(nfreq, Complex{0, 0}), dx(njac, x) {}
 };
 
-void compute(Results& res, Results& src, Results& comp,
-             const std::vector<double>& f, const Band& band,
-             const Path::Point& atm,
+void compute(Results &res, Results &src, Results &comp,
+             const std::vector<double> &f, const Band &band,
+             const Path::Point &atm,
              const Polarization polarization = Polarization::None);
 }  // namespace Lbl
 }  // namespace Xsec

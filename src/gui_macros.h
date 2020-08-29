@@ -11,7 +11,7 @@
 
 extern "C" {
 /** A C error handling for GLFW */
-inline static void glfw_error_callback(int error, const char* description) {
+inline static void glfw_error_callback(int error, const char *description) {
   fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 }
@@ -53,14 +53,14 @@ inline static void glfw_error_callback(int error, const char* description) {
  */
 #if __APPLE__
 #define Selectglsl_versionGUI                                    \
-  const char* glsl_version = "#version 150";                     \
+  const char *glsl_version = "#version 150";                     \
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);                 \
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);                 \
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE); \
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #else
 #define Selectglsl_versionGUI                    \
-  const char* glsl_version = "#version 130";     \
+  const char *glsl_version = "#version 130";     \
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3); \
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #endif
@@ -79,7 +79,7 @@ inline static void glfw_error_callback(int error, const char* description) {
                                                                            \
   Selectglsl_versionGUI                                                    \
                                                                            \
-      GLFWwindow* window = glfwCreateWindow(1280, 720, NAME, NULL, NULL);  \
+      GLFWwindow *window = glfwCreateWindow(1280, 720, NAME, NULL, NULL);  \
   if (window == NULL) throw std::runtime_error("Cannot create a window");  \
   glfwMakeContextCurrent(window);                                          \
   glfwSwapInterval(1);                                                     \

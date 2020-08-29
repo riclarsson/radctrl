@@ -2,18 +2,18 @@
 
 namespace GUI {
 namespace Plotting {
-void plot_frame(Frame& frame) {
+void plot_frame(Frame &frame) {
   if (ImPlot::BeginPlot(frame.title().c_str(), frame.xlabel().c_str(),
                         frame.ylabel().c_str(), {-1, -1})) {
-    for (auto& line : frame)
-      ImPlot::PlotLine(line.name().c_str(), line.getter(), (void*)&line,
+    for (auto &line : frame)
+      ImPlot::PlotLine(line.name().c_str(), line.getter(), (void *)&line,
                        line.size());
     ImPlot::EndPlot();
   }
 }
 
-bool freq_scale(double& cur_freq_scale) {
-  static constexpr std::array<const char* const, 6> targets{
+bool freq_scale(double &cur_freq_scale) {
+  static constexpr std::array<const char *const, 6> targets{
       " THz ", " GHz ", " MHz ", " kHz ", " Hz  ", " mHz "};
   const int current = cur_freq_scale <= 1e-12
                           ? 0
@@ -45,7 +45,7 @@ bool freq_scale(double& cur_freq_scale) {
   return newout;
 }
 
-void line_menuitem(Line& line) {
+void line_menuitem(Line &line) {
   if (ImGui::BeginMenu(line.name().c_str())) {
     bool update = false;
     int ra = line.RunAvgCount();
@@ -78,7 +78,7 @@ void line_menuitem(Line& line) {
   }
 }
 
-void frame_menuitem(Frame& frame) {
+void frame_menuitem(Frame &frame) {
   if (ImGui::BeginMenu(frame.title().c_str())) {
     int ra = frame[0].RunAvgCount();
     double xo = frame[0].Xoffset(), xs = frame[0].Xscale(),
@@ -88,7 +88,7 @@ void frame_menuitem(Frame& frame) {
                         ImGuiInputTextFlags_EnterReturnsTrue)) {
       if (ra < 1) ra = 1;
 
-      for (auto& line : frame) {
+      for (auto &line : frame) {
         line.RunAvgCount(size_t(ra));
       }
     }
@@ -96,14 +96,14 @@ void frame_menuitem(Frame& frame) {
     ImGui::Separator();
 
     if (freq_scale(xs)) {
-      for (auto& line : frame) {
+      for (auto &line : frame) {
         line.Xscale(xs);
       }
     }
 
     if (ImGui::InputDouble("X Offset", &xo, 0.0, 0.0, "%.6f",
                            ImGuiInputTextFlags_EnterReturnsTrue)) {
-      for (auto& line : frame) {
+      for (auto &line : frame) {
         line.Xoffset(xo);
       }
     }
@@ -114,21 +114,21 @@ void frame_menuitem(Frame& frame) {
                            ImGuiInputTextFlags_EnterReturnsTrue)) {
       if (ys <= 0) ys = std::numeric_limits<double>::min();
 
-      for (auto& line : frame) {
+      for (auto &line : frame) {
         line.Yscale(ys);
       }
     }
 
     if (ImGui::InputDouble("Y Offset", &yo, 0.0, 0.0, "%.6f",
                            ImGuiInputTextFlags_EnterReturnsTrue)) {
-      for (auto& line : frame) {
+      for (auto &line : frame) {
         line.Yoffset(yo);
       }
     }
 
     ImGui::Separator();
 
-    for (auto& line : frame) line_menuitem(line);
+    for (auto &line : frame) line_menuitem(line);
     ImGui::EndMenu();
   }
 }

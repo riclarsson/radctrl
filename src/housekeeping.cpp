@@ -7,7 +7,7 @@ namespace Housekeeping {}  // namespace Housekeeping
 }  // namespace Instrument
 
 template <class Housekeeping>
-void runonce(std::string& dev, int baud, const std::string& python_file) {
+void runonce(std::string &dev, int baud, const std::string &python_file) {
   Housekeeping hk{python_file};
 
   hk.startup(dev, baud);
@@ -54,11 +54,11 @@ void runonce(std::string& dev, int baud, const std::string& python_file) {
   }
 
   std::cout << Time() << '\n';
-  for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
+  for (auto &x : d) std::cout << x.first << ' ' << x.second << '\n';
 }
 
 template <class Housekeeping>
-void run(std::string& dev, int baud, const std::string& python_file,
+void run(std::string &dev, int baud, const std::string &python_file,
          const TimeStep dt, bool clear_terminal) {
   if (dt.count() > 7 * 86400 or dt.count() < 0) {
     std::cerr
@@ -112,7 +112,7 @@ void run(std::string& dev, int baud, const std::string& python_file,
 
     if (clear_terminal) std::printf("\033c");
     std::cout << Time() << '\n';
-    for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
+    for (auto &x : d) std::cout << x.first << ' ' << x.second << '\n';
 
     Sleep(wait_until);
   }
@@ -125,10 +125,10 @@ void run(std::string& dev, int baud, const std::string& python_file,
   }
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   // Start a python interpreter in case python code will be executed
   auto py = Python::createPython();
-  
+
   CommandLine::App hk("Run a housekeeping machine");
 
   int machine;
@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
   } else if (machine == 1) {
     if (continue_running) {
       run<Instrument::Housekeeping::PythonSensors>(
-        dev, baud, pythonfile, TimeStep{minimum_waittime}, clear_terminal);
+          dev, baud, pythonfile, TimeStep{minimum_waittime}, clear_terminal);
     } else {
       runonce<Instrument::Housekeeping::PythonSensors>(dev, baud, pythonfile);
     }

@@ -17,18 +17,18 @@ ENUMCLASS(Operation, unsigned char, Read, Write, Append, ReadBinary,
 ENUMCLASS(Type, unsigned char, Raw, Xml)
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const std::vector<T>& x) {
+std::ostream &operator<<(std::ostream &os, const std::vector<T> &x) {
   if constexpr (std::is_arithmetic<T>::value) {
-    for (auto& b : x) os << b << ' ';
+    for (auto &b : x) os << b << ' ';
   } else {
-    for (auto& b : x) os << b << '\n';
+    for (auto &b : x) os << b << '\n';
   }
   return os;
 }
 
 template <class T>
-std::istream& operator>>(std::istream& is, std::vector<T>& x) {
-  for (auto& b : x) is >> b;
+std::istream &operator>>(std::istream &is, std::vector<T> &x) {
+  for (auto &b : x) is >> b;
   return is;
 }
 
@@ -43,7 +43,7 @@ class File {
   pugi::xml_node oldchild;
 
  public:
-  File(const std::string& p) : path(p) {
+  File(const std::string &p) : path(p) {
     if constexpr (Y == Type::Xml)
       if (path.extension() not_eq ".xml") path = path.replace_extension(".xml");
 
@@ -119,7 +119,7 @@ class File {
   }
 
   template <typename T>
-  File& operator<<(const T& x) {
+  File &operator<<(const T &x) {
     static_assert(X == Operation::Append or X == Operation::Write,
                   "Bad operation");
     if constexpr (Y == Type::Raw)
@@ -134,7 +134,7 @@ class File {
   }
 
   template <typename T>
-  File& operator>>(T& x) {
+  File &operator>>(T &x) {
     static_assert(X == Operation::Read and (Y == Type::Raw or Y == Type::Xml),
                   "Bad file type and operation");
     if constexpr (Y == Type::Raw)
@@ -147,61 +147,61 @@ class File {
   }
 
   template <typename T>
-  size_t write(const T& x, size_t n = sizeof(T)) {
+  size_t write(const T &x, size_t n = sizeof(T)) {
     static_assert(
         (X == Operation::WriteBinary or X == Operation::AppendBinary) and
             (Y == Type::Raw or Y == Type::Xml),
         "Bad file type and operation");
-    fil.write(reinterpret_cast<const char*>(&x), n);
+    fil.write(reinterpret_cast<const char *>(&x), n);
     return n;
   }
 
   template <typename T>
-  size_t write(T* x, size_t n) {
+  size_t write(T *x, size_t n) {
     static_assert(
         (X == Operation::WriteBinary or X == Operation::AppendBinary) and
             (Y == Type::Raw or Y == Type::Xml),
         "Bad file type and operation");
-    fil.write(reinterpret_cast<const char*>(x), n);
+    fil.write(reinterpret_cast<const char *>(x), n);
     return n;
   }
 
   template <typename T>
-  size_t write(const std::vector<T>& x) {
+  size_t write(const std::vector<T> &x) {
     static_assert(
         (X == Operation::WriteBinary or X == Operation::AppendBinary) and
             (Y == Type::Raw or Y == Type::Xml),
         "Bad file type and operation");
     size_t n = 0;
-    for (auto& v : x) n += write(v);
+    for (auto &v : x) n += write(v);
     return n;
   }
 
   template <typename T>
-  size_t read(T& x, size_t n = sizeof(T)) {
+  size_t read(T &x, size_t n = sizeof(T)) {
     static_assert(
         X == Operation::ReadBinary and (Y == Type::Raw or Y == Type::Xml),
         "Bad file type and operation");
-    fil.read(reinterpret_cast<char*>(&x), n);
+    fil.read(reinterpret_cast<char *>(&x), n);
     return n;
   }
 
   template <typename T>
-  size_t read(T* x, size_t n) {
+  size_t read(T *x, size_t n) {
     static_assert(
         X == Operation::ReadBinary and (Y == Type::Raw or Y == Type::Xml),
         "Bad file type and operation");
-    fil.read(reinterpret_cast<char*>(x), n);
+    fil.read(reinterpret_cast<char *>(x), n);
     return n;
   }
 
   template <typename T>
-  size_t read(std::vector<T>& x) {
+  size_t read(std::vector<T> &x) {
     static_assert(
         X == Operation::ReadBinary and (Y == Type::Raw or Y == Type::Xml),
         "Bad file type and operation");
     size_t n = 0;
-    for (auto& v : x) n += read(v);
+    for (auto &v : x) n += read(v);
     return n;
   }
 
@@ -237,7 +237,7 @@ class File {
     }
   }
 
-  void new_child(const std::string& name) {
+  void new_child(const std::string &name) {
     static_assert(Y == Type::Xml and
                   (X == Operation::Write or X == Operation::WriteBinary or
                    X == Operation::Append or X == Operation::AppendBinary));
@@ -245,7 +245,7 @@ class File {
     child = child.append_child(name.c_str());
   }
 
-  pugi::xml_node get_child(const std::string& name) {
+  pugi::xml_node get_child(const std::string &name) {
     static_assert(Y == Type::Xml);
     oldchild = child;
     child = oldchild.child(name.c_str());
@@ -265,7 +265,7 @@ class File {
   }
 
   template <class T>
-  void add_attribute(const std::string& name, const T& value) {
+  void add_attribute(const std::string &name, const T &value) {
     static_assert(Y == Type::Xml and
                   (X == Operation::Write or X == Operation::WriteBinary or
                    X == Operation::Append or X == Operation::AppendBinary));
@@ -275,7 +275,7 @@ class File {
   }
 
   template <class T>
-  void add_attribute(const std::string& name, const std::vector<T>& values) {
+  void add_attribute(const std::string &name, const std::vector<T> &values) {
     static_assert(Y == Type::Xml and
                   (X == Operation::Write or X == Operation::WriteBinary or
                    X == Operation::Append or X == Operation::AppendBinary));
@@ -289,7 +289,7 @@ class File {
   }
 
   template <class T, size_t N>
-  void add_attribute(const std::string& name, const std::array<T, N>& values) {
+  void add_attribute(const std::string &name, const std::array<T, N> &values) {
     static_assert(Y == Type::Xml and
                   (X == Operation::Write or X == Operation::WriteBinary or
                    X == Operation::Append or X == Operation::AppendBinary));
@@ -302,13 +302,13 @@ class File {
     child.append_attribute(name.c_str()) = os.str().c_str();
   }
 
-  pugi::xml_attribute get_attribute(const std::string& name) {
+  pugi::xml_attribute get_attribute(const std::string &name) {
     static_assert(Y == Type::Xml);
     return child.attribute(name.c_str());
   }
 
   template <typename T>
-  std::vector<T> get_vector_attribute(const std::string& name) {
+  std::vector<T> get_vector_attribute(const std::string &name) {
     std::vector<T> out;
     std::stringstream x(get_attribute(name).as_string());
     while (not x.eof()) {
@@ -325,7 +325,7 @@ class File {
   }
 
   template <typename T, size_t N>
-  std::array<T, N> get_array_attribute(const std::string& name) {
+  std::array<T, N> get_array_attribute(const std::string &name) {
     std::array<T, N> out;
     std::stringstream x(get_attribute(name).as_string());
     for (size_t i = 0; i < N; i++) {

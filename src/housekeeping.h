@@ -28,7 +28,7 @@ struct Controller {
 
   std::map<std::string, double> data;
 
-  Controller(const std::string& d, int b) noexcept
+  Controller(const std::string &d, int b) noexcept
       : init(false),
         error(false),
         quit(false),
@@ -42,8 +42,8 @@ struct Controller {
 };
 
 template <typename Housekeeping>
-void GuiSetup(Housekeeping& hk, Controller& ctrl,
-              const std::vector<std::string>& devs) {
+void GuiSetup(Housekeeping &hk, Controller &ctrl,
+              const std::vector<std::string> &devs) {
   bool change = false;
   bool manual = false;
   if (not ctrl.init) {
@@ -83,7 +83,7 @@ void GuiSetup(Housekeeping& hk, Controller& ctrl,
   ImGui::PushItemWidth(120.0f);
   if (auto dev = ctrl.dev.c_str(); ImGui::BeginCombo("Device", dev)) {
     bool newselection = false;
-    for (auto& d : devs) {
+    for (auto &d : devs) {
       auto dev2 = d.c_str();
       bool is_selected =
           (dev == dev2);  // You can store your selection however you want,
@@ -139,7 +139,7 @@ class Dummy {
         database(
             {{"Cold Load Temperature", 18}, {"Hot Load Temperature", 297}}),
         error("") {}
-  void startup(const std::string&, int) {}
+  void startup(const std::string &, int) {}
   void init(bool manual_press = false) {
     manual = manual_press;
     if (not manual) {
@@ -150,7 +150,7 @@ class Dummy {
   void run() {}
   void close() {}
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -179,7 +179,7 @@ class AgilentPython {
 
  public:
   using DataType = std::map<std::string, double>;
-  AgilentPython(const std::filesystem::path& path)
+  AgilentPython(const std::filesystem::path &path)
       : manual(false), error_found(false), new_data(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
@@ -190,7 +190,7 @@ class AgilentPython {
     PyClass = Python::ClassInterface{"Agilent34970A"};
   };
 
-  void startup(const std::string& dev, int baud) {
+  void startup(const std::string &dev, int baud) {
     PyInst = Python::ClassInstance{PyClass(dev, baud)};
     initfun = Python::Function{PyInst("init")};
     shutdown = Python::Function{PyInst("close")};
@@ -204,7 +204,7 @@ class AgilentPython {
   void run() { runfun(); }
   void close() {}
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -213,15 +213,15 @@ class AgilentPython {
   void get_data() {
     status = download();
     auto keys = status.keysDict();
-    for (auto& key : keys)
+    for (auto &key : keys)
       database[key] = status.fromDict<Python::Type::Double>(key).toDouble();
   }
   DataType data() const { return database; }
 };  // AgilentPython
 
 template <size_t N>
-constexpr double linear_interpolation(const std::array<double, N>& x,
-                                      const std::array<double, N>& y,
+constexpr double linear_interpolation(const std::array<double, N> &x,
+                                      const std::array<double, N> &y,
                                       double t) {
   size_t i = 0;
   while (i not_eq N and t > x[i]) i++;
@@ -334,11 +334,11 @@ class Agilent34970A {
         has_first(false),
         has_new_data(false) {}
 
-  void startup(const std::string& dev, unsigned int baud) {
+  void startup(const std::string &dev, unsigned int baud) {
     try {
       port.open(dev);
       port.set_baudrate(baud);
-    } catch (const std::exception& e) {
+    } catch (const std::exception &e) {
       error = e.what();
       error_found = true;
     }
@@ -421,7 +421,7 @@ class Agilent34970A {
   }
   void close() { port.close(); }
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -454,27 +454,25 @@ class Agilent34970A {
   DataType data() const { return database; }
 };  // Agilent34970A
 
-
-
 class PythonSensors {
   bool manual;
   bool error_found;
   bool new_data;
   std::map<std::string, double> database;
   std::string error;
-  
+
   Python::ClassInterface PyClass;
   Python::ClassInstance PyInst;
   Python::Function initfun;
   Python::Function shutdown;
   Python::Function download;
-  
+
   Python::Object<Python::Type::Dict> status;
-  
-public:
+
+ public:
   using DataType = std::map<std::string, double>;
-  PythonSensors(const std::filesystem::path& path)
-  : manual(false), error_found(false), new_data(false), error("") {
+  PythonSensors(const std::filesystem::path &path)
+      : manual(false), error_found(false), new_data(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
       os << "Cannot find python sensors file at:\n\t" << path << '\n';
@@ -483,8 +481,8 @@ public:
     py::eval_file(path.c_str());
     PyClass = Python::ClassInterface{"sensors"};
   };
-  
-  void startup(const std::string& dev, int /*baud*/) {
+
+  void startup(const std::string &dev, int /*baud*/) {
     PyInst = Python::ClassInstance{PyClass(dev)};
     initfun = Python::Function{PyInst("init")};
     shutdown = Python::Function{PyInst("close")};
@@ -493,31 +491,31 @@ public:
   void init(bool manual_press = false) {
     manual = manual_press;
     try {
-    initfun();
-    } catch (const std::exception& e) {
+      initfun();
+    } catch (const std::exception &e) {
       error_found = true;
       error += std::string_view{e.what()};
     }
   }
-  void run() { status=download(); }
-  
+  void run() { status = download(); }
+
   void close() { shutdown(); }
-  
-    bool manual_run() { return manual; }
-    const std::string& error_string() const { return error; }
-    bool has_error() { return error_found; }
-    void delete_error() {
-      error_found = false;
-      error = "";
-    }
-    
-    void get_data() {
-      auto keys = status.keysDict();
-      for (auto& key : keys)
-        database[key] = status.fromDict<Python::Type::Double>(key).toDouble();
-    }
-    
-    DataType data() const { return database; }
+
+  bool manual_run() { return manual; }
+  const std::string &error_string() const { return error; }
+  bool has_error() { return error_found; }
+  void delete_error() {
+    error_found = false;
+    error = "";
+  }
+
+  void get_data() {
+    auto keys = status.keysDict();
+    for (auto &key : keys)
+      database[key] = status.fromDict<Python::Type::Double>(key).toDouble();
+  }
+
+  DataType data() const { return database; }
 };  // Dummy
 
 }  // namespace Housekeeping

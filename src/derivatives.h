@@ -32,7 +32,7 @@ union TypeOfTarget {
   constexpr TypeOfTarget(Sensor s) noexcept : sensor(s){};
 };
 
-inline TypeOfTarget toTypeOfTarget(const std::string& s, Type x) noexcept {
+inline TypeOfTarget toTypeOfTarget(const std::string &s, Type x) noexcept {
   switch (x) {
     case Type::Sensor:
       return TypeOfTarget(toSensor(s));
@@ -199,13 +199,13 @@ class Target {
   }
 
   /** Output operator */
-  friend std::ostream& operator<<(std::ostream& os, const Target& x) {
+  friend std::ostream &operator<<(std::ostream &os, const Target &x) {
     return os << x.mtype << " " << toString(x.msubtype, x.mtype) << " "
               << x.Perturbation() << " " << x.Identity();
   }
 
   /** Input operator */
-  friend std::istream& operator>>(std::istream& is, Target x) {
+  friend std::istream &operator>>(std::istream &is, Target x) {
     std::string typeoftarget;
     is >> x.mtype >> typeoftarget >> x.mperturbation >> x.mid;
     x.msubtype = toTypeOfTarget(typeoftarget, x.mtype);

@@ -29,37 +29,37 @@ class Point {
  public:
   Point(Pressure<PressureType::Pa> p, Temperature<TemperatureType::K> t,
         Magnetism<MagnetismType::T> m, Wind<WindType::meters_per_second> w,
-        const std::vector<VMR<VMRType::ratio>>& v) noexcept
+        const std::vector<VMR<VMRType::ratio>> &v) noexcept
       : P(p), T(t), M(m), W(w), vmr(v), nlte(0) {}
 
   Point(decltype(vmr)::size_type n = 0) noexcept
       : M({0, 0, 0}), W({0, 0, 0}), vmr(n), nlte(0) {}
-  Point(const std::vector<Species::Isotope>& s) noexcept
+  Point(const std::vector<Species::Isotope> &s) noexcept
       : M({0, 0, 0}), W({0, 0, 0}), vmr(s.size()), nlte(0) {
     for (size_t i = 0; i < s.size(); i++) vmr[i].isot(s[i]);
   }
 
-  Point(Point&& ap) = default;
-  Point(const Point& ap) = default;
-  Point& operator=(const Point& ap) = default;
-  Point& operator=(Point&& ap) = default;
+  Point(Point &&ap) = default;
+  Point(const Point &ap) = default;
+  Point &operator=(const Point &ap) = default;
+  Point &operator=(Point &&ap) = default;
 
   decltype(vmr)::size_type size() const { return vmr.size(); }
   void resize(decltype(vmr)::size_type n) { vmr.resize(n); }
 
-  friend std::ostream& operator<<(std::ostream& os, Point p) {
+  friend std::ostream &operator<<(std::ostream &os, Point p) {
     os << p.P << ' ' << p.T << ' ' << p.M << ' ' << p.W;
     for (auto x : p.vmr) os << ' ' << x;
     return os;
   }
 
-  friend std::istream& operator>>(std::istream& is, Point& p) {
+  friend std::istream &operator>>(std::istream &is, Point &p) {
     is >> p.P >> p.T >> p.M >> p.W;
-    for (auto& x : p.vmr) is >> x;
+    for (auto &x : p.vmr) is >> x;
     return is;
   }
 
-  Point& operator+=(const LazyPoint& x) noexcept;
+  Point &operator+=(const LazyPoint &x) noexcept;
 
   /** Fix that must be called after using any arithmetic */
   void expP() { P = std::exp(P); }
@@ -68,12 +68,12 @@ class Point {
   Temperature<TemperatureType::K> Temp() const { return T; }
   Magnetism<MagnetismType::T> MagField() const { return M; }
   Wind<WindType::meters_per_second> WindField() const { return W; }
-  const std::vector<VMR<VMRType::ratio>>& VolumeMixingRatios() const {
+  const std::vector<VMR<VMRType::ratio>> &VolumeMixingRatios() const {
     return vmr;
   }
   double VolumeMixingRatio(Species::Isotope s) const {
     if (auto v = std::find_if(vmr.cbegin(), vmr.cend(),
-                              [s](auto& v) { return v.isot() == s; });
+                              [s](auto &v) { return v.isot() == s; });
         v == vmr.cend())
       return 0;
     else
@@ -84,21 +84,21 @@ class Point {
     return {nlte[ids.first], nlte[ids.second]};
   }
 
-  friend Point operator*(double x, const Point& ap) noexcept {
+  friend Point operator*(double x, const Point &ap) noexcept {
     Point out{ap};
 
     out.P = x * std::log(out.P);
     out.T *= x;
     out.M *= x;
     out.W *= x;
-    for (auto& v : out.vmr) v *= x;
-    for (auto& n : out.nlte) n *= x;
+    for (auto &v : out.vmr) v *= x;
+    for (auto &n : out.nlte) n *= x;
     return out;
   }
 
   friend void savePoint(
-      File::File<File::Operation::Write, File::Type::Xml>& file,
-      const Point& ap) {
+      File::File<File::Operation::Write, File::Type::Xml> &file,
+      const Point &ap) {
     file.new_child("Point");
     file.add_attribute("size", ap.size());
     file.add_attribute("Species", ap.specs());
@@ -110,8 +110,8 @@ class Point {
   }
 
   friend void savePoint(
-      File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
-      const Point& ap) {
+      File::File<File::Operation::WriteBinary, File::Type::Xml> &file,
+      const Point &ap) {
     file.new_child("Point");
     file.add_attribute("size", ap.size());
     file.add_attribute("Species", ap.specs());
@@ -121,7 +121,7 @@ class Point {
   }
 
   friend void readPoint(
-      File::File<File::Operation::Read, File::Type::Xml>& file, Point& ap) {
+      File::File<File::Operation::Read, File::Type::Xml> &file, Point &ap) {
     auto child = file.get_child("Point");
     ap.vmr.resize(file.size());
     auto isot = file.get_vector_attribute<Species::Isotope>("Species");
@@ -135,8 +135,8 @@ class Point {
   }
 
   friend void readPoint(
-      File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
-      Point& ap) {
+      File::File<File::Operation::ReadBinary, File::Type::Xml> &file,
+      Point &ap) {
     file.get_child("Point");
     ap.vmr.resize(file.size());
     auto isot = file.get_vector_attribute<Species::Isotope>("Species");
@@ -155,14 +155,14 @@ class Point {
   }
 
   template <typename Output>
-  void savePureAscii(Output& file) const {
+  void savePureAscii(Output &file) const {
     file << P << ' ' << T << ' ' << M << ' ' << W;
     for (auto x : vmr) file << ' ' << x.value();
     for (auto n : nlte) file << ' ' << n.value();
   }
 
   template <typename Output>
-  void saveBinary(Output& file) const {
+  void saveBinary(Output &file) const {
     file.write(P);
     file.write(T);
     file.write(M);
@@ -172,29 +172,29 @@ class Point {
   }
 
   template <typename Input>
-  void readPureAscii(Input& file) {
+  void readPureAscii(Input &file) {
     file >> P >> T >> M >> W;
-    for (auto& x : vmr) file >> x.value();
-    for (auto& n : nlte) file >> n;
+    for (auto &x : vmr) file >> x.value();
+    for (auto &n : nlte) file >> n;
   }
 
   template <typename Input>
-  void readBinary(Input& file) {
+  void readBinary(Input &file) {
     file.read(P);
     file.read(T);
     file.read(M);
     file.read(W);
-    for (auto& x : vmr) file.read(x.value());
+    for (auto &x : vmr) file.read(x.value());
     file.read(nlte);
   }
 };  // Point
 
 class LazyPoint {
-  const Point& ap;
+  const Point &ap;
   double scale;
 
  public:
-  LazyPoint(const Point& a, double x) noexcept : ap(a), scale(x) {}
+  LazyPoint(const Point &a, double x) noexcept : ap(a), scale(x) {}
   typename std::remove_reference<decltype(ap.P)>::type P() const noexcept {
     auto out = std::log(ap.P);
     return out *= scale;
@@ -228,18 +228,18 @@ class Atm {
 
   bool ok() const {
     auto specs = operator()(0, 0, 0, 0).specs();
-    for (auto& x : data) {
+    for (auto &x : data) {
       if (specs not_eq x.specs()) return false;
     }
     return true;
   }
 
  public:
-  Atm(const std::vector<Time>& t,
-      const std::vector<Altitude<AltitudeType::meter>>& a,
-      const std::vector<Coordinate<CoordinateType::lat>>& la,
-      const std::vector<Coordinate<CoordinateType::lon>>& lo,
-      const Grid<Point, 4>& d)
+  Atm(const std::vector<Time> &t,
+      const std::vector<Altitude<AltitudeType::meter>> &a,
+      const std::vector<Coordinate<CoordinateType::lat>> &la,
+      const std::vector<Coordinate<CoordinateType::lon>> &lo,
+      const Grid<Point, 4> &d)
       : tid(t), alt(a), lat(la), lon(lo), data(d) {
     if (not ok()) throw std::runtime_error("Bad atmosphere");
   }
@@ -247,7 +247,7 @@ class Atm {
       std::size_t lo = 0, std::size_t s = 0)
       : tid(t), alt(a), lat(la), lon(lo), data(s, t, a, la, lo) {}
 
-  friend std::ostream& operator<<(std::ostream& os, const Atm& a) {
+  friend std::ostream &operator<<(std::ostream &os, const Atm &a) {
     if (not a.ok()) throw std::runtime_error("Bad atmosphere");
     for (decltype(a.tid.size()) i = 0; i < a.tid.size(); i++) {
       for (decltype(a.alt.size()) j = 0; j < a.alt.size(); j++) {
@@ -265,7 +265,7 @@ class Atm {
     return os;
   }
 
-  friend std::istream& operator>>(std::istream& is, Atm& a) {
+  friend std::istream &operator>>(std::istream &is, Atm &a) {
     if (not a.ok()) throw std::runtime_error("Bad atmosphere");
     for (decltype(a.tid.size()) i = 0; i < a.tid.size(); i++) {
       for (decltype(a.alt.size()) j = 0; j < a.alt.size(); j++) {
@@ -280,10 +280,10 @@ class Atm {
     return is;
   }
 
-  Point& operator()(size_t i, size_t j, size_t k, size_t m) {
+  Point &operator()(size_t i, size_t j, size_t k, size_t m) {
     return data(i, j, k, m);
   }
-  const Point& operator()(size_t i, size_t j, size_t k, size_t m) const {
+  const Point &operator()(size_t i, size_t j, size_t k, size_t m) const {
     return data(i, j, k, m);
   }
 
@@ -295,8 +295,8 @@ class Atm {
     return operator()(pos.t(), pos.h(), pos.lat(), pos.lon());
   }
 
-  friend void saveAtm(File::File<File::Operation::Write, File::Type::Xml>& file,
-                      const Atm& a) {
+  friend void saveAtm(File::File<File::Operation::Write, File::Type::Xml> &file,
+                      const Atm &a) {
     if (not a.ok()) throw std::runtime_error("Bad atmosphere");
 
     file.new_child("Atm");
@@ -340,8 +340,8 @@ class Atm {
   }
 
   friend void saveAtm(
-      File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
-      const Atm& a) {
+      File::File<File::Operation::WriteBinary, File::Type::Xml> &file,
+      const Atm &a) {
     if (not a.ok()) throw std::runtime_error("Bad atmosphere");
 
     file.new_child("Atm");
@@ -382,8 +382,8 @@ class Atm {
     file.leave_child();
   }
 
-  friend void readAtm(File::File<File::Operation::Read, File::Type::Xml>& file,
-                      Atm& a) {
+  friend void readAtm(File::File<File::Operation::Read, File::Type::Xml> &file,
+                      Atm &a) {
     file.get_child("Atm");
     a.tid.resize(file.get_attribute("Time").as_int());
     a.alt.resize(file.get_attribute("Altitudes").as_int());
@@ -425,7 +425,7 @@ class Atm {
   }
 
   friend void readAtm(
-      File::File<File::Operation::ReadBinary, File::Type::Xml>& file, Atm& a) {
+      File::File<File::Operation::ReadBinary, File::Type::Xml> &file, Atm &a) {
     file.get_child("Atm");
     a.tid.resize(file.get_attribute("Time").as_int());
     a.alt.resize(file.get_attribute("Altitudes").as_int());

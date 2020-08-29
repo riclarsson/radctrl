@@ -24,7 +24,7 @@ struct Controller {
 
   std::map<std::string, double> data;
 
-  Controller(const std::string& s, int p) noexcept
+  Controller(const std::string &s, int p) noexcept
       : init(false),
         error(false),
         quit(false),
@@ -37,7 +37,7 @@ struct Controller {
 };
 
 template <class Frontend>
-void GuiSetup(Frontend& frontend, Controller& ctrl) {
+void GuiSetup(Frontend &frontend, Controller &ctrl) {
   bool change = false;
   bool manual = false;
   if (not ctrl.init) {
@@ -118,16 +118,16 @@ class Dummy {
   void get_data() const {}
   DataType data() const { return database; }
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
     error = "";
   }
-  void gui_setup(Controller&) {
+  void gui_setup(Controller &) {
     ImGui::Text("There is no setup, this is a dummy class");
   }
-  const std::string& name() const { return mname; }
+  const std::string &name() const { return mname; }
 };
 
 class Waspam {
@@ -153,16 +153,16 @@ class Waspam {
   void get_data() const {}
   DataType data() const { return database; }
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
     error = "";
   }
-  void gui_setup(Controller&) {
+  void gui_setup(Controller &) {
     ImGui::Text("There is no setup for Waspam frontend");
   }
-  const std::string& name() const { return mname; }
+  const std::string &name() const { return mname; }
 };
 
 class DBR {
@@ -186,7 +186,7 @@ class DBR {
   static constexpr bool has_hot_load = false;
   using DataType = std::map<std::string, double>;
 
-  DBR(const std::filesystem::path& path)
+  DBR(const std::filesystem::path &path)
       : manual(false), mname("DBR"), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
@@ -197,7 +197,7 @@ class DBR {
     PyClass = Python::ClassInterface{"dbr"};
   }
 
-  void startup(const std::string& server, int port) {
+  void startup(const std::string &server, int port) {
     PyInst = Python::ClassInstance{PyClass(server, port)};
     initfun = Python::Function{PyInst("init")};
     shutdown = Python::Function{PyInst("close")};
@@ -216,19 +216,19 @@ class DBR {
 
   void get_data() {
     auto keys = status.keysDict();
-    for (auto& key : keys)
+    for (auto &key : keys)
       database[key] = status.fromDict<Python::Type::Double>(key).toDouble();
   }
 
   DataType data() const { return database; }
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
     error = "";
   }
-  void gui_setup(Controller& ctrl) {
+  void gui_setup(Controller &ctrl) {
     ImGui::PushItemWidth(180.0f);
     if (ctrl.init) {
       ImGui::InputText("Server", &ctrl.server,
@@ -268,7 +268,7 @@ class DBR {
     }
   }
 
-  const std::string& name() const { return mname; }
+  const std::string &name() const { return mname; }
 
   double cold_load() const { return database.at("cryo.ColdLd.val"); }
 };

@@ -6,7 +6,7 @@
 
 namespace Interp {
 template <size_t N>
-constexpr double sum(const std::array<double, N>& vals) {
+constexpr double sum(const std::array<double, N> &vals) {
   return std::accumulate(vals.cbegin(), vals.cend(), 0);
 }
 
@@ -27,7 +27,7 @@ constexpr std::array<double, sizeof...(Xs) - 1> weight(double x, Xs... xs) {
 }  // namespace Interp
 
 namespace Atmosphere {
-Point& Point::operator+=(const LazyPoint& x) noexcept {
+Point &Point::operator+=(const LazyPoint &x) noexcept {
   P += x.P();
   T += x.T();
   M += x.M();

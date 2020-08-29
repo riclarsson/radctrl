@@ -35,7 +35,7 @@ class Number {
               ' ', ' '}),
         istext(false),
         value(v) {}
-  Number(const std::string& val) noexcept
+  Number(const std::string &val) noexcept
       : text({' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ',
               ' ', ' '}),
         istext(false),
@@ -56,7 +56,7 @@ class Number {
     }
   }
 
-  friend std::ostream& operator<<(std::ostream& os, Number n) {
+  friend std::ostream &operator<<(std::ostream &os, Number n) {
     if (n.istext) {
       for (char t : n.text) {
         if (not std::isspace(t)) {
@@ -78,7 +78,7 @@ class Number {
       return n.value == value;
   }
 
-  friend std::istream& operator>>(std::istream& is, Number& n) {
+  friend std::istream &operator>>(std::istream &is, Number &n) {
     std::string x;
     is >> x;
     n = Number(x);

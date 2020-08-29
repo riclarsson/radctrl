@@ -15,7 +15,7 @@
                                                                                \
  public:                                                                       \
   constexpr Scalar(double v = 0) noexcept : val(v) {}                          \
-  constexpr Scalar(Scalar&&) noexcept = default;                               \
+  constexpr Scalar(Scalar &&) noexcept = default;                              \
   constexpr double value() const noexcept { return val; }                      \
   constexpr Scalar operator-() const noexcept { return Scalar{-val}; }         \
   constexpr Scalar operator+() const noexcept { return Scalar{val}; }          \
@@ -63,32 +63,32 @@
   friend constexpr double operator/(double a, Scalar b) noexcept {             \
     return Scalar{a / b.val};                                                  \
   }                                                                            \
-  constexpr Scalar& operator=(Scalar b) noexcept {                             \
+  constexpr Scalar &operator=(Scalar b) noexcept {                             \
     val = b.val;                                                               \
     return *this;                                                              \
   }                                                                            \
-  constexpr Scalar& operator=(double b) noexcept {                             \
+  constexpr Scalar &operator=(double b) noexcept {                             \
     val = b;                                                                   \
     return *this;                                                              \
   }                                                                            \
-  Scalar& operator*=(double x) noexcept {                                      \
+  Scalar &operator*=(double x) noexcept {                                      \
     val *= x;                                                                  \
     return *this;                                                              \
   }                                                                            \
-  Scalar& operator+=(Scalar x) noexcept {                                      \
+  Scalar &operator+=(Scalar x) noexcept {                                      \
     val += x.val;                                                              \
     return *this;                                                              \
   }                                                                            \
-  Scalar& operator-=(Scalar x) noexcept {                                      \
+  Scalar &operator-=(Scalar x) noexcept {                                      \
     val -= x.val;                                                              \
     return *this;                                                              \
   }                                                                            \
-  double* operator&() noexcept { return &val; }                                \
-  const double* operator&() const noexcept { return &val; }                    \
-  friend std::ostream& operator<<(std::ostream& os, Scalar s) {                \
+  double *operator&() noexcept { return &val; }                                \
+  const double *operator&() const noexcept { return &val; }                    \
+  friend std::ostream &operator<<(std::ostream &os, Scalar s) {                \
     return os << s.val;                                                        \
   }                                                                            \
-  friend std::istream& operator>>(std::istream& is, Scalar& s) {               \
+  friend std::istream &operator>>(std::istream &is, Scalar &s) {               \
     return is >> s.val;                                                        \
   }                                                                            \
   constexpr bool operator>(Scalar b) const noexcept { return val > b.val; }    \
@@ -146,19 +146,19 @@ class Pressure final {
   }
 
  public:
-  constexpr Pressure(const Pressure<PressureType::Pa>& p) noexcept
+  constexpr Pressure(const Pressure<PressureType::Pa> &p) noexcept
       : val(p.value()) {
     pa2self();
   }
-  constexpr Pressure(const Pressure<PressureType::Atm>& p) noexcept
+  constexpr Pressure(const Pressure<PressureType::Atm> &p) noexcept
       : val(Conversion::atm2pa(p.value())) {
     pa2self();
   }
-  constexpr Pressure(const Pressure<PressureType::Bar>& p) noexcept
+  constexpr Pressure(const Pressure<PressureType::Bar> &p) noexcept
       : val(Conversion::bar2pa(p.value())) {
     pa2self();
   }
-  constexpr Pressure(const Pressure<PressureType::Torr>& p) noexcept
+  constexpr Pressure(const Pressure<PressureType::Torr> &p) noexcept
       : val(Conversion::torr2pa(p.value())) {
     pa2self();
   }
@@ -185,19 +185,19 @@ class Temperature final {
   }
 
  public:
-  constexpr Temperature(const Temperature<TemperatureType::K>& t) noexcept
+  constexpr Temperature(const Temperature<TemperatureType::K> &t) noexcept
       : val(t.value()) {
     k2self();
   }
-  constexpr Temperature(const Temperature<TemperatureType::C>& t) noexcept
+  constexpr Temperature(const Temperature<TemperatureType::C> &t) noexcept
       : val(Conversion::c2k(t.value())) {
     k2self();
   }
-  constexpr Temperature(const Temperature<TemperatureType::F>& t) noexcept
+  constexpr Temperature(const Temperature<TemperatureType::F> &t) noexcept
       : val(Conversion::f2k(t.value())) {
     k2self();
   }
-  constexpr Temperature(const Temperature<TemperatureType::eV>& t) noexcept
+  constexpr Temperature(const Temperature<TemperatureType::eV> &t) noexcept
       : val(Conversion::ev2k(t.value())) {
     k2self();
   }
@@ -214,7 +214,7 @@ class NLTE final {
   }
 
  public:
-  constexpr NLTE(const NLTE<NLTEType::ratio>& nlte) noexcept
+  constexpr NLTE(const NLTE<NLTEType::ratio> &nlte) noexcept
       : val(nlte.value()) {
     ratio2self();
   }
@@ -230,17 +230,17 @@ class Magnetism {
     if constexpr (X == MagnetismType::T) {
     }
     if constexpr (X == MagnetismType::G) {
-      for (auto& x : M) x = Conversion::t2g(x);
+      for (auto &x : M) x = Conversion::t2g(x);
     }
   }
 
  public:
   constexpr Magnetism(std::array<double, 3> m) noexcept : M(m) {}
-  Magnetism& operator=(const Magnetism& m) = default;
-  Magnetism(const Magnetism<MagnetismType::T>& m) noexcept : M(m.M) {
+  Magnetism &operator=(const Magnetism &m) = default;
+  Magnetism(const Magnetism<MagnetismType::T> &m) noexcept : M(m.M) {
     t2self();
   }
-  Magnetism(const Magnetism<MagnetismType::G>& m) noexcept
+  Magnetism(const Magnetism<MagnetismType::G> &m) noexcept
       : M({Conversion::g2t(m.M[0]), Conversion::g2t(m.M[1]),
            Conversion::g2t(m.M[2])}) {
     t2self();
@@ -248,20 +248,20 @@ class Magnetism {
 
   constexpr std::array<double, 3> value() const noexcept { return M; }
   double Strength() const noexcept { return std::hypot(M[0], M[1], M[2]); }
-  Magnetism& operator*=(double x) noexcept {
-    for (auto& m : M) m *= x;
+  Magnetism &operator*=(double x) noexcept {
+    for (auto &m : M) m *= x;
     return *this;
   }
-  Magnetism& operator+=(Magnetism x) noexcept {
+  Magnetism &operator+=(Magnetism x) noexcept {
     M[0] += x.M[0];
     M[1] += x.M[1];
     M[2] += x.M[2];
     return *this;
   }
-  friend std::ostream& operator<<(std::ostream& os, Magnetism m) {
+  friend std::ostream &operator<<(std::ostream &os, Magnetism m) {
     return os << m.M[0] << ' ' << m.M[1] << ' ' << m.M[2];
   }
-  friend std::istream& operator>>(std::istream& is, Magnetism& m) {
+  friend std::istream &operator>>(std::istream &is, Magnetism &m) {
     return is >> m.M[0] >> m.M[1] >> m.M[2];
   }
 
@@ -283,27 +283,27 @@ class Wind {
 
  public:
   constexpr Wind(std::array<double, 3> w) noexcept : W(w) {}
-  Wind& operator=(const Wind& w) = default;
-  Wind(const Wind<WindType::meters_per_second>& w) noexcept : W(w.W) {
+  Wind &operator=(const Wind &w) = default;
+  Wind(const Wind<WindType::meters_per_second> &w) noexcept : W(w.W) {
     ms2self();
   }
 
   constexpr std::array<double, 3> value() const noexcept { return W; }
   double Strength() const noexcept { return std::hypot(W[0], W[1], W[2]); }
-  Wind& operator*=(double x) noexcept {
-    for (auto& w : W) w *= x;
+  Wind &operator*=(double x) noexcept {
+    for (auto &w : W) w *= x;
     return *this;
   }
-  Wind& operator+=(Wind x) noexcept {
+  Wind &operator+=(Wind x) noexcept {
     W[0] += x.W[0];
     W[1] += x.W[1];
     W[2] += x.W[2];
     return *this;
   }
-  friend std::ostream& operator<<(std::ostream& os, Wind w) {
+  friend std::ostream &operator<<(std::ostream &os, Wind w) {
     return os << w.W[0] << ' ' << w.W[1] << ' ' << w.W[2];
   }
-  friend std::istream& operator>>(std::istream& is, Wind& w) {
+  friend std::istream &operator>>(std::istream &is, Wind &w) {
     return is >> w.W[0] >> w.W[1] >> w.W[2];
   }
 };  // Wind
@@ -324,29 +324,29 @@ class VMR {
   constexpr VMR() noexcept
       : I(Species::Isotope(Species::Species::FINAL, -1)), R(0) {}
   explicit constexpr VMR(Species::Isotope s, double r) noexcept : I(s), R(r) {}
-  constexpr VMR(const VMR<VMRType::ratio>& r) noexcept : I(r.I), R(r.R) {
+  constexpr VMR(const VMR<VMRType::ratio> &r) noexcept : I(r.I), R(r.R) {
     r2self();
   }
 
   constexpr Species::Species Species() const noexcept { return I.Spec(); }
   constexpr double value() const noexcept { return R; }
-  double& value() noexcept { return R; }
+  double &value() noexcept { return R; }
   constexpr Species::Isotope isot() const noexcept { return I; }
   void isot(Species::Isotope i) noexcept { I = i; }
-  VMR& operator*=(double x) noexcept {
+  VMR &operator*=(double x) noexcept {
     R *= x;
     return *this;
   }
-  VMR& operator+=(VMR x) noexcept {
+  VMR &operator+=(VMR x) noexcept {
     if (x.I == I) {
       R += x.R;
     }
     return *this;
   }
-  friend std::ostream& operator<<(std::ostream& os, VMR r) {
+  friend std::ostream &operator<<(std::ostream &os, VMR r) {
     return os << r.I << ' ' << r.R;
   }
-  friend std::istream& operator>>(std::istream& is, VMR& r) {
+  friend std::istream &operator>>(std::istream &is, VMR &r) {
     return is >> r.I >> r.R;
   }
 };  // VMR
@@ -362,7 +362,7 @@ class Distance final {
   }
 
  public:
-  constexpr Distance(const Distance<DistanceType::meter>& d) noexcept
+  constexpr Distance(const Distance<DistanceType::meter> &d) noexcept
       : val(d.value()) {
     d2self();
   }
@@ -380,7 +380,7 @@ class Altitude final {
   }
 
  public:
-  constexpr Altitude(const Altitude<AltitudeType::meter>& z) noexcept
+  constexpr Altitude(const Altitude<AltitudeType::meter> &z) noexcept
       : val(z.value()) {
     m2self();
   }
@@ -398,7 +398,7 @@ class Length final {
   }
 
  public:
-  constexpr Length(const Length<LengthType::meter>& z) noexcept
+  constexpr Length(const Length<LengthType::meter> &z) noexcept
       : val(z.value()) {
     m2self();
   }
@@ -423,17 +423,17 @@ class Coordinate final {
   }
 
  public:
-  constexpr Coordinate(const Coordinate<CoordinateType::deg>& d) noexcept
+  constexpr Coordinate(const Coordinate<CoordinateType::deg> &d) noexcept
       : val(d.value()) {
     deg2self();
   }
-  constexpr Coordinate(const Coordinate<CoordinateType::lon>& d) noexcept
+  constexpr Coordinate(const Coordinate<CoordinateType::lon> &d) noexcept
       : val(d.value()) {
     deg2self();
     while (val >= 360) val -= 360;
     while (val < 0) val += 360;
   }
-  constexpr Coordinate(const Coordinate<CoordinateType::lat>& d) noexcept
+  constexpr Coordinate(const Coordinate<CoordinateType::lat> &d) noexcept
       : val(d.value()) {
     deg2self();
     if (val > 90)
@@ -441,7 +441,7 @@ class Coordinate final {
     else if (val < -90)
       val = -90;
   }
-  constexpr Coordinate(const Coordinate<CoordinateType::rad>& d) noexcept
+  constexpr Coordinate(const Coordinate<CoordinateType::rad> &d) noexcept
       : val(Conversion::rad2deg(d.value())) {
     deg2self();
   }
@@ -465,15 +465,15 @@ class Frequency final {
   }
 
  public:
-  constexpr Frequency(const Frequency<FrequencyType::Freq>& f) noexcept
+  constexpr Frequency(const Frequency<FrequencyType::Freq> &f) noexcept
       : val(f.value()) {
     f2self();
   }
-  constexpr Frequency(const Frequency<FrequencyType::Kayser>& f) noexcept
+  constexpr Frequency(const Frequency<FrequencyType::Kayser> &f) noexcept
       : val(Conversion::kaycm2freq(f.value())) {
     f2self();
   }
-  constexpr Frequency(const Frequency<FrequencyType::Wavelength>& f) noexcept
+  constexpr Frequency(const Frequency<FrequencyType::Wavelength> &f) noexcept
       : val(Conversion::wavelen2freq(f.value())) {
     f2self();
   }
@@ -495,12 +495,12 @@ class LineStrength {
 
  public:
   constexpr LineStrength(
-      const LineStrength<FrequencyType::Freq, AreaType::m2>& ls) noexcept
+      const LineStrength<FrequencyType::Freq, AreaType::m2> &ls) noexcept
       : val(ls.value()) {
     hzm22self();
   }
   constexpr LineStrength(
-      const LineStrength<FrequencyType::Kayser, AreaType::cm2>& ls) noexcept
+      const LineStrength<FrequencyType::Kayser, AreaType::cm2> &ls) noexcept
       : val(Conversion::hitran2arts_linestrength(ls.value())) {
     hzm22self();
   }
@@ -521,11 +521,11 @@ class Energy {
   }
 
  public:
-  constexpr Energy(const Energy<EnergyType::Joule>& e) noexcept
+  constexpr Energy(const Energy<EnergyType::Joule> &e) noexcept
       : val(e.value()) {
     hzm22self();
   }
-  constexpr Energy(const Energy<EnergyType::invcm>& e) noexcept
+  constexpr Energy(const Energy<EnergyType::invcm> &e) noexcept
       : val(Conversion::hitran2arts_energy(e.value())) {
     hzm22self();
   }
@@ -544,14 +544,14 @@ class PressureBroadening {
 
  public:
   constexpr PressureBroadening(
-      const PressureBroadening<FrequencyType::Freq, PressureType::Pa>&
-          pb) noexcept
+      const PressureBroadening<FrequencyType::Freq, PressureType::Pa>
+          &pb) noexcept
       : val(pb.value()) {
     hzpa2self();
   }
   constexpr PressureBroadening(
-      const PressureBroadening<FrequencyType::Kayser, PressureType::Atm>&
-          pb) noexcept
+      const PressureBroadening<FrequencyType::Kayser, PressureType::Atm>
+          &pb) noexcept
       : val(Conversion::hitran2arts_broadening(pb.value())) {
     hzpa2self();
   }

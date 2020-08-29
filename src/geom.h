@@ -16,10 +16,10 @@ class Ellipsoid {
 
  public:
   constexpr Ellipsoid() noexcept : ell({0, 0}) {}
-  constexpr Ellipsoid(const Ellipsoid&) noexcept = default;
-  constexpr Ellipsoid(Ellipsoid&&) noexcept = default;
-  constexpr Ellipsoid& operator=(const Ellipsoid&) noexcept = default;
-  constexpr Ellipsoid& operator=(Ellipsoid&&) noexcept = default;
+  constexpr Ellipsoid(const Ellipsoid &) noexcept = default;
+  constexpr Ellipsoid(Ellipsoid &&) noexcept = default;
+  constexpr Ellipsoid &operator=(const Ellipsoid &) noexcept = default;
+  constexpr Ellipsoid &operator=(Ellipsoid &&) noexcept = default;
   constexpr Ellipsoid(Length<LengthType::meter> a, double e) noexcept
       : ell({a.value(), e}) {}
   constexpr double a() const noexcept { return ell[0]; }
@@ -29,10 +29,10 @@ class Ellipsoid {
     return a() / std::sqrt(1 - Conversion::pow2(e() * Conversion::sind(lat)));
   }
 
-  friend std::ostream& operator<<(std::ostream& os, Ellipsoid e) {
+  friend std::ostream &operator<<(std::ostream &os, Ellipsoid e) {
     return os << e.ell[0] << ' ' << e.ell[1];
   }
-  friend std::istream& operator>>(std::istream& is, Ellipsoid& e) {
+  friend std::istream &operator>>(std::istream &is, Ellipsoid &e) {
     return is >> e.ell[0] >> e.ell[1];
   }
 };  // Ellipsoid
@@ -56,10 +56,10 @@ class Pos {
   std::array<double, 3> arr() const noexcept { return pos; }
 
   Pos() noexcept : time(), pos({0, 0, 0}) {}
-  Pos(Pos&&) noexcept = default;
-  Pos(const Pos&) noexcept = default;
-  Pos& operator=(Pos&&) noexcept = default;
-  Pos& operator=(const Pos&) noexcept = default;
+  Pos(Pos &&) noexcept = default;
+  Pos(const Pos &) noexcept = default;
+  Pos &operator=(Pos &&) noexcept = default;
+  Pos &operator=(const Pos &) noexcept = default;
   Pos(std::array<double, 3> p) noexcept : time(), pos(p) {}
   Pos(Time t, std::array<double, 3> p) noexcept : time(t), pos(p) {}
 
@@ -132,12 +132,12 @@ class Pos {
     }
   }
 
-  friend std::ostream& operator<<(std::ostream& os, Pos p) {
+  friend std::ostream &operator<<(std::ostream &os, Pos p) {
     return os << p.time << ' ' << p.pos[0] << ' ' << p.pos[1] << ' '
               << p.pos[2];
   }
 
-  friend std::istream& operator>>(std::istream& is, Pos& p) {
+  friend std::istream &operator>>(std::istream &is, Pos &p) {
     return is >> p.time >> p.pos[0] >> p.pos[1] >> p.pos[2];
   }
 
@@ -177,10 +177,10 @@ class Los {
   std::array<double, 3> arr() const noexcept { return los; }
 
   constexpr Los() noexcept : los({0, 0, 0}) {}
-  constexpr Los(Los&&) noexcept = default;
-  constexpr Los(const Los&) noexcept = default;
-  Los& operator=(Los&&) noexcept = default;
-  Los& operator=(const Los&) noexcept = default;
+  constexpr Los(Los &&) noexcept = default;
+  constexpr Los(const Los &) noexcept = default;
+  Los &operator=(Los &&) noexcept = default;
+  Los &operator=(const Los &) noexcept = default;
   constexpr Los(std::array<double, 3> l) noexcept : los(l) {}
 
   template <LosType L, PosType P>
@@ -260,11 +260,11 @@ class Los {
   }
   double norm() const noexcept { return std::sqrt(norm2()); }
 
-  friend std::ostream& operator<<(std::ostream& os, Los l) {
+  friend std::ostream &operator<<(std::ostream &os, Los l) {
     return os << l.los[0] << ' ' << l.los[1] << ' ' << l.los[2];
   }
 
-  friend std::istream& operator>>(std::istream& is, Los& l) {
+  friend std::istream &operator>>(std::istream &is, Los &l) {
     return is >> l.los[0] >> l.los[1] >> l.los[2];
   }
 
@@ -448,7 +448,7 @@ class Nav {
     return hit_surface;
   }
 
-  Nav(const Nav& old, Distance<DistanceType::meter> d) noexcept
+  Nav(const Nav &old, Distance<DistanceType::meter> d) noexcept
       : pos(old.pos), los(old.los), ell(old.ell) {
     move(d);
   }
@@ -475,22 +475,22 @@ class Nav {
     return hit;
   }
 
-  Nav(const Nav& old, Altitude<AltitudeType::meter> alt)
+  Nav(const Nav &old, Altitude<AltitudeType::meter> alt)
       : pos(old.pos), los(old.los), ell(old.ell) {
     if (not move(alt))
       throw std::runtime_error("Cannot init because you miss the atmosphere");
   }
 
-  Nav(Nav&&) = default;
-  Nav(const Nav&) = default;
-  Nav& operator=(const Nav&) = default;
-  Nav& operator=(Nav&&) = default;
+  Nav(Nav &&) = default;
+  Nav(const Nav &) = default;
+  Nav &operator=(const Nav &) = default;
+  Nav &operator=(Nav &&) = default;
 
-  friend std::ostream& operator<<(std::ostream& os, Nav n) {
+  friend std::ostream &operator<<(std::ostream &os, Nav n) {
     return os << n.pos << ' ' << n.los << ' ' << n.ell;
   }
 
-  friend std::istream& operator>>(std::istream& is, Nav& n) {
+  friend std::istream &operator>>(std::istream &is, Nav &n) {
     return is >> n.pos >> n.los >> n.ell;
   }
 
@@ -503,16 +503,16 @@ class Nav {
   }
 };  // Nav
 
-void readNav(File::File<File::Operation::Read, File::Type::Xml>& in, Nav& n);
-void readNav(File::File<File::Operation::ReadBinary, File::Type::Xml>& in,
-             Nav& n);
-void saveNav(File::File<File::Operation::Write, File::Type::Xml>& out,
-             const Nav& n);
-void saveNav(File::File<File::Operation::Append, File::Type::Xml>& out,
-             const Nav& n);
-void saveNav(File::File<File::Operation::WriteBinary, File::Type::Xml>& out,
-             const Nav& n);
-void saveNav(File::File<File::Operation::AppendBinary, File::Type::Xml>& out,
-             const Nav& n);
+void readNav(File::File<File::Operation::Read, File::Type::Xml> &in, Nav &n);
+void readNav(File::File<File::Operation::ReadBinary, File::Type::Xml> &in,
+             Nav &n);
+void saveNav(File::File<File::Operation::Write, File::Type::Xml> &out,
+             const Nav &n);
+void saveNav(File::File<File::Operation::Append, File::Type::Xml> &out,
+             const Nav &n);
+void saveNav(File::File<File::Operation::WriteBinary, File::Type::Xml> &out,
+             const Nav &n);
+void saveNav(File::File<File::Operation::AppendBinary, File::Type::Xml> &out,
+             const Nav &n);
 }  // namespace Geom
 #endif  // geom_h

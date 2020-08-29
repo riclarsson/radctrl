@@ -38,7 +38,7 @@ class RadVec {
     for (size_t i = 0; i < N; i++) b[i] = 0;
   }
 
-  friend std::ostream& operator<<(std::ostream& os, RadVec a) {
+  friend std::ostream &operator<<(std::ostream &os, RadVec a) {
     if constexpr (RadVec::N == 4) {
       return os << a[0] << ' ' << a[1] << ' ' << a[2] << ' ' << a[3];
     } else if constexpr (RadVec::N == 3) {
@@ -111,7 +111,7 @@ class TraMat {
     static_assert(N == 1);
   }
 
-  friend std::ostream& operator<<(std::ostream& os, TraMat a) {
+  friend std::ostream &operator<<(std::ostream &os, TraMat a) {
     for (size_t i = 0; i < TraMat::N; i++) {
       for (size_t j = 0; j < TraMat::N; j++) {
         if (j < N - 1)
@@ -129,7 +129,7 @@ class TraMat {
     return a[i * N + j];
   }
 
-  double& operator()(size_t i, size_t j) noexcept { return a[i * N + j]; }
+  double &operator()(size_t i, size_t j) noexcept { return a[i * N + j]; }
 
   constexpr RadVec<N> operator()(TraMat t) const noexcept {
     if constexpr (N == 4)
@@ -143,39 +143,10 @@ class TraMat {
   }
 };  // TraMat
 
-ENUMCLASS(PolarizationType, unsigned char, I, Q, U, V, IpQ, ImQ, IpU, ImU, IpV,
-          ImV)
-
-template <size_t N>
-struct Polarization {
-  PolarizationType pol;
-  TraMat<N> rotation;
-
-  Polarization(double circular_rotation [[maybe_unused]]) noexcept
-      : rotation(Absorption::PropMat<N>()) {
-    if constexpr (N == 4) {
-      rotation = TraMat<N>(1, 0, 0, 0, 0, 0, 0);
-      rotation(1, 1) = rotation(2, 2) = std::cos(2 * circular_rotation);
-      rotation(1, 2) = -std::sin(2 * circular_rotation);
-      rotation(2, 1) = std::sin(2 * circular_rotation);
-    } else if constexpr (N == 3) {
-      rotation = TraMat<N>(1, 0, 0, 0);
-      rotation(1, 1) = rotation(2, 2) = std::cos(2 * circular_rotation);
-      rotation(1, 2) = -std::sin(2 * circular_rotation);
-      rotation(2, 1) = std::sin(2 * circular_rotation);
-    } else if constexpr (N == 2) {
-      rotation = TraMat<N>(1, 0);
-      rotation(1, 1) = std::cos(2 * circular_rotation);  // Destructive...
-    } else if constexpr (N == 2) {
-      rotation = TraMat<N>(1);
-    }
-  }
-};
-
 /** Returns T (I - J) + J */
 template <size_t N>
-constexpr RadVec<N> update(const RadVec<N>& I, const TraMat<N>& T,
-                           const RadVec<N>& J) noexcept {
+constexpr RadVec<N> update(const RadVec<N> &I, const TraMat<N> &T,
+                           const RadVec<N> &J) noexcept {
   if constexpr (N == 1) return (I[0] - J[0]) * T(0, 0) + J[0];
   if constexpr (N == 2)
     return {(I[0] - J[0]) * T(0, 0) + (I[1] - J[1]) * T(0, 1) + J[0],
@@ -200,9 +171,9 @@ constexpr RadVec<N> update(const RadVec<N>& I, const TraMat<N>& T,
 
 /** Returns dT (I - J) + dJ - T dJ */
 template <size_t N>
-constexpr RadVec<N> dupdate(const RadVec<N>& I, const TraMat<N>& T,
-                            const TraMat<N>& dT, const RadVec<N>& J,
-                            const RadVec<N>& dJ) noexcept {
+constexpr RadVec<N> dupdate(const RadVec<N> &I, const TraMat<N> &T,
+                            const TraMat<N> &dT, const RadVec<N> &J,
+                            const RadVec<N> &dJ) noexcept {
   if constexpr (N == 1)
     return {
         (I[0] - J[0]) * dT(0, 0) - T(0, 0) * dJ[0] + dJ[0],
@@ -267,8 +238,8 @@ double dBdf(Temperature<TemperatureType::K> T,
 /** Returns K^-1 (A B + S)
  */
 template <size_t N>
-constexpr RadVec<N> source(const Absorption::PropMat<N>& K, const RadVec<N>& S,
-                           const RadVec<N>& A, const double& B) noexcept {
+constexpr RadVec<N> source(const Absorption::PropMat<N> &K, const RadVec<N> &S,
+                           const RadVec<N> &A, const double &B) noexcept {
   using Constant::pow2;
   if constexpr (N == 4) {
     const double invden = 1.0 / K.inverse_denominator();
@@ -349,11 +320,11 @@ constexpr RadVec<N> source(const Absorption::PropMat<N>& K, const RadVec<N>& S,
  * where J is K^-1 (A B + S) [e.g., source(K, S, A, B)]
  */
 template <size_t N>
-constexpr RadVec<N> dsource(const Absorption::PropMat<N>& K,
-                            const Absorption::PropMat<N>& dK,
-                            const RadVec<N>& J, const RadVec<N>& dS,
-                            const RadVec<N>& A, const RadVec<N>& dA,
-                            const double& B, const double& dB) {
+constexpr RadVec<N> dsource(const Absorption::PropMat<N> &K,
+                            const Absorption::PropMat<N> &dK,
+                            const RadVec<N> &J, const RadVec<N> &dS,
+                            const RadVec<N> &A, const RadVec<N> &dA,
+                            const double &B, const double &dB) {
   using Constant::pow2;
   using Constant::pow4;
   if constexpr (N == 4) {
@@ -474,9 +445,9 @@ constexpr RadVec<N> dsource(const Absorption::PropMat<N>& K,
 }
 
 template <size_t N>
-constexpr TraMat<N> linear_transmat(const Absorption::PropMat<N>& K1,
-                                    const Absorption::PropMat<N>& K2,
-                                    const double& r) noexcept {
+constexpr TraMat<N> linear_transmat(const Absorption::PropMat<N> &K1,
+                                    const Absorption::PropMat<N> &K2,
+                                    const double &r) noexcept {
   using Constant::inv_sqrt_2;
   using Constant::pow2;
   using Constant::pow3;
@@ -645,18 +616,18 @@ constexpr TraMat<N> linear_transmat(const Absorption::PropMat<N>& K1,
 }
 
 template <size_t N>
-constexpr TraMat<N> single_transmat(const Absorption::PropMat<N>& K,
-                                    const double& r) noexcept {
+constexpr TraMat<N> single_transmat(const Absorption::PropMat<N> &K,
+                                    const double &r) noexcept {
   return linear_transmat(K, K, r);
 }
 
 template <size_t N>
-constexpr TraMat<N> dlinear_transmat(const TraMat<N>& T,
-                                     const Absorption::PropMat<N>& K1,
-                                     const Absorption::PropMat<N>& K2,
-                                     const Absorption::PropMat<N>& dK,
-                                     const double& r,
-                                     const double& dr) noexcept {
+constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
+                                     const Absorption::PropMat<N> &K1,
+                                     const Absorption::PropMat<N> &K2,
+                                     const Absorption::PropMat<N> &dK,
+                                     const double &r,
+                                     const double &dr) noexcept {
   using Constant::inv_sqrt_2;
   using Constant::pow2;
   using Constant::pow3;
@@ -790,14 +761,14 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N>& T,
                C3c * dx2dy2) *
                   inv_x2y2;
 
-    const double& C0 = reinterpret_cast<const double(&)[2]>(C0c)[0];
-    const double& C1 = reinterpret_cast<const double(&)[2]>(C1c)[0];
-    const double& C2 = reinterpret_cast<const double(&)[2]>(C2c)[0];
-    const double& C3 = reinterpret_cast<const double(&)[2]>(C3c)[0];
-    const double& dC0 = reinterpret_cast<const double(&)[2]>(dC0c)[0];
-    const double& dC1 = reinterpret_cast<const double(&)[2]>(dC1c)[0];
-    const double& dC2 = reinterpret_cast<const double(&)[2]>(dC2c)[0];
-    const double& dC3 = reinterpret_cast<const double(&)[2]>(dC3c)[0];
+    const double &C0 = reinterpret_cast<const double(&)[2]>(C0c)[0];
+    const double &C1 = reinterpret_cast<const double(&)[2]>(C1c)[0];
+    const double &C2 = reinterpret_cast<const double(&)[2]>(C2c)[0];
+    const double &C3 = reinterpret_cast<const double(&)[2]>(C3c)[0];
+    const double &dC0 = reinterpret_cast<const double(&)[2]>(dC0c)[0];
+    const double &dC1 = reinterpret_cast<const double(&)[2]>(dC1c)[0];
+    const double &dC2 = reinterpret_cast<const double(&)[2]>(dC2c)[0];
+    const double &dC3 = reinterpret_cast<const double(&)[2]>(dC3c)[0];
 
     return TraMat<N>{
         T[0] * da +

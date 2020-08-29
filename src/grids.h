@@ -31,15 +31,15 @@ class Grid {
   static constexpr std::size_t dim = N;
 
   template <typename... Inds>
-  Grid(const base& fillval, Inds... inds)
+  Grid(const base &fillval, Inds... inds)
       : ptr(std::make_unique<base[]>(mul(inds...))),
         gridsize({std::size_t(inds)...}) {
     static_assert(sizeof...(Inds) == N,
                   "Must have same size for initialization");
-    for (auto& x : *this) x = fillval;
+    for (auto &x : *this) x = fillval;
   }
 
-  Grid(const Grid& g) noexcept
+  Grid(const Grid &g) noexcept
       : ptr(std::make_unique<base[]>(
             mul(std::reduce(g.gridsize.cbegin(), g.gridsize.cend(), 1,
                             std::multiplies<std::size_t>())))),
@@ -48,18 +48,18 @@ class Grid {
     for (size_t i = 0; i < end; i++) ptr[i] = g.ptr[i];
   }
 
-  Grid(Grid&& g) noexcept : ptr(g.ptr.release()), gridsize(g.gridsize) {
+  Grid(Grid &&g) noexcept : ptr(g.ptr.release()), gridsize(g.gridsize) {
     g.ptr = nullptr;
   }
 
   template <typename... Inds>
-  base& operator()(Inds... inds) noexcept {
+  base &operator()(Inds... inds) noexcept {
     return ptr[index(
         std::array<std::size_t, sizeof...(Inds)>{std::size_t(inds)...})];
   }
 
   template <typename... Inds>
-  const base& operator()(Inds... inds) const noexcept {
+  const base &operator()(Inds... inds) const noexcept {
     return ptr[index(
         std::array<std::size_t, sizeof...(Inds)>{std::size_t(inds)...})];
   }
@@ -67,9 +67,9 @@ class Grid {
   std::array<std::size_t, N> sizes() const { return gridsize; }
   std::size_t size(std::size_t pos) const { return gridsize[pos]; }
 
-  const base* data() const { return ptr.get(); }
+  const base *data() const { return ptr.get(); }
 
-  base* data() { return ptr.get(); }
+  base *data() { return ptr.get(); }
 
   template <typename... Inds>
   void resize(Inds... inds) {
@@ -86,7 +86,7 @@ class Grid {
   const auto cbegin() const { return data(); }
   auto cend() const { return data() + nelem(); }
 
-  friend std::ostream& operator<<(std::ostream& os, const Grid& g) {
+  friend std::ostream &operator<<(std::ostream &os, const Grid &g) {
     std::size_t i = 0;
     const std::size_t n = g.nelem();
     while (i < n) {
@@ -104,7 +104,7 @@ class Grid {
  private:
   std::size_t index(std::array<std::size_t, N> ind) const noexcept {
     [[unlikely]] if (std::any_of(ind.cbegin(), ind.cend(),
-                                 [](auto& a) { return a < 0; }) or
+                                 [](auto &a) { return a < 0; }) or
                      gridsize.back() <= ind.back()) {
       std::cerr << "Out of range\n";
       std::exit(1);

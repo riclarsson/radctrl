@@ -14,7 +14,7 @@ class Serial {
  public:
   Serial() {}
 
-  Serial(const std::string& dev, unsigned int baudrate) {
+  Serial(const std::string &dev, unsigned int baudrate) {
     open(dev);
     set_baudrate(baudrate);
   }
@@ -23,11 +23,11 @@ class Serial {
     serial.set_option(asio::serial_port::baud_rate(baudrate));
   }
 
-  void open(const std::string& dev) { serial.open(dev); }
+  void open(const std::string &dev) { serial.open(dev); }
 
   void close() { serial.close(); }
 
-  void write(const std::string& data) {
+  void write(const std::string &data) {
     asio::write(serial, asio::buffer(data.c_str(), data.size()));
   }
 
@@ -42,7 +42,7 @@ class Serial {
       std::size_t n = 0;
       asio::async_read_until(
           serial, asio::dynamic_buffer(result), '\n',
-          [&](const std::error_code& result_error, std::size_t result_n) {
+          [&](const std::error_code &result_error, std::size_t result_n) {
             error = result_error;
             n = result_n;
           });

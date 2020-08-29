@@ -8,7 +8,7 @@ namespace Frontend {}
 }  // namespace Instrument
 
 template <class Frontend>
-void runonce(std::string& server, int port, const std::string& python_file) {
+void runonce(std::string &server, int port, const std::string &python_file) {
   Frontend fe{python_file};
 
   fe.startup(server, port);
@@ -55,11 +55,11 @@ void runonce(std::string& server, int port, const std::string& python_file) {
   }
 
   std::cout << Time() << '\n';
-  for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
+  for (auto &x : d) std::cout << x.first << ' ' << x.second << '\n';
 }
 
 template <class Frontend>
-void run(std::string& server, int port, const std::string& python_file,
+void run(std::string &server, int port, const std::string &python_file,
          const TimeStep dt, bool clear_terminal) {
   if (dt.count() > 7 * 86400 or dt.count() < 0) {
     std::cerr
@@ -113,7 +113,7 @@ void run(std::string& server, int port, const std::string& python_file,
 
     if (clear_terminal) std::printf("\033c");
     std::cout << Time() << '\n';
-    for (auto& x : d) std::cout << x.first << ' ' << x.second << '\n';
+    for (auto &x : d) std::cout << x.first << ' ' << x.second << '\n';
 
     Sleep(wait_until);
   }
@@ -126,7 +126,7 @@ void run(std::string& server, int port, const std::string& python_file,
   }
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   // Start a python interpreter in case python code will be executed
   auto py = Python::createPython();
 

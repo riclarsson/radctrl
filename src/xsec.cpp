@@ -7,9 +7,9 @@
 namespace Absorption {
 namespace Xsec {
 template <size_t N>
-void internal_compute(Results<N>& res, Results<N>& src,
-                      const std::vector<double>& f,
-                      const std::vector<Band>& bands, const Path::Point& atm) {
+void internal_compute(Results<N> &res, Results<N> &src,
+                      const std::vector<double> &f,
+                      const std::vector<Band> &bands, const Path::Point &atm) {
   std::fill(res.x.begin(), res.x.end(), PropMat<N>());
   std::fill(src.x.begin(), src.x.end(), PropMat<N>());
   std::fill(res.dx.begin(), res.dx.end(), res.x);
@@ -44,7 +44,7 @@ void internal_compute(Results<N>& res, Results<N>& src,
     }
 
     // Add all bands
-    for (const auto& band : bands) {
+    for (const auto &band : bands) {
       Lbl::compute(lbl_res, lbl_src, lbl_clc, f, band, atm, z);
     }
 
@@ -112,20 +112,20 @@ void internal_compute(Results<N>& res, Results<N>& src,
   }
 }
 
-void compute(Results<1>& res, Results<1>& src, const std::vector<double>& f,
-             const std::vector<Band>& bands, const Path::Point& atm) {
+void compute(Results<1> &res, Results<1> &src, const std::vector<double> &f,
+             const std::vector<Band> &bands, const Path::Point &atm) {
   internal_compute(res, src, f, bands, atm);
 }
-void compute(Results<2>& res, Results<2>& src, const std::vector<double>& f,
-             const std::vector<Band>& bands, const Path::Point& atm) {
+void compute(Results<2> &res, Results<2> &src, const std::vector<double> &f,
+             const std::vector<Band> &bands, const Path::Point &atm) {
   internal_compute(res, src, f, bands, atm);
 }
-void compute(Results<3>& res, Results<3>& src, const std::vector<double>& f,
-             const std::vector<Band>& bands, const Path::Point& atm) {
+void compute(Results<3> &res, Results<3> &src, const std::vector<double> &f,
+             const std::vector<Band> &bands, const Path::Point &atm) {
   internal_compute(res, src, f, bands, atm);
 }
-void compute(Results<4>& res, Results<4>& src, const std::vector<double>& f,
-             const std::vector<Band>& bands, const Path::Point& atm) {
+void compute(Results<4> &res, Results<4> &src, const std::vector<double> &f,
+             const std::vector<Band> &bands, const Path::Point &atm) {
   internal_compute(res, src, f, bands, atm);
 }
 }  // namespace Xsec
