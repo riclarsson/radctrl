@@ -15,49 +15,24 @@ using Complex = std::complex<double>;
 }
 
 #define _complex_op_(TYPE)                                                 \
-  [[gnu::const]] constexpr Complex operator*(TYPE a, Complex z) noexcept { \
-    return Complex{a * z.real(), a * z.imag()};                            \
-  }                                                                        \
-  [[gnu::const]] constexpr Complex operator*(Complex z, TYPE a) noexcept { \
-    return Complex{a * z.real(), a * z.imag()};                            \
-  }                                                                        \
-  [[gnu::const]] constexpr Complex operator+(TYPE a, Complex z) noexcept { \
-    return Complex{a + z.real(), a + z.imag()};                            \
-  }                                                                        \
-  [[gnu::const]] constexpr Complex operator+(Complex z, TYPE a) noexcept { \
-    return Complex{a + z.real(), a + z.imag()};                            \
-  }                                                                        \
-  [[gnu::const]] constexpr Complex operator-(TYPE a, Complex z) noexcept { \
-    return Complex{a - z.real(), a - z.imag()};                            \
-  }                                                                        \
-  [[gnu::const]] constexpr Complex operator-(Complex z, TYPE a) noexcept { \
-    return Complex{z.real() - a, z.imag() - a};                            \
-  }                                                                        \
-  [[gnu::const]] constexpr Complex operator/(Complex z, TYPE a) noexcept { \
-    return Complex{z.real() / a, z.imag() / a};                            \
-  }                                                                        \
-  [[gnu::const]] constexpr Complex operator/(TYPE a, Complex z) noexcept { \
-    return conj(a * z) / abs2(z);                                          \
-  }
+[[gnu::const]] constexpr Complex operator+(Complex z1, TYPE e){return Complex(e + z1.real(), z1.imag());}  \
+[[gnu::const]] constexpr Complex operator-(Complex z1, TYPE e){return Complex(-e + z1.real(), z1.imag());}  \
+[[gnu::const]] constexpr Complex operator*(Complex z1, TYPE e){return Complex(e*z1.real(), e*z1.imag());}  \
+[[gnu::const]] constexpr Complex operator/(Complex z1, TYPE e){return Complex(z1.real()/e, z1.imag()/e);}  \
+[[gnu::const]] constexpr Complex operator+(TYPE e, Complex z1){return Complex(e + z1.real(), z1.imag());}  \
+[[gnu::const]] constexpr Complex operator-(TYPE e, Complex z1){return Complex(e - z1.real(), -z1.imag());}  \
+[[gnu::const]] constexpr Complex operator*(TYPE e, Complex z1){return Complex(e*z1.real(), e*z1.imag());}  \
+[[gnu::const]] constexpr Complex operator/(TYPE e, Complex z1){return Complex(e*z1.real()/(Constant::pow2(z1.imag()) + Constant::pow2(z1.real())), -e*z1.imag()/(Constant::pow2(z1.imag()) + Constant::pow2(z1.real())));}
 _complex_op_(double) _complex_op_(int)
 #undef _complex_op_
 
     [[gnu::const]] constexpr Complex
-    operator-(Complex z) noexcept {
-  return Complex{-z.real(), -z.imag()};
+    operator-(Complex z1) noexcept {
+  return Complex{-z1.real(), -z1.imag()};
 }
-[[gnu::const]] constexpr Complex operator+(Complex c, Complex z) noexcept {
-  return Complex{c.real() + z.real(), c.imag() + z.imag()};
-}
-[[gnu::const]] constexpr Complex operator-(Complex c, Complex z) noexcept {
-  return Complex{c.real() - z.real(), c.imag() - z.imag()};
-}
-[[gnu::const]] constexpr Complex operator*(Complex c, Complex z) noexcept {
-  return Complex{c.real() * z.real() - c.imag() * z.imag(),
-                 c.real() * z.imag() + c.imag() * z.real()};
-}
-[[gnu::const]] constexpr Complex operator/(Complex c, Complex z) noexcept {
-  return c * conj(z) / abs2(z);
-}
+[[gnu::const]] constexpr Complex operator+(Complex z1, Complex z2){return Complex(z1.real() + z2.real(), z1.imag() + z2.imag());}
+[[gnu::const]] constexpr Complex operator-(Complex z1, Complex z2){return Complex(z1.real() - z2.real(), z1.imag() - z2.imag());}
+[[gnu::const]] constexpr Complex operator*(Complex z1, Complex z2){return Complex(-z1.imag()*z2.imag() + z1.real()*z2.real(), z1.imag()*z2.real() + z1.real()*z2.imag());}
+[[gnu::const]] constexpr Complex operator/(Complex z1, Complex z2){return Complex(z1.imag()*z2.imag()/(Constant::pow2(z2.imag()) + Constant::pow2(z2.real())) + z1.real()*z2.real()/(Constant::pow2(z2.imag()) + Constant::pow2(z2.real())), z1.imag()*z2.real()/(Constant::pow2(z2.imag()) + Constant::pow2(z2.real())) - z1.real()*z2.imag()/(Constant::pow2(z2.imag()) + Constant::pow2(z2.real())));}
 
 #endif  // complex_h

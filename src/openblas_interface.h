@@ -1,9 +1,10 @@
 #ifndef openblas_interface_h
 #define openblas_interface_h
 
+#include "complex.h"
+
 #include <Eigen/Dense>
 
-#include "complex.h"
 #include "grids.h"
 
 namespace OpenBLAS {
