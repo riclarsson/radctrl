@@ -2395,14 +2395,14 @@ class HartmannTran {
 
  private:
   CalcType init(const Complex c2t) const noexcept {
-    if (abs2(c2t) == 0)
+    if (abs_squared(c2t) == 0)
       return CalcType::Noc2tHighZ;  // nb. Value of high/low changes elsewhere
-    else if (abs2(x) <= 9e-16 * abs2(sqrty * sqrty))
+    else if (abs_squared(x) <= 9e-16 * abs_squared(sqrty * sqrty))
       return CalcType::LowXandHighY;
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)) and
-             abs2(std::sqrt(x)) <= 16.e6)
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)) and
+             abs_squared(std::sqrt(x)) <= 16.e6)
       return CalcType::LowYandLowX;  // Weird case, untested
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)))
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)))
       return CalcType::LowYandHighX;
     else
       return CalcType::Full;
@@ -2428,7 +2428,7 @@ class HartmannTran {
         z1 = deltax * invGD;
         w1 = Faddeeva::w(Complex(0, 1) * z1);
         A = Constant::sqrt_pi * invGD * w1;
-        if (abs2(z1) < 16e6) {
+        if (abs_squared(z1) < 16e6) {
           calcs = CalcType::Noc2tLowZ;
           B = Constant::sqrt_pi * invGD *
               ((1 - Constant::pow2(z1)) * w1 + z1 / Constant::sqrt_pi);
@@ -3057,14 +3057,14 @@ class SpeedDependentHardCollisionVoigt {
 
  private:
   CalcType init(const Complex c2) const noexcept {
-    if (abs2(c2) == 0)
+    if (abs_squared(c2) == 0)
       return CalcType::Voigt;
-    else if (abs2(x) <= 9e-16 * abs2(sqrty * sqrty))
+    else if (abs_squared(x) <= 9e-16 * abs_squared(sqrty * sqrty))
       return CalcType::LowXandHighY;
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)) and
-             abs2(std::sqrt(x)) <= 16.e6)
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)) and
+             abs_squared(std::sqrt(x)) <= 16.e6)
       return CalcType::LowYandLowX;  // Weird case, untested
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)))
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)))
       return CalcType::LowYandHighX;
     else
       return CalcType::Full;
@@ -3591,14 +3591,14 @@ class SpeedDependentVoigt {
 
  private:
   CalcType init(const Complex c2) const noexcept {
-    if (abs2(c2) == 0)
+    if (abs_squared(c2) == 0)
       return CalcType::Voigt;
-    else if (abs2(x) <= 9e-16 * abs2(sqrty * sqrty))
+    else if (abs_squared(x) <= 9e-16 * abs_squared(sqrty * sqrty))
       return CalcType::LowXandHighY;
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)) and
-             abs2(std::sqrt(x)) <= 16.e6)
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)) and
+             abs_squared(std::sqrt(x)) <= 16.e6)
       return CalcType::LowYandLowX;  // Weird case, untested
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)))
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)))
       return CalcType::LowYandHighX;
     else
       return CalcType::Full;

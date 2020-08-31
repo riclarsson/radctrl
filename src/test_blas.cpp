@@ -1,3 +1,5 @@
+#include <iomanip>
+
 #include <Eigen/Eigenvalues>
 
 #include "openblas_interface.h"
@@ -22,7 +24,7 @@ void test002() {
   Eigen::MatrixXcd R(N, N), L(N, N);
   OpenBLAS::Helper::EigComplex comp;
 
-  std::cout << '\n' << m << '\n';
+  std::cout << std::setprecision(16) << '\n' << m << '\n';
   OpenBLAS::eig(e, L, R, m, comp);
   std::cout << e << '\n' << L << '\n' << R << '\n' << m << '\n';
 
@@ -66,7 +68,16 @@ void test002() {
   std::cout << veig << '\n';
 
   std::cout << "Eigen:\n" << eeig << "\nLAPACK:\n" << e << '\n' << '\n';
-  std::cout << "Eigen:\n" << veig << "\nLAPACK:\n" << R << '\n';
+  std::cout << "Eigen:\n" << veig << "\nLAPACK:\n" << R << '\n' << '\n';
+  
+  std::cout << "A:\n" << m << '\n';
+  std::cout << "Eigen A=PeP^{-1}:\n" << veig * eeig.asDiagonal() * veig.inverse() << '\n';
+  std::cout << "LAPACK A=PeP^{-1}:\n" << R * e.asDiagonal() * R.inverse() << '\n';
+  
+  std::cout << "eeig:\n" << eeig << '\n';
+  std::cout << "Eigen e=P^{-1}AP:\n" << (veig.inverse() * m * veig).diagonal() << '\n';
+  std::cout << "e:\n" << e << '\n';
+  std::cout << "LAPACK e=P^{-1}AP:\n" << (R.inverse() * m * R).diagonal() << '\n';
 }
 
 int main() {

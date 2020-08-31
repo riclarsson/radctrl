@@ -7,7 +7,7 @@
 
 using Complex = std::complex<double>;
 
-[[gnu::const]] constexpr double abs2(Complex z) noexcept {
+[[gnu::const]] constexpr double abs_squared(Complex z) noexcept {
   return Constant::pow2(z.real()) + Constant::pow2(z.imag());
 }
 [[gnu::const]] constexpr Complex conj(Complex z) {
