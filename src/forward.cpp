@@ -20,17 +20,22 @@ Results<N> internal_compute(const std::vector<RadVec<N>> &rad0,
   Results<N> rad(rad0, {}, path, f, {});
 
   // Propagation matrix on levels before (1) and after (2)
-  Absorption::Xsec::Results<N> K1(size), K2(size);
-  Absorption::Xsec::Results<N> S1(size), S2(size);
+  Absorption::PropagationMatrix::Results<N> K1(size), K2(size);
+  Absorption::PropagationMatrix::Results<N> S1(size), S2(size);
 
   // Compute the point farthest from the sensor and set it as starting point
   // (FIXME: Only LTE at this point)
-  Absorption::Xsec::compute(K1, S1, f, bands, path[path.size() - 1]);
+  Absorption::PropagationMatrix::compute(K2, S2, f, bands,
+                                         path[path.size() - 1]);
 
   // For all path points starting at the second to last
-  for (size_t ip = path.size() - 2; ip >= 0; ip--) {
+  for (size_t ip = path.size() - 2; ip < path.size() - 1; ip--) {
+    // First, swap the points
+    std::swap(K1, K2);
+    std::swap(S1, S2);
+
     // Compute the end-point of the path
-    Absorption::Xsec::compute(K2, S2, f, bands, path[ip]);
+    Absorption::PropagationMatrix::compute(K2, S2, f, bands, path[ip]);
 
     for (size_t iv = 0; iv < size; iv++) {
       auto J1 = source(K1.x[iv], RadVec<N>{S1.x[iv]}, RadVec<N>{K1.x[iv]},
@@ -38,13 +43,10 @@ Results<N> internal_compute(const std::vector<RadVec<N>> &rad0,
       auto J2 = source(K2.x[iv], RadVec<N>{S2.x[iv]}, RadVec<N>{K2.x[iv]},
                        B(path[ip].atm.Temp(), f[iv]));
       auto J = 0.5 * (J1 + J2);
-      auto T = linear_transmat(K1.x[iv], K2.x[iv], 1.0);
+      auto T =
+          linear_transmat(K1.x[iv], K2.x[iv], dist(path[ip], path[ip + 1]));
       rad.x(ip, iv) = update(rad.x(ip + 1, iv), T, J);
     }
-
-    // Lastly, swap the points
-    std::swap(K1, K2);
-    std::swap(S1, S2);
   }
 
   return rad;

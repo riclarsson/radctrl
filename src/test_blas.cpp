@@ -1,6 +1,5 @@
-#include <iomanip>
-
 #include <Eigen/Eigenvalues>
+#include <iomanip>
 
 #include "openblas_interface.h"
 
@@ -32,52 +31,24 @@ void test002() {
   Eigen::MatrixXcd veig = solver.eigenvectors();
   Eigen::VectorXcd eeig = solver.eigenvalues();
 
-  //   for (size_t i = 0; i < N; i++) {
-  //     bool negative = false;
-  //     bool imaginary_larger = false;
-  //     double max = 0;
-  //     for (size_t j = 0; j < N; j++) {
-  //       double thisabs = std::abs(veig(i, j));
-  //       if (max < thisabs) {
-  //         max = thisabs;
-  //         if (std::abs(veig(i, j).imag()) > std::abs(veig(i, j).real())) {
-  //           imaginary_larger = true;
-  //           if (veig(i, j).imag() < 0)
-  //             negative = true;
-  //           else
-  //             negative = false;
-  //         } else {
-  //           imaginary_larger = false;
-  //           if (veig(i, j).real() < 0)
-  //             negative = true;
-  //           else
-  //             negative = false;
-  //         }
-  //       }
-  //     }
-  //
-  //     if (negative and imaginary_larger)
-  //       veig.col(i) *= Complex(0, 1);
-  //     else if (negative)
-  //       veig.col(i) *= -1;
-  //     else if (imaginary_larger)
-  //       veig.col(i) *= Complex(0, -1);
-  //   }
-
   std::cout << eeig << '\n';
   std::cout << veig << '\n';
 
   std::cout << "Eigen:\n" << eeig << "\nLAPACK:\n" << e << '\n' << '\n';
   std::cout << "Eigen:\n" << veig << "\nLAPACK:\n" << R << '\n' << '\n';
-  
+
   std::cout << "A:\n" << m << '\n';
-  std::cout << "Eigen A=PeP^{-1}:\n" << veig * eeig.asDiagonal() * veig.inverse() << '\n';
-  std::cout << "LAPACK A=PeP^{-1}:\n" << R * e.asDiagonal() * R.inverse() << '\n';
-  
+  std::cout << "Eigen A=PeP^{-1}:\n"
+            << veig * eeig.asDiagonal() * veig.inverse() << '\n';
+  std::cout << "LAPACK A=PeP^{-1}:\n"
+            << R * e.asDiagonal() * R.inverse() << '\n';
+
   std::cout << "eeig:\n" << eeig << '\n';
-  std::cout << "Eigen e=P^{-1}AP:\n" << (veig.inverse() * m * veig).diagonal() << '\n';
+  std::cout << "Eigen e=P^{-1}AP:\n"
+            << (veig.inverse() * m * veig).diagonal() << '\n';
   std::cout << "e:\n" << e << '\n';
-  std::cout << "LAPACK e=P^{-1}AP:\n" << (R.inverse() * m * R).diagonal() << '\n';
+  std::cout << "LAPACK e=P^{-1}AP:\n"
+            << (R.inverse() * m * R).diagonal() << '\n';
 }
 
 int main() {

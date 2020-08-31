@@ -202,7 +202,7 @@ constexpr std::array<double, 7> PolarizationVector(Angles a) {
   else if constexpr (pol == Polarization::None)
     return {1, 0, 0, 0, 0, 0};
   else
-    std::exit(1);
+    std::terminate();
 }
 
 struct Model {

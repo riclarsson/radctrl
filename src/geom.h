@@ -494,13 +494,17 @@ class Nav {
     return is >> n.pos >> n.los >> n.ell;
   }
 
-  Pos<PosType::Ellipsoidal> ellipsoidPos() const {
+  [[nodiscard]] Pos<PosType::Ellipsoidal> ellipsoidPos() const {
     return Pos<PosType::Ellipsoidal>{pos, ell};
   }
 
-  Los<LosType::Spherical> sphericalLos() const {
+  [[nodiscard]] Los<LosType::Spherical> sphericalLos() const {
     return Los<LosType::Spherical>{los, pos, ell};
   }
+
+  [[nodiscard]] double x() const noexcept { return pos.x(); }
+  [[nodiscard]] double y() const noexcept { return pos.y(); }
+  [[nodiscard]] double z() const noexcept { return pos.z(); }
 };  // Nav
 
 void readNav(File::File<File::Operation::Read, File::Type::Xml> &in, Nav &n);

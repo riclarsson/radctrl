@@ -2469,7 +2469,7 @@ class Isotopologue {
         return PartitionFunction::compute_partfun_COCl22657(T);
       }
     }
-    std::exit(1);
+    std::terminate();
   }
 };
 

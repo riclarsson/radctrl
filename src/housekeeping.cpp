@@ -15,42 +15,42 @@ void runonce(std::string &dev, int baud, const std::string &python_file) {
     std::cerr << "Failure calling hk.startup(\"" << dev << "\", " << baud
               << ").  Error:\n";
     std::cerr << hk.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   hk.init();
   if (hk.has_error()) {
     std::cerr << "Failure calling hk.init().  Error:\n";
     std::cerr << hk.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   hk.run();
   if (hk.has_error()) {
     std::cerr << "Failure calling hk.run().  Error:\n";
     std::cerr << hk.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   hk.get_data();
   if (hk.has_error()) {
     std::cerr << "Failure calling hk.get_data().  Error:\n";
     std::cerr << hk.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   auto d = hk.data();
   if (hk.has_error()) {
     std::cerr << "Failure calling hk.data().  Error:\n";
     std::cerr << hk.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   hk.close();
   if (hk.has_error()) {
     std::cerr << "Failure calling hk.close().  Error:\n";
     std::cerr << hk.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   std::cout << Time() << '\n';
@@ -64,7 +64,7 @@ void run(std::string &dev, int baud, const std::string &python_file,
     std::cerr
         << "Bad time: " << dt
         << ".  Allowed range 0 sec to ~ 1 week to avoid under-/overflow\n";
-    std::exit(1);
+    std::terminate();
   }
 
   Housekeeping hk{python_file};
@@ -74,14 +74,14 @@ void run(std::string &dev, int baud, const std::string &python_file,
     std::cerr << "Failure calling hk.startup(\"" << dev << "\", " << baud
               << ").  Error:\n";
     std::cerr << hk.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   hk.init();
   if (hk.has_error()) {
     std::cerr << "Failure calling hk.init().  Error:\n";
     std::cerr << hk.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   for (;;) {
@@ -93,21 +93,21 @@ void run(std::string &dev, int baud, const std::string &python_file,
     if (hk.has_error()) {
       std::cerr << "Failure calling hk.run().  Error:\n";
       std::cerr << hk.error_string() << '\n';
-      std::exit(1);
+      std::terminate();
     }
 
     hk.get_data();
     if (hk.has_error()) {
       std::cerr << "Failure calling hk.get_data().  Error:\n";
       std::cerr << hk.error_string() << '\n';
-      std::exit(1);
+      std::terminate();
     }
 
     auto d = hk.data();
     if (hk.has_error()) {
       std::cerr << "Failure calling hk.data().  Error:\n";
       std::cerr << hk.error_string() << '\n';
-      std::exit(1);
+      std::terminate();
     }
 
     if (clear_terminal) std::printf("\033c");
@@ -121,7 +121,7 @@ void run(std::string &dev, int baud, const std::string &python_file,
   if (hk.has_error()) {
     std::cerr << "Failure calling hk.close().  Error:\n";
     std::cerr << hk.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 }
 
@@ -174,6 +174,6 @@ int main(int argc, char **argv) {
     }
   } else {
     std::cerr << "Bad machine, see --help\n";
-    std::exit(1);
+    std::terminate();
   }
 }

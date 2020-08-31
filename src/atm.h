@@ -84,6 +84,22 @@ class Point {
     return {nlte[ids.first], nlte[ids.second]};
   }
 
+  double NumberDensity() const noexcept {
+    using Constant::k;
+    return P / (k * T);
+  }
+
+  double NumberDensityPressureDerivative() const noexcept {
+    using Constant::k;
+    return 1 / (k * T);
+  }
+
+  double NumberDensityTemperatureDerivative() const noexcept {
+    using Constant::k;
+    using Constant::pow2;
+    return -P / (k * pow2(T));
+  }
+
   friend Point operator*(double x, const Point &ap) noexcept {
     Point out{ap};
 

@@ -10,7 +10,7 @@ Runtime RuntimeSetup::Run() {
     return cli;
   } else {
     std::cerr << "Bad run\n";
-    std::exit(1);
+    std::terminate();
   }
 }
 }  // namespace CommandLine

@@ -162,7 +162,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       run<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
     now = Time();
   }
 
@@ -173,7 +173,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       init<i + 1>(j, manual);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -185,7 +185,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       startup<i + 1>(j, h, t, u, fl, fc, ius, bus, m);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -195,7 +195,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       close<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -205,7 +205,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       delete_error<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -215,7 +215,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       get_data<i + 1>(j, k);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -225,7 +225,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       return name<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -235,7 +235,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       return error_string<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -245,7 +245,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       return has_error<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -265,7 +265,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       return datavec<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 };
 

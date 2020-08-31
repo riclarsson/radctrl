@@ -514,7 +514,7 @@ struct Output {
     else if (p == Parameter::DV)
       return DV;
     else
-      std::exit(1);
+      std::terminate();
   }
 };
 

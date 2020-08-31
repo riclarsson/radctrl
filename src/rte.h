@@ -53,19 +53,37 @@ class RadVec {
   constexpr double operator[](size_t i) const noexcept { return b[i]; }
 
   constexpr RadVec operator+(RadVec rv) const {
-    RadVec out;
-    for (size_t i = 0; i < N; i++) out.b[i] = rv.b[i] + b[i];
-    return out;
+    if constexpr (N == 4) {
+      return RadVec{b[0] + rv[0], b[1] + rv[1], b[2] + rv[2], b[3] + rv[3]};
+    } else if constexpr (RadVec::N == 3) {
+      return RadVec{b[0] + rv[0], b[1] + rv[1], b[2] + rv[2]};
+    } else if constexpr (RadVec::N == 2) {
+      return RadVec{b[0] + rv[0], b[1] + rv[1]};
+    } else if constexpr (RadVec::N == 1) {
+      return RadVec{b[0] + rv[0]};
+    }
   }
   constexpr RadVec operator*(double x) const {
-    RadVec out;
-    for (size_t i = 0; i < N; i++) out.b[i] = x * b[i];
-    return out;
+    if constexpr (N == 4) {
+      return RadVec{b[0] * x, b[1] * x, b[2] * x, b[3] * x};
+    } else if constexpr (RadVec::N == 3) {
+      return RadVec{b[0] * x, b[1] * x, b[2] * x};
+    } else if constexpr (RadVec::N == 2) {
+      return RadVec{b[0] * x, b[1] * x};
+    } else if constexpr (RadVec::N == 1) {
+      return RadVec{b[0] * x};
+    }
   }
   friend constexpr RadVec operator*(double x, RadVec rv) {
-    RadVec out;
-    for (size_t i = 0; i < N; i++) out.b[i] = x * rv.b[i];
-    return out;
+    if constexpr (RadVec::N == 4) {
+      return RadVec{x * rv[0], x * rv[1], x * rv[2], x * rv[3]};
+    } else if constexpr (RadVec::N == 3) {
+      return RadVec{x * rv[0], x * rv[1], x * rv[2]};
+    } else if constexpr (RadVec::N == 2) {
+      return RadVec{x * rv[0], x * rv[1]};
+    } else if constexpr (RadVec::N == 1) {
+      return RadVec{x * rv[0]};
+    }
   }
 };  // RadVec
 
@@ -219,27 +237,41 @@ constexpr RadVec<N> dupdate(const RadVec<N> &I, const TraMat<N> &T,
 }
 
 /** Planck's law
- *
- * FIXME: should not return double but a proper unit
  */
-double B(Temperature<TemperatureType::K> T,
-         Frequency<FrequencyType::Freq> f) noexcept;
+SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+                 FrequencyType::Freq>
+B(Temperature<TemperatureType::K> T, Frequency<FrequencyType::Freq> f) noexcept;
+
+/** Inverse of Planck's law
+ */
+SpectralRadiance<PowerType::T, AngleType::Steradian, AreaType::m2,
+                 FrequencyType::Freq>
+invB(SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+                      FrequencyType::Freq>
+         I,
+     Frequency<FrequencyType::Freq> f) noexcept;
 
 /** Planck's law temperature derivative
  */
-double dBdT(Temperature<TemperatureType::K> T,
-            Frequency<FrequencyType::Freq> f) noexcept;
+SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+                 FrequencyType::Freq>
+dBdT(Temperature<TemperatureType::K> T,
+     Frequency<FrequencyType::Freq> f) noexcept;
 
 /** Planck's law frequency derivative
  */
-double dBdf(Temperature<TemperatureType::K> T,
-            Frequency<FrequencyType::Freq> f) noexcept;
+SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+                 FrequencyType::Freq>
+dBdf(Temperature<TemperatureType::K> T,
+     Frequency<FrequencyType::Freq> f) noexcept;
 
 /** Returns K^-1 (A B + S)
  */
 template <size_t N>
-constexpr RadVec<N> source(const Absorption::PropMat<N> &K, const RadVec<N> &S,
-                           const RadVec<N> &A, const double &B) noexcept {
+constexpr RadVec<N> source(
+    const Absorption::PropMat<N> &K, const RadVec<N> &S, const RadVec<N> &A,
+    const SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+                           FrequencyType::Freq> &B) noexcept {
   using Constant::pow2;
   if constexpr (N == 4) {
     const double invden = 1.0 / K.inverse_denominator();
@@ -320,11 +352,14 @@ constexpr RadVec<N> source(const Absorption::PropMat<N> &K, const RadVec<N> &S,
  * where J is K^-1 (A B + S) [e.g., source(K, S, A, B)]
  */
 template <size_t N>
-constexpr RadVec<N> dsource(const Absorption::PropMat<N> &K,
-                            const Absorption::PropMat<N> &dK,
-                            const RadVec<N> &J, const RadVec<N> &dS,
-                            const RadVec<N> &A, const RadVec<N> &dA,
-                            const double &B, const double &dB) {
+constexpr RadVec<N> dsource(
+    const Absorption::PropMat<N> &K, const Absorption::PropMat<N> &dK,
+    const RadVec<N> &J, const RadVec<N> &dS, const RadVec<N> &A,
+    const RadVec<N> &dA,
+    const SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+                           FrequencyType::Freq> &B,
+    const SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+                           FrequencyType::Freq> &dB) {
   using Constant::pow2;
   using Constant::pow4;
   if constexpr (N == 4) {

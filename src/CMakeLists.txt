@@ -302,3 +302,9 @@ add_executable(test_grids test_grids.cpp)
 add_executable(test_blas test_blas.cpp)
 target_link_libraries(test_blas PUBLIC math)
 ########################################################################################
+
+########################################################################################
+# Tests to understand Forward
+add_executable(test_forward test_forward.cpp)
+target_link_libraries(test_forward PUBLIC forward)
+########################################################################################

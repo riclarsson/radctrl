@@ -16,42 +16,42 @@ void runonce(std::string &server, int port, const std::string &python_file) {
     std::cerr << "Failure calling fe.startup(\"" << server << "\", " << port
               << ").  Error:\n";
     std::cerr << fe.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   fe.init();
   if (fe.has_error()) {
     std::cerr << "Failure calling fe.init().  Error:\n";
     std::cerr << fe.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   fe.run();
   if (fe.has_error()) {
     std::cerr << "Failure calling fe.run().  Error:\n";
     std::cerr << fe.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   fe.get_data();
   if (fe.has_error()) {
     std::cerr << "Failure calling fe.get_data().  Error:\n";
     std::cerr << fe.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   auto d = fe.data();
   if (fe.has_error()) {
     std::cerr << "Failure calling fe.data().  Error:\n";
     std::cerr << fe.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   fe.close();
   if (fe.has_error()) {
     std::cerr << "Failure calling fe.close().  Error:\n";
     std::cerr << fe.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   std::cout << Time() << '\n';
@@ -65,7 +65,7 @@ void run(std::string &server, int port, const std::string &python_file,
     std::cerr
         << "Bad time: " << dt
         << ".  Allowed range 0 sec to ~ 1 week to avoid under-/overflow\n";
-    std::exit(1);
+    std::terminate();
   }
 
   Frontend fe{python_file};
@@ -75,14 +75,14 @@ void run(std::string &server, int port, const std::string &python_file,
     std::cerr << "Failure calling fe.startup(\"" << server << "\", " << port
               << ").  Error:\n";
     std::cerr << fe.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   fe.init();
   if (fe.has_error()) {
     std::cerr << "Failure calling fe.init().  Error:\n";
     std::cerr << fe.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   for (;;) {
@@ -94,21 +94,21 @@ void run(std::string &server, int port, const std::string &python_file,
     if (fe.has_error()) {
       std::cerr << "Failure calling fe.run().  Error:\n";
       std::cerr << fe.error_string() << '\n';
-      std::exit(1);
+      std::terminate();
     }
 
     fe.get_data();
     if (fe.has_error()) {
       std::cerr << "Failure calling fe.get_data().  Error:\n";
       std::cerr << fe.error_string() << '\n';
-      std::exit(1);
+      std::terminate();
     }
 
     auto d = fe.data();
     if (fe.has_error()) {
       std::cerr << "Failure calling fe.data().  Error:\n";
       std::cerr << fe.error_string() << '\n';
-      std::exit(1);
+      std::terminate();
     }
 
     if (clear_terminal) std::printf("\033c");
@@ -122,7 +122,7 @@ void run(std::string &server, int port, const std::string &python_file,
   if (fe.has_error()) {
     std::cerr << "Failure calling fe.close().  Error:\n";
     std::cerr << fe.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 }
 
@@ -167,6 +167,6 @@ int main(int argc, char **argv) {
     }
   } else {
     std::cerr << "Bad machine, see --help\n";
-    std::exit(1);
+    std::terminate();
   }
 }

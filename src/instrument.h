@@ -958,7 +958,7 @@ void ExchangeData(
     data[i].newdata.store(false);
   }
 
-  if (rawplots.size() not_eq N) std::exit(1);
+  if (rawplots.size() not_eq N) std::terminate();
 
 wait:
   Sleep(0.1);

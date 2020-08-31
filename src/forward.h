@@ -3,7 +3,7 @@
 
 #include "grids.h"
 #include "jacobian.h"
-#include "rte.h"
+#include "rtehelpers.h"
 #include "xsec.h"
 
 namespace RTE {
@@ -23,6 +23,14 @@ struct Results {
     for (size_t i = 0; i < freqs.size(); i++) {
       x(path.size() - 1, i) = rad0[i];
     }
+  }
+
+  [[nodiscard]] std::vector<RadVec<N>> sensor_results() const {
+    std::vector<RadVec<N>> out(x.sizes()[1]);
+    for (std::size_t i = 0; i < x.sizes()[1]; i++) {
+      out[i] = x(0, i);
+    }
+    return out;
   }
 };
 

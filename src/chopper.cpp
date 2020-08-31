@@ -17,7 +17,7 @@ void run(const std::string &dev, int offset, double sleeptime,
     std::cerr << "Failure calling chop.startup(\"" << dev << "\", " << offset
               << ", " << sleeptime << ").  Error:\n";
     std::cerr << chop.error_string() << '\n';
-    std::exit(1);
+    std::terminate();
   }
 
   CommandLine::RuntimeSetup setup("chop");
@@ -126,6 +126,6 @@ int main(int argc, char **argv) {
                                              pythonfile);
   } else {
     std::cerr << "Bad machine, see --help\n";
-    std::exit(1);
+    std::terminate();
   }
 }

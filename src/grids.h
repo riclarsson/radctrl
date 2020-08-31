@@ -107,7 +107,7 @@ class Grid {
                                  [](auto &a) { return a < 0; }) or
                      gridsize.back() <= ind.back()) {
       std::cerr << "Out of range\n";
-      std::exit(1);
+      std::terminate();
     }
 
     std::size_t posmul{gridsize.back()};
@@ -117,7 +117,7 @@ class Grid {
       posmul *= gridsize[i];
       [[unlikely]] if (ind[i] >= gridsize[i]) {
         std::cerr << "Out of range\n";
-        std::exit(1);
+        std::terminate();
       }
     }
     //     std::cout << pos << '\n';

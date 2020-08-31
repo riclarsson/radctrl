@@ -5,7 +5,7 @@
 #include "xsec_lbl.h"
 
 namespace Absorption {
-namespace Xsec {
+namespace PropagationMatrix {
 template <size_t N>
 void internal_compute(Results<N> &res, Results<N> &src,
                       const std::vector<double> &f,
@@ -20,9 +20,9 @@ void internal_compute(Results<N> &res, Results<N> &src,
   [[maybe_unused]] const auto a =
       Zeeman::angles(mag.u(), mag.v(), mag.w(), los.za(), los.aa());
 
-  Lbl::Results lbl_res(f.size());
-  Lbl::Results lbl_src(f.size());
-  Lbl::Results lbl_clc(f.size());
+  Xsec::Lbl::Results lbl_res(f.size());
+  Xsec::Lbl::Results lbl_src(f.size());
+  Xsec::Lbl::Results lbl_clc(f.size());
   bool first = true;
   for (auto z : {Polarization::SigmaMinus, Polarization::Pi,
                  Polarization::SigmaPlus, Polarization::None}) {
@@ -45,7 +45,7 @@ void internal_compute(Results<N> &res, Results<N> &src,
 
     // Add all bands
     for (const auto &band : bands) {
-      Lbl::compute(lbl_res, lbl_src, lbl_clc, f, band, atm, z);
+      Xsec::Lbl::compute(lbl_res, lbl_src, lbl_clc, f, band, atm, z);
     }
 
     // FIXME: Add other types of cross-sections here
@@ -110,6 +110,43 @@ void internal_compute(Results<N> &res, Results<N> &src,
     }  // Add other types of polarizations (e.g., Faraday) here if and when
        // necessary
   }
+
+  // Turn cross-sections into absorption coefficients
+  const auto numden = atm.atm.NumberDensity();
+  std::transform(res.x.cbegin(), res.x.cend(), res.x.begin(),
+                 [numden](auto &x) { return x * numden; });
+  std::transform(src.x.cbegin(), src.x.cend(), src.x.begin(),
+                 [numden](auto &x) { return x * numden; });
+  //   for (size_t i = 0; i < res.dx.size(); i++) {
+  //     if (jac[i] == Derivative::Type::Temperature)
+  //       std::transform(res.dx[i].cbegin(), res.dx[i].cend(),
+  //       res.dx[i].begin(),
+  //       [numden=atm.atm.NumberDensityTemperatureDerivative()](auto& x){return
+  //       x*numden;});
+  //     else if (jac[i] == Derivative::Type::Pressure)
+  //       std::transform(res.dx[i].cbegin(), res.dx[i].cend(),
+  //       res.dx[i].begin(),
+  //       [numden=atm.atm.NumberDensityPressureDerivative()](auto& x){return
+  //       x*numden;});
+  //     else
+  //       std::transform(res.dx[i].cbegin(), res.dx[i].cend(),
+  //       res.dx[i].begin(), [numden](auto& x){return x*numden;});
+  //   }
+  //   for (size_t i = 0; i < res.dx.size(); i++) {
+  //     if (jac[i] == Derivative::Type::Temperature)
+  //       std::transform(src.dx[i].cbegin(), src.dx[i].cend(),
+  //       src.dx[i].begin(),
+  //       [numden=atm.atm.NumberDensityTemperatureDerivative()](auto& x){return
+  //       x*numden;});
+  //     else if (jac[i] == Derivative::Type::Pressure)
+  //       std::transform(src.dx[i].cbegin(), src.dx[i].cend(),
+  //       src.dx[i].begin(),
+  //       [numden=atm.atm.NumberDensityPressureDerivative()](auto& x){return
+  //       x*numden;});
+  //     else
+  //       std::transform(src.dx[i].cbegin(), src.dx[i].cend(),
+  //       src.dx[i].begin(), [numden](auto& x){return x*numden;});
+  //   }
 }
 
 void compute(Results<1> &res, Results<1> &src, const std::vector<double> &f,
@@ -128,5 +165,5 @@ void compute(Results<4> &res, Results<4> &src, const std::vector<double> &f,
              const std::vector<Band> &bands, const Path::Point &atm) {
   internal_compute(res, src, f, bands, atm);
 }
-}  // namespace Xsec
+}  // namespace PropagationMatrix
 }  // namespace Absorption

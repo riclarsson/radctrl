@@ -128,6 +128,44 @@
 ENUMCLASS(PressureType, char, Pa, Atm, Bar,
           Torr)  // PressureType
 
+ENUMCLASS(TemperatureType, char, K, C, F,
+          eV)  // TemperatureType
+
+ENUMCLASS(EnergyType, char, Joule,
+          invcm)  // EnergyType
+
+ENUMCLASS(NLTEType, char, ratio)  // TemperatureType
+
+ENUMCLASS(MagnetismType, char, T,
+          G)  // MagnetismType
+
+ENUMCLASS(WindType, char,
+          meters_per_second)  // WindType
+
+ENUMCLASS(VMRType, char,
+          ratio)  // VMRType
+
+ENUMCLASS(DistanceType, char, meter)
+
+ENUMCLASS(AltitudeType, char,
+          meter)  // AltType
+
+ENUMCLASS(LengthType, char,
+          meter)  // AltType
+
+ENUMCLASS(CoordinateType, char, deg, lon, lat,
+          rad)  // AltType
+
+ENUMCLASS(FrequencyType, char, Freq, Kayser,
+          Wavelength)  // FrequencyType
+
+ENUMCLASS(AreaType, char, m2,
+          cm2)  // AreaType
+
+ENUMCLASS(AngleType, char, Steradian)  // AngleType
+
+ENUMCLASS(PowerType, char, W, T)  // PowerType
+
 template <PressureType X>
 class Pressure final {
   SCALAR(Pressure)
@@ -163,9 +201,6 @@ class Pressure final {
     pa2self();
   }
 };  // Pressure
-
-ENUMCLASS(TemperatureType, char, K, C, F,
-          eV)  // TemperatureType
 
 template <TemperatureType X>
 class Temperature final {
@@ -203,8 +238,6 @@ class Temperature final {
   }
 };  // Temperature
 
-ENUMCLASS(NLTEType, char, ratio)  // TemperatureType
-
 template <NLTEType X>
 class NLTE final {
   SCALAR(NLTE)
@@ -219,9 +252,6 @@ class NLTE final {
     ratio2self();
   }
 };  // Temperature
-
-ENUMCLASS(MagnetismType, char, T,
-          G)  // MagnetismType
 
 template <MagnetismType X>
 class Magnetism {
@@ -270,9 +300,6 @@ class Magnetism {
   constexpr double w() const { return M[2]; }
 };  // Magnetism
 
-ENUMCLASS(WindType, char,
-          meters_per_second)  // WindType
-
 template <WindType X>
 class Wind {
   std::array<double, 3> W;
@@ -307,9 +334,6 @@ class Wind {
     return is >> w.W[0] >> w.W[1] >> w.W[2];
   }
 };  // Wind
-
-ENUMCLASS(VMRType, char,
-          ratio)  // VMRType
 
 template <VMRType X>
 class VMR {
@@ -351,8 +375,6 @@ class VMR {
   }
 };  // VMR
 
-ENUMCLASS(DistanceType, char, meter)
-
 template <DistanceType X>
 class Distance final {
   SCALAR(Distance)
@@ -367,9 +389,6 @@ class Distance final {
     d2self();
   }
 };  // Distance
-
-ENUMCLASS(AltitudeType, char,
-          meter)  // AltType
 
 template <AltitudeType X>
 class Altitude final {
@@ -386,9 +405,6 @@ class Altitude final {
   }
 };  // Altitude
 
-ENUMCLASS(LengthType, char,
-          meter)  // AltType
-
 template <LengthType X>
 class Length final {
   SCALAR(Length)
@@ -403,9 +419,6 @@ class Length final {
     m2self();
   }
 };  // Length
-
-ENUMCLASS(CoordinateType, char, deg, lon, lat,
-          rad)  // AltType
 
 template <CoordinateType X>
 class Coordinate final {
@@ -447,9 +460,6 @@ class Coordinate final {
   }
 };  // Coordinate
 
-ENUMCLASS(FrequencyType, char, Freq, Kayser,
-          Wavelength)  // FrequencyType
-
 template <FrequencyType X>
 class Frequency final {
   SCALAR(Frequency)
@@ -479,9 +489,6 @@ class Frequency final {
   }
 };  // Frequency
 
-ENUMCLASS(AreaType, char, m2,
-          cm2)  // AreaType
-
 template <FrequencyType X, AreaType Y>
 class LineStrength {
   SCALAR(LineStrength)
@@ -505,9 +512,6 @@ class LineStrength {
     hzm22self();
   }
 };  // LineStrength
-
-ENUMCLASS(EnergyType, char, Joule,
-          invcm)  // EnergyType
 
 template <EnergyType X>
 class Energy {
@@ -556,6 +560,32 @@ class PressureBroadening {
     hzpa2self();
   }
 };  // PressureBroadening
+
+template <PowerType X, AngleType Y, AreaType Z, FrequencyType W>
+class SpectralRadiance {
+  SCALAR(SpectralRadiance)
+  void sr2self() noexcept {
+    if constexpr (X == PowerType::W and Y == AngleType::Steradian and
+                  Z == AreaType::m2 and W == FrequencyType::Freq) {
+    }
+  }
+
+ public:
+  constexpr SpectralRadiance(
+      const SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+                             FrequencyType::Freq> &sr) noexcept
+      : val(sr.value()) {
+    static_assert(X == PowerType::W and Y == AngleType::Steradian and
+                  Z == AreaType::m2 and W == FrequencyType::Freq);
+  }
+  constexpr SpectralRadiance(
+      const SpectralRadiance<PowerType::T, AngleType::Steradian, AreaType::m2,
+                             FrequencyType::Freq> &sr) noexcept
+      : val(sr.value()) {
+    static_assert(X == PowerType::T and Y == AngleType::Steradian and
+                  Z == AreaType::m2 and W == FrequencyType::Freq);
+  }
+};
 
 #undef SCALAR
 

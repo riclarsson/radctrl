@@ -22,7 +22,7 @@ class RuntimeSetup {
     } else {
       std::cerr << "Bad option addition, "
                 << "*this has been made invalid [DEV ERROR]\n";
-      std::exit(1);
+      std::terminate();
     }
   }
   void Insert(RuntimeSetup &c) {
@@ -32,7 +32,7 @@ class RuntimeSetup {
     } else {
       std::cerr << "Bad menu addition, "
                 << "*this has been made invalid [DEV ERROR]\n";
-      std::exit(1);
+      std::terminate();
     }
   }
 

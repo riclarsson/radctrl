@@ -6,7 +6,7 @@
 #include "propmat.h"
 
 namespace Absorption {
-namespace Xsec {
+namespace PropagationMatrix {
 
 template <size_t N>
 struct Results {
@@ -25,7 +25,7 @@ void compute(Results<3> &, Results<3> &, const std::vector<double> &,
              const std::vector<Band> &, const Path::Point &);
 void compute(Results<4> &, Results<4> &, const std::vector<double> &,
              const std::vector<Band> &, const Path::Point &);
-}  // namespace Xsec
+}  // namespace PropagationMatrix
 }  // namespace Absorption
 
 #endif  // absorption_h
