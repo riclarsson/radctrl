@@ -7,10 +7,41 @@
 #include "complex.h"
 #include "constants.h"
 #include "enums.h"
+#include "grids.h"
 #include "propmat.h"
 #include "units.h"
 
 namespace RTE {
+ENUMCLASS(PolarizationType, unsigned char, I, Q, U, V, IpQ, ImQ, IpU, ImU, IpV,
+          ImV)
+
+struct Polarization {
+  PolarizationType pol;
+  Grid<double, 2> rotation;
+
+  Polarization(std::size_t N,
+               double circular_rotation [[maybe_unused]]) noexcept
+      : rotation(0, N, N) {
+    if (N == 4) {
+      rotation(0, 0) = 1;
+      rotation(1, 1) = rotation(2, 2) = std::cos(2 * circular_rotation);
+      rotation(1, 2) = -std::sin(2 * circular_rotation);
+      rotation(2, 1) = std::sin(2 * circular_rotation);
+      rotation(3, 3) = 1;
+    } else if (N == 3) {
+      rotation(0, 0) = 1;
+      rotation(1, 1) = rotation(2, 2) = std::cos(2 * circular_rotation);
+      rotation(1, 2) = -std::sin(2 * circular_rotation);
+      rotation(2, 1) = std::sin(2 * circular_rotation);
+    } else if (N == 2) {
+      rotation(0, 0) = 1;
+      rotation(1, 1) = std::cos(2 * circular_rotation);  // Destructive...
+    } else if (N == 2) {
+      rotation(0, 0) = 1;
+    }
+  }
+};
+
 template <size_t n>
 class RadVec {
   static constexpr size_t N = n;

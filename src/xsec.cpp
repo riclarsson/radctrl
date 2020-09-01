@@ -8,7 +8,7 @@ namespace Absorption {
 namespace PropagationMatrix {
 template <size_t N>
 void internal_compute(Results<N> &res, Results<N> &src,
-                      const std::vector<double> &f,
+                      const std::vector<Frequency<FrequencyType::Freq>> &f,
                       const std::vector<Band> &bands, const Path::Point &atm) {
   std::fill(res.x.begin(), res.x.end(), PropMat<N>());
   std::fill(src.x.begin(), src.x.end(), PropMat<N>());
@@ -149,19 +149,23 @@ void internal_compute(Results<N> &res, Results<N> &src,
   //   }
 }
 
-void compute(Results<1> &res, Results<1> &src, const std::vector<double> &f,
+void compute(Results<1> &res, Results<1> &src,
+             const std::vector<Frequency<FrequencyType::Freq>> &f,
              const std::vector<Band> &bands, const Path::Point &atm) {
   internal_compute(res, src, f, bands, atm);
 }
-void compute(Results<2> &res, Results<2> &src, const std::vector<double> &f,
+void compute(Results<2> &res, Results<2> &src,
+             const std::vector<Frequency<FrequencyType::Freq>> &f,
              const std::vector<Band> &bands, const Path::Point &atm) {
   internal_compute(res, src, f, bands, atm);
 }
-void compute(Results<3> &res, Results<3> &src, const std::vector<double> &f,
+void compute(Results<3> &res, Results<3> &src,
+             const std::vector<Frequency<FrequencyType::Freq>> &f,
              const std::vector<Band> &bands, const Path::Point &atm) {
   internal_compute(res, src, f, bands, atm);
 }
-void compute(Results<4> &res, Results<4> &src, const std::vector<double> &f,
+void compute(Results<4> &res, Results<4> &src,
+             const std::vector<Frequency<FrequencyType::Freq>> &f,
              const std::vector<Band> &bands, const Path::Point &atm) {
   internal_compute(res, src, f, bands, atm);
 }

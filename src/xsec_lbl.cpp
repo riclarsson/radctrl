@@ -7,7 +7,8 @@ namespace Xsec {
 namespace Lbl {
 template <class LineShape>
 void compute_lineshape(std::vector<Complex> &comp_x,
-                       const std::vector<double> &f, const Complex lm,
+                       const std::vector<Frequency<FrequencyType::Freq>> &f,
+                       const Complex lm,
                        Frequency<FrequencyType::Freq> cutoff_low,
                        Frequency<FrequencyType::Freq> cutoff_upp,
                        LineShape ls) {
@@ -29,11 +30,11 @@ void compute_lineshape(std::vector<Complex> &comp_x,
 }
 
 template <class LineShape>
-void compute_mirrored_lineshape(std::vector<Complex> &comp_x,
-                                const std::vector<double> &f, const Complex lm,
-                                Frequency<FrequencyType::Freq> cutoff_low,
-                                Frequency<FrequencyType::Freq> cutoff_upp,
-                                LineShape ls) {
+void compute_mirrored_lineshape(
+    std::vector<Complex> &comp_x,
+    const std::vector<Frequency<FrequencyType::Freq>> &f, const Complex lm,
+    Frequency<FrequencyType::Freq> cutoff_low,
+    Frequency<FrequencyType::Freq> cutoff_upp, LineShape ls) {
   const size_t nv = f.size();
   for (size_t iv = 0; iv < nv; iv++) {
     if (cutoff_low <= f[iv] and f[iv] <= cutoff_upp)
@@ -49,11 +50,14 @@ void compute_mirrored_lineshape(std::vector<Complex> &comp_x,
   }
 }
 
-double boltzman_ratio(double T, double T0, double E0) {
+double boltzman_ratio(Temperature<TemperatureType::K> T,
+                      Temperature<TemperatureType::K> T0,
+                      Energy<EnergyType::Joule> E0) {
   return std::exp(E0 * (T - T0) / (Constant::k * T * T0));
 }
 
-double stimulated_emission(double T, double F0) {
+double stimulated_emission(Temperature<TemperatureType::K> T,
+                           Frequency<FrequencyType::Freq> F0) {
   return std::exp(-(Constant::h / Constant::k) * F0 / T);
 }
 
@@ -61,18 +65,21 @@ constexpr double stimulated_relative_emission(double gamma, double gamma_ref) {
   return (1. - gamma) / (1. - gamma_ref);
 }
 
-double compute_lte_linestrength(double S0, double SZ, double E0, double F0,
-                                double QT0, double T0, double QT, double T) {
+double compute_lte_linestrength(
+    LineStrength<FrequencyType::Freq, AreaType::m2> S0, double SZ,
+    Energy<EnergyType::Joule> E0, Frequency<FrequencyType::Freq> F0, double QT0,
+    Temperature<TemperatureType::K> T0, double QT,
+    Temperature<TemperatureType::K> T) {
   return SZ * S0 * boltzman_ratio(T, T0, E0) *
          stimulated_relative_emission(stimulated_emission(T, F0),
                                       stimulated_emission(T0, F0)) *
          QT0 / QT;
 }
 
-std::pair<double, double> compute_nlte_linestrength(double SZ, double F0,
-                                                    double Gl, double Gu,
-                                                    double A, double r2,
-                                                    double r1, double T) {
+std::pair<double, double> compute_nlte_linestrength(
+    double SZ, Frequency<FrequencyType::Freq> F0, double Gl, double Gu,
+    Decay<DecayType::ExponentialPerSecond> A, double r2, double r1,
+    Temperature<TemperatureType::K> T) {
   constexpr double c0 = 2.0 * Constant::h / Constant::pow2(Constant::c);
   constexpr double c1 = Constant::h / (4 * Constant::pi);
 
@@ -88,8 +95,9 @@ std::pair<double, double> compute_nlte_linestrength(double SZ, double F0,
 }
 
 void compute(Results &res, Results &src, Results &comp,
-             const std::vector<double> &f, const Band &band,
-             const Path::Point &atm, const Polarization polarization) {
+             const std::vector<Frequency<FrequencyType::Freq>> &f,
+             const Band &band, const Path::Point &atm,
+             const Polarization polarization) {
   const double H = atm.atm.MagField().Strength();
   const double GDpart = band.GD_giv_F0(atm.atm.Temp());
   const double QT0 = band.QT0();

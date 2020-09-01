@@ -29,12 +29,12 @@ class Band;
 class Line {
   Frequency<FrequencyType::Freq> f0;  // Central frequency
   LineStrength<FrequencyType::Freq, AreaType::m2>
-      i0;                        // Reference line strength
-  Energy<EnergyType::Joule> e0;  // Lower state energy
-  Zeeman::Model zeeman;          // Zeeman model
-  double gl;                     // Lower degeneracy
-  double gu;                     // Upper degeneracy
-  double a;                      // Einstein coefficient
+      i0;                                    // Reference line strength
+  Energy<EnergyType::Joule> e0;              // Lower state energy
+  Zeeman::Model zeeman;                      // Zeeman model
+  double gl;                                 // Lower degeneracy
+  double gu;                                 // Upper degeneracy
+  Decay<DecayType::ExponentialPerSecond> a;  // Einstein coefficient
   std::pair<std::size_t, std::size_t>
       ids;  // ID, only initialized if necessary (lower, upper)
   std::vector<Quantum::Number> local_lower;  // Lower local quantum

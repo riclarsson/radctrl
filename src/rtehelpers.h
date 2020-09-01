@@ -3,12 +3,11 @@
 
 namespace RTE {
 template <size_t N>
-std::vector<RadVec<N>> source_vec_planck(Temperature<TemperatureType::K> T,
-                                         Frequency<FrequencyType::Freq> flow,
-                                         Frequency<FrequencyType::Freq> fupp,
-                                         size_t n) {
-  auto fvec = linspace(flow, fupp, n);
-  std::vector<RadVec<N>> out(n);
+std::vector<RadVec<N>> source_vec_planck(
+    Temperature<TemperatureType::K> T,
+    const std::vector<Frequency<FrequencyType::Freq>>& fvec) {
+  std::vector<RadVec<N>> out(fvec.size());
+
   if constexpr (N == 1)
     std::transform(fvec.cbegin(), fvec.cend(), out.begin(),
                    [T](auto& f) { return RadVec<1>{B(T, f)}; });
@@ -28,12 +27,11 @@ std::vector<RadVec<N>> source_vec_planck(Temperature<TemperatureType::K> T,
 }
 
 template <size_t N>
-std::vector<RadVec<N>> to_planck(const std::vector<RadVec<N>>& rad,
-                                 Frequency<FrequencyType::Freq> flow,
-                                 Frequency<FrequencyType::Freq> fupp,
-                                 size_t n) {
-  auto fvec = linspace(flow, fupp, n);
-  std::vector<RadVec<N>> out(n);
+std::vector<RadVec<N>> to_planck(
+    const std::vector<RadVec<N>>& rad,
+    const std::vector<Frequency<FrequencyType::Freq>>& fvec) {
+  std::vector<RadVec<N>> out(fvec.size());
+
   if constexpr (N == 1)
     std::transform(rad.cbegin(), rad.cend(), fvec.cbegin(), out.begin(),
                    [](auto& I, auto& f) { return RadVec<1>{invB(I[0], f)}; });

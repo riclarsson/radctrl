@@ -166,6 +166,8 @@ ENUMCLASS(AngleType, char, Steradian)  // AngleType
 
 ENUMCLASS(PowerType, char, W, T)  // PowerType
 
+ENUMCLASS(DecayType, char, ExponentialPerSecond)  // DecayType
+
 template <PressureType X>
 class Pressure final {
   SCALAR(Pressure)
@@ -586,6 +588,21 @@ class SpectralRadiance {
                   Z == AreaType::m2 and W == FrequencyType::Freq);
   }
 };
+
+template <DecayType X>
+class Decay final {
+  SCALAR(Decay)
+  void m2self() noexcept {
+    if constexpr (X == DecayType::ExponentialPerSecond) {
+    }
+  }
+
+ public:
+  constexpr Decay(const Decay<DecayType::ExponentialPerSecond> &d) noexcept
+      : val(d.value()) {
+    m2self();
+  }
+};  // Decay
 
 #undef SCALAR
 

@@ -76,14 +76,15 @@ void test001() {
       Absorption::Line(O266, 100e9, 1e-18, 1e-20, {0, 0}, 1, 1, 1e-20, l, l, m);
 
   constexpr size_t nfreq = 1000;
-  constexpr double flow = 90e9;
-  constexpr double fupp = 110e9;
-  auto rad0 =
-      RTE::source_vec_planck<4>(path.back().atm.Temp(), flow, fupp, nfreq);
-  auto out =
-      RTE::ForwardCalculations::compute(rad0, path, {band}, flow, fupp, nfreq);
+  constexpr Frequency<FrequencyType::Freq> flow = 90e9;
+  constexpr Frequency<FrequencyType::Freq> fupp = 110e9;
+  RTE::Forward::Calculations calcs{
+      linspace(flow, fupp, nfreq), {}, {}, {band}, path};
 
-  auto sensout = RTE::to_planck(out.sensor_results(), flow, fupp, nfreq);
+  auto rad0 = RTE::source_vec_planck<1>(path.back().atm.Temp(), calcs.f_grid);
+  auto out = RTE::Forward::compute(rad0, calcs);
+
+  auto sensout = RTE::to_planck(out.sensor_results(), calcs.f_grid);
   for (auto x : sensout) std::cout << x << '\n';
 }
 

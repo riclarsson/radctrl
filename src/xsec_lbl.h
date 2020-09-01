@@ -18,8 +18,8 @@ struct Results {
 };
 
 void compute(Results &res, Results &src, Results &comp,
-             const std::vector<double> &f, const Band &band,
-             const Path::Point &atm,
+             const std::vector<Frequency<FrequencyType::Freq>> &f,
+             const Band &band, const Path::Point &atm,
              const Polarization polarization = Polarization::None);
 }  // namespace Lbl
 }  // namespace Xsec
