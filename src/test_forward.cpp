@@ -38,6 +38,8 @@ void test001() {
       2.696000e+02, 2.702000e+02, 2.634000e+02, 2.531000e+02, 2.360000e+02,
       2.189000e+02, 2.018000e+02, 1.848000e+02, 1.771000e+02, 1.770000e+02,
       1.843000e+02};
+  std::transform(T.cbegin(), T.cend(), T.begin(), [](auto& t){return t+0.1;});
+      
   Atmosphere::Point ap = Atmosphere::Point(
       P[0], T[0], std::array<double, 3>{10e-6, 10e-6, 30e-6},
       std::array<double, 3>{10., 1., 0.1},
@@ -75,17 +77,21 @@ void test001() {
   band.Lines()[0] =
       Absorption::Line(O266, 100e9, 1e-18, 1e-20, {0, 0}, 1, 1, 1e-20, l, l, m);
 
-  constexpr size_t nfreq = 1000;
+  constexpr size_t nfreq = 1'000;
   constexpr Frequency<FrequencyType::Freq> flow = 90e9;
   constexpr Frequency<FrequencyType::Freq> fupp = 110e9;
-  RTE::Forward::Calculations calcs{
-      linspace(flow, fupp, nfreq), {}, {}, {band}, path};
+  const RTE::Forward::Calculations calcs{linspace(flow, fupp, nfreq),
+                                         {Derivative::Atm::Temperature},
+                                         {band},
+                                         path};
 
-  auto rad0 = RTE::source_vec_planck<1>(path.back().atm.Temp(), calcs.f_grid);
+  auto rad0 = RTE::source_vec_planck<1>(2.997000e+02, calcs.f_grid);
   auto out = RTE::Forward::compute(rad0, calcs);
-
-  auto sensout = RTE::to_planck(out.sensor_results(), calcs.f_grid);
-  for (auto x : sensout) std::cout << x << '\n';
+  out.convert_to_planck(calcs.f_grid);
+  std::cout << std::setprecision(15);
+  auto sensout = out.sensor_results();
+//   for (auto x : sensout) std::cout << x << '\n';
+      std::cout << out.x << '\n';
 }
 
 int main() { test001(); }

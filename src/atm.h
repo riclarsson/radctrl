@@ -99,6 +99,18 @@ class Point {
     using Constant::pow2;
     return -P / (k * pow2(T));
   }
+  
+  double FaceWindSpeed(double za, double aa) const noexcept {
+    using Conversion::cosd;
+    using Conversion::sind;
+    const double z = 180 - za;
+    const double a = aa <= 0 ? aa + 180 : aa - 180;
+    return W.v() * cosd(a) * sind(z) + W.u() * sind(a) * sind(z) + W.w() * cosd(z);
+  }
+  
+  double DopplerShiftRatio(double za, double aa) {
+    return 1 - FaceWindSpeed(za, aa) / Constant::c;
+  }
 
   friend Point operator*(double x, const Point &ap) noexcept {
     Point out{ap};

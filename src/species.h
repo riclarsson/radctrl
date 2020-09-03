@@ -2053,423 +2053,581 @@ class Isotopologue {
     return std::numeric_limits<size_t>::max();
   }
 
-  constexpr double QT(double T, unsigned char num) const noexcept {
+  template <bool TemperatureDerivative>
+  constexpr double QT(double T, unsigned char num) noexcept {
     if constexpr (S == Species::Water) {
       if (data.isot[num].afgl == 161) {
-        return PartitionFunction::compute_partfun_H2O161(T);
+        return PartitionFunction::compute_partfun_H2O161<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 181) {
-        return PartitionFunction::compute_partfun_H2O181(T);
+        return PartitionFunction::compute_partfun_H2O181<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 171) {
-        return PartitionFunction::compute_partfun_H2O171(T);
+        return PartitionFunction::compute_partfun_H2O171<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 162) {
-        return PartitionFunction::compute_partfun_H2O162(T);
+        return PartitionFunction::compute_partfun_H2O162<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 182) {
-        return PartitionFunction::compute_partfun_H2O182(T);
+        return PartitionFunction::compute_partfun_H2O182<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 172) {
-        return PartitionFunction::compute_partfun_H2O172(T);
+        return PartitionFunction::compute_partfun_H2O172<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 262) {
-        return PartitionFunction::compute_partfun_H2O262(T);
+        return PartitionFunction::compute_partfun_H2O262<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 282) {
-        return PartitionFunction::compute_partfun_H2O282(T);
+        return PartitionFunction::compute_partfun_H2O282<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 272) {
-        return PartitionFunction::compute_partfun_H2O272(T);
+        return PartitionFunction::compute_partfun_H2O272<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::CarbonDioxide) {
       if (data.isot[num].afgl == 626) {
-        return PartitionFunction::compute_partfun_CO2626(T);
+        return PartitionFunction::compute_partfun_CO2626<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 636) {
-        return PartitionFunction::compute_partfun_CO2636(T);
+        return PartitionFunction::compute_partfun_CO2636<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 628) {
-        return PartitionFunction::compute_partfun_CO2628(T);
+        return PartitionFunction::compute_partfun_CO2628<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 627) {
-        return PartitionFunction::compute_partfun_CO2627(T);
+        return PartitionFunction::compute_partfun_CO2627<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 638) {
-        return PartitionFunction::compute_partfun_CO2638(T);
+        return PartitionFunction::compute_partfun_CO2638<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 637) {
-        return PartitionFunction::compute_partfun_CO2637(T);
+        return PartitionFunction::compute_partfun_CO2637<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 828) {
-        return PartitionFunction::compute_partfun_CO2828(T);
+        return PartitionFunction::compute_partfun_CO2828<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 728) {
-        return PartitionFunction::compute_partfun_CO2728(T);
+        return PartitionFunction::compute_partfun_CO2728<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 727) {
-        return PartitionFunction::compute_partfun_CO2727(T);
+        return PartitionFunction::compute_partfun_CO2727<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 838) {
-        return PartitionFunction::compute_partfun_CO2838(T);
+        return PartitionFunction::compute_partfun_CO2838<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 837) {
-        return PartitionFunction::compute_partfun_CO2837(T);
+        return PartitionFunction::compute_partfun_CO2837<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 737) {
-        return PartitionFunction::compute_partfun_CO2737(T);
+        return PartitionFunction::compute_partfun_CO2737<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 646) {
-        return PartitionFunction::compute_partfun_CO2646(T);
+        return PartitionFunction::compute_partfun_CO2646<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::Ozone) {
       if (data.isot[num].afgl == 666) {
-        return PartitionFunction::compute_partfun_O3666(T);
+        return PartitionFunction::compute_partfun_O3666<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 668) {
-        return PartitionFunction::compute_partfun_O3668(T);
+        return PartitionFunction::compute_partfun_O3668<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 686) {
-        return PartitionFunction::compute_partfun_O3686(T);
+        return PartitionFunction::compute_partfun_O3686<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 667) {
-        return PartitionFunction::compute_partfun_O3667(T);
+        return PartitionFunction::compute_partfun_O3667<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 676) {
-        return PartitionFunction::compute_partfun_O3676(T);
+        return PartitionFunction::compute_partfun_O3676<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 886) {
-        return PartitionFunction::compute_partfun_O3886(T);
+        return PartitionFunction::compute_partfun_O3886<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 868) {
-        return PartitionFunction::compute_partfun_O3868(T);
+        return PartitionFunction::compute_partfun_O3868<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 678) {
-        return PartitionFunction::compute_partfun_O3678(T);
+        return PartitionFunction::compute_partfun_O3678<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 768) {
-        return PartitionFunction::compute_partfun_O3768(T);
+        return PartitionFunction::compute_partfun_O3768<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 786) {
-        return PartitionFunction::compute_partfun_O3786(T);
+        return PartitionFunction::compute_partfun_O3786<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 776) {
-        return PartitionFunction::compute_partfun_O3776(T);
+        return PartitionFunction::compute_partfun_O3776<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 767) {
-        return PartitionFunction::compute_partfun_O3767(T);
+        return PartitionFunction::compute_partfun_O3767<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 888) {
-        return PartitionFunction::compute_partfun_O3888(T);
+        return PartitionFunction::compute_partfun_O3888<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 887) {
-        return PartitionFunction::compute_partfun_O3887(T);
+        return PartitionFunction::compute_partfun_O3887<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 878) {
-        return PartitionFunction::compute_partfun_O3878(T);
+        return PartitionFunction::compute_partfun_O3878<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 778) {
-        return PartitionFunction::compute_partfun_O3778(T);
+        return PartitionFunction::compute_partfun_O3778<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 787) {
-        return PartitionFunction::compute_partfun_O3787(T);
+        return PartitionFunction::compute_partfun_O3787<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 777) {
-        return PartitionFunction::compute_partfun_O3777(T);
+        return PartitionFunction::compute_partfun_O3777<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::NitrogenOxide) {
       if (data.isot[num].afgl == 446) {
-        return PartitionFunction::compute_partfun_N2O446(T);
+        return PartitionFunction::compute_partfun_N2O446<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 456) {
-        return PartitionFunction::compute_partfun_N2O456(T);
+        return PartitionFunction::compute_partfun_N2O456<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 546) {
-        return PartitionFunction::compute_partfun_N2O546(T);
+        return PartitionFunction::compute_partfun_N2O546<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 448) {
-        return PartitionFunction::compute_partfun_N2O448(T);
+        return PartitionFunction::compute_partfun_N2O448<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 447) {
-        return PartitionFunction::compute_partfun_N2O447(T);
+        return PartitionFunction::compute_partfun_N2O447<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::CarbonMonoxide) {
       if (data.isot[num].afgl == 26) {
-        return PartitionFunction::compute_partfun_CO26(T);
+        return PartitionFunction::compute_partfun_CO26<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 36) {
-        return PartitionFunction::compute_partfun_CO36(T);
+        return PartitionFunction::compute_partfun_CO36<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 28) {
-        return PartitionFunction::compute_partfun_CO28(T);
+        return PartitionFunction::compute_partfun_CO28<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 27) {
-        return PartitionFunction::compute_partfun_CO27(T);
+        return PartitionFunction::compute_partfun_CO27<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 38) {
-        return PartitionFunction::compute_partfun_CO38(T);
+        return PartitionFunction::compute_partfun_CO38<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 37) {
-        return PartitionFunction::compute_partfun_CO37(T);
+        return PartitionFunction::compute_partfun_CO37<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 46) {
-        return PartitionFunction::compute_partfun_CO46(T);
+        return PartitionFunction::compute_partfun_CO46<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 48) {
-        return PartitionFunction::compute_partfun_CO48(T);
+        return PartitionFunction::compute_partfun_CO48<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 47) {
-        return PartitionFunction::compute_partfun_CO47(T);
+        return PartitionFunction::compute_partfun_CO47<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::Methane) {
       if (data.isot[num].afgl == 211) {
-        return PartitionFunction::compute_partfun_CH4211(T);
+        return PartitionFunction::compute_partfun_CH4211<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 311) {
-        return PartitionFunction::compute_partfun_CH4311(T);
+        return PartitionFunction::compute_partfun_CH4311<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 212) {
-        return PartitionFunction::compute_partfun_CH4212(T);
+        return PartitionFunction::compute_partfun_CH4212<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 312) {
-        return PartitionFunction::compute_partfun_CH4312(T);
+        return PartitionFunction::compute_partfun_CH4312<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::Oxygen) {
       if (data.isot[num].afgl == 66) {
-        return PartitionFunction::compute_partfun_O266(T);
+        return PartitionFunction::compute_partfun_O266<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 68) {
-        return PartitionFunction::compute_partfun_O268(T);
+        return PartitionFunction::compute_partfun_O268<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 67) {
-        return PartitionFunction::compute_partfun_O267(T);
+        return PartitionFunction::compute_partfun_O267<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 88) {
-        return PartitionFunction::compute_partfun_O288(T);
+        return PartitionFunction::compute_partfun_O288<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 87) {
-        return PartitionFunction::compute_partfun_O287(T);
+        return PartitionFunction::compute_partfun_O287<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 77) {
-        return PartitionFunction::compute_partfun_O277(T);
+        return PartitionFunction::compute_partfun_O277<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::NitricOxide) {
       if (data.isot[num].afgl == 46) {
-        return PartitionFunction::compute_partfun_NO46(T);
+        return PartitionFunction::compute_partfun_NO46<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 56) {
-        return PartitionFunction::compute_partfun_NO56(T);
+        return PartitionFunction::compute_partfun_NO56<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 48) {
-        return PartitionFunction::compute_partfun_NO48(T);
+        return PartitionFunction::compute_partfun_NO48<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::SulfurDioxide) {
       if (data.isot[num].afgl == 626) {
-        return PartitionFunction::compute_partfun_SO2626(T);
+        return PartitionFunction::compute_partfun_SO2626<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 646) {
-        return PartitionFunction::compute_partfun_SO2646(T);
+        return PartitionFunction::compute_partfun_SO2646<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::NitrogenDioxide) {
       if (data.isot[num].afgl == 646) {
-        return PartitionFunction::compute_partfun_NO2646(T);
+        return PartitionFunction::compute_partfun_NO2646<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::Ammonia) {
       if (data.isot[num].afgl == 4111) {
-        return PartitionFunction::compute_partfun_NH34111(T);
+        return PartitionFunction::compute_partfun_NH34111<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 5111) {
-        return PartitionFunction::compute_partfun_NH35111(T);
+        return PartitionFunction::compute_partfun_NH35111<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::NitricAcid) {
       if (data.isot[num].afgl == 146) {
-        return PartitionFunction::compute_partfun_HNO3146(T);
+        return PartitionFunction::compute_partfun_HNO3146<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 156) {
-        return PartitionFunction::compute_partfun_HNO3156(T);
+        return PartitionFunction::compute_partfun_HNO3156<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Hydroxyl) {
       if (data.isot[num].afgl == 61) {
-        return PartitionFunction::compute_partfun_OH61(T);
+        return PartitionFunction::compute_partfun_OH61<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 81) {
-        return PartitionFunction::compute_partfun_OH81(T);
+        return PartitionFunction::compute_partfun_OH81<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 62) {
-        return PartitionFunction::compute_partfun_OH62(T);
+        return PartitionFunction::compute_partfun_OH62<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::HydrogenFluoride) {
       if (data.isot[num].afgl == 19) {
-        return PartitionFunction::compute_partfun_HF19(T);
+        return PartitionFunction::compute_partfun_HF19<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 29) {
-        return PartitionFunction::compute_partfun_HF29(T);
+        return PartitionFunction::compute_partfun_HF29<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::HydrogenChloride) {
       if (data.isot[num].afgl == 15) {
-        return PartitionFunction::compute_partfun_HCl15(T);
+        return PartitionFunction::compute_partfun_HCl15<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 17) {
-        return PartitionFunction::compute_partfun_HCl17(T);
+        return PartitionFunction::compute_partfun_HCl17<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 25) {
-        return PartitionFunction::compute_partfun_HCl25(T);
+        return PartitionFunction::compute_partfun_HCl25<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 27) {
-        return PartitionFunction::compute_partfun_HCl27(T);
+        return PartitionFunction::compute_partfun_HCl27<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::HydrogenBromide) {
       if (data.isot[num].afgl == 19) {
-        return PartitionFunction::compute_partfun_HBr19(T);
+        return PartitionFunction::compute_partfun_HBr19<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 11) {
-        return PartitionFunction::compute_partfun_HBr11(T);
+        return PartitionFunction::compute_partfun_HBr11<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 29) {
-        return PartitionFunction::compute_partfun_HBr29(T);
+        return PartitionFunction::compute_partfun_HBr29<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 21) {
-        return PartitionFunction::compute_partfun_HBr21(T);
+        return PartitionFunction::compute_partfun_HBr21<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::HydrogenIodide) {
       if (data.isot[num].afgl == 17) {
-        return PartitionFunction::compute_partfun_HI17(T);
+        return PartitionFunction::compute_partfun_HI17<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 27) {
-        return PartitionFunction::compute_partfun_HI27(T);
+        return PartitionFunction::compute_partfun_HI27<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::ChlorineMonoxide) {
       if (data.isot[num].afgl == 56) {
-        return PartitionFunction::compute_partfun_ClO56(T);
+        return PartitionFunction::compute_partfun_ClO56<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 76) {
-        return PartitionFunction::compute_partfun_ClO76(T);
+        return PartitionFunction::compute_partfun_ClO76<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::CarbonylSulfide) {
       if (data.isot[num].afgl == 622) {
-        return PartitionFunction::compute_partfun_OCS622(T);
+        return PartitionFunction::compute_partfun_OCS622<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 624) {
-        return PartitionFunction::compute_partfun_OCS624(T);
+        return PartitionFunction::compute_partfun_OCS624<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 632) {
-        return PartitionFunction::compute_partfun_OCS632(T);
+        return PartitionFunction::compute_partfun_OCS632<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 623) {
-        return PartitionFunction::compute_partfun_OCS623(T);
+        return PartitionFunction::compute_partfun_OCS623<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 822) {
-        return PartitionFunction::compute_partfun_OCS822(T);
+        return PartitionFunction::compute_partfun_OCS822<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::Formaldehyde) {
       if (data.isot[num].afgl == 126) {
-        return PartitionFunction::compute_partfun_H2CO126(T);
+        return PartitionFunction::compute_partfun_H2CO126<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 136) {
-        return PartitionFunction::compute_partfun_H2CO136(T);
+        return PartitionFunction::compute_partfun_H2CO136<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 128) {
-        return PartitionFunction::compute_partfun_H2CO128(T);
+        return PartitionFunction::compute_partfun_H2CO128<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::HypochlorousAcid) {
       if (data.isot[num].afgl == 165) {
-        return PartitionFunction::compute_partfun_HOCl165(T);
+        return PartitionFunction::compute_partfun_HOCl165<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 167) {
-        return PartitionFunction::compute_partfun_HOCl167(T);
+        return PartitionFunction::compute_partfun_HOCl167<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Nitrogen) {
       if (data.isot[num].afgl == 44) {
-        return PartitionFunction::compute_partfun_N244(T);
+        return PartitionFunction::compute_partfun_N244<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 45) {
-        return PartitionFunction::compute_partfun_N245(T);
+        return PartitionFunction::compute_partfun_N245<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 55) {
-        return PartitionFunction::compute_partfun_N255(T);
+        return PartitionFunction::compute_partfun_N255<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::HydrogenCyanide) {
       if (data.isot[num].afgl == 124) {
-        return PartitionFunction::compute_partfun_HCN124(T);
+        return PartitionFunction::compute_partfun_HCN124<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 134) {
-        return PartitionFunction::compute_partfun_HCN134(T);
+        return PartitionFunction::compute_partfun_HCN134<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 125) {
-        return PartitionFunction::compute_partfun_HCN125(T);
+        return PartitionFunction::compute_partfun_HCN125<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::MethylChloride) {
       if (data.isot[num].afgl == 215) {
-        return PartitionFunction::compute_partfun_CH3Cl215(T);
+        return PartitionFunction::compute_partfun_CH3Cl215<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 217) {
-        return PartitionFunction::compute_partfun_CH3Cl217(T);
+        return PartitionFunction::compute_partfun_CH3Cl217<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::HydrogenPeroxide) {
       if (data.isot[num].afgl == 1661) {
-        return PartitionFunction::compute_partfun_H2O21661(T);
+        return PartitionFunction::compute_partfun_H2O21661<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Acetylene) {
       if (data.isot[num].afgl == 1221) {
-        return PartitionFunction::compute_partfun_C2H21221(T);
+        return PartitionFunction::compute_partfun_C2H21221<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 1231) {
-        return PartitionFunction::compute_partfun_C2H21231(T);
+        return PartitionFunction::compute_partfun_C2H21231<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 1222) {
-        return PartitionFunction::compute_partfun_C2H21222(T);
+        return PartitionFunction::compute_partfun_C2H21222<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Ethane) {
       if (data.isot[num].afgl == 1221) {
-        return PartitionFunction::compute_partfun_C2H61221(T);
+        return PartitionFunction::compute_partfun_C2H61221<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 1231) {
-        return PartitionFunction::compute_partfun_C2H61231(T);
+        return PartitionFunction::compute_partfun_C2H61231<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Phosphine) {
       if (data.isot[num].afgl == 1111) {
-        return PartitionFunction::compute_partfun_PH31111(T);
+        return PartitionFunction::compute_partfun_PH31111<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::CarbonylFluoride) {
       if (data.isot[num].afgl == 269) {
-        return PartitionFunction::compute_partfun_COF2269(T);
+        return PartitionFunction::compute_partfun_COF2269<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 369) {
-        return PartitionFunction::compute_partfun_COF2369(T);
+        return PartitionFunction::compute_partfun_COF2369<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::SulfurHexafluoride) {
       if (data.isot[num].afgl == 29) {
-        return PartitionFunction::compute_partfun_SF629(T);
+        return PartitionFunction::compute_partfun_SF629<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::HydrogenSulfide) {
       if (data.isot[num].afgl == 121) {
-        return PartitionFunction::compute_partfun_H2S121(T);
+        return PartitionFunction::compute_partfun_H2S121<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 141) {
-        return PartitionFunction::compute_partfun_H2S141(T);
+        return PartitionFunction::compute_partfun_H2S141<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 131) {
-        return PartitionFunction::compute_partfun_H2S131(T);
+        return PartitionFunction::compute_partfun_H2S131<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::FormicAcid) {
       if (data.isot[num].afgl == 126) {
-        return PartitionFunction::compute_partfun_HCOOH126(T);
+        return PartitionFunction::compute_partfun_HCOOH126<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Hydroperoxyl) {
       if (data.isot[num].afgl == 166) {
-        return PartitionFunction::compute_partfun_HO2166(T);
+        return PartitionFunction::compute_partfun_HO2166<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::OxygenAtom) {
       if (data.isot[num].afgl == 6) {
-        return PartitionFunction::compute_partfun_O6(T);
+        return PartitionFunction::compute_partfun_O6<TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::ChlorineNitrate) {
       if (data.isot[num].afgl == 5646) {
-        return PartitionFunction::compute_partfun_ClONO25646(T);
+        return PartitionFunction::compute_partfun_ClONO25646<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 7646) {
-        return PartitionFunction::compute_partfun_ClONO27646(T);
+        return PartitionFunction::compute_partfun_ClONO27646<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::NitricOxideCation) {
       if (data.isot[num].afgl == 46) {
-        return PartitionFunction::compute_partfun_NO46_plus(T);
+        return PartitionFunction::compute_partfun_NO46_plus<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::HypobromousAcid) {
       if (data.isot[num].afgl == 169) {
-        return PartitionFunction::compute_partfun_HOBr169(T);
+        return PartitionFunction::compute_partfun_HOBr169<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 161) {
-        return PartitionFunction::compute_partfun_HOBr161(T);
+        return PartitionFunction::compute_partfun_HOBr161<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Ethylene) {
       if (data.isot[num].afgl == 221) {
-        return PartitionFunction::compute_partfun_C2H4221(T);
+        return PartitionFunction::compute_partfun_C2H4221<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 231) {
-        return PartitionFunction::compute_partfun_C2H4231(T);
+        return PartitionFunction::compute_partfun_C2H4231<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Methanol) {
       if (data.isot[num].afgl == 2161) {
-        return PartitionFunction::compute_partfun_CH3OH2161(T);
+        return PartitionFunction::compute_partfun_CH3OH2161<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::MethylBromide) {
       if (data.isot[num].afgl == 219) {
-        return PartitionFunction::compute_partfun_CH3Br219(T);
+        return PartitionFunction::compute_partfun_CH3Br219<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 211) {
-        return PartitionFunction::compute_partfun_CH3Br211(T);
+        return PartitionFunction::compute_partfun_CH3Br211<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Acetonitrile) {
       if (data.isot[num].afgl == 2124) {
-        return PartitionFunction::compute_partfun_CH3CN2124(T);
+        return PartitionFunction::compute_partfun_CH3CN2124<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 3124) {
-        return PartitionFunction::compute_partfun_CH3CN3124(T);
+        return PartitionFunction::compute_partfun_CH3CN3124<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 2134) {
-        return PartitionFunction::compute_partfun_CH3CN2134(T);
+        return PartitionFunction::compute_partfun_CH3CN2134<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 3134) {
-        return PartitionFunction::compute_partfun_CH3CN3134(T);
+        return PartitionFunction::compute_partfun_CH3CN3134<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Pfc14) {
       if (data.isot[num].afgl == 29) {
-        return PartitionFunction::compute_partfun_CF429(T);
+        return PartitionFunction::compute_partfun_CF429<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::Diacetylene) {
       if (data.isot[num].afgl == 2211) {
-        return PartitionFunction::compute_partfun_C4H22211(T);
+        return PartitionFunction::compute_partfun_C4H22211<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Cyanoacetylene) {
       if (data.isot[num].afgl == 12224) {
-        return PartitionFunction::compute_partfun_HC3N12224(T);
+        return PartitionFunction::compute_partfun_HC3N12224<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 12225) {
-        return PartitionFunction::compute_partfun_HC3N12225(T);
+        return PartitionFunction::compute_partfun_HC3N12225<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 12234) {
-        return PartitionFunction::compute_partfun_HC3N12234(T);
+        return PartitionFunction::compute_partfun_HC3N12234<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 12324) {
-        return PartitionFunction::compute_partfun_HC3N12324(T);
+        return PartitionFunction::compute_partfun_HC3N12324<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 13224) {
-        return PartitionFunction::compute_partfun_HC3N13224(T);
+        return PartitionFunction::compute_partfun_HC3N13224<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 22224) {
-        return PartitionFunction::compute_partfun_HC3N22224(T);
+        return PartitionFunction::compute_partfun_HC3N22224<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Hydrogen) {
       if (data.isot[num].afgl == 11) {
-        return PartitionFunction::compute_partfun_H211(T);
+        return PartitionFunction::compute_partfun_H211<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 12) {
-        return PartitionFunction::compute_partfun_H212(T);
+        return PartitionFunction::compute_partfun_H212<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::CarbonMonosulfide) {
       if (data.isot[num].afgl == 22) {
-        return PartitionFunction::compute_partfun_CS22(T);
+        return PartitionFunction::compute_partfun_CS22<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 24) {
-        return PartitionFunction::compute_partfun_CS24(T);
+        return PartitionFunction::compute_partfun_CS24<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 32) {
-        return PartitionFunction::compute_partfun_CS32(T);
+        return PartitionFunction::compute_partfun_CS32<TemperatureDerivative>(
+            T);
       } else if (data.isot[num].afgl == 23) {
-        return PartitionFunction::compute_partfun_CS23(T);
+        return PartitionFunction::compute_partfun_CS23<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::SulfurTrioxide) {
       if (data.isot[num].afgl == 26) {
-        return PartitionFunction::compute_partfun_SO326(T);
+        return PartitionFunction::compute_partfun_SO326<TemperatureDerivative>(
+            T);
       }
     } else if constexpr (S == Species::Cyanogen) {
       if (data.isot[num].afgl == 4224) {
-        return PartitionFunction::compute_partfun_C2N24224(T);
+        return PartitionFunction::compute_partfun_C2N24224<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 5225) {
-        return PartitionFunction::compute_partfun_C2N25225(T);
+        return PartitionFunction::compute_partfun_C2N25225<
+            TemperatureDerivative>(T);
       }
     } else if constexpr (S == Species::Phosgene) {
       if (data.isot[num].afgl == 2655) {
-        return PartitionFunction::compute_partfun_COCl22655(T);
+        return PartitionFunction::compute_partfun_COCl22655<
+            TemperatureDerivative>(T);
       } else if (data.isot[num].afgl == 2657) {
-        return PartitionFunction::compute_partfun_COCl22657(T);
+        return PartitionFunction::compute_partfun_COCl22657<
+            TemperatureDerivative>(T);
       }
     }
-    std::terminate();
+    return {};
   }
 };
 
@@ -2651,8 +2809,13 @@ class Isotope {
     x.num = std::stoi(isot.substr(bindes + 1, isot.size()));
     return is;
   }
-  friend bool operator==(Isotope x, Isotope y) {
-    return (x.s == y.s) and (x.num == y.num);
+
+  constexpr bool operator==(Isotope x) const noexcept {
+    return (x.s == s) and (x.num == num);
+  }
+
+  constexpr bool operator!=(Isotope x) const noexcept {
+    return not operator==(x);
   }
 
   constexpr Species Spec() const noexcept { return s; }
@@ -2876,103 +3039,210 @@ class Isotope {
   constexpr double QT(double T) const noexcept {
     switch (s) {
       case Species::Water:
-        return Isotopologue<Species::Water>().QT(T, num);
+        return Isotopologue<Species::Water>().QT<false>(T, num);
       case Species::CarbonDioxide:
-        return Isotopologue<Species::CarbonDioxide>().QT(T, num);
+        return Isotopologue<Species::CarbonDioxide>().QT<false>(T, num);
       case Species::Ozone:
-        return Isotopologue<Species::Ozone>().QT(T, num);
+        return Isotopologue<Species::Ozone>().QT<false>(T, num);
       case Species::NitrogenOxide:
-        return Isotopologue<Species::NitrogenOxide>().QT(T, num);
+        return Isotopologue<Species::NitrogenOxide>().QT<false>(T, num);
       case Species::CarbonMonoxide:
-        return Isotopologue<Species::CarbonMonoxide>().QT(T, num);
+        return Isotopologue<Species::CarbonMonoxide>().QT<false>(T, num);
       case Species::Methane:
-        return Isotopologue<Species::Methane>().QT(T, num);
+        return Isotopologue<Species::Methane>().QT<false>(T, num);
       case Species::Oxygen:
-        return Isotopologue<Species::Oxygen>().QT(T, num);
+        return Isotopologue<Species::Oxygen>().QT<false>(T, num);
       case Species::NitricOxide:
-        return Isotopologue<Species::NitricOxide>().QT(T, num);
+        return Isotopologue<Species::NitricOxide>().QT<false>(T, num);
       case Species::SulfurDioxide:
-        return Isotopologue<Species::SulfurDioxide>().QT(T, num);
+        return Isotopologue<Species::SulfurDioxide>().QT<false>(T, num);
       case Species::NitrogenDioxide:
-        return Isotopologue<Species::NitrogenDioxide>().QT(T, num);
+        return Isotopologue<Species::NitrogenDioxide>().QT<false>(T, num);
       case Species::Ammonia:
-        return Isotopologue<Species::Ammonia>().QT(T, num);
+        return Isotopologue<Species::Ammonia>().QT<false>(T, num);
       case Species::NitricAcid:
-        return Isotopologue<Species::NitricAcid>().QT(T, num);
+        return Isotopologue<Species::NitricAcid>().QT<false>(T, num);
       case Species::Hydroxyl:
-        return Isotopologue<Species::Hydroxyl>().QT(T, num);
+        return Isotopologue<Species::Hydroxyl>().QT<false>(T, num);
       case Species::HydrogenFluoride:
-        return Isotopologue<Species::HydrogenFluoride>().QT(T, num);
+        return Isotopologue<Species::HydrogenFluoride>().QT<false>(T, num);
       case Species::HydrogenChloride:
-        return Isotopologue<Species::HydrogenChloride>().QT(T, num);
+        return Isotopologue<Species::HydrogenChloride>().QT<false>(T, num);
       case Species::HydrogenBromide:
-        return Isotopologue<Species::HydrogenBromide>().QT(T, num);
+        return Isotopologue<Species::HydrogenBromide>().QT<false>(T, num);
       case Species::HydrogenIodide:
-        return Isotopologue<Species::HydrogenIodide>().QT(T, num);
+        return Isotopologue<Species::HydrogenIodide>().QT<false>(T, num);
       case Species::ChlorineMonoxide:
-        return Isotopologue<Species::ChlorineMonoxide>().QT(T, num);
+        return Isotopologue<Species::ChlorineMonoxide>().QT<false>(T, num);
       case Species::CarbonylSulfide:
-        return Isotopologue<Species::CarbonylSulfide>().QT(T, num);
+        return Isotopologue<Species::CarbonylSulfide>().QT<false>(T, num);
       case Species::Formaldehyde:
-        return Isotopologue<Species::Formaldehyde>().QT(T, num);
+        return Isotopologue<Species::Formaldehyde>().QT<false>(T, num);
       case Species::HypochlorousAcid:
-        return Isotopologue<Species::HypochlorousAcid>().QT(T, num);
+        return Isotopologue<Species::HypochlorousAcid>().QT<false>(T, num);
       case Species::Nitrogen:
-        return Isotopologue<Species::Nitrogen>().QT(T, num);
+        return Isotopologue<Species::Nitrogen>().QT<false>(T, num);
       case Species::HydrogenCyanide:
-        return Isotopologue<Species::HydrogenCyanide>().QT(T, num);
+        return Isotopologue<Species::HydrogenCyanide>().QT<false>(T, num);
       case Species::MethylChloride:
-        return Isotopologue<Species::MethylChloride>().QT(T, num);
+        return Isotopologue<Species::MethylChloride>().QT<false>(T, num);
       case Species::HydrogenPeroxide:
-        return Isotopologue<Species::HydrogenPeroxide>().QT(T, num);
+        return Isotopologue<Species::HydrogenPeroxide>().QT<false>(T, num);
       case Species::Acetylene:
-        return Isotopologue<Species::Acetylene>().QT(T, num);
+        return Isotopologue<Species::Acetylene>().QT<false>(T, num);
       case Species::Ethane:
-        return Isotopologue<Species::Ethane>().QT(T, num);
+        return Isotopologue<Species::Ethane>().QT<false>(T, num);
       case Species::Phosphine:
-        return Isotopologue<Species::Phosphine>().QT(T, num);
+        return Isotopologue<Species::Phosphine>().QT<false>(T, num);
       case Species::CarbonylFluoride:
-        return Isotopologue<Species::CarbonylFluoride>().QT(T, num);
+        return Isotopologue<Species::CarbonylFluoride>().QT<false>(T, num);
       case Species::SulfurHexafluoride:
-        return Isotopologue<Species::SulfurHexafluoride>().QT(T, num);
+        return Isotopologue<Species::SulfurHexafluoride>().QT<false>(T, num);
       case Species::HydrogenSulfide:
-        return Isotopologue<Species::HydrogenSulfide>().QT(T, num);
+        return Isotopologue<Species::HydrogenSulfide>().QT<false>(T, num);
       case Species::FormicAcid:
-        return Isotopologue<Species::FormicAcid>().QT(T, num);
+        return Isotopologue<Species::FormicAcid>().QT<false>(T, num);
       case Species::Hydroperoxyl:
-        return Isotopologue<Species::Hydroperoxyl>().QT(T, num);
+        return Isotopologue<Species::Hydroperoxyl>().QT<false>(T, num);
       case Species::OxygenAtom:
-        return Isotopologue<Species::OxygenAtom>().QT(T, num);
+        return Isotopologue<Species::OxygenAtom>().QT<false>(T, num);
       case Species::ChlorineNitrate:
-        return Isotopologue<Species::ChlorineNitrate>().QT(T, num);
+        return Isotopologue<Species::ChlorineNitrate>().QT<false>(T, num);
       case Species::NitricOxideCation:
-        return Isotopologue<Species::NitricOxideCation>().QT(T, num);
+        return Isotopologue<Species::NitricOxideCation>().QT<false>(T, num);
       case Species::HypobromousAcid:
-        return Isotopologue<Species::HypobromousAcid>().QT(T, num);
+        return Isotopologue<Species::HypobromousAcid>().QT<false>(T, num);
       case Species::Ethylene:
-        return Isotopologue<Species::Ethylene>().QT(T, num);
+        return Isotopologue<Species::Ethylene>().QT<false>(T, num);
       case Species::Methanol:
-        return Isotopologue<Species::Methanol>().QT(T, num);
+        return Isotopologue<Species::Methanol>().QT<false>(T, num);
       case Species::MethylBromide:
-        return Isotopologue<Species::MethylBromide>().QT(T, num);
+        return Isotopologue<Species::MethylBromide>().QT<false>(T, num);
       case Species::Acetonitrile:
-        return Isotopologue<Species::Acetonitrile>().QT(T, num);
+        return Isotopologue<Species::Acetonitrile>().QT<false>(T, num);
       case Species::Pfc14:
-        return Isotopologue<Species::Pfc14>().QT(T, num);
+        return Isotopologue<Species::Pfc14>().QT<false>(T, num);
       case Species::Diacetylene:
-        return Isotopologue<Species::Diacetylene>().QT(T, num);
+        return Isotopologue<Species::Diacetylene>().QT<false>(T, num);
       case Species::Cyanoacetylene:
-        return Isotopologue<Species::Cyanoacetylene>().QT(T, num);
+        return Isotopologue<Species::Cyanoacetylene>().QT<false>(T, num);
       case Species::Hydrogen:
-        return Isotopologue<Species::Hydrogen>().QT(T, num);
+        return Isotopologue<Species::Hydrogen>().QT<false>(T, num);
       case Species::CarbonMonosulfide:
-        return Isotopologue<Species::CarbonMonosulfide>().QT(T, num);
+        return Isotopologue<Species::CarbonMonosulfide>().QT<false>(T, num);
       case Species::SulfurTrioxide:
-        return Isotopologue<Species::SulfurTrioxide>().QT(T, num);
+        return Isotopologue<Species::SulfurTrioxide>().QT<false>(T, num);
       case Species::Cyanogen:
-        return Isotopologue<Species::Cyanogen>().QT(T, num);
+        return Isotopologue<Species::Cyanogen>().QT<false>(T, num);
       case Species::Phosgene:
-        return Isotopologue<Species::Phosgene>().QT(T, num);
+        return Isotopologue<Species::Phosgene>().QT<false>(T, num);
+      case Species::Bath:
+      case Species::FINAL: { /* leave last */
+      }
+    }
+    return {};
+  }
+
+  constexpr double dQT(double T) const noexcept {
+    switch (s) {
+      case Species::Water:
+        return Isotopologue<Species::Water>().QT<true>(T, num);
+      case Species::CarbonDioxide:
+        return Isotopologue<Species::CarbonDioxide>().QT<true>(T, num);
+      case Species::Ozone:
+        return Isotopologue<Species::Ozone>().QT<true>(T, num);
+      case Species::NitrogenOxide:
+        return Isotopologue<Species::NitrogenOxide>().QT<true>(T, num);
+      case Species::CarbonMonoxide:
+        return Isotopologue<Species::CarbonMonoxide>().QT<true>(T, num);
+      case Species::Methane:
+        return Isotopologue<Species::Methane>().QT<true>(T, num);
+      case Species::Oxygen:
+        return Isotopologue<Species::Oxygen>().QT<true>(T, num);
+      case Species::NitricOxide:
+        return Isotopologue<Species::NitricOxide>().QT<true>(T, num);
+      case Species::SulfurDioxide:
+        return Isotopologue<Species::SulfurDioxide>().QT<true>(T, num);
+      case Species::NitrogenDioxide:
+        return Isotopologue<Species::NitrogenDioxide>().QT<true>(T, num);
+      case Species::Ammonia:
+        return Isotopologue<Species::Ammonia>().QT<true>(T, num);
+      case Species::NitricAcid:
+        return Isotopologue<Species::NitricAcid>().QT<true>(T, num);
+      case Species::Hydroxyl:
+        return Isotopologue<Species::Hydroxyl>().QT<true>(T, num);
+      case Species::HydrogenFluoride:
+        return Isotopologue<Species::HydrogenFluoride>().QT<true>(T, num);
+      case Species::HydrogenChloride:
+        return Isotopologue<Species::HydrogenChloride>().QT<true>(T, num);
+      case Species::HydrogenBromide:
+        return Isotopologue<Species::HydrogenBromide>().QT<true>(T, num);
+      case Species::HydrogenIodide:
+        return Isotopologue<Species::HydrogenIodide>().QT<true>(T, num);
+      case Species::ChlorineMonoxide:
+        return Isotopologue<Species::ChlorineMonoxide>().QT<true>(T, num);
+      case Species::CarbonylSulfide:
+        return Isotopologue<Species::CarbonylSulfide>().QT<true>(T, num);
+      case Species::Formaldehyde:
+        return Isotopologue<Species::Formaldehyde>().QT<true>(T, num);
+      case Species::HypochlorousAcid:
+        return Isotopologue<Species::HypochlorousAcid>().QT<true>(T, num);
+      case Species::Nitrogen:
+        return Isotopologue<Species::Nitrogen>().QT<true>(T, num);
+      case Species::HydrogenCyanide:
+        return Isotopologue<Species::HydrogenCyanide>().QT<true>(T, num);
+      case Species::MethylChloride:
+        return Isotopologue<Species::MethylChloride>().QT<true>(T, num);
+      case Species::HydrogenPeroxide:
+        return Isotopologue<Species::HydrogenPeroxide>().QT<true>(T, num);
+      case Species::Acetylene:
+        return Isotopologue<Species::Acetylene>().QT<true>(T, num);
+      case Species::Ethane:
+        return Isotopologue<Species::Ethane>().QT<true>(T, num);
+      case Species::Phosphine:
+        return Isotopologue<Species::Phosphine>().QT<true>(T, num);
+      case Species::CarbonylFluoride:
+        return Isotopologue<Species::CarbonylFluoride>().QT<true>(T, num);
+      case Species::SulfurHexafluoride:
+        return Isotopologue<Species::SulfurHexafluoride>().QT<true>(T, num);
+      case Species::HydrogenSulfide:
+        return Isotopologue<Species::HydrogenSulfide>().QT<true>(T, num);
+      case Species::FormicAcid:
+        return Isotopologue<Species::FormicAcid>().QT<true>(T, num);
+      case Species::Hydroperoxyl:
+        return Isotopologue<Species::Hydroperoxyl>().QT<true>(T, num);
+      case Species::OxygenAtom:
+        return Isotopologue<Species::OxygenAtom>().QT<true>(T, num);
+      case Species::ChlorineNitrate:
+        return Isotopologue<Species::ChlorineNitrate>().QT<true>(T, num);
+      case Species::NitricOxideCation:
+        return Isotopologue<Species::NitricOxideCation>().QT<true>(T, num);
+      case Species::HypobromousAcid:
+        return Isotopologue<Species::HypobromousAcid>().QT<true>(T, num);
+      case Species::Ethylene:
+        return Isotopologue<Species::Ethylene>().QT<true>(T, num);
+      case Species::Methanol:
+        return Isotopologue<Species::Methanol>().QT<true>(T, num);
+      case Species::MethylBromide:
+        return Isotopologue<Species::MethylBromide>().QT<true>(T, num);
+      case Species::Acetonitrile:
+        return Isotopologue<Species::Acetonitrile>().QT<true>(T, num);
+      case Species::Pfc14:
+        return Isotopologue<Species::Pfc14>().QT<true>(T, num);
+      case Species::Diacetylene:
+        return Isotopologue<Species::Diacetylene>().QT<true>(T, num);
+      case Species::Cyanoacetylene:
+        return Isotopologue<Species::Cyanoacetylene>().QT<true>(T, num);
+      case Species::Hydrogen:
+        return Isotopologue<Species::Hydrogen>().QT<true>(T, num);
+      case Species::CarbonMonosulfide:
+        return Isotopologue<Species::CarbonMonosulfide>().QT<true>(T, num);
+      case Species::SulfurTrioxide:
+        return Isotopologue<Species::SulfurTrioxide>().QT<true>(T, num);
+      case Species::Cyanogen:
+        return Isotopologue<Species::Cyanogen>().QT<true>(T, num);
+      case Species::Phosgene:
+        return Isotopologue<Species::Phosgene>().QT<true>(T, num);
       case Species::Bath:
       case Species::FINAL: { /* leave last */
       }

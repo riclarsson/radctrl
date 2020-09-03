@@ -35,11 +35,12 @@ class Line {
   double gl;                                 // Lower degeneracy
   double gu;                                 // Upper degeneracy
   Decay<DecayType::ExponentialPerSecond> a;  // Einstein coefficient
-  std::pair<std::size_t, std::size_t>
-      ids;  // ID, only initialized if necessary (lower, upper)
   std::vector<Quantum::Number> local_lower;  // Lower local quantum
   std::vector<Quantum::Number> local_upper;  // Upper local quantum
   LineShape::Model lineshape;                // Line shape model
+  std::size_t line_id;  // ID of line, only initialized if necessary
+  std::pair<std::size_t, std::size_t>
+      level_ids;  // ID of levels, only initialized if necessary (lower, upper)
 
  public:
   Line(Species::Isotope s) noexcept
@@ -51,13 +52,17 @@ class Line {
         gu(0),
         a(0),
         local_lower(s.localQuantumNumberCount()),
-        local_upper(s.localQuantumNumberCount()) {}
+        local_upper(s.localQuantumNumberCount()),
+        line_id(std::numeric_limits<std::size_t>::max()),
+        level_ids({std::numeric_limits<std::size_t>::max(),
+                   std::numeric_limits<std::size_t>::max()}) {}
 
   Line(Species::Isotope s, Frequency<FrequencyType::Freq> f,
        LineStrength<FrequencyType::Freq, AreaType::m2> i,
        Energy<EnergyType::Joule> e, Zeeman::Model z, double Gu, double Gl,
-       double A, std::vector<Quantum::Number> ll,
-       std::vector<Quantum::Number> lu, LineShape::Model m) noexcept
+       Decay<DecayType::ExponentialPerSecond> A,
+       std::vector<Quantum::Number> ll, std::vector<Quantum::Number> lu,
+       LineShape::Model m) noexcept
       : f0(f),
         i0(i),
         e0(e),
@@ -67,7 +72,10 @@ class Line {
         a(A),
         local_lower(ll),
         local_upper(lu),
-        lineshape(m) {
+        lineshape(m),
+        line_id(std::numeric_limits<std::size_t>::max()),
+        level_ids({std::numeric_limits<std::size_t>::max(),
+                   std::numeric_limits<std::size_t>::max()}) {
     size_t size = s.localQuantumNumberCount();
     if (size not_eq ll.size() or size not_eq lu.size()) {
       std::cerr << "Bad quantum number sizes\n";
@@ -120,7 +128,7 @@ class Line {
   }
   double Gu() const noexcept { return gu; }
   double Gl() const noexcept { return gl; }
-  double A() const noexcept { return a; }
+  Decay<DecayType::ExponentialPerSecond> A() const noexcept { return a; }
   Quantum::Number localUpperQuantumNumber(size_t i) const noexcept {
     return local_upper[i];
   }
@@ -134,6 +142,8 @@ class Line {
   friend void readBand(
       File::File<File::Operation::ReadBinary, File::Type::Xml> &file,
       Band &band, const std::string &key);
+
+  std::size_t ID() const noexcept { return line_id; }
 };  // Line
 
 class Band {
@@ -271,6 +281,9 @@ class Band {
   double QT0() const noexcept { return spec.QT(t0); }
   double QT(Temperature<TemperatureType::K> T) const noexcept {
     return spec.QT(T);
+  }
+  double dQT(Temperature<TemperatureType::K> T) const noexcept {
+    return spec.dQT(T);
   }
   bool doZeeman() const noexcept { return do_zeeman; }
 

@@ -6,6 +6,7 @@
 
 #include "constants.h"
 #include "rational.h"
+#include "units.h"
 #include "wigner.h"
 
 namespace Absorption {
@@ -159,39 +160,30 @@ constexpr double PolarizationFactor(Polarization type) noexcept {
   return std::numeric_limits<double>::max();
 }
 
-struct vec3 {
-  double x, y, z;
-  constexpr vec3(double mx, double my, double mz) noexcept
-      : x(mx), y(my), z(mz) {}
-  static std::pair<vec3, double> norm(double mx, double my, double mz) {
-    const double d = std::hypot(mx, my, mz);
-    return {vec3{mx / d, my / d, mz / d}, d};
-  }
-  constexpr double dot(const vec3 o) const {
-    return o.x * x + o.y * y + o.z * z;
-  }
-  constexpr vec3 cross(const vec3 o) const {
-    return vec3(y * o.z - z * o.y, z * o.x - x * o.z, x * o.y - y * o.x);
-  }
-  friend constexpr vec3 operator*(double m, vec3 v) {
-    return {m * v.x, m * v.y, m * v.z};
-  }
-  constexpr vec3 operator-(vec3 v) const { return {x - v.x, y - v.y, z - v.z}; }
-};
-
-struct Angles {
+struct CalcSingle {
+  double H;
   double theta;
   double eta;
 };
 
-Angles angles(double u, double v, double w, double z, double a) noexcept;
+struct Calc {
+  CalcSingle calc;
+  CalcSingle du;
+  CalcSingle dv;
+  CalcSingle dw;
+};
+
+Calc angles_with_derivatives(Magnetism<MagnetismType::T> mag,
+                             Angle<AngleType::deg> z,
+                             Angle<AngleType::deg> a) noexcept;
 
 template <Polarization pol>
-constexpr std::array<double, 7> PolarizationVector(Angles a) {
+constexpr std::array<double, 7> PolarizationVector(CalcSingle a) noexcept {
   using namespace Conversion;
-  const double ST = sind(a.theta), CT = cosd(a.theta), ST2 = ST * ST,
-               CT2 = CT * CT, ST2C2E = ST2 * cosd(2 * a.eta),
-               ST2S2E = ST2 * sind(2 * a.eta);
+  [[maybe_unused]] const double ST = sind(a.theta), CT = cosd(a.theta),
+                                ST2 = ST * ST, CT2 = CT * CT,
+                                ST2C2E = ST2 * cosd(2 * a.eta),
+                                ST2S2E = ST2 * sind(2 * a.eta);
 
   if constexpr (pol == Polarization::SigmaMinus)
     return {1 + CT2, ST2C2E, ST2S2E, 2 * CT, 4 * CT, 2 * ST2S2E, -2 * ST2C2E};
@@ -201,6 +193,51 @@ constexpr std::array<double, 7> PolarizationVector(Angles a) {
     return {1 + CT2, ST2C2E, ST2S2E, -2 * CT, -4 * CT, 2 * ST2S2E, -2 * ST2C2E};
   else if constexpr (pol == Polarization::None)
     return {1, 0, 0, 0, 0, 0};
+  else
+    std::terminate();
+}
+
+template <Polarization pol>
+constexpr std::array<double, 7> PolarizationVectorEtaDerivative(
+    CalcSingle a) noexcept {
+  using namespace Conversion;
+  [[maybe_unused]] const double ST = sind(a.theta), ST2 = ST * ST,
+                                C2E = cosd(2 * a.eta), S2E = sind(2 * a.eta),
+                                dST2C2E = -2 * ST2 * S2E,
+                                dST2S2E = 2 * ST2 * C2E;
+
+  if constexpr (pol == Polarization::SigmaMinus)
+    return {0, dST2C2E, dST2S2E, 0, 0, 2 * dST2S2E, -2 * dST2C2E};
+  else if constexpr (pol == Polarization::Pi)
+    return {0, -dST2C2E, -dST2S2E, 0, 0, -2 * dST2S2E, 2 * dST2C2E};
+  else if constexpr (pol == Polarization::SigmaPlus)
+    return {0, dST2C2E, dST2S2E, 0, 0, 2 * dST2S2E, -2 * dST2C2E};
+  else if constexpr (pol == Polarization::None)
+    return {0, 0, 0, 0, 0, 0};
+  else
+    std::terminate();
+}
+
+template <Polarization pol>
+constexpr std::array<double, 7> PolarizationVectorThetaDerivative(
+    CalcSingle a) noexcept {
+  using namespace Conversion;
+  [[maybe_unused]] const double ST = sind(a.theta), CT = cosd(a.theta),
+                                C2E = cosd(2 * a.eta), S2E = sind(2 * a.eta),
+                                dST = CT, dST2 = 2 * ST * dST, dCT = -ST,
+                                dST2C2E = dST2 * C2E, dST2S2E = dST2 * S2E,
+                                dCT2 = 2 * CT * dCT;
+
+  if constexpr (pol == Polarization::SigmaMinus)
+    return {dCT2,    dST2C2E,     dST2S2E,     2 * dCT,
+            4 * dCT, 2 * dST2S2E, -2 * dST2C2E};
+  else if constexpr (pol == Polarization::Pi)
+    return {dST2, -dST2C2E, -dST2S2E, 0, 0, -2 * dST2S2E, 2 * dST2C2E};
+  else if constexpr (pol == Polarization::SigmaPlus)
+    return {dCT2,     dST2C2E,     dST2S2E,     -2 * dCT,
+            -4 * dCT, 2 * dST2S2E, -2 * dST2C2E};
+  else if constexpr (pol == Polarization::None)
+    return {0, 0, 0, 0, 0, 0};
   else
     std::terminate();
 }
@@ -228,7 +265,8 @@ struct Model {
    *
    * @return The relative strength of the Zeeman sub-line
    */
-  double Strength(Rational Ju, Rational Jl, Polarization type, int n) const {
+  double Strength(Rational Ju, Rational Jl, Polarization type,
+                  int n) const noexcept {
     using Constant::pow2;
 
     auto ml = Ml(Ju, Jl, type, n);

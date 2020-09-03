@@ -75,6 +75,13 @@ class PropMat {
     return newp;
   }
 
+  constexpr PropMat operator+(PropMat x) const noexcept {
+    auto newp = PropMat(p);
+    std::transform(newp.p.begin(), newp.p.end(), x.p.begin(), newp.p.begin(),
+                   [](auto &a, auto &b) { return a + b; });
+    return newp;
+  }
+
   constexpr PropMat operator*(double x) const noexcept {
     auto newp = PropMat(p);
     std::transform(newp.p.cbegin(), newp.p.cend(), newp.p.begin(),

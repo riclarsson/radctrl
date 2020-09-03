@@ -286,13 +286,13 @@ constexpr double DEG2RAD = pi / 180;
 constexpr double RAD2DEG = 1 / DEG2RAD;
 /** Converts degrees to radians  */
 template <class T>
-constexpr double deg2rad(T x) {
+[[gnu::const]] constexpr double deg2rad(T x) {
   return x * DEG2RAD;
 }
 
 /** Converts radians to degrees  */
 template <class T>
-constexpr double rad2deg(T x) {
+[[gnu::const]] constexpr double rad2deg(T x) {
   return x * RAD2DEG;
 }
 
@@ -343,11 +343,11 @@ constexpr double atan2d(T1 y, T2 x) {
 constexpr double KAYCM2FREQ = 100 * c;
 constexpr double FREQ2KAYCM = 1 / KAYCM2FREQ;
 template <class T>
-constexpr double kaycm2freq(T x) {
+[[gnu::const]] constexpr double kaycm2freq(T x) {
   return x * KAYCM2FREQ;
 }
 template <class T>
-constexpr double freq2kaycm(T x) {
+[[gnu::const]] constexpr double freq2kaycm(T x) {
   return x * FREQ2KAYCM;
 }
 
@@ -356,31 +356,31 @@ constexpr double freq2kaycm(T x) {
 constexpr double ANGCM2FREQ = KAYCM2FREQ * inv_two_pi;
 constexpr double FREQ2ANGCM = 1 / ANGCM2FREQ;
 template <class T>
-constexpr double angcm2freq(T x) {
+[[gnu::const]] constexpr double angcm2freq(T x) {
   return x * ANGCM2FREQ;
 }
 template <class T>
-constexpr double freq2angcm(T x) {
+[[gnu::const]] constexpr double freq2angcm(T x) {
   return x * FREQ2ANGCM;
 }
 
 /** Conversion constant Angular frequency to frequency and back **/
 template <class T>
-constexpr double angfreq2freq(T x) {
+[[gnu::const]] constexpr double angfreq2freq(T x) {
   return x * inv_two_pi;
 }
 template <class T>
-constexpr double freq2angfreq(T x) {
+[[gnu::const]] constexpr double freq2angfreq(T x) {
   return x * two_pi;
 }
 
 /** Conversion wavelength to frequency and back. **/
 template <class T>
-constexpr double wavelen2freq(T x) {
+[[gnu::const]] constexpr double wavelen2freq(T x) {
   return c / x;
 }
 template <class T>
-constexpr double freq2wavelen(T x) {
+[[gnu::const]] constexpr double freq2wavelen(T x) {
   return c / x;
 }
 
@@ -389,11 +389,11 @@ constexpr double freq2wavelen(T x) {
 constexpr double ATM2PA = 101'325;
 constexpr double PA2ATM = 1 / ATM2PA;
 template <class T>
-constexpr double atm2pa(T x) {
+[[gnu::const]] constexpr double atm2pa(T x) {
   return x * ATM2PA;
 }
 template <class T>
-constexpr double pa2atm(T x) {
+[[gnu::const]] constexpr double pa2atm(T x) {
   return x * PA2ATM;
 }
 
@@ -402,11 +402,11 @@ constexpr double pa2atm(T x) {
 constexpr double BAR2PA = 100'000;
 constexpr double PA2BAR = 1 / BAR2PA;
 template <class T>
-constexpr double bar2pa(T x) {
+[[gnu::const]] constexpr double bar2pa(T x) {
   return x * BAR2PA;
 }
 template <class T>
-constexpr double pa2bar(T x) {
+[[gnu::const]] constexpr double pa2bar(T x) {
   return x * PA2BAR;
 }
 
@@ -415,11 +415,11 @@ constexpr double pa2bar(T x) {
 constexpr double TORR2PA = ATM2PA / 760;
 constexpr double PA2TORR = 1 / TORR2PA;
 template <class T>
-constexpr double torr2pa(T x) {
+[[gnu::const]] constexpr double torr2pa(T x) {
   return x * TORR2PA;
 }
 template <class T>
-constexpr double pa2torr(T x) {
+[[gnu::const]] constexpr double pa2torr(T x) {
   return x * PA2TORR;
 }
 
@@ -427,11 +427,11 @@ constexpr double pa2torr(T x) {
  * instead of pure constant if possible. **/
 constexpr double CEL2KEL = 273.15;
 template <class T>
-constexpr double c2k(T x) {
+[[gnu::const]] constexpr double c2k(T x) {
   return x + CEL2KEL;
 }
 template <class T>
-constexpr double k2c(T x) {
+[[gnu::const]] constexpr double k2c(T x) {
   return x - CEL2KEL;
 }
 
@@ -440,18 +440,18 @@ constexpr double k2c(T x) {
 constexpr double FAR2KELoff = 459.67;
 constexpr double FAR2KELsca = 5.0 / 9.0;
 template <class T>
-constexpr double f2k(T x) {
+[[gnu::const]] constexpr double f2k(T x) {
   return (x + FAR2KELoff) * FAR2KELsca;
 }
 template <class T>
-constexpr double k2f(T x) {
+[[gnu::const]] constexpr double k2f(T x) {
   return x / FAR2KELsca - FAR2KELoff;
 }
 
 /** Conversion constant Electron Vold to Kelvin and back.  Use conversion
  * formulae instead of pure constant if possible. **/
 template <class T>
-constexpr double ev2k(T x) {
+[[gnu::const]] constexpr double ev2k(T x) {
   return x * (e / k);
 }
 template <class T>
@@ -462,11 +462,11 @@ constexpr double k2ev(T x) {
 /** Conversion constant Tesla to Gauss and back.  Use conversion formulae
  * instead of pure constant if possible. **/
 template <class T>
-constexpr double t2g(T x) {
+[[gnu::const]] constexpr double t2g(T x) {
   return x * 10e4;
 }
 template <class T>
-constexpr double g2t(T x) {
+[[gnu::const]] constexpr double g2t(T x) {
   return x * 10e-4;
 }
 
@@ -474,11 +474,11 @@ constexpr double g2t(T x) {
 constexpr double HITRAN2ARTS_LS = KAYCM2FREQ * 1e-4;
 constexpr double ARTS2HITRAN_LS = 1 / HITRAN2ARTS_LS;
 template <class T>
-constexpr T hitran2arts_linestrength(T x) {
+[[gnu::const]] constexpr T cgs2si_linestrength(T x) {
   return x * HITRAN2ARTS_LS;
 }
 template <class T>
-constexpr T arts2hitran_linestrength(T x) {
+[[gnu::const]] constexpr T si2cgs_linestrength(T x) {
   return x * ARTS2HITRAN_LS;
 }
 
@@ -486,11 +486,11 @@ constexpr T arts2hitran_linestrength(T x) {
 constexpr double HITRAN2ARTS_GAMMA = KAYCM2FREQ / ATM2PA;
 constexpr double ARTS2HITRAN_GAMMA = 1 / HITRAN2ARTS_GAMMA;
 template <class T>
-constexpr T hitran2arts_broadening(T x) {
+[[gnu::const]] constexpr T cgs2si_broadening(T x) {
   return x * HITRAN2ARTS_GAMMA;
 }
 template <class T>
-constexpr T arts2hitran_broadening(T x) {
+[[gnu::const]] constexpr T si2cgs_broadening(T x) {
   return x * ARTS2HITRAN_GAMMA;
 }
 
@@ -498,20 +498,20 @@ constexpr T arts2hitran_broadening(T x) {
 constexpr double HITRAN2ARTS_ENERGY = h * KAYCM2FREQ;
 constexpr double ARTS2HITRAN_ENERGY = 1 / HITRAN2ARTS_ENERGY;
 template <class T>
-constexpr T hitran2arts_energy(T x) {
+[[gnu::const]] constexpr T cgs2si_energy(T x) {
   return x * HITRAN2ARTS_ENERGY;
 }
 template <class T>
-constexpr T arts2hitran_energy(T x) {
+[[gnu::const]] constexpr T si2cgs_energy(T x) {
   return x * ARTS2HITRAN_ENERGY;
 }
 
 template <class T>
-constexpr T angstrom2meter(T x) {
+[[gnu::const]] constexpr T angstrom2meter(T x) {
   return x * 1e-10;
 }
 template <class T>
-constexpr T meter2angstrom(T x) {
+[[gnu::const]] constexpr T meter2angstrom(T x) {
   return x * 1e10;
 }
 }  // namespace Conversion

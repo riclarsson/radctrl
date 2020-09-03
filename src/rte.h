@@ -12,35 +12,8 @@
 #include "units.h"
 
 namespace RTE {
-ENUMCLASS(PolarizationType, unsigned char, I, Q, U, V, IpQ, ImQ, IpU, ImU, IpV,
-          ImV)
-
-struct Polarization {
-  PolarizationType pol;
-  Grid<double, 2> rotation;
-
-  Polarization(std::size_t N,
-               double circular_rotation [[maybe_unused]]) noexcept
-      : rotation(0, N, N) {
-    if (N == 4) {
-      rotation(0, 0) = 1;
-      rotation(1, 1) = rotation(2, 2) = std::cos(2 * circular_rotation);
-      rotation(1, 2) = -std::sin(2 * circular_rotation);
-      rotation(2, 1) = std::sin(2 * circular_rotation);
-      rotation(3, 3) = 1;
-    } else if (N == 3) {
-      rotation(0, 0) = 1;
-      rotation(1, 1) = rotation(2, 2) = std::cos(2 * circular_rotation);
-      rotation(1, 2) = -std::sin(2 * circular_rotation);
-      rotation(2, 1) = std::sin(2 * circular_rotation);
-    } else if (N == 2) {
-      rotation(0, 0) = 1;
-      rotation(1, 1) = std::cos(2 * circular_rotation);  // Destructive...
-    } else if (N == 2) {
-      rotation(0, 0) = 1;
-    }
-  }
-};
+template <size_t N>
+class TraMat;
 
 template <size_t n>
 class RadVec {
@@ -94,6 +67,7 @@ class RadVec {
       return RadVec{b[0] + rv[0]};
     }
   }
+
   constexpr RadVec operator*(double x) const {
     if constexpr (N == 4) {
       return RadVec{b[0] * x, b[1] * x, b[2] * x, b[3] * x};
@@ -105,16 +79,24 @@ class RadVec {
       return RadVec{b[0] * x};
     }
   }
-  friend constexpr RadVec operator*(double x, RadVec rv) {
-    if constexpr (RadVec::N == 4) {
-      return RadVec{x * rv[0], x * rv[1], x * rv[2], x * rv[3]};
-    } else if constexpr (RadVec::N == 3) {
-      return RadVec{x * rv[0], x * rv[1], x * rv[2]};
-    } else if constexpr (RadVec::N == 2) {
-      return RadVec{x * rv[0], x * rv[1]};
-    } else if constexpr (RadVec::N == 1) {
-      return RadVec{x * rv[0]};
-    }
+
+  friend constexpr RadVec operator*(double x, RadVec rv) { return rv * x; }
+
+  friend constexpr RadVec operator*(const TraMat<RadVec::N> &T,
+                                    const RadVec &R) {
+    if constexpr (RadVec::N == 1) return {R[0] * T(0, 0)};
+    if constexpr (RadVec::N == 2)
+      return {R[0] * T(0, 0) + R[1] * T(0, 1), R[0] * T(1, 0) + R[1] * T(1, 1)};
+    if constexpr (RadVec::N == 3)
+      return {R[0] * T(0, 0) + R[1] * T(0, 1) + R[2] * T(0, 2),
+              R[0] * T(1, 0) + R[1] * T(1, 1) + R[2] * T(1, 2),
+              R[0] * T(2, 0) + R[1] * T(2, 1) + R[2] * T(2, 2)};
+    if constexpr (RadVec::N == 4)
+      return {
+          R[0] * T(0, 0) + R[1] * T(0, 1) + R[2] * T(0, 2) + R[3] * T(0, 3),
+          R[0] * T(1, 0) + R[1] * T(1, 1) + R[2] * T(1, 2) + R[3] * T(1, 3),
+          R[0] * T(2, 0) + R[1] * T(2, 1) + R[2] * T(2, 2) + R[3] * T(2, 3),
+          R[0] * T(3, 0) + R[1] * T(3, 1) + R[2] * T(3, 2) + R[3] * T(3, 3)};
   }
 };  // RadVec
 
@@ -160,6 +142,10 @@ class TraMat {
     static_assert(N == 1);
   }
 
+  constexpr TraMat() noexcept {
+    for (size_t i = 0; i < N * N; i++) a[i] = 0;
+  }
+
   friend std::ostream &operator<<(std::ostream &os, TraMat a) {
     for (size_t i = 0; i < TraMat::N; i++) {
       for (size_t j = 0; j < TraMat::N; j++) {
@@ -191,6 +177,40 @@ class TraMat {
       return RadVec<N>{t(0, 0)};
   }
 };  // TraMat
+
+ENUMCLASS(PolarizationType, unsigned char, I, Q, U, V, IpQ, ImQ, IpU, ImU, IpV,
+          ImV)
+
+template <size_t N>
+struct Polarization {
+  PolarizationType pol;
+  TraMat<N> rotation;
+
+  constexpr Polarization(
+      PolarizationType p,
+      [[maybe_unused]] Angle<AngleType::deg> circular_rotation = 0) noexcept
+      : pol(p) {
+    using Conversion::cosd;
+    using Conversion::sind;
+    if constexpr (N == 4) {
+      rotation(0, 0) = 1;
+      rotation(1, 1) = rotation(2, 2) = cosd(2 * circular_rotation);
+      rotation(1, 2) = -sind(2 * circular_rotation);
+      rotation(2, 1) = sind(2 * circular_rotation);
+      rotation(3, 3) = 1;
+    } else if constexpr (N == 3) {
+      rotation(0, 0) = 1;
+      rotation(1, 1) = rotation(2, 2) = cosd(2 * circular_rotation);
+      rotation(1, 2) = -sind(2 * circular_rotation);
+      rotation(2, 1) = sind(2 * circular_rotation);
+    } else if constexpr (N == 2) {
+      rotation(0, 0) = 1;
+      rotation(1, 1) = cosd(2 * circular_rotation);  // Destructive...
+    } else if constexpr (N == 2) {
+      rotation(0, 0) = 1;
+    }
+  }
+};
 
 /** Returns T (I - J) + J */
 template <size_t N>
@@ -269,29 +289,37 @@ constexpr RadVec<N> dupdate(const RadVec<N> &I, const TraMat<N> &T,
 
 /** Planck's law
  */
-SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+SpectralRadiance<PowerType::W, SphericalAngleType::Steradian, AreaType::m2,
                  FrequencyType::Freq>
 B(Temperature<TemperatureType::K> T, Frequency<FrequencyType::Freq> f) noexcept;
 
 /** Inverse of Planck's law
  */
-SpectralRadiance<PowerType::T, AngleType::Steradian, AreaType::m2,
+SpectralRadiance<PowerType::T, SphericalAngleType::Steradian, AreaType::m2,
                  FrequencyType::Freq>
-invB(SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+invB(SpectralRadiance<PowerType::W, SphericalAngleType::Steradian, AreaType::m2,
                       FrequencyType::Freq>
          I,
      Frequency<FrequencyType::Freq> f) noexcept;
 
+/** Derivative of inverse of Planck's law wrt intensity */
+SpectralRadiance<PowerType::T, SphericalAngleType::Steradian, AreaType::m2,
+                 FrequencyType::Freq>
+dinvBdI(SpectralRadiance<PowerType::W, SphericalAngleType::Steradian,
+                         AreaType::m2, FrequencyType::Freq>
+            I,
+        Frequency<FrequencyType::Freq> f) noexcept;
+
 /** Planck's law temperature derivative
  */
-SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+SpectralRadiance<PowerType::W, SphericalAngleType::Steradian, AreaType::m2,
                  FrequencyType::Freq>
 dBdT(Temperature<TemperatureType::K> T,
      Frequency<FrequencyType::Freq> f) noexcept;
 
 /** Planck's law frequency derivative
  */
-SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
+SpectralRadiance<PowerType::W, SphericalAngleType::Steradian, AreaType::m2,
                  FrequencyType::Freq>
 dBdf(Temperature<TemperatureType::K> T,
      Frequency<FrequencyType::Freq> f) noexcept;
@@ -301,8 +329,8 @@ dBdf(Temperature<TemperatureType::K> T,
 template <size_t N>
 constexpr RadVec<N> source(
     const Absorption::PropMat<N> &K, const RadVec<N> &S, const RadVec<N> &A,
-    const SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
-                           FrequencyType::Freq> &B) noexcept {
+    const SpectralRadiance<PowerType::W, SphericalAngleType::Steradian,
+                           AreaType::m2, FrequencyType::Freq> &B) noexcept {
   using Constant::pow2;
   if constexpr (N == 4) {
     const double invden = 1.0 / K.inverse_denominator();
@@ -387,10 +415,10 @@ constexpr RadVec<N> dsource(
     const Absorption::PropMat<N> &K, const Absorption::PropMat<N> &dK,
     const RadVec<N> &J, const RadVec<N> &dS, const RadVec<N> &A,
     const RadVec<N> &dA,
-    const SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
-                           FrequencyType::Freq> &B,
-    const SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
-                           FrequencyType::Freq> &dB) {
+    const SpectralRadiance<PowerType::W, SphericalAngleType::Steradian,
+                           AreaType::m2, FrequencyType::Freq> &B,
+    const SpectralRadiance<PowerType::W, SphericalAngleType::Steradian,
+                           AreaType::m2, FrequencyType::Freq> &dB) {
   using Constant::pow2;
   using Constant::pow4;
   if constexpr (N == 4) {
@@ -511,9 +539,9 @@ constexpr RadVec<N> dsource(
 }
 
 template <size_t N>
-constexpr TraMat<N> linear_transmat(const Absorption::PropMat<N> &K1,
-                                    const Absorption::PropMat<N> &K2,
-                                    const double &r) noexcept {
+constexpr TraMat<N> linear_transmat(
+    const Absorption::PropMat<N> &K1, const Absorption::PropMat<N> &K2,
+    const Distance<DistanceType::meter> r) noexcept {
   using Constant::inv_sqrt_2;
   using Constant::pow2;
   using Constant::pow3;
@@ -672,9 +700,9 @@ constexpr TraMat<N> linear_transmat(const Absorption::PropMat<N> &K1,
                      (C0 + C1 * a + C2 * (a2 + c2 - u2)) * exp_a * inv_x2};
   } else if constexpr (N == 2) {
     const double A =
-        exp(-r * ((K1[0] + K2[0]) * 0.5 - (K1[1] + K2[1]) * 0.5)) / 2;
+        exp(-r * (0.5 * (K1[0] + K2[0]) - 0.5 * (K1[1] + K2[1]))) / 2;
     const double B =
-        exp(-r * ((K1[0] + K2[0]) * 0.5 + (K1[1] + K2[1]) * 0.5)) / 2;
+        exp(-r * (0.5 * (K1[0] + K2[0]) + 0.5 * (K1[1] + K2[1]))) / 2;
     return TraMat<N>{A + B, B - A, B - A, A + B};
   } else if constexpr (N == 1) {
     return TraMat<N>{exp(-(K1[0] + K2[0]) * 0.5 * r)};
@@ -682,18 +710,18 @@ constexpr TraMat<N> linear_transmat(const Absorption::PropMat<N> &K1,
 }
 
 template <size_t N>
-constexpr TraMat<N> single_transmat(const Absorption::PropMat<N> &K,
-                                    const double &r) noexcept {
+constexpr TraMat<N> single_transmat(
+    const Absorption::PropMat<N> &K,
+    const Distance<DistanceType::meter> r) noexcept {
   return linear_transmat(K, K, r);
 }
 
 template <size_t N>
-constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
-                                     const Absorption::PropMat<N> &K1,
-                                     const Absorption::PropMat<N> &K2,
-                                     const Absorption::PropMat<N> &dK,
-                                     const double &r,
-                                     const double &dr) noexcept {
+constexpr TraMat<N> dlinear_transmat(
+    const TraMat<N> &T, const Absorption::PropMat<N> &K1,
+    const Absorption::PropMat<N> &K2, const Absorption::PropMat<N> &dK,
+    const Distance<DistanceType::meter> r,
+    const Distance<DistanceType::meter> dr) noexcept {
   using Constant::inv_sqrt_2;
   using Constant::pow2;
   using Constant::pow3;
@@ -827,7 +855,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                C3c * dx2dy2) *
                   inv_x2y2;
 
-    const double &C0 = reinterpret_cast<const double(&)[2]>(C0c)[0];
+    //     const double &C0 = reinterpret_cast<const double(&)[2]>(C0c)[0];
     const double &C1 = reinterpret_cast<const double(&)[2]>(C1c)[0];
     const double &C2 = reinterpret_cast<const double(&)[2]>(C2c)[0];
     const double &C3 = reinterpret_cast<const double(&)[2]>(C3c)[0];
@@ -837,10 +865,10 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
     const double &dC3 = reinterpret_cast<const double(&)[2]>(dC3c)[0];
 
     return TraMat<N>{
-        T[0] * da +
+        T(0, 0) * da +
             exp_a * (dC0 + dC2 * (b2 + c2 + d2) + C2 * (db2 + dc2 + dd2)),
 
-        T[1] * da +
+        T(0, 1) * da +
             exp_a * (db * C1 + b * dC1 + dC2 * (-c * u - d * v) +
                      C2 * (-dc * u - dd * v - c * du - d * dv) +
                      dC3 * (b * (b2 + c2 + d2) - u * (b * u - d * w) -
@@ -850,7 +878,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                            u * (db * u - dd * w) - v * (db * v + dc * w) -
                            u * (b * du - d * dw) - v * (b * dv + c * dw))),
 
-        T[2] * da +
+        T(0, 2) * da +
             exp_a * (dC1 * c + C1 * dc + dC2 * (b * u - d * w) +
                      C2 * (db * u - dd * w + b * du - d * dw) +
                      dC3 * (c * (b2 + c2 + d2) - u * (c * u + d * v) -
@@ -860,7 +888,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                            u * (dc * u + dd * v) - w * (db * v + dc * w) -
                            u * (c * du + d * dv) - w * (b * dv + c * dw))),
 
-        T[3] * da +
+        T(0, 3) * da +
             exp_a * (dC1 * d + C1 * dd + dC2 * (b * v + c * w) +
                      C2 * (db * v + dc * w + b * dv + c * dw) +
                      dC3 * (d * (b2 + c2 + d2) - v * (c * u + d * v) +
@@ -870,7 +898,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                            v * (dc * u + dd * v) + w * (db * u - dd * w) -
                            v * (c * du + d * dv) + w * (b * du - d * dw))),
 
-        T[4] * da +
+        T(1, 0) * da +
             exp_a * (db * C1 + b * dC1 + dC2 * (c * u + d * v) +
                      C2 * (dc * u + dd * v + c * du + d * dv) +
                      dC3 * (-b * (-b2 + u2 + v2) + c * (b * c - v * w) +
@@ -880,10 +908,10 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                            c * (db * c - dv * w) + d * (db * d + du * w) +
                            c * (b * dc - v * dw) + d * (b * dd + u * dw))),
 
-        T[5] * da +
+        T(1, 1) * da +
             exp_a * (dC0 + dC2 * (b2 - u2 - v2) + C2 * (db2 - du2 - dv2)),
 
-        T[6] * da +
+        T(1, 2) * da +
             exp_a *
                 (dC2 * (b * c - v * w) +
                  C2 * (db * c + b * dc - dv * w - v * dw) + dC1 * u + C1 * du +
@@ -894,7 +922,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                        u * (-db2 + du2 + dv2) - w * (db * d + du * w) +
                        c * (c * du + d * dv) - w * (b * dd + u * dw))),
 
-        T[7] * da +
+        T(1, 3) * da +
             exp_a *
                 (dC2 * (b * d + u * w) +
                  C2 * (db * d + b * dd + du * w + u * dw) + dC1 * v + C1 * dv +
@@ -905,7 +933,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                        v * (-db2 + du2 + dv2) + w * (db * c - dv * w) +
                        d * (c * du + d * dv) + w * (b * dc - v * dw))),
 
-        T[8] * da +
+        T(2, 0) * da +
             exp_a * (dC1 * c + C1 * dc + dC2 * (-b * u + d * w) +
                      C2 * (-db * u + dd * w - b * du + d * dw) +
                      dC3 * (b * (b * c - v * w) - c * (-c2 + u2 + w2) +
@@ -915,7 +943,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                            c * (-dc2 + du2 + dw2) + d * (dc * d - du * v) +
                            b * (b * dc - v * dw) + d * (c * dd - u * dv))),
 
-        T[9] * da +
+        T(2, 1) * da +
             exp_a *
                 (dC2 * (b * c - v * w) +
                  C2 * (db * c + b * dc - dv * w - v * dw) - dC1 * u - C1 * du +
@@ -926,10 +954,10 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                        u * (-dc2 + du2 + dw2) - v * (dc * d - du * v) -
                        b * (b * du - d * dw) - v * (c * dd - u * dv))),
 
-        T[10] * da +
+        T(2, 2) * da +
             exp_a * (dC0 + dC2 * (c2 - u2 - w2) + C2 * (dc2 - du2 - dw2)),
 
-        T[11] * da +
+        T(2, 3) * da +
             exp_a *
                 (dC2 * (c * d - u * v) +
                  C2 * (dc * d + c * dd - du * v - u * dv) + dC1 * w + C1 * dw +
@@ -940,7 +968,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                        v * (db * c - dv * w) - w * (-dc2 + du2 + dw2) -
                        d * (b * du - d * dw) + v * (b * dc - v * dw))),
 
-        T[12] * da +
+        T(3, 0) * da +
             exp_a * (dC1 * d + C1 * dd + dC2 * (-b * v - c * w) +
                      C2 * (-db * v - dc * w - b * dv - c * dw) +
                      dC3 * (b * (b * d + u * w) + c * (c * d - u * v) -
@@ -950,7 +978,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                            c * (dc * d - du * v) - d * (-dd2 + dv2 + dw2) +
                            b * (b * dd + u * dw) + c * (c * dd - u * dv))),
 
-        T[13] * da +
+        T(3, 1) * da +
             exp_a *
                 (dC2 * (b * d + u * w) +
                  C2 * (db * d + b * dd + du * w + u * dw) - dC1 * v - C1 * dv +
@@ -961,7 +989,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                        u * (dc * d - du * v) + v * (-dd2 + dv2 + dw2) -
                        b * (b * dv + c * dw) - u * (c * dd - u * dv))),
 
-        T[14] * da +
+        T(3, 2) * da +
             exp_a *
                 (dC2 * (c * d - u * v) +
                  C2 * (dc * d + c * dd - du * v - u * dv) - dC1 * w - C1 * dw +
@@ -972,7 +1000,7 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
                        u * (db * d + du * w) + w * (-dd2 + dv2 + dw2) -
                        c * (b * dv + c * dw) + u * (b * dd + u * dw))),
 
-        T[15] * da +
+        T(3, 3) * da +
             exp_a * (dC0 + dC2 * (d2 - v2 - w2) + C2 * (dd2 - dv2 - dw2))};
   } else if constexpr (N == 3) {
     const double a = -r * 0.5 * (K1[0] + K2[0]), b = -r * 0.5 * (K1[1] + K2[1]),
@@ -994,8 +1022,8 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
 
     const double x =
         sqrt(imag ? -Const : Const);  // test to just use real values
-    const double x2 =
-        (real ? 1 : -1) * x * x;  // test to change sign if imaginary
+    //     const double x2 = (real ? 1 : -1) * x * x;  // test to change sign if
+    //     imaginary
     const double inv_x =
         either ? 1.0 / x
                : 1.0;  // test so further calculations are replaced as x→0
@@ -1014,8 +1042,8 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
      *    inv_x2 := 1 for x == 0,
      *    C0, C1, C2 ∝ [1/x^2]
      */
-    const double C0 =
-        either ? a2 * (cx - 1.0) - a * x * sx + x2 : 1.0 + 0.5 * a2 - a;
+    //     const double C0 = either ? a2 * (cx - 1.0) - a * x * sx + x2 : 1.0 +
+    //     0.5 * a2 - a;
     const double dC0 = either
                            ? da2 * (cx - 1.0) + da2 * (dcx - 1.0) -
                                  da * x * sx - a * dx * sx - a * x * dsx + dx2
@@ -1026,56 +1054,54 @@ constexpr TraMat<N> dlinear_transmat(const TraMat<N> &T,
     const double C2 = either ? cx - 1.0 : 0.5;
     const double dC2 = either ? dcx : 0;
 
-    return TraMat<N>{T[0] * (da + dx2 * inv_x2) +
+    return TraMat<N>{T(0, 0) * (da + dx2 * inv_x2) +
                          exp_a * inv_x2 *
                              (dC0 + dC1 * a + C1 * da + dC2 * (a2 + b2 + c2) +
                               C2 * (da2 + db2 + dc2)),
-                     T[1] * (da + dx2 * inv_x2) +
+                     T(0, 1) * (da + dx2 * inv_x2) +
                          exp_a * inv_x2 *
                              (dC1 * b + C1 * db + dC2 * (2 * a * b - c * u) +
                               C2 * (2 * da * b - dc * u + 2 * a * db - c * du)),
-                     T[2] * (da + dx2 * inv_x2) +
+                     T(0, 2) * (da + dx2 * inv_x2) +
                          exp_a * inv_x2 *
                              (dC1 * c + C1 * dc + dC2 * (2 * a * c + b * u) +
                               C2 * (2 * da * c + db * u + 2 * a * dc + b * du)),
-                     T[3] * (da + dx2 * inv_x2) +
+                     T(1, 0) * (da + dx2 * inv_x2) +
                          exp_a * inv_x2 *
                              (dC1 * b + C1 * db + dC2 * (2 * a * b + c * u) +
                               C2 * (2 * da * b + dc * u + 2 * a * db + c * du)),
-                     T[4] * (da + dx2 * inv_x2) +
+                     T(1, 1) * (da + dx2 * inv_x2) +
                          exp_a * inv_x2 *
                              (dC0 + dC1 * a + C1 * da + dC2 * (a2 + b2 - u2) +
                               C2 * (da2 + db2 - du2)),
-                     T[5] * (da + dx2 * inv_x2) +
+                     T(1, 2) * (da + dx2 * inv_x2) +
                          exp_a * inv_x2 *
                              (dC1 * u + C1 * du + dC2 * (2 * a * u + b * c) +
                               C2 * (2 * da * u + db * c + 2 * a * du + b * dc)),
-                     T[6] * (da + dx2 * inv_x2) +
+                     T(2, 0) * (da + dx2 * inv_x2) +
                          exp_a * inv_x2 *
                              (dC1 * c + C1 * dc + dC2 * (2 * a * c - b * u) +
                               C2 * (2 * da * c - db * u + 2 * a * dc - b * du)),
-                     T[7] * (da + dx2 * inv_x2) +
+                     T(2, 1) * (da + dx2 * inv_x2) +
                          exp_a * inv_x2 *
                              (-dC1 * u - C1 * du - dC2 * (2 * a * u - b * c) -
                               C2 * (2 * da * u - db * c + 2 * a * du - b * dc)),
-                     T[8] * (da + dx2 * inv_x2) +
+                     T(2, 2) * (da + dx2 * inv_x2) +
                          exp_a * inv_x2 *
                              (dC0 + dC1 * a + C1 * da + dC2 * (a2 + c2 - u2) +
                               C2 * (da2 + dc2 - du2))};
   } else if constexpr (N == 2) {
-    const double dA =
-        (-r * (0.5 * dK[0] - 0.5 * dK[1]) -
-         dr * (0.5 * (K1[0] + K2[0]) - 0.5 * (K1[1] + K2[1]))) *
-        exp(-r * (0.5 * (K1[0] + K2[0]) - 0.5 * (K1[1] + K2[1]))) / 2;
-    const double dB =
-        (-r * (0.5 * dK[0] + 0.5 * dK[1]) -
-         dr * (0.5 * (K1[0] + K2[0]) + 0.5 * (K1[1] + K2[1]))) *
-        exp(-r * (0.5 * (K1[0] + K2[0]) + 0.5 * (K1[1] + K2[1]))) / 2;
+    const double dA = (-r * (0.5 * dK[0] - 0.5 * dK[1]) -
+                       dr * (0.5 * (K1[0] + K2[0]) - 0.5 * (K1[1] + K2[1]))) *
+                      (T(0, 0) - T(0, 1)) / 2;
+    const double dB = (-r * (0.5 * dK[0] + 0.5 * dK[1]) -
+                       dr * (0.5 * (K1[0] + K2[0]) + 0.5 * (K1[1] + K2[1]))) *
+                      (T(0, 0) - T(0, 1)) / 2;
     return TraMat<N>{dA + dB, dB - dA, dB - dA, dA + dB};
     return TraMat<N>{};
   } else if constexpr (N == 1) {
     const double a = 0.5 * (K1[0] + K2[0]), da = 0.5 * dK[0];
-    return TraMat<N>{-(r * da + dr * a) * T[0]};
+    return TraMat<N>{-(r * da + dr * a) * T(0, 0)};
   }
 }
 }  // namespace RTE

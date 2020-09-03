@@ -162,7 +162,9 @@ ENUMCLASS(FrequencyType, char, Freq, Kayser,
 ENUMCLASS(AreaType, char, m2,
           cm2)  // AreaType
 
-ENUMCLASS(AngleType, char, Steradian)  // AngleType
+ENUMCLASS(AngleType, char, deg, rad)  // AngleType
+
+ENUMCLASS(SphericalAngleType, char, Steradian)  // SphericalAngleType
 
 ENUMCLASS(PowerType, char, W, T)  // PowerType
 
@@ -335,6 +337,10 @@ class Wind {
   friend std::istream &operator>>(std::istream &is, Wind &w) {
     return is >> w.W[0] >> w.W[1] >> w.W[2];
   }
+  
+  constexpr double u() const { return W[0]; }
+  constexpr double v() const { return W[1]; }
+  constexpr double w() const { return W[2]; }
 };  // Wind
 
 template <VMRType X>
@@ -497,8 +503,8 @@ class LineStrength {
   void hzm22self() noexcept {
     if constexpr (X == FrequencyType::Freq and Y == AreaType::m2) {
     }
-    if constexpr (X == FrequencyType::Kayser and Y == AreaType::m2) {
-      val = Conversion::arts2hitran_linestrength(val);
+    if constexpr (X == FrequencyType::Kayser and Y == AreaType::cm2) {
+      val = Conversion::si2cgs_linestrength(val);
     }
   }
 
@@ -510,7 +516,7 @@ class LineStrength {
   }
   constexpr LineStrength(
       const LineStrength<FrequencyType::Kayser, AreaType::cm2> &ls) noexcept
-      : val(Conversion::hitran2arts_linestrength(ls.value())) {
+      : val(Conversion::cgs2si_linestrength(ls.value())) {
     hzm22self();
   }
 };  // LineStrength
@@ -522,7 +528,7 @@ class Energy {
     if constexpr (X == EnergyType::Joule) {
     }
     if constexpr (X == EnergyType::invcm) {
-      val = Conversion::arts2hitran_energy(val);
+      val = Conversion::si2cgs_energy(val);
     }
   }
 
@@ -532,7 +538,7 @@ class Energy {
     hzm22self();
   }
   constexpr Energy(const Energy<EnergyType::invcm> &e) noexcept
-      : val(Conversion::hitran2arts_energy(e.value())) {
+      : val(Conversion::cgs2si_energy(e.value())) {
     hzm22self();
   }
 };  // Energy
@@ -544,7 +550,7 @@ class PressureBroadening {
     if constexpr (X == FrequencyType::Freq and Y == PressureType::Pa) {
     }
     if constexpr (X == FrequencyType::Kayser and Y == PressureType::Atm) {
-      val = Conversion::arts2hitran_broadening(val);
+      val = Conversion::si2cgs_broadening(val);
     }
   }
 
@@ -558,33 +564,33 @@ class PressureBroadening {
   constexpr PressureBroadening(
       const PressureBroadening<FrequencyType::Kayser, PressureType::Atm>
           &pb) noexcept
-      : val(Conversion::hitran2arts_broadening(pb.value())) {
+      : val(Conversion::cgs2si_broadening(pb.value())) {
     hzpa2self();
   }
 };  // PressureBroadening
 
-template <PowerType X, AngleType Y, AreaType Z, FrequencyType W>
+template <PowerType X, SphericalAngleType Y, AreaType Z, FrequencyType W>
 class SpectralRadiance {
   SCALAR(SpectralRadiance)
   void sr2self() noexcept {
-    if constexpr (X == PowerType::W and Y == AngleType::Steradian and
+    if constexpr (X == PowerType::W and Y == SphericalAngleType::Steradian and
                   Z == AreaType::m2 and W == FrequencyType::Freq) {
     }
   }
 
  public:
   constexpr SpectralRadiance(
-      const SpectralRadiance<PowerType::W, AngleType::Steradian, AreaType::m2,
-                             FrequencyType::Freq> &sr) noexcept
+      const SpectralRadiance<PowerType::W, SphericalAngleType::Steradian,
+                             AreaType::m2, FrequencyType::Freq> &sr) noexcept
       : val(sr.value()) {
-    static_assert(X == PowerType::W and Y == AngleType::Steradian and
+    static_assert(X == PowerType::W and Y == SphericalAngleType::Steradian and
                   Z == AreaType::m2 and W == FrequencyType::Freq);
   }
   constexpr SpectralRadiance(
-      const SpectralRadiance<PowerType::T, AngleType::Steradian, AreaType::m2,
-                             FrequencyType::Freq> &sr) noexcept
+      const SpectralRadiance<PowerType::T, SphericalAngleType::Steradian,
+                             AreaType::m2, FrequencyType::Freq> &sr) noexcept
       : val(sr.value()) {
-    static_assert(X == PowerType::T and Y == AngleType::Steradian and
+    static_assert(X == PowerType::T and Y == SphericalAngleType::Steradian and
                   Z == AreaType::m2 and W == FrequencyType::Freq);
   }
 };
@@ -600,6 +606,26 @@ class Decay final {
  public:
   constexpr Decay(const Decay<DecayType::ExponentialPerSecond> &d) noexcept
       : val(d.value()) {
+    m2self();
+  }
+};  // Decay
+
+template <AngleType X>
+class Angle final {
+  SCALAR(Angle)
+  void m2self() noexcept {
+    if constexpr (X == AngleType::deg) {
+    } else if constexpr (X == AngleType::rad) {
+      val = Conversion::deg2rad(val);
+    }
+  }
+
+ public:
+  constexpr Angle(const Angle<AngleType::deg> &a) noexcept : val(a.value()) {
+    m2self();
+  }
+  constexpr Angle(const Angle<AngleType::rad> &a) noexcept
+      : val(Conversion::rad2deg(a.value())) {
     m2self();
   }
 };  // Decay

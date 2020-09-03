@@ -522,6 +522,18 @@ constexpr Output mirrored(Output x) noexcept {
   return {x.G0, -x.D0, x.G2, -x.D2, x.FVC, x.ETA, x.Y, x.G, -x.DV};
 }
 
+constexpr Complex linemixing(Output X) noexcept { return {1 + X.G, -X.Y}; }
+
+constexpr Complex linemixing_derivative(Output X) noexcept {
+  return {X.G, -X.Y};
+}
+
+constexpr bool isnonzero(Output x) noexcept {
+  return x.G0 not_eq 0 or x.D0 not_eq 0 or x.G2 not_eq 0 or x.D2 not_eq 0 or
+         x.FVC not_eq 0 or x.ETA not_eq 0 or x.Y not_eq 0 or x.G not_eq 0 or
+         x.DV not_eq 0;
+}
+
 struct ModelHelper {
   Species::Species s;
   Parameter p;
@@ -649,16 +661,31 @@ class Model {
     return data[i][size_t(X)];
   }
 
-  Output operator()(
-      Temperature<TemperatureType::K> T, Temperature<TemperatureType::K> T0,
-      Pressure<PressureType::Pa> P,
-      const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
-    Output out;
+ private:
+  double sum_of_vmr(const std::vector<VMR<VMRType::ratio>> &vmr) const {
     double vmrsum = 0;
     for (auto &params : data) {
       for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
           vmrsum += v.value();
+          break;
+        }
+      }
+    }
+    return vmrsum;
+  }
+
+ public:
+  Output operator()(
+      Temperature<TemperatureType::K> T, Temperature<TemperatureType::K> T0,
+      Pressure<PressureType::Pa> P,
+      const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
+    Output out;
+    const double vmrsum = sum_of_vmr(vmr);
+
+    for (auto &params : data) {
+      for (auto &v : vmr) {
+        if (v.Species() == params[0].Species()) {
           for (unsigned char i = 0; i < N; i++) {
             out[Parameter(i)] += params[i](T, T0, P) * v.value();
           }
@@ -676,139 +703,91 @@ class Model {
     return out;
   }
 
-  Output dX0(Temperature<TemperatureType::K> T,
+  double dX0(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>> &vmr,
-             Species::Species spec) const noexcept {
-    Output out;
-    double vmrsum = 0;
-    bool done = false;
-    for (auto &params : data) {
-      for (auto &v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
-          if (not done and spec == v.Species()) {
-            for (unsigned char i = 0; i < N; i++) {
-              out[Parameter(i)] += params[i].dX0(T, T0, P) * v.value();
+             const std::vector<VMR<VMRType::ratio>> &vmr, Species::Species spec,
+             Parameter target) const noexcept {
+    const double vmrsum = sum_of_vmr(vmr);
+    if (vmrsum > 0) {
+      for (auto &params : data) {
+        for (auto &v : vmr) {
+          if (v.Species() == params[0].Species()) {
+            if (spec == v.Species()) {
+              return params[size_t(target)].dX0(T, T0, P) * v.value() / vmrsum;
             }
-            done = true;
           }
-          break;
         }
       }
     }
-
-    if (vmrsum not_eq 0) {
-      for (unsigned char i = 0; i < N; i++) {
-        out[Parameter(i)] /= vmrsum;
-      }
-    }
-
-    return out;
+    return 0;
   }
 
-  Output dX1(Temperature<TemperatureType::K> T,
+  double dX1(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>> &vmr,
-             Species::Species spec) const noexcept {
-    Output out;
-    double vmrsum = 0;
-    bool done = false;
-    for (auto &params : data) {
-      for (auto &v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
-          if (not done and spec == v.Species()) {
-            for (unsigned char i = 0; i < N; i++) {
-              out[Parameter(i)] += params[i].dX1(T, T0, P) * v.value();
+             const std::vector<VMR<VMRType::ratio>> &vmr, Species::Species spec,
+             Parameter target) const noexcept {
+    const double vmrsum = sum_of_vmr(vmr);
+    if (vmrsum > 0) {
+      for (auto &params : data) {
+        for (auto &v : vmr) {
+          if (v.Species() == params[0].Species()) {
+            if (spec == v.Species()) {
+              return params[size_t(target)].dX1(T, T0, P) * v.value() / vmrsum;
             }
-            done = true;
           }
-          break;
         }
       }
     }
-
-    if (vmrsum not_eq 0) {
-      for (unsigned char i = 0; i < N; i++) {
-        out[Parameter(i)] /= vmrsum;
-      }
-    }
-
-    return out;
+    return 0;
   }
 
-  Output dX2(Temperature<TemperatureType::K> T,
+  double dX2(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>> &vmr,
-             Species::Species spec) const noexcept {
-    Output out;
-    double vmrsum = 0;
-    bool done = false;
-    for (auto &params : data) {
-      for (auto &v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
-          if (not done and spec == v.Species()) {
-            for (unsigned char i = 0; i < N; i++) {
-              out[Parameter(i)] += params[i].dX2(T, T0, P) * v.value();
+             const std::vector<VMR<VMRType::ratio>> &vmr, Species::Species spec,
+             Parameter target) const noexcept {
+    const double vmrsum = sum_of_vmr(vmr);
+    if (vmrsum > 0) {
+      for (auto &params : data) {
+        for (auto &v : vmr) {
+          if (v.Species() == params[0].Species()) {
+            if (spec == v.Species()) {
+              return params[size_t(target)].dX2(T, T0, P) * v.value() / vmrsum;
             }
-            done = true;
           }
-          break;
         }
       }
     }
-
-    if (vmrsum not_eq 0) {
-      for (unsigned char i = 0; i < N; i++) {
-        out[Parameter(i)] /= vmrsum;
-      }
-    }
-
-    return out;
+    return 0;
   }
 
-  Output dX3(Temperature<TemperatureType::K> T,
+  double dX3(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>> &vmr,
-             Species::Species spec) const noexcept {
-    Output out;
-    double vmrsum = 0;
-    bool done = false;
-    for (auto &params : data) {
-      for (auto &v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
-          if (not done and spec == v.Species()) {
-            for (unsigned char i = 0; i < N; i++) {
-              out[Parameter(i)] += params[i].dX3(T, T0, P) * v.value();
+             const std::vector<VMR<VMRType::ratio>> &vmr, Species::Species spec,
+             Parameter target) const noexcept {
+    const double vmrsum = sum_of_vmr(vmr);
+    if (vmrsum > 0) {
+      for (auto &params : data) {
+        for (auto &v : vmr) {
+          if (v.Species() == params[0].Species()) {
+            if (spec == v.Species()) {
+              return params[size_t(target)].dX1(T, T0, P) * v.value() / vmrsum;
             }
-            done = true;
           }
-          break;
         }
       }
     }
-
-    if (vmrsum not_eq 0) {
-      for (unsigned char i = 0; i < N; i++) {
-        out[Parameter(i)] /= vmrsum;
-      }
-    }
-
-    return out;
+    return 0;
   }
 
   Output dT(Temperature<TemperatureType::K> T,
             Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
             const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
-    double vmrsum = 0;
+    const double vmrsum = sum_of_vmr(vmr);
+
     for (auto &params : data) {
       for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
           for (unsigned char i = 0; i < N; i++) {
             out[Parameter(i)] += params[i].dT(T, T0, P) * v.value();
           }
@@ -830,11 +809,11 @@ class Model {
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
              const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
-    double vmrsum = 0;
+    const double vmrsum = sum_of_vmr(vmr);
+
     for (auto &params : data) {
       for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
           for (unsigned char i = 0; i < N; i++) {
             out[Parameter(i)] += params[i].dT0(T, T0, P) * v.value();
           }
@@ -856,11 +835,11 @@ class Model {
             Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
             const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
-    double vmrsum = 0;
+    const double vmrsum = sum_of_vmr(vmr);
+
     for (auto &params : data) {
       for (auto &v : vmr) {
         if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
           for (unsigned char i = 0; i < N; i++) {
             out[Parameter(i)] += params[i].dP(T, T0, P) * v.value();
           }
@@ -878,6 +857,32 @@ class Model {
     return out;
   }
 
+  Output dVMR(Temperature<TemperatureType::K> T,
+              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
+              const std::vector<VMR<VMRType::ratio>> &vmr,
+              const Species::Species s) const noexcept {
+    Output out;
+    const double vmrsum = sum_of_vmr(vmr);
+
+    for (auto &params : data) {
+      for (auto &v : vmr) {
+        if (v.Species() == params[0].Species() and v.Species() == s) {
+          for (unsigned char i = 0; i < N; i++) {
+            out[Parameter(i)] += params[i].dP(T, T0, P) * v.value();
+          }
+          break;
+        }
+      }
+    }
+
+    if (vmrsum not_eq 0) {
+      for (unsigned char i = 0; i < N; i++) {
+        out[Parameter(i)] /= vmrsum;
+      }
+    }
+
+    return out;
+  }
 };  // Model
 
 namespace Base {
@@ -936,7 +941,7 @@ class HartmannTran {
     calc();
   }
 
-  Complex dFdf(double) const noexcept {
+  Complex dFdf() const noexcept {
     constexpr Complex ddeltax = Complex(0, -1);
     Complex dx = -ddeltax / ((ETA - 1) * Complex(G2, D2));
     Complex dsqrtxy = dx / (2 * sqrtxy);
@@ -2527,7 +2532,7 @@ class SpeedDependentHardCollisionVoigt {
     calc();
   }
 
-  Complex dFdf(double) const noexcept {
+  Complex dFdf() const noexcept {
     switch (calcs) {
       case CalcType::Full:
         return invGD * invc2 * (dw1 - dw2) /
@@ -3158,7 +3163,7 @@ class SpeedDependentVoigt {
     calc();
   }
 
-  Complex dFdf(double) const noexcept {
+  Complex dFdf() const noexcept {
     switch (calcs) {
       case CalcType::Full:
         return invGD * invc2 * (dw1 - dw2) / (2 * Constant::sqrt_pi * sq.xy);
@@ -3664,7 +3669,7 @@ class Voigt {
         F(Constant::inv_sqrt_pi * invGD * Faddeeva::w(z)),
         dF(2 * (Complex(0, invGD * Constant::inv_pi) - z * F)) {}
 
-  Complex dFdf(double) const noexcept { return dF; }
+  Complex dFdf() const noexcept { return dF; }
   Complex dFdF0() const noexcept { return -F / mF0 - dF; }
   Complex dFdDV(double d) const noexcept { return d * dFdF0(); }
   Complex dFdD0(double d) const noexcept { return d * dFdF0(); }
@@ -3722,7 +3727,7 @@ class Lorentz {
   constexpr Complex dFdT(LineData d, double) const noexcept {
     return dFdVMR(d);
   }
-  constexpr Complex dFdf(double) const noexcept { return Complex(0, -1) * dF; }
+  constexpr Complex dFdf() const noexcept { return Complex(0, -1) * dF; }
   constexpr Complex dFdF0() const noexcept { return Complex(0, 1) * dF; }
   constexpr Complex dFdDV(double d) const noexcept { return d * dFdF0(); }
   constexpr Complex dFdD0(double d) const noexcept { return d * dFdF0(); }
@@ -3767,7 +3772,7 @@ class Doppler {
     return -(Constant::pow2(x) - 0.5) * Constant::pow3(invGD) /
            (Constant::sqrt_ln_2 * T) * F;
   }
-  double dFdf(double) const noexcept { return -2 * invGD * F * x; }
+  double dFdf() const noexcept { return -2 * invGD * F * x; }
   double dFdF0() const noexcept {
     return F * Constant::pow2(x) * (2 / mF0) + F * x * 2 * (invGD - 1 / mF0);
   }
