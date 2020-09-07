@@ -337,7 +337,7 @@ class Wind {
   friend std::istream &operator>>(std::istream &is, Wind &w) {
     return is >> w.W[0] >> w.W[1] >> w.W[2];
   }
-  
+
   constexpr double u() const { return W[0]; }
   constexpr double v() const { return W[1]; }
   constexpr double w() const { return W[2]; }

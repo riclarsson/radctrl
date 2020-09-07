@@ -142,24 +142,33 @@ class Target {
   }
 
   constexpr bool operator==(Atm x) const noexcept {
-    if (mtype not_eq Type::Atm and msubtype.atm not_eq x)
+    if (mtype not_eq Type::Atm) {
       return false;
-    else
+    } else if (msubtype.atm == x) {
       return true;
+    } else {
+      return false;
+    }
   }
 
   constexpr bool operator==(Line x) const noexcept {
-    if (mtype not_eq Type::Line and msubtype.line not_eq x)
+    if (mtype not_eq Type::Line) {
       return false;
-    else
+    } else if (msubtype.line == x) {
       return true;
+    } else {
+      return false;
+    }
   }
 
   constexpr bool operator==(Sensor x) const noexcept {
-    if (mtype not_eq Type::Sensor and msubtype.sensor not_eq x)
+    if (mtype not_eq Type::Sensor) {
       return false;
-    else
+    } else if (msubtype.sensor == x) {
       return true;
+    } else {
+      return false;
+    }
   }
 
   constexpr Species::Species Species() const noexcept {

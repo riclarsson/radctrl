@@ -27,11 +27,11 @@ std::vector<RadVec<N>> source_vec_planck(
 }
 
 template <size_t N>
-void to_planck(Grid<RadVec<N>, 2>& rad, Grid<RadVec<N>, 2>& jac,
+void to_planck(Grid<RadVec<N>, 2>& rad, Grid<RadVec<N>, 3>& jac,
                const std::vector<Frequency<FrequencyType::Freq>>& fvec) {
   const size_t np = rad.sizes()[0];
   const size_t nv = rad.sizes()[1];
-  const size_t nt = jac.sizes()[0] / np;
+  const size_t nt = jac.sizes()[0];
 
   if (nt) {
     for (size_t ip = 0; ip < np; ip++) {
@@ -64,23 +64,18 @@ void to_planck(Grid<RadVec<N>, 2>& rad, Grid<RadVec<N>, 2>& jac,
 
         for (size_t it = 0; it < nt; it++) {
           if constexpr (N == 1) {
-            jac(it * np + ip, iv) =
-                RadVec<1>{scl[0] * jac(it * np + ip, iv)[0]};
+            jac(it, ip, iv) = RadVec<1>{scl[0] * jac(it, ip, iv)[0]};
           } else if constexpr (N == 2) {
-            jac(it * np + ip, iv) =
-                RadVec<2>{scl[0] * jac(it * np + ip, iv)[0],
-                          scl[1] * jac(it * np + ip, iv)[1]};
+            jac(it, +ip, iv) = RadVec<2>{scl[0] * jac(it, ip, iv)[0],
+                                         scl[1] * jac(it, ip, iv)[1]};
           } else if constexpr (N == 3) {
-            jac(it * np + ip, iv) =
-                RadVec<3>{scl[0] * jac(it * np + ip, iv)[0],
-                          scl[1] * jac(it * np + ip, iv)[1],
-                          scl[2] * jac(it * np + ip, iv)[2]};
+            jac(it, ip, iv) = RadVec<3>{scl[0] * jac(it, ip, iv)[0],
+                                        scl[1] * jac(it, ip, iv)[1],
+                                        scl[2] * jac(it, ip, iv)[2]};
           } else if constexpr (N == 4) {
-            jac(it * np + ip, iv) =
-                RadVec<4>{scl[0] * jac(it * np + ip, iv)[0],
-                          scl[1] * jac(it * np + ip, iv)[1],
-                          scl[2] * jac(it * np + ip, iv)[2],
-                          scl[3] * jac(it * np + ip, iv)[3]};
+            jac(it, ip, iv) = RadVec<4>{
+                scl[0] * jac(it, ip, iv)[0], scl[1] * jac(it, ip, iv)[1],
+                scl[2] * jac(it, ip, iv)[2], scl[3] * jac(it, ip, iv)[3]};
           }
         }
       }

@@ -3,6 +3,7 @@
 
 #include <array>
 #include <iostream>
+#include <vector>
 
 #include "complex.h"
 #include "constants.h"
@@ -12,9 +13,6 @@
 #include "units.h"
 
 namespace RTE {
-template <size_t N>
-class TraMat;
-
 template <size_t n>
 class RadVec {
   static constexpr size_t N = n;
@@ -81,23 +79,6 @@ class RadVec {
   }
 
   friend constexpr RadVec operator*(double x, RadVec rv) { return rv * x; }
-
-  friend constexpr RadVec operator*(const TraMat<RadVec::N> &T,
-                                    const RadVec &R) {
-    if constexpr (RadVec::N == 1) return {R[0] * T(0, 0)};
-    if constexpr (RadVec::N == 2)
-      return {R[0] * T(0, 0) + R[1] * T(0, 1), R[0] * T(1, 0) + R[1] * T(1, 1)};
-    if constexpr (RadVec::N == 3)
-      return {R[0] * T(0, 0) + R[1] * T(0, 1) + R[2] * T(0, 2),
-              R[0] * T(1, 0) + R[1] * T(1, 1) + R[2] * T(1, 2),
-              R[0] * T(2, 0) + R[1] * T(2, 1) + R[2] * T(2, 2)};
-    if constexpr (RadVec::N == 4)
-      return {
-          R[0] * T(0, 0) + R[1] * T(0, 1) + R[2] * T(0, 2) + R[3] * T(0, 3),
-          R[0] * T(1, 0) + R[1] * T(1, 1) + R[2] * T(1, 2) + R[3] * T(1, 3),
-          R[0] * T(2, 0) + R[1] * T(2, 1) + R[2] * T(2, 2) + R[3] * T(2, 3),
-          R[0] * T(3, 0) + R[1] * T(3, 1) + R[2] * T(3, 2) + R[3] * T(3, 3)};
-  }
 };  // RadVec
 
 template <size_t n>
@@ -176,7 +157,94 @@ class TraMat {
     else if constexpr (N == 1)
       return RadVec<N>{t(0, 0)};
   }
+
+  friend constexpr TraMat operator*(TraMat T1, TraMat T2) noexcept {
+    if constexpr (TraMat::N == 1) return {T1(0, 0) * T2(0, 0)};
+    if constexpr (TraMat::N == 2)
+      return {T1(0, 0) * T2(0, 0) + T1(1, 0) * T2(0, 1),
+              T1(0, 1) * T2(0, 0) + T1(1, 1) * T2(0, 1),
+              T1(0, 0) * T2(1, 0) + T1(1, 0) * T2(1, 1),
+              T1(0, 1) * T2(1, 0) + T1(1, 1) * T2(1, 1)};
+    if constexpr (TraMat::N == 3)
+      return {T1(0, 0) * T2(0, 0) + T1(1, 0) * T2(0, 1) + T1(2, 0) * T2(0, 2),
+              T1(0, 1) * T2(0, 0) + T1(1, 1) * T2(0, 1) + T1(2, 1) * T2(0, 2),
+              T1(0, 2) * T2(0, 0) + T1(1, 2) * T2(0, 1) + T1(2, 2) * T2(0, 2),
+              T1(0, 0) * T2(1, 0) + T1(1, 0) * T2(1, 1) + T1(2, 0) * T2(1, 2),
+              T1(0, 1) * T2(1, 0) + T1(1, 1) * T2(1, 1) + T1(2, 1) * T2(1, 2),
+              T1(0, 2) * T2(1, 0) + T1(1, 2) * T2(1, 1) + T1(2, 2) * T2(1, 2),
+              T1(0, 0) * T2(2, 0) + T1(1, 0) * T2(2, 1) + T1(2, 0) * T2(2, 2),
+              T1(0, 1) * T2(2, 0) + T1(1, 1) * T2(2, 1) + T1(2, 1) * T2(2, 2),
+              T1(0, 2) * T2(2, 0) + T1(1, 2) * T2(2, 1) + T1(2, 2) * T2(2, 2)};
+    if constexpr (TraMat::N == 4)
+      return {T1(0, 0) * T2(0, 0) + T1(1, 0) * T2(0, 1) + T1(2, 0) * T2(0, 2) +
+                  T1(3, 0) * T2(0, 3),
+              T1(0, 1) * T2(0, 0) + T1(1, 1) * T2(0, 1) + T1(2, 1) * T2(0, 2) +
+                  T1(3, 1) * T2(0, 3),
+              T1(0, 2) * T2(0, 0) + T1(1, 2) * T2(0, 1) + T1(2, 2) * T2(0, 2) +
+                  T1(3, 2) * T2(0, 3),
+              T1(0, 3) * T2(0, 0) + T1(1, 3) * T2(0, 1) + T1(2, 3) * T2(0, 2) +
+                  T1(3, 3) * T2(0, 3),
+              T1(0, 0) * T2(1, 0) + T1(1, 0) * T2(1, 1) + T1(2, 0) * T2(1, 2) +
+                  T1(3, 0) * T2(1, 3),
+              T1(0, 1) * T2(1, 0) + T1(1, 1) * T2(1, 1) + T1(2, 1) * T2(1, 2) +
+                  T1(3, 1) * T2(1, 3),
+              T1(0, 2) * T2(1, 0) + T1(1, 2) * T2(1, 1) + T1(2, 2) * T2(1, 2) +
+                  T1(3, 2) * T2(1, 3),
+              T1(0, 3) * T2(1, 0) + T1(1, 3) * T2(1, 1) + T1(2, 3) * T2(1, 2) +
+                  T1(3, 3) * T2(1, 3),
+              T1(0, 0) * T2(2, 0) + T1(1, 0) * T2(2, 1) + T1(2, 0) * T2(2, 2) +
+                  T1(3, 0) * T2(2, 3),
+              T1(0, 1) * T2(2, 0) + T1(1, 1) * T2(2, 1) + T1(2, 1) * T2(2, 2) +
+                  T1(3, 1) * T2(2, 3),
+              T1(0, 2) * T2(2, 0) + T1(1, 2) * T2(2, 1) + T1(2, 2) * T2(2, 2) +
+                  T1(3, 2) * T2(2, 3),
+              T1(0, 3) * T2(2, 0) + T1(1, 3) * T2(2, 1) + T1(2, 3) * T2(2, 2) +
+                  T1(3, 3) * T2(2, 3),
+              T1(0, 0) * T2(3, 0) + T1(1, 0) * T2(3, 1) + T1(2, 0) * T2(3, 2) +
+                  T1(3, 0) * T2(3, 3),
+              T1(0, 1) * T2(3, 0) + T1(1, 1) * T2(3, 1) + T1(2, 1) * T2(3, 2) +
+                  T1(3, 1) * T2(3, 3),
+              T1(0, 2) * T2(3, 0) + T1(1, 2) * T2(3, 1) + T1(2, 2) * T2(3, 2) +
+                  T1(3, 2) * T2(3, 3),
+              T1(0, 3) * T2(3, 0) + T1(1, 3) * T2(3, 1) + T1(2, 3) * T2(3, 2) +
+                  T1(3, 3) * T2(3, 3)};
+  }
+
+  static constexpr TraMat Identity() {
+    if constexpr (TraMat::N == 4) {
+      return {1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1};
+    } else if constexpr (TraMat::N == 3) {
+      return {1, 0, 0, 0, 1, 0, 0, 0, 1};
+    } else if constexpr (TraMat::N == 2) {
+      return {1, 0, 0, 1};
+    } else if constexpr (TraMat::N == 1) {
+      return {1};
+    }
+  }
 };  // TraMat
+
+constexpr RadVec<1> operator*(const TraMat<1> &T, const RadVec<1> &R) {
+  return RadVec<1>{R[0] * T(0, 0)};
+}
+
+constexpr RadVec<2> operator*(const TraMat<2> &T, const RadVec<2> &R) {
+  return RadVec<2>{R[0] * T(0, 0) + R[1] * T(0, 1),
+                   R[0] * T(1, 0) + R[1] * T(1, 1)};
+}
+
+constexpr RadVec<3> operator*(const TraMat<3> &T, const RadVec<3> &R) {
+  return RadVec<3>{R[0] * T(0, 0) + R[1] * T(0, 1) + R[2] * T(0, 2),
+                   R[0] * T(1, 0) + R[1] * T(1, 1) + R[2] * T(1, 2),
+                   R[0] * T(2, 0) + R[1] * T(2, 1) + R[2] * T(2, 2)};
+}
+
+constexpr RadVec<4> operator*(const TraMat<4> &T, const RadVec<4> &R) {
+  return RadVec<4>{
+      R[0] * T(0, 0) + R[1] * T(0, 1) + R[2] * T(0, 2) + R[3] * T(0, 3),
+      R[0] * T(1, 0) + R[1] * T(1, 1) + R[2] * T(1, 2) + R[3] * T(1, 3),
+      R[0] * T(2, 0) + R[1] * T(2, 1) + R[2] * T(2, 2) + R[3] * T(2, 3),
+      R[0] * T(3, 0) + R[1] * T(3, 1) + R[2] * T(3, 2) + R[3] * T(3, 3)};
+}
 
 ENUMCLASS(PolarizationType, unsigned char, I, Q, U, V, IpQ, ImQ, IpU, ImU, IpV,
           ImV)
@@ -567,18 +635,17 @@ constexpr TraMat<N> linear_transmat(
                        u2 * (u2 * 0.5 + v2 + w2) + v2 * (v2 * 0.5 + w2) +
                        4 * (b * d * u * w - b * c * v * w - c * d * u * v));
 
-    const std::complex<double> Const1 = sqrt(std::complex<double>{tmp});
+    const Complex Const1 = sqrt(Complex{tmp});
     const double Const2 = b2 + c2 + d2 - u2 - v2 - w2;
 
-    const std::complex<double> x = sqrt(Const2 + Const1) * inv_sqrt_2;
-    const std::complex<double> y =
-        sqrt(Const2 - Const1) * std::complex<double>{0, inv_sqrt_2};
-    const std::complex<double> x2 = x * x;
-    const std::complex<double> y2 = y * y;
-    const std::complex<double> cy = cos(y);
-    const std::complex<double> sy = sin(y);
-    const std::complex<double> cx = cosh(x);
-    const std::complex<double> sx = sinh(x);
+    const Complex x = sqrt(Const2 + Const1) * inv_sqrt_2;
+    const Complex y = sqrt(Const2 - Const1) * Complex{0, inv_sqrt_2};
+    const Complex x2 = x * x;
+    const Complex y2 = y * y;
+    const Complex cy = cos(y);
+    const Complex sy = sin(y);
+    const Complex cx = cosh(x);
+    const Complex sx = sinh(x);
 
     const bool x_zero = std::abs(x) < 1e-4;
     const bool y_zero = std::abs(y) < 1e-4;
@@ -593,9 +660,9 @@ constexpr TraMat<N> linear_transmat(
      *    cos(ix) → cosh(x)
      *    C0, C1, C2 ∝ [1/x^2]
      */
-    const std::complex<double> ix = x_zero ? 0.0 : 1.0 / x;
-    const std::complex<double> iy = y_zero ? 0.0 : 1.0 / y;
-    const std::complex<double> inv_x2y2 =
+    const Complex ix = x_zero ? 0.0 : 1.0 / x;
+    const Complex iy = y_zero ? 0.0 : 1.0 / y;
+    const Complex inv_x2y2 =
         both_zero
             ? 1.0
             : 1.0 / (x2 + y2);  // The first "1.0" is the trick for above limits
@@ -770,40 +837,38 @@ constexpr TraMat<N> dlinear_transmat(
                   b * d * du * w - b * c * dv * w - c * d * du * v +
                   b * d * u * dw - b * c * v * dw - c * d * u * dv));
 
-    const std::complex<double> Const1 = sqrt(std::complex<double>{tmp});
+    const Complex Const1 = sqrt(Complex{tmp});
     const double Const2 = b2 + c2 + d2 - u2 - v2 - w2;
-    const std::complex<double> dConst1 = 0.5 * dtmp / Const1;
+    const Complex dConst1 = 0.5 * dtmp / Const1;
     const double dConst2 = db2 + dc2 + dd2 - du2 - dv2 - dw2;
 
-    const std::complex<double> tmp_x_sqrt = std::sqrt(Const2 + Const1);
-    const std::complex<double> tmp_y_sqrt = std::sqrt(Const2 - Const1);
-    const std::complex<double> x = tmp_x_sqrt * inv_sqrt_2;
-    const std::complex<double> y =
-        tmp_y_sqrt * std::complex<double>{0, inv_sqrt_2};
-    const std::complex<double> x2 = x * x;
-    const std::complex<double> y2 = y * y;
-    const std::complex<double> cy = cos(y);
-    const std::complex<double> sy = sin(y);
-    const std::complex<double> cx = cosh(x);
-    const std::complex<double> sx = sinh(x);
+    const Complex tmp_x_sqrt = std::sqrt(Const2 + Const1);
+    const Complex tmp_y_sqrt = std::sqrt(Const2 - Const1);
+    const Complex x = tmp_x_sqrt * inv_sqrt_2;
+    const Complex y = tmp_y_sqrt * Complex{0, inv_sqrt_2};
+    const Complex x2 = x * x;
+    const Complex y2 = y * y;
+    const Complex cy = cos(y);
+    const Complex sy = sin(y);
+    const Complex cx = cosh(x);
+    const Complex sx = sinh(x);
 
     const bool x_zero = std::abs(x) < 1e-4;
     const bool y_zero = std::abs(y) < 1e-4;
     const bool both_zero = y_zero and x_zero;
     const bool either_zero = y_zero or x_zero;
 
-    const std::complex<double> dx =
+    const Complex dx =
         x_zero ? 0 : (0.5 * (dConst2 + dConst1) / tmp_x_sqrt) * inv_sqrt_2;
-    const std::complex<double> dy =
-        y_zero ? 0
-               : (0.5 * (dConst2 - dConst1) / tmp_y_sqrt) *
-                     std::complex<double>(0, inv_sqrt_2);
-    const std::complex<double> dx2 = 2 * x * dx;
-    const std::complex<double> dy2 = 2 * y * dy;
-    const std::complex<double> dcy = -sy * dy;
-    const std::complex<double> dsy = cy * dy;
-    const std::complex<double> dcx = sx * dx;
-    const std::complex<double> dsx = cx * dx;
+    const Complex dy = y_zero ? 0
+                              : (0.5 * (dConst2 - dConst1) / tmp_y_sqrt) *
+                                    Complex(0, inv_sqrt_2);
+    const Complex dx2 = 2.0 * x * dx;
+    const Complex dy2 = 2.0 * y * dy;
+    const Complex dcy = -sy * dy;
+    const Complex dsy = cy * dy;
+    const Complex dcx = sx * dx;
+    const Complex dsx = cx * dx;
 
     /* Using:
      *    lim x→0 [({cosh(x),cos(x)} - 1) / x^2] → 1/2
@@ -813,40 +878,39 @@ constexpr TraMat<N> dlinear_transmat(
      *    cos(ix) → cosh(x)
      *    C0, C1, C2 ∝ [1/x^2]
      */
-    const std::complex<double> ix = x_zero ? 0.0 : 1.0 / x;
-    const std::complex<double> iy = y_zero ? 0.0 : 1.0 / y;
-    const std::complex<double> inv_x2y2 =
+    const Complex ix = x_zero ? 0.0 : 1.0 / x;
+    const Complex iy = y_zero ? 0.0 : 1.0 / y;
+    const Complex inv_x2y2 =
         both_zero
             ? 1.0
             : 1.0 / (x2 + y2);  // The first "1.0" is the trick for above limits
-    const std::complex<double> dix = -dx * ix * ix;
-    const std::complex<double> diy = -dy * iy * iy;
-    const std::complex<double> dx2dy2 = dx2 + dy2;
+    const Complex dix = -dx * ix * ix;
+    const Complex diy = -dy * iy * iy;
+    const Complex dx2dy2 = dx2 + dy2;
 
-    const std::complex<double> C0c =
-        either_zero ? 1.0 : (cy * x2 + cx * y2) * inv_x2y2;
-    const std::complex<double> C1c =
+    const Complex C0c = either_zero ? 1.0 : (cy * x2 + cx * y2) * inv_x2y2;
+    const Complex C1c =
         either_zero ? 1.0 : (sy * x2 * iy + sx * y2 * ix) * inv_x2y2;
-    const std::complex<double> C2c = both_zero ? 0.5 : (cx - cy) * inv_x2y2;
-    const std::complex<double> C3c =
+    const Complex C2c = both_zero ? 0.5 : (cx - cy) * inv_x2y2;
+    const Complex C3c =
         both_zero ? 1.0 / 6.0
                   : (x_zero ? 1.0 - sy * iy
                             : y_zero ? sx * ix - 1.0 : sx * ix - sy * iy) *
                         inv_x2y2;
-    const std::complex<double> dC0c =
+    const Complex dC0c =
         either_zero
             ? 0.0
             : (dcy * x2 + cy * dx2 + dcx * y2 + cx * dy2 - C0c * dx2dy2) *
                   inv_x2y2;
-    const std::complex<double> dC1c =
+    const Complex dC1c =
         either_zero
             ? 0.0
             : (dsy * x2 * iy + sy * dx2 * iy + sy * x2 * diy + dsx * y2 * ix +
                sx * dy2 * ix + sx * y2 * dix - C1c * dx2dy2) *
                   inv_x2y2;
-    const std::complex<double> dC2c =
+    const Complex dC2c =
         both_zero ? 0.0 : (dcx - dcy - C2c * dx2dy2) * inv_x2y2;
-    const std::complex<double> dC3c =
+    const Complex dC3c =
         both_zero
             ? 0.0
             : ((x_zero ? -dsy * iy - sy * diy

@@ -115,75 +115,107 @@ void test003() {
   constexpr double wu = 10;
   constexpr double wv = 1;
   constexpr double ww = 0.1;
-  constexpr double vmrn2  = 0.78;
-  constexpr double vmro2  = 0.2095;
-  constexpr double vmrh2o  = 400e-06;
+  constexpr double vmrn2 = 0.78;
+  constexpr double vmro2 = 0.2095;
+  constexpr double vmrh2o = 400e-06;
   constexpr size_t nfreq = 11;
   constexpr Frequency<FrequencyType::Freq> flow = 90e9;
   constexpr Frequency<FrequencyType::Freq> fupp = 110e9;
-  
+  constexpr auto a = Length<LengthType::meter>{6'378'137.0};
+  constexpr auto b = Length<LengthType::meter>{6'356'752.314245};
+  auto wgs84 = Geom::Ellipsoid(a, std::sqrt((a * a - b * b) / (a * a)));
+
+  const auto xpos = Geom::Pos<Geom::PosType::Xyz>({0, a + 1, 0});
+  const auto dxlos = Geom::Los<Geom::LosType::Xyz>({1, 1, 1});
+  const auto nav = Geom::Nav(xpos, dxlos, wgs84);
+
   const Species::Isotope O266(Species::Species::Oxygen, 0);
   const std::vector<Quantum::Number> g(
-    getGlobalQuantumNumberCount(Species::Species::Oxygen));
+      getGlobalQuantumNumberCount(Species::Species::Oxygen));
   const std::vector<Quantum::Number> l(
-    getLocalQuantumNumberCount(Species::Species::Oxygen));
+      getLocalQuantumNumberCount(Species::Species::Oxygen));
   Absorption::Band band(
-    O266, Absorption::Mirroring::None, Absorption::Normalization::None,
-    Absorption::Population::ByLTE, Absorption::Cutoff::ByLineOffset,
-    Absorption::Shape::VP, false, 296, 750e9, g, g, 1);
-  const Absorption::LineShape::Model m{Species::Species::Oxygen, 10e3, 15e3, 0, 0.7};
+      O266, Absorption::Mirroring::None, Absorption::Normalization::None,
+      Absorption::Population::ByLTE, Absorption::Cutoff::ByLineOffset,
+      Absorption::Shape::VP, false, 296, 750e9, g, g, 1);
+  const Absorption::LineShape::Model m{Species::Species::Oxygen, 10e3, 15e3, 0,
+                                       0.7};
   band.Lines()[0] =
-  Absorption::Line(O266, 100e9, 1e-18, 1e-20, {0, 0}, 1, 1, 1e-20, l, l, m);
-  
+      Absorption::Line(O266, 100e9, 1e-18, 1e-20, {0, 0}, 1, 1, 1e-20, l, l, m);
+
   const Atmosphere::Point ap = Atmosphere::Point(
-    P, T, std::array<double, 3>{mu, mv, mw},
-    std::array<double, 3>{wu, wv, ww},
-    std::vector<VMR<VMRType::ratio>>{
-      VMR<VMRType::ratio>{Species::Isotope(Species::Species::Nitrogen, 0),
-        vmrn2},
-      VMR<VMRType::ratio>{Species::Isotope(Species::Species::Oxygen, 0),
-        vmro2},
-      VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0),
-        vmrh2o}});
-  Path::Point p = {Geom::Nav(), ap};
-  
-  double fscale = ap.FaceWindSpeed(p.nav.sphericalLos().za(), p.nav.sphericalLos().aa());
-  const auto f = linspace(flow*fscale, fupp*fscale, nfreq);
-  
-  std::vector<Derivative::Target> derivs{Derivative::Atm::Temperature, Derivative::Atm::WindU};
-  
+      P, T, std::array<double, 3>{mu, mv, mw},
+      std::array<double, 3>{wu, wv, ww},
+      std::vector<VMR<VMRType::ratio>>{
+          VMR<VMRType::ratio>{Species::Isotope(Species::Species::Nitrogen, 0),
+                              vmrn2},
+          VMR<VMRType::ratio>{Species::Isotope(Species::Species::Oxygen, 0),
+                              vmro2},
+          VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0),
+                              vmrh2o}});
+  Path::Point p = {nav, ap};
+
+  double fscale = ap.DopplerShiftRatio(p.nav.sphericalLos().za(),
+                                       p.nav.sphericalLos().aa());
+  const auto fsensor = linspace<Frequency<FrequencyType::Freq>>(
+      flow * fscale, fupp * fscale, nfreq);
+  const auto f = scale(fsensor, fscale);
+
+  const std::vector<Derivative::Target> derivs{Derivative::Atm::Temperature,
+                                               Derivative::Atm::WindU};
+
   Absorption::Xsec::Lbl::Results lbl_res(f.size(), derivs.size());
   Absorption::Xsec::Lbl::Results lbl_src(f.size(), derivs.size());
   Absorption::Xsec::Lbl::Results lbl_clc(f.size(), derivs.size());
   Absorption::Xsec::Lbl::compute(lbl_res, lbl_src, lbl_clc, f, band, p, derivs);
-  
+
+  const Atmosphere::Point ap_T(
+      P, T + 0.1, std::array<double, 3>{mu, mv, mw},
+      std::array<double, 3>{wu, wv, ww},
+      std::vector<VMR<VMRType::ratio>>{
+          VMR<VMRType::ratio>{Species::Isotope(Species::Species::Nitrogen, 0),
+                              vmrn2},
+          VMR<VMRType::ratio>{Species::Isotope(Species::Species::Oxygen, 0),
+                              vmro2},
+          VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0),
+                              vmrh2o}});
   Absorption::Xsec::Lbl::Results lbl_resdT(f.size(), derivs.size());
-  Absorption::Xsec::Lbl::compute(lbl_resdT, lbl_src, lbl_clc, f, band, {Geom::Nav(), Atmosphere::Point(
-    P, T+0.1, std::array<double, 3>{mu, mv, mw}, std::array<double, 3>{wu, wv, ww}, std::vector<VMR<VMRType::ratio>>{
-      VMR<VMRType::ratio>{Species::Isotope(Species::Species::Nitrogen, 0), vmrn2},
-      VMR<VMRType::ratio>{Species::Isotope(Species::Species::Oxygen, 0), vmro2},
-      VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0), vmrh2o}})}, derivs);
-  
+  Absorption::Xsec::Lbl::compute(lbl_resdT, lbl_src, lbl_clc, f, band,
+                                 {nav, ap_T}, derivs);
+
+  const Atmosphere::Point ap_wu(
+      P, T, std::array<double, 3>{mu, mv, mw},
+      std::array<double, 3>{wu + 0.1, wv, ww},
+      std::vector<VMR<VMRType::ratio>>{
+          VMR<VMRType::ratio>{Species::Isotope(Species::Species::Nitrogen, 0),
+                              vmrn2},
+          VMR<VMRType::ratio>{Species::Isotope(Species::Species::Oxygen, 0),
+                              vmro2},
+          VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0),
+                              vmrh2o}});
+  double fscale_wu = ap_wu.DopplerShiftRatio(p.nav.sphericalLos().za(),
+                                             p.nav.sphericalLos().aa());
+  const auto f_wu = scale(fsensor, fscale_wu);
   Absorption::Xsec::Lbl::Results lbl_resdwu(f.size(), derivs.size());
-  Absorption::Xsec::Lbl::compute(lbl_resdwu, lbl_src, lbl_clc, f, band, {Geom::Nav(), Atmosphere::Point(
-    P, T, std::array<double, 3>{mu, mv, mw}, std::array<double, 3>{wu+0.1, wv, ww}, std::vector<VMR<VMRType::ratio>>{
-      VMR<VMRType::ratio>{Species::Isotope(Species::Species::Nitrogen, 0), vmrn2},
-      VMR<VMRType::ratio>{Species::Isotope(Species::Species::Oxygen, 0), vmro2},
-      VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0), vmrh2o}})}, derivs);
-  
-  for (size_t iv=0; iv<nfreq; iv++) {
-    std::cout << lbl_res.x[iv].real()<<' '<<lbl_res.x[iv].imag();
-    for (size_t it=0; it<derivs.size(); it++) {
-      std::cout << ' ' << lbl_res.dx[it][iv].real() << ' ' << lbl_res.dx[it][iv].imag();
+  Absorption::Xsec::Lbl::compute(lbl_resdwu, lbl_src, lbl_clc, f_wu, band,
+                                 {nav, ap_wu}, derivs);
+
+  for (size_t iv = 0; iv < nfreq; iv++) {
+    std::cout << lbl_res.x[iv].real() << ' ' << lbl_res.x[iv].imag();
+    for (size_t it = 0; it < derivs.size(); it++) {
+      std::cout << ' ' << lbl_res.dx[it][iv].real() << ' '
+                << lbl_res.dx[it][iv].imag();
     }
-    std::cout << ' ' << (lbl_resdT.x[iv].real()-lbl_res.x[iv].real()) / 0.1 << ' ' << (lbl_resdT.x[iv].imag()-lbl_res.x[iv].imag()) / 0.1;
-    std::cout << ' ' << (lbl_resdwu.x[iv].real()-lbl_res.x[iv].real()) / 0.1 << ' ' << (lbl_resdwu.x[iv].imag()-lbl_res.x[iv].imag()) / 0.1;
+    std::cout << ' ' << (lbl_resdT.x[iv].real() - lbl_res.x[iv].real()) / 0.1
+              << ' ' << (lbl_resdT.x[iv].imag() - lbl_res.x[iv].imag()) / 0.1;
+    std::cout << ' ' << (lbl_resdwu.x[iv].real() - lbl_res.x[iv].real()) / 0.1
+              << ' ' << (lbl_resdwu.x[iv].imag() - lbl_res.x[iv].imag()) / 0.1;
     std::cout << '\n';
   }
 }
 
 int main() {
   //   test001();  // Test a few partition functions
-//   test002();  // Test some LBL
+  //   test002();  // Test some LBL
   test003();
 }

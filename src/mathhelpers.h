@@ -23,4 +23,11 @@ std::vector<T> linspace(T s, T e,
   }
 }
 
+template <class T>
+std::vector<T> scale(const std::vector<T>& v, const double x) {
+  auto out(v);
+  for (auto& y : out) y *= x;
+  return out;
+}
+
 #endif  // mathhelpers_h

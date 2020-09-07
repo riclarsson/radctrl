@@ -57,7 +57,7 @@ void internal_compute(Results<N> &res, Results<N> &src,
                      res.x.begin(),
                      [](auto &dx, auto &p) { return p + dx.real(); });
 
-      for (size_t i = 0; i < res.dx.size(); i++) {
+      for (size_t i = 0; i < derivs.size(); i++) {
         std::transform(lbl_res.dx[i].cbegin(), lbl_res.dx[i].cend(),
                        res.dx[i].cbegin(), res.dx[i].begin(),
                        [](auto &dx, auto &p) { return p + dx.real(); });
@@ -67,7 +67,7 @@ void internal_compute(Results<N> &res, Results<N> &src,
                      src.x.begin(),
                      [](auto &dx, auto &p) { return p + dx.real(); });
 
-      for (size_t i = 0; i < src.dx.size(); i++) {
+      for (size_t i = 0; i < derivs.size(); i++) {
         std::transform(lbl_src.dx[i].cbegin(), lbl_src.dx[i].cend(),
                        src.dx[i].cbegin(), src.dx[i].begin(),
                        [](auto &dx, auto &p) { return p + dx.real(); });
@@ -107,7 +107,7 @@ void internal_compute(Results<N> &res, Results<N> &src,
             lbl_res.x.cbegin(), lbl_res.x.cend(), res.x.cbegin(), res.x.begin(),
             [pol](auto &x, auto &p) { return p + ZeemanPropMat4x4(x, pol); });
 
-        for (size_t i = 0; i < res.dx.size(); i++) {
+        for (size_t i = 0; i < derivs.size(); i++) {
           if (derivs[i].isMagnetism()) {
             std::transform(lbl_res.dx[i].cbegin(), lbl_res.dx[i].cend(),
                            res.x.cbegin(), res.dx[i].begin(),
@@ -127,7 +127,7 @@ void internal_compute(Results<N> &res, Results<N> &src,
             lbl_src.x.cbegin(), lbl_src.x.cend(), src.x.cbegin(), src.x.begin(),
             [pol](auto &x, auto &p) { return p + ZeemanPropMat4x4(x, pol); });
 
-        for (size_t i = 0; i < src.dx.size(); i++) {
+        for (size_t i = 0; i < derivs.size(); i++) {
           if (derivs[i].isMagnetism()) {
             std::transform(lbl_src.dx[i].cbegin(), lbl_src.dx[i].cend(),
                            src.x.cbegin(), src.dx[i].begin(),
@@ -153,14 +153,17 @@ void internal_compute(Results<N> &res, Results<N> &src,
   const double dnumden_dtemperature =
       atm.atm.NumberDensityTemperatureDerivative();
   // First the derivatives
-  for (size_t i = 0; i < res.dx.size(); i++) {
+  for (size_t i = 0; i < derivs.size(); i++) {
     if (derivs[i] == Derivative::Atm::Temperature) {
-      std::transform(
-          res.x.cbegin(), res.x.cend(), res.dx[i].begin(),
-                     [dnumden_dtemperature](auto &x) { return x * dnumden_dtemperature; });
+      std::transform(res.x.cbegin(), res.x.cend(), res.dx[i].cbegin(),
+                     res.dx[i].begin(),
+                     [dnumden_dtemperature, numden](auto &x, auto &dx) {
+                       return x * dnumden_dtemperature + dx * numden;
+                     });
+    } else {
+      std::transform(res.dx[i].cbegin(), res.dx[i].cend(), res.dx[i].begin(),
+                     [numden](auto &dx) { return dx * numden; });
     }
-    std::transform(res.dx[i].cbegin(), res.dx[i].cend(), res.dx[i].begin(),
-                   [numden](auto &dx) { return dx * numden; });
   }
 
   // Second the absorption coefficient
@@ -168,14 +171,17 @@ void internal_compute(Results<N> &res, Results<N> &src,
                  [numden](auto &x) { return x * numden; });
 
   // First the derivatives
-  for (size_t i = 0; i < src.dx.size(); i++) {
+  for (size_t i = 0; i < derivs.size(); i++) {
     if (derivs[i] == Derivative::Atm::Temperature) {
-      std::transform(
-          src.x.cbegin(), src.x.cend(), src.dx[i].begin(),
-                     [dnumden_dtemperature](auto &x) { return x * dnumden_dtemperature; });
+      std::transform(src.x.cbegin(), src.x.cend(), src.dx[i].cbegin(),
+                     src.dx[i].begin(),
+                     [dnumden_dtemperature, numden](auto &x, auto &dx) {
+                       return x * dnumden_dtemperature + dx * numden;
+                     });
+    } else {
+      std::transform(src.dx[i].cbegin(), src.dx[i].cend(), src.dx[i].begin(),
+                     [numden](auto &dx) { return dx * numden; });
     }
-    std::transform(src.dx[i].cbegin(), src.dx[i].cend(), src.dx[i].begin(),
-                   [numden](auto &dx) { return dx * numden; });
   }
 
   // Second the absorption coefficient

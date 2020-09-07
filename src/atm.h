@@ -66,6 +66,7 @@ class Point {
 
   Pressure<PressureType::Pa> Pres() const { return P; }
   Temperature<TemperatureType::K> Temp() const { return T; }
+  void Temp(Temperature<TemperatureType::K> x) { T = x; }
   Magnetism<MagnetismType::T> MagField() const { return M; }
   Wind<WindType::meters_per_second> WindField() const { return W; }
   const std::vector<VMR<VMRType::ratio>> &VolumeMixingRatios() const {
@@ -99,17 +100,52 @@ class Point {
     using Constant::pow2;
     return -P / (k * pow2(T));
   }
-  
+
   double FaceWindSpeed(double za, double aa) const noexcept {
     using Conversion::cosd;
     using Conversion::sind;
     const double z = 180 - za;
     const double a = aa <= 0 ? aa + 180 : aa - 180;
-    return W.v() * cosd(a) * sind(z) + W.u() * sind(a) * sind(z) + W.w() * cosd(z);
+    return W.v() * cosd(a) * sind(z) + W.u() * sind(a) * sind(z) +
+           W.w() * cosd(z);
   }
-  
-  double DopplerShiftRatio(double za, double aa) {
-    return 1 - FaceWindSpeed(za, aa) / Constant::c;
+
+  double FaceWindSpeedDerivativeU(double za, double aa) const noexcept {
+    using Conversion::cosd;
+    using Conversion::sind;
+    const double z = 180 - za;
+    const double a = aa <= 0 ? aa + 180 : aa - 180;
+    return sind(a) * sind(z);
+  }
+
+  double FaceWindSpeedDerivativeV(double za, double aa) const noexcept {
+    using Conversion::cosd;
+    using Conversion::sind;
+    const double z = 180 - za;
+    const double a = aa <= 0 ? aa + 180 : aa - 180;
+    return cosd(a) * sind(z);
+  }
+
+  double FaceWindSpeedDerivativeW(double za, double) const noexcept {
+    using Conversion::cosd;
+    const double z = 180 - za;
+    return cosd(z);
+  }
+
+  double DopplerShiftRatio(double za, double aa) const noexcept {
+    return 1.0 - FaceWindSpeed(za, aa) / Constant::c;
+  }
+
+  double DopplerShiftRatioDerivativeU(double za, double aa) const noexcept {
+    return -FaceWindSpeedDerivativeU(za, aa) / Constant::c;
+  }
+
+  double DopplerShiftRatioDerivativeV(double za, double aa) const noexcept {
+    return -FaceWindSpeedDerivativeV(za, aa) / Constant::c;
+  }
+
+  double DopplerShiftRatioDerivativeW(double za, double aa) const noexcept {
+    return -FaceWindSpeedDerivativeW(za, aa) / Constant::c;
   }
 
   friend Point operator*(double x, const Point &ap) noexcept {

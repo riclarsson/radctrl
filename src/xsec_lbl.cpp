@@ -139,7 +139,7 @@ void compute_lineshape(std::vector<Complex> &comp_x,
           comp_dx[id][iv] = lm * ls.dFdT(cdd[id].lso, T) +
                             linemixing_derivative(cdd[id].lso) * ls.F;
         } else if (derivs[id].isWind()) {
-          comp_dx[id][iv] = lm * ls.dFdf();
+          comp_dx[id][iv] = lm * ls.dFdf();  // WARNING: Not true derivative
         } else if (derivs[id].isMagnetism()) {
           comp_dx[id][iv] = lm * ls.dFdH(cdd[id].d);
         } else if (derivs[id] == Derivative::Line::VMR and
@@ -186,7 +186,7 @@ void compute_lineshape(std::vector<Complex> &comp_x,
             comp_dx[id][iv] -= lm * ls.dFdT(cdd[id].lso, T) +
                                linemixing_derivative(cdd[id].lso) * ls.F;
           } else if (derivs[id].isWind()) {
-            comp_dx[id][iv] -= lm * ls.dFdf();
+            comp_dx[id][iv] -= lm * ls.dFdf();  // WARNING: Not true derivative
           } else if (derivs[id].isMagnetism()) {
             comp_dx[id][iv] -= lm * ls.dFdH(cdd[id].d);
           } else if (derivs[id] == Derivative::Line::VMR and
@@ -240,7 +240,7 @@ void compute_mirrored_lineshape(
           comp_dx[id][iv] += lm * ls.dFdT(cdd[id].lso, T) +
                              linemixing_derivative(cdd[id].lso) * ls.F;
         } else if (derivs[id].isWind()) {
-          comp_dx[id][iv] += lm * ls.dFdf();
+          comp_dx[id][iv] += lm * ls.dFdf();  // WARNING: Not true derivative
         } else if (derivs[id].isMagnetism()) {
           comp_dx[id][iv] += lm * ls.dFdH(cdd[id].d);
         } else if (derivs[id] == Derivative::Line::VMR and
@@ -282,7 +282,7 @@ void compute_mirrored_lineshape(
             comp_dx[id][iv] -= lm * ls.dFdT(cdd[id].lso, T) +
                                linemixing_derivative(cdd[id].lso) * ls.F;
           } else if (derivs[id].isWind()) {
-            comp_dx[id][iv] -= lm * ls.dFdf();
+            comp_dx[id][iv] -= lm * ls.dFdf();  // WARNING: Not true derivative
           } else if (derivs[id].isMagnetism()) {
             comp_dx[id][iv] -= lm * ls.dFdH(cdd[id].d);
           } else if (derivs[id] == Derivative::Line::VMR and
@@ -353,24 +353,25 @@ constexpr double dstimulated_relative_emission_dF0(
 
 void compute_lte_linestrength(
     Results &res, const Results &comp,
-    const std::vector<Derivative::Target> &derivs,
+    const std::vector<Frequency<FrequencyType::Freq>> &fs,
+    const Path::Point &atm, const std::vector<Derivative::Target> &derivs,
     LineStrength<FrequencyType::Freq, AreaType::m2> S0, double SZ,
     Energy<EnergyType::Joule> E0, Frequency<FrequencyType::Freq> F0, double QT0,
     Temperature<TemperatureType::K> T0, double QT, double dQTdT,
-    Temperature<TemperatureType::K> T, double mixing_ratio, size_t line_id,
-    Species::Isotope line_spec) {
-  const double K1 = boltzman_ratio(T, T0, E0);
-  const double gamma = stimulated_emission(T, F0);
+    double mixing_ratio, size_t line_id, Species::Isotope line_spec) {
+  const double K1 = boltzman_ratio(atm.atm.Temp(), T0, E0);
+  const double gamma = stimulated_emission(atm.atm.Temp(), F0);
   const double gamma0 = stimulated_emission(T0, F0);
   const double K2 = stimulated_relative_emission(gamma, gamma0);
   const double lte = mixing_ratio * SZ * S0 * K1 * K2 * QT0 / QT;
+
   std::transform(comp.x.cbegin(), comp.x.cend(), res.x.begin(),
                  [lte](auto &x) { return lte * x; });
   for (size_t i = 0; i < derivs.size(); i++) {
     if (derivs[i] == Derivative::Atm::Temperature) {
-      const double dK1dT = dboltzman_ratio_dT(K1, T, E0);
+      const double dK1dT = dboltzman_ratio_dT(K1, atm.atm.Temp(), E0);
       const double dK2dT =
-          dstimulated_relative_emission_dT(gamma, gamma0, F0, T);
+          dstimulated_relative_emission_dT(gamma, gamma0, F0, atm.atm.Temp());
       const double dltedT = mixing_ratio * SZ * S0 * dK1dT * K2 * QT0 / QT +
                             mixing_ratio * SZ * S0 * K1 * dK2dT * QT0 / QT -
                             dQTdT * lte / QT;
@@ -381,7 +382,7 @@ void compute_lte_linestrength(
 
     } else if (derivs[i].isLineCenter(line_id)) {
       const double dK2dF0 =
-          dstimulated_relative_emission_dF0(gamma, gamma0, T, T0);
+          dstimulated_relative_emission_dF0(gamma, gamma0, atm.atm.Temp(), T0);
       const double dltedF0 = mixing_ratio * SZ * S0 * K1 * dK2dF0 * QT0 / QT;
       std::transform(comp.x.cbegin(), comp.x.cend(), comp.dx[i].cbegin(),
                      res.dx[i].begin(), [dltedF0, lte](auto &x, auto &dx) {
@@ -398,6 +399,24 @@ void compute_lte_linestrength(
       std::transform(comp.x.cbegin(), comp.x.cend(), comp.dx[i].cbegin(),
                      res.dx[i].begin(), [dltedVMR, lte](auto &x, auto &dx) {
                        return dltedVMR * x + lte * dx;
+                     });
+    } else if (derivs[i] == Derivative::Atm::WindU) {
+      const double dfdwu = atm.DopplerShiftRatioDerivativeU();
+      std::transform(comp.dx[i].cbegin(), comp.dx[i].cend(), fs.cbegin(),
+                     res.dx[i].begin(), [dfdwu, lte](auto &dx, auto &f) {
+                       return dfdwu * lte * f * dx;
+                     });
+    } else if (derivs[i] == Derivative::Atm::WindV) {
+      const double dfdwv = atm.DopplerShiftRatioDerivativeV();
+      std::transform(comp.dx[i].cbegin(), comp.dx[i].cend(), fs.cbegin(),
+                     res.dx[i].begin(), [dfdwv, lte](auto &dx, auto &f) {
+                       return dfdwv * lte * f * dx;
+                     });
+    } else if (derivs[i] == Derivative::Atm::WindV) {
+      const double dfdww = atm.DopplerShiftRatioDerivativeW();
+      std::transform(comp.dx[i].cbegin(), comp.dx[i].cend(), fs.cbegin(),
+                     res.dx[i].begin(), [dfdww, lte](auto &dx, auto &f) {
+                       return dfdww * lte * f * dx;
                      });
     } else {
       std::transform(comp.dx[i].cbegin(), comp.dx[i].cend(), res.dx[i].begin(),
@@ -590,9 +609,9 @@ void compute(Results &res, Results &src, Results &comp,
       // Apply line strength by whatever method is necessary
       switch (band.PopType()) {
         case Population::ByLTE: {
-          compute_lte_linestrength(res, comp, derivs, line.I0(), SZ, line.E0(),
-                                   line.F0(), QT0, band.T0(), QT, dQTdT,
-                                   atm.atm.Temp(), mixing_ratio, line.ID(),
+          compute_lte_linestrength(res, comp, f, atm, derivs, line.I0(), SZ,
+                                   line.E0(), line.F0(), QT0, band.T0(), QT,
+                                   dQTdT, mixing_ratio, line.ID(),
                                    band.Isotopologue());
         } break;
         case Population::ByNLTE: {

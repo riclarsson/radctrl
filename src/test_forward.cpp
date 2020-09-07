@@ -1,4 +1,5 @@
 #include "forward.h"
+#include "testhelpers.h"
 
 void test001() {
   constexpr auto a = Length<LengthType::meter>{6'378'137.0};
@@ -38,8 +39,7 @@ void test001() {
       2.696000e+02, 2.702000e+02, 2.634000e+02, 2.531000e+02, 2.360000e+02,
       2.189000e+02, 2.018000e+02, 1.848000e+02, 1.771000e+02, 1.770000e+02,
       1.843000e+02};
-  std::transform(T.cbegin(), T.cend(), T.begin(), [](auto& t){return t+0.1;});
-      
+
   Atmosphere::Point ap = Atmosphere::Point(
       P[0], T[0], std::array<double, 3>{10e-6, 10e-6, 30e-6},
       std::array<double, 3>{10., 1., 0.1},
@@ -62,7 +62,7 @@ void test001() {
                                 0.2095},
             VMR<VMRType::ratio>{Species::Isotope(Species::Species::Water, 0),
                                 400e-06 - 5e-6 * i}});
-  auto path = Path::calc_single_geometric_path(n, atm, 1e3, 90e3);
+  const auto path = Path::calc_single_geometric_path(n, atm, 1e3, 90e3);
 
   const Species::Isotope O266(Species::Species::Oxygen, 0);
   const std::vector<Quantum::Number> g(
@@ -75,23 +75,42 @@ void test001() {
       Absorption::Shape::VP, false, 296, 750e9, g, g, 1);
   Absorption::LineShape::Model m{Species::Species::Oxygen, 10e3, 15e3, 0, 0.7};
   band.Lines()[0] =
-      Absorption::Line(O266, 100e9, 1e-18, 1e-20, {0, 0}, 1, 1, 1e-20, l, l, m);
+      Absorption::Line(O266, 100e9, 1e-16, 1e-20, {0, 0}, 1, 1, 1e-20, l, l, m);
 
-  constexpr size_t nfreq = 1'000;
+  constexpr size_t nfreq = 11;
   constexpr Frequency<FrequencyType::Freq> flow = 90e9;
   constexpr Frequency<FrequencyType::Freq> fupp = 110e9;
-  const RTE::Forward::Calculations calcs{linspace(flow, fupp, nfreq),
-                                         {Derivative::Atm::Temperature},
-                                         {band},
-                                         path};
+  auto f = linspace(flow, fupp, nfreq);
 
-  auto rad0 = RTE::source_vec_planck<1>(2.997000e+02, calcs.f_grid);
+  const RTE::Forward::Calculations calcs{
+      f, {Derivative::Atm::Temperature}, {band}, path};
+  auto rad0 = RTE::source_vec_planck<1>(299.7, calcs.f_grid);
   auto out = RTE::Forward::compute(rad0, calcs);
-  out.convert_to_planck(calcs.f_grid);
-  std::cout << std::setprecision(15);
-  auto sensout = out.sensor_results();
-//   for (auto x : sensout) std::cout << x << '\n';
-      std::cout << out.x << '\n';
+  out.convert_to_planck(f);
+
+  Grid<double, 2> dT(0, path.size(), nfreq);
+  for (size_t ip = 0; ip < path.size(); ip++) {
+    auto path_dT(path);
+    path_dT[ip].atm.Temp(path_dT[ip].atm.Temp() + 0.1);
+
+    const RTE::Forward::Calculations calcs_dT{
+        f, {Derivative::Atm::Temperature}, {band}, path_dT};
+    auto rad0_dT = RTE::source_vec_planck<1>(299.7, calcs_dT.f_grid);
+    auto out_dT = RTE::Forward::compute(rad0_dT, calcs_dT);
+    out_dT.convert_to_planck(f);
+    for (size_t iv = 0; iv < nfreq; iv++)
+      dT(ip, iv) = (out_dT.x(0, iv)[0] - out.x(0, iv)[0]) / 0.1;
+  }
+
+  for (size_t ip = 0; ip < path.size(); ip++) {
+    for (size_t iv = 0; iv < nfreq; iv++) {
+      std::cout << dT(ip, iv);
+      for (size_t it = 0; it < calcs.targets.size(); it++) {
+        std::cout << ' ' << out.dx(it, ip, iv)[0];
+      }
+      std::cout << '\n';
+    }
+  }
 }
 
 int main() { test001(); }

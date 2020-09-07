@@ -11,6 +11,26 @@ struct Point {
   friend std::ostream &operator<<(std::ostream &os, const Point &p) {
     return os << p.nav << ' ' << p.atm;
   }
+
+  double DopplerShiftRatio() const noexcept {
+    const auto los = nav.sphericalLos();
+    return atm.DopplerShiftRatio(los.za(), los.aa());
+  }
+
+  double DopplerShiftRatioDerivativeU() const noexcept {
+    const auto los = nav.sphericalLos();
+    return atm.DopplerShiftRatioDerivativeU(los.za(), los.aa());
+  }
+
+  double DopplerShiftRatioDerivativeV() const noexcept {
+    const auto los = nav.sphericalLos();
+    return atm.DopplerShiftRatioDerivativeV(los.za(), los.aa());
+  }
+
+  double DopplerShiftRatioDerivativeW() const noexcept {
+    const auto los = nav.sphericalLos();
+    return atm.DopplerShiftRatioDerivativeW(los.za(), los.aa());
+  }
 };
 
 std::vector<Point> calc_single_geometric_path(

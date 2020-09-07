@@ -12,22 +12,19 @@ struct Calculations {
   std::vector<Derivative::Target> targets;             // size: nt
   std::vector<Absorption::Band> bands;                 // size: nb
   std::vector<Path::Point> path;                       // size: np
-
-  size_t radcols() const { return f_grid.size(); }
-  size_t radrows() const { return path.size(); }
-  size_t jaccols() const { return f_grid.size(); }
-  size_t jacrows() const { return targets.size() * path.size(); }
 };
 
 template <size_t N>
 struct Results {
   Grid<RadVec<N>, 2> x;   // size (np, nf)
-  Grid<RadVec<N>, 2> dx;  // size (np*nt, nf)
+  Grid<TraMat<N>, 2> T;   // size (np, nf)
+  Grid<RadVec<N>, 3> dx;  // size (nt, np, nf)
 
   Results(const std::vector<RadVec<N>> &rad0,
           const Calculations &calcs) noexcept
-      : x({}, calcs.radrows(), calcs.radcols()),
-        dx({}, calcs.jacrows(), calcs.jaccols()) {
+      : x({}, calcs.path.size(), calcs.f_grid.size()),
+        T({}, calcs.path.size(), calcs.f_grid.size()),
+        dx({}, calcs.targets.size(), calcs.path.size(), calcs.f_grid.size()) {
     if (calcs.f_grid.size() not_eq rad0.size() or calcs.path.size() == 0) {
       std::cerr << "Bad sizes\n";
       std::terminate();

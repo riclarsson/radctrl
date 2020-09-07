@@ -161,7 +161,7 @@ target_link_libraries(xsec PUBLIC xsec_lbl)
 ########################################################################################
 
 ########################################################################################
-# Absorption Library:  For equations and classes for computing the path and geometry
+# Absorption Library:  For equations and classes for computing the Propagation Matrix
 add_library (absorption STATIC
              propmat.cpp
              )
@@ -181,7 +181,7 @@ target_link_libraries(forward PUBLIC absorption rte)
 add_library (rte STATIC
              rte.cpp
              )
-target_link_libraries(rte PUBLIC species)
+target_link_libraries(rte PUBLIC species absorption)
 ########################################################################################
 
 ########################################################################################
@@ -285,6 +285,12 @@ target_link_libraries(test_atmpath PUBLIC atmpath)
 # Test lbl calculations
 add_executable(test_xsec_lbl test_xsec_lbl.cpp)
 target_link_libraries(test_xsec_lbl PUBLIC xsec_lbl)
+########################################################################################
+
+########################################################################################
+# Test xsec calculations
+add_executable(test_xsec test_xsec.cpp)
+target_link_libraries(test_xsec PUBLIC xsec)
 ########################################################################################
 
 ########################################################################################
