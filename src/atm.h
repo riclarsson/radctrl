@@ -283,6 +283,19 @@ class LazyPoint {
   }
 };  // LazyPoint
 
+struct LinearInterpPoint {
+  double w;  // Lower weight
+  size_t i;  // Lower index
+  LinearInterpPoint(double W, size_t I) noexcept : w(W), i(I) {}
+};
+
+struct AtmInterPoints {
+  LinearInterpPoint tid;
+  LinearInterpPoint alt;
+  LinearInterpPoint lat;
+  LinearInterpPoint lon;
+};
+
 class Atm {
   std::vector<Time> tid;
   std::vector<Altitude<AltitudeType::meter>> alt;
@@ -347,6 +360,7 @@ class Atm {
   Point &operator()(size_t i, size_t j, size_t k, size_t m) {
     return data(i, j, k, m);
   }
+  
   const Point &operator()(size_t i, size_t j, size_t k, size_t m) const {
     return data(i, j, k, m);
   }
