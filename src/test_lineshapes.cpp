@@ -46,15 +46,14 @@ void test001() {
   for (auto f : freqs) {
     VP(f);
     VP_dT(f);
-    VP_df(f+df);
+    VP_df(f + df);
     auto dVPdT = VP.dFdT(dX, T);
     auto dVPdf = VP.dFdf();
-    std::cout << ' ' << f << ' '
-              << std::real(VP.F) << ' ' << std::imag(VP.F) << ' '
-              << std::real(dVPdT) << ' ' << std::imag(dVPdT) << ' '
+    std::cout << ' ' << f << ' ' << std::real(VP.F) << ' ' << std::imag(VP.F)
+              << ' ' << std::real(dVPdT) << ' ' << std::imag(dVPdT) << ' '
               << std::real(VP_dT.F - VP.F) / dT << ' '
-              << std::imag(VP_dT.F - VP.F) / dT << ' '
-              << std::real(dVPdf) << ' ' << std::imag(dVPdf) << ' '
+              << std::imag(VP_dT.F - VP.F) / dT << ' ' << std::real(dVPdf)
+              << ' ' << std::imag(dVPdf) << ' '
               << std::real(VP_df.F - VP.F) / df << ' '
               << std::imag(VP_df.F - VP.F) / df << '\n';
   }

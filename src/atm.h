@@ -34,6 +34,7 @@ class Point {
 
   Point(decltype(vmr)::size_type n = 0) noexcept
       : M({0, 0, 0}), W({0, 0, 0}), vmr(n), nlte(0) {}
+
   Point(const std::vector<Species::Isotope> &s) noexcept
       : M({0, 0, 0}), W({0, 0, 0}), vmr(s.size()), nlte(0) {
     for (size_t i = 0; i < s.size(); i++) vmr[i].isot(s[i]);
@@ -45,6 +46,7 @@ class Point {
   Point &operator=(Point &&ap) = default;
 
   decltype(vmr)::size_type size() const { return vmr.size(); }
+
   void resize(decltype(vmr)::size_type n) { vmr.resize(n); }
 
   friend std::ostream &operator<<(std::ostream &os, Point p) {
@@ -65,13 +67,19 @@ class Point {
   void expP() { P = std::exp(P); }
 
   Pressure<PressureType::Pa> Pres() const { return P; }
+
   Temperature<TemperatureType::K> Temp() const { return T; }
+
   void Temp(Temperature<TemperatureType::K> x) { T = x; }
+
   Magnetism<MagnetismType::T> MagField() const { return M; }
+
   Wind<WindType::meters_per_second> WindField() const { return W; }
+
   const std::vector<VMR<VMRType::ratio>> &VolumeMixingRatios() const {
     return vmr;
   }
+
   double VolumeMixingRatio(Species::Isotope s) const {
     if (auto v = std::find_if(vmr.cbegin(), vmr.cend(),
                               [s](auto &v) { return v.isot() == s; });
@@ -80,6 +88,7 @@ class Point {
     else
       return v->value();
   }
+
   std::pair<double, double> NonLTERatios(
       std::pair<std::size_t, std::size_t> ids) const {
     return {nlte[ids.first], nlte[ids.second]};
@@ -263,37 +272,85 @@ class LazyPoint {
     auto out = std::log(ap.P);
     return out *= scale;
   }
+
   typename std::remove_reference<decltype(ap.T)>::type T() const noexcept {
     auto out = ap.T;
     return out *= scale;
   }
+
   typename std::remove_reference<decltype(ap.M)>::type M() const noexcept {
     auto out = ap.M;
     return out *= scale;
   }
+
   typename std::remove_reference<decltype(ap.W)>::type W() const noexcept {
     auto out = ap.W;
     return out *= scale;
   }
+
   typename std::remove_reference<decltype(ap.vmr[0])>::type vmr(
       size_t i) const noexcept {
     auto out{ap.vmr[i]};
     return out *= scale;
-    ;
   }
 };  // LazyPoint
 
 struct LinearInterpPoint {
   double w;  // Lower weight
   size_t i;  // Lower index
-  LinearInterpPoint(double W, size_t I) noexcept : w(W), i(I) {}
+  constexpr LinearInterpPoint(double W, size_t I) noexcept : w(W), i(I) {}
 };
 
-struct AtmInterPoints {
+struct InterPoints {
   LinearInterpPoint tid;
   LinearInterpPoint alt;
   LinearInterpPoint lat;
   LinearInterpPoint lon;
+
+  struct Uses {
+    double w;
+    size_t itid;
+    size_t ialt;
+    size_t ilat;
+    size_t ilon;
+  };
+
+  constexpr std::array<Uses, 16> Weights() const noexcept {
+    return {
+        Uses{(0 + tid.w) * (0 + alt.w) * (0 + lat.w) * (0 + lon.w), tid.i + 0,
+             alt.i + 0, lat.i + 0, lon.i + 0},
+        Uses{(0 + tid.w) * (0 + alt.w) * (0 + lat.w) * (1 - lon.w), tid.i + 0,
+             alt.i + 0, lat.i + 0, lon.i + 1},
+        Uses{(0 + tid.w) * (0 + alt.w) * (1 - lat.w) * (0 + lon.w), tid.i + 0,
+             alt.i + 0, lat.i + 1, lon.i + 0},
+        Uses{(0 + tid.w) * (0 + alt.w) * (1 - lat.w) * (1 - lon.w), tid.i + 0,
+             alt.i + 0, lat.i + 1, lon.i + 1},
+        Uses{(0 + tid.w) * (1 - alt.w) * (0 + lat.w) * (0 + lon.w), tid.i + 0,
+             alt.i + 1, lat.i + 0, lon.i + 0},
+        Uses{(0 + tid.w) * (1 - alt.w) * (0 + lat.w) * (1 - lon.w), tid.i + 0,
+             alt.i + 1, lat.i + 0, lon.i + 1},
+        Uses{(0 + tid.w) * (1 - alt.w) * (1 - lat.w) * (0 + lon.w), tid.i + 0,
+             alt.i + 1, lat.i + 1, lon.i + 0},
+        Uses{(0 + tid.w) * (1 - alt.w) * (1 - lat.w) * (1 - lon.w), tid.i + 0,
+             alt.i + 1, lat.i + 1, lon.i + 1},
+        Uses{(1 - tid.w) * (0 + alt.w) * (0 + lat.w) * (0 + lon.w), tid.i + 1,
+             alt.i + 0, lat.i + 0, lon.i + 0},
+        Uses{(1 - tid.w) * (0 + alt.w) * (0 + lat.w) * (1 - lon.w), tid.i + 1,
+             alt.i + 0, lat.i + 0, lon.i + 1},
+        Uses{(1 - tid.w) * (0 + alt.w) * (1 - lat.w) * (0 + lon.w), tid.i + 1,
+             alt.i + 0, lat.i + 1, lon.i + 0},
+        Uses{(1 - tid.w) * (0 + alt.w) * (1 - lat.w) * (1 - lon.w), tid.i + 1,
+             alt.i + 0, lat.i + 1, lon.i + 1},
+        Uses{(1 - tid.w) * (1 - alt.w) * (0 + lat.w) * (0 + lon.w), tid.i + 1,
+             alt.i + 1, lat.i + 0, lon.i + 0},
+        Uses{(1 - tid.w) * (1 - alt.w) * (0 + lat.w) * (1 - lon.w), tid.i + 1,
+             alt.i + 1, lat.i + 0, lon.i + 1},
+        Uses{(1 - tid.w) * (1 - alt.w) * (1 - lat.w) * (0 + lon.w), tid.i + 1,
+             alt.i + 1, lat.i + 1, lon.i + 0},
+        Uses{(1 - tid.w) * (1 - alt.w) * (1 - lat.w) * (1 - lon.w), tid.i + 1,
+             alt.i + 1, lat.i + 1, lon.i + 1},
+    };
+  }
 };
 
 class Atm {
@@ -320,9 +377,15 @@ class Atm {
       : tid(t), alt(a), lat(la), lon(lo), data(d) {
     if (not ok()) throw std::runtime_error("Bad atmosphere");
   }
+
   Atm(std::size_t t = 0, std::size_t a = 0, std::size_t la = 0,
       std::size_t lo = 0, std::size_t s = 0)
       : tid(t), alt(a), lat(la), lon(lo), data(s, t, a, la, lo) {}
+
+  size_t ntid() const noexcept { return tid.size(); }
+  size_t nalt() const noexcept { return alt.size(); }
+  size_t nlat() const noexcept { return lat.size(); }
+  size_t nlon() const noexcept { return lon.size(); }
 
   friend std::ostream &operator<<(std::ostream &os, const Atm &a) {
     if (not a.ok()) throw std::runtime_error("Bad atmosphere");
@@ -357,18 +420,29 @@ class Atm {
     return is;
   }
 
-  Point &operator()(size_t i, size_t j, size_t k, size_t m) {
-    return data(i, j, k, m);
-  }
-  
-  const Point &operator()(size_t i, size_t j, size_t k, size_t m) const {
+  Point &operator()(size_t i, size_t j, size_t k, size_t m) noexcept {
     return data(i, j, k, m);
   }
 
-  Point operator()(Time newtid, Altitude<AltitudeType::meter> newalt,
-                   Coordinate<CoordinateType::lat> newlat,
-                   Coordinate<CoordinateType::lon> newlon) const;
-                   
+  const Point &operator()(size_t i, size_t j, size_t k,
+                          size_t m) const noexcept {
+    return data(i, j, k, m);
+  }
+
+  Point operator()(InterPoints aip) const noexcept;
+
+  InterPoints interpPoints(
+      const Time newtid, const Altitude<AltitudeType::meter> newalt,
+      const Coordinate<CoordinateType::lat> newlat,
+      const Coordinate<CoordinateType::lon> newlon) const noexcept;
+
+  Point operator()(
+      const Time newtid, const Altitude<AltitudeType::meter> newalt,
+      const Coordinate<CoordinateType::lat> newlat,
+      const Coordinate<CoordinateType::lon> newlon) const noexcept {
+    return operator()(interpPoints(newtid, newalt, newlat, newlon));
+  }
+
   template <typename Pos>
   Point operator()(Pos pos) const {
     return operator()(pos.t(), pos.h(), pos.lat(), pos.lon());

@@ -36,135 +36,56 @@ Point &Point::operator+=(const LazyPoint &x) noexcept {
   return *this;
 }
 
-AtmInterPoints forwardmap(
-  const std::vector<Time> & tid,
-  const Time newtid,
-  const std::vector<Altitude<AltitudeType::meter>> & alt,
-  const Altitude<AltitudeType::meter> newalt,
-  const std::vector<Coordinate<CoordinateType::lat>> & lat,
-  const Coordinate<CoordinateType::lat> newlat,
-  const std::vector<Coordinate<CoordinateType::lon>> & lon,
-  const Coordinate<CoordinateType::lon> newlon) noexcept {
-    auto tidpos = std::find_if(tid.cbegin(), tid.cend(), [newtid](auto a) {
-      return not(a < newtid) and not(a == newtid);
-    });
-    auto tidlow = (tidpos == tid.cbegin()) ? tid.cbegin() : tidpos - 1;
-    auto tidw = (tidpos == tid.cend())
-    ? 1.0
-    : Interp::weight(newtid.Seconds(), tidlow->Seconds(),
-                     tidpos->Seconds());
-    
-    auto altpos = std::find_if(alt.cbegin(), alt.cend(),
-                               [newalt](auto a) { return newalt <= a; });
-    auto altlow = (altpos == alt.cbegin()) ? alt.cbegin() : altpos - 1;
-    auto altw = (altpos == alt.cend())
-    ? 1.0
-    : Interp::weight(newalt, altlow->value(), altpos->value());
-    
-    auto latpos = std::find_if(lat.cbegin(), lat.cend(),
-                               [newlat](auto a) { return newlat <= a; });
-    auto latlow = (latpos == lat.cbegin()) ? lat.cbegin() : latpos - 1;
-    auto latw = (latpos == lat.cend())
-    ? 1.0
-    : Interp::weight(newlat, latlow->value(), latpos->value());
-    
-    auto lonpos = std::find_if(lon.cbegin(), lon.cend(),
-                               [newlon](auto a) { return newlon <= a; });
-    auto lonlow = (lonpos == lon.cbegin()) ? lon.cbegin() : lonpos - 1;
-    auto lonw = (lonpos == lon.cend())
-    ? 1.0
-    : Interp::weight(newlon, lonlow->value(), lonpos->value());
-    
-    return {
-      {tidw, size_t(tidlow - tid.cbegin())},
-      {altw, size_t(altlow - alt.cbegin())},
-      {latw, size_t(latlow - lat.cbegin())},
-      {lonw, size_t(lonlow - lon.cbegin())}};
+InterPoints Atm::interpPoints(
+    const Time newtid, const Altitude<AltitudeType::meter> newalt,
+    const Coordinate<CoordinateType::lat> newlat,
+    const Coordinate<CoordinateType::lon> newlon) const noexcept {
+  auto tidpos = std::find_if(tid.cbegin(), tid.cend(), [newtid](auto a) {
+    return not(a < newtid) and not(a == newtid);
+  });
+  auto tidlow = (tidpos == tid.cbegin()) ? tid.cbegin() : tidpos - 1;
+  auto tidw = (tidpos == tid.cend())
+                  ? 1.0
+                  : Interp::weight(newtid.Seconds(), tidlow->Seconds(),
+                                   tidpos->Seconds());
+
+  auto altpos = std::find_if(alt.cbegin(), alt.cend(),
+                             [newalt](auto a) { return newalt <= a; });
+  auto altlow = (altpos == alt.cbegin()) ? alt.cbegin() : altpos - 1;
+  auto altw = (altpos == alt.cend())
+                  ? 1.0
+                  : Interp::weight(newalt, altlow->value(), altpos->value());
+
+  auto latpos = std::find_if(lat.cbegin(), lat.cend(),
+                             [newlat](auto a) { return newlat <= a; });
+  auto latlow = (latpos == lat.cbegin()) ? lat.cbegin() : latpos - 1;
+  auto latw = (latpos == lat.cend())
+                  ? 1.0
+                  : Interp::weight(newlat, latlow->value(), latpos->value());
+
+  auto lonpos = std::find_if(lon.cbegin(), lon.cend(),
+                             [newlon](auto a) { return newlon <= a; });
+  auto lonlow = (lonpos == lon.cbegin()) ? lon.cbegin() : lonpos - 1;
+  auto lonw = (lonpos == lon.cend())
+                  ? 1.0
+                  : Interp::weight(newlon, lonlow->value(), lonpos->value());
+
+  return {{tidw, size_t(tidlow - tid.cbegin())},
+          {altw, size_t(altlow - alt.cbegin())},
+          {latw, size_t(latlow - lat.cbegin())},
+          {lonw, size_t(lonlow - lon.cbegin())}};
 }
 
-Point Atm::operator()(Time newtid, Altitude<AltitudeType::meter> newalt,
-                      Coordinate<CoordinateType::lat> newlat,
-                      Coordinate<CoordinateType::lon> newlon) const {
-  const auto aip = forwardmap(tid, newtid, alt, newalt, lat, newlat, lon, newlon);
+Point Atm::operator()(InterPoints aip) const noexcept {
+  const auto map = aip.Weights();
 
-  Point out{(aip.tid.w * aip.alt.w * aip.lat.w * aip.lon.w) *
-            data(aip.tid.i, aip.alt.i,
-                 aip.lat.i, aip.lon.i)};  // 0000
-
-  if (aip.lon.w not_eq 1) {
-    out += {data(aip.tid.i, aip.alt.i,
-                 aip.lat.i, aip.lon.i + 1),
-            (aip.tid.w) * (aip.alt.w) * (aip.lat.w) * (1 - aip.lon.w)};  // 0001
-  }
-  if (aip.lat.w not_eq 1) {
-    out += {data(aip.tid.i, aip.alt.i,
-                 aip.lat.i + 1, aip.lon.i),
-            (aip.tid.w) * (aip.alt.w) * (1 - aip.lat.w) * (aip.lon.w)};  // 0010
-  }
-  if (aip.lat.w not_eq 1 and aip.lon.w not_eq 1) {
-    out += {data(aip.tid.i, aip.alt.i,
-                 aip.lat.i + 1, aip.lon.i + 1),
-            (aip.tid.w) * (aip.alt.w) * (1 - aip.lat.w) * (1 - aip.lon.w)};  // 0011
-  }
-  if (aip.alt.w not_eq 1) {
-    out += {data(aip.tid.i, aip.alt.i + 1,
-                 aip.lat.i, aip.lon.i),
-            (aip.tid.w) * (1 - aip.alt.w) * (aip.lat.w) * (aip.lon.w)};  // 0100
-  }
-  if (aip.alt.w not_eq 1 and aip.lon.w not_eq 1) {
-    out += {data(aip.tid.i, aip.alt.i + 1,
-                 aip.lat.i, aip.lon.i + 1),
-            (aip.tid.w) * (1 - aip.alt.w) * (aip.lat.w) * (1 - aip.lon.w)};  // 0101
-  }
-  if (aip.alt.w not_eq 1 and aip.lat.w not_eq 1) {
-    out += {data(aip.tid.i, aip.alt.i + 1,
-                 aip.lat.i + 1, aip.lon.i),
-            (aip.tid.w) * (1 - aip.alt.w) * (1 - aip.lat.w) * (aip.lon.w)};  // 0110
-  }
-  if (aip.alt.w not_eq 1 and aip.lon.w not_eq 1 and aip.lat.w not_eq 1) {
-    out += {data(aip.tid.i, aip.alt.i + 1,
-                 aip.lat.i + 1, aip.lon.i + 1),
-            (aip.tid.w) * (1 - aip.alt.w) * (1 - aip.lat.w) * (1 - aip.lon.w)};  // 0111
-  }
-  if (aip.tid.w not_eq 1) {
-    out += {data(aip.tid.i + 1, aip.alt.i,
-                 aip.lat.i, aip.lon.i),
-            (1 - aip.tid.w) * (aip.alt.w) * (aip.lat.w) * (aip.lon.w)};  // 1000
-  }
-  if (aip.tid.w not_eq 1 and aip.lon.w not_eq 1) {
-    out += {data(aip.tid.i + 1, aip.alt.i,
-                 aip.lat.i, aip.lon.i + 1),
-            (1 - aip.tid.w) * (aip.alt.w) * (aip.lat.w) * (1 - aip.lon.w)};  // 1001
-  }
-  if (aip.tid.w not_eq 1 and aip.lat.w not_eq 1) {
-    out += {data(aip.tid.i + 1, aip.alt.i,
-                 aip.lat.i + 1, aip.lon.i),
-            (1 - aip.tid.w) * (aip.alt.w) * (1 - aip.lat.w) * (aip.lon.w)};  // 1010
-  }
-  if (aip.tid.w not_eq 1 and aip.lat.w not_eq 1 and aip.lon.w not_eq 1) {
-    out += {data(aip.tid.i + 1, aip.alt.i,
-                 aip.lat.i + 1, aip.lon.i + 1),
-            (1 - aip.tid.w) * (aip.alt.w) * (1 - aip.lat.w) * (1 - aip.lon.w)};  // 1011
-  }
-  if (aip.tid.w not_eq 1 and aip.alt.w not_eq 1) {
-    out += {data(aip.tid.i + 1, aip.alt.i + 1,
-                 aip.lat.i, aip.lon.i),
-            (1 - aip.tid.w) * (1 - aip.alt.w) * (aip.lat.w) * (aip.lon.w)};  // 1100
-  }
-  if (aip.tid.w not_eq 1 and aip.alt.w not_eq 1 and aip.lon.w not_eq 1) {
-    out += {data(aip.tid.i + 1, aip.alt.i + 1,
-                 aip.lat.i, aip.lon.i + 1),
-            (1 - aip.tid.w) * (1 - aip.alt.w) * (aip.lat.w) * (1 - aip.lon.w)};  // 1101
-  }
-  if (aip.tid.w not_eq 1 and aip.alt.w not_eq 1 and aip.lat.w not_eq 1) {
-    out += {data(aip.tid.i + 1, aip.alt.i + 1,
-                 aip.lat.i + 1, aip.lon.i),
-            (1 - aip.tid.w) * (1 - aip.alt.w) * (1 - aip.lat.w) * (aip.lon.w)};  // 1110
-  }
-  if (aip.tid.w not_eq 1 and aip.alt.w not_eq 1 and aip.lat.w not_eq 1 and aip.lon.w not_eq 1) {
-    out += {data(aip.tid.i + 1, aip.alt.i + 1,
-                 aip.lat.i + 1, aip.lon.i + 1),
-            (1 - aip.tid.w) * (1 - aip.alt.w) * (1 - aip.lat.w) * (1 - aip.lon.w)};  // 1111
+  Point out{map[0].w *
+            data(map[0].itid, map[0].ialt, map[0].ilat, map[0].ilon)};
+  for (size_t i = 1; i < map.size(); i++) {
+    if (map[i].w not_eq 0) {
+      out +=
+          {data(map[i].itid, map[i].ialt, map[i].ilat, map[i].ilon), map[i].w};
+    }
   }
 
   // Note that this is necessary to fix the arithmetic of adding pressures

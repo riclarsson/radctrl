@@ -83,15 +83,17 @@ void test001() {
   auto f = linspace(flow, fupp, nfreq);
 
   auto rad0 = RTE::source_vec_planck<1>(299.7, f);
-  auto out = RTE::Forward::compute(rad0, f, {Derivative::Atm::Temperature}, {band}, path);
+  auto out = RTE::Forward::compute(rad0, f, {Derivative::Atm::Temperature},
+                                   {band}, path);
 
   Grid<double, 2> dT(0, path.size(), nfreq);
   for (size_t ip = 0; ip < path.size(); ip++) {
     auto path_dT(path);
     path_dT[ip].atm.Temp(path_dT[ip].atm.Temp() + 0.1);
 
-    auto out_dT = RTE::Forward::compute(rad0, f, {Derivative::Atm::Temperature}, {band}, path_dT);
-    
+    auto out_dT = RTE::Forward::compute(rad0, f, {Derivative::Atm::Temperature},
+                                        {band}, path_dT);
+
     for (size_t iv = 0; iv < nfreq; iv++)
       dT(ip, iv) = (out_dT.x(0, iv)[0] - out.x(0, iv)[0]) / 0.1;
   }

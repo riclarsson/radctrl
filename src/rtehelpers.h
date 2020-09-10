@@ -41,9 +41,9 @@ void to_planck(Grid<RadVec<N>, 2>& rad, Grid<RadVec<N>, 3>& jac,
           scl = RadVec<1>{dinvBdI(rad(ip, iv)[0], fvec[iv])};
         } else if constexpr (N == 2) {
           scl = RadVec<2>{
-            dinvBdI(rad(ip, iv)[0], fvec[iv]),
-            dinvBdI(0.5 * (rad(ip, iv)[0] + rad(ip, iv)[1]), fvec[iv]) -
-            dinvBdI(0.5 * (rad(ip, iv)[0] - rad(ip, iv)[1]), fvec[iv])};
+              dinvBdI(rad(ip, iv)[0], fvec[iv]),
+              dinvBdI(0.5 * (rad(ip, iv)[0] + rad(ip, iv)[1]), fvec[iv]) -
+                  dinvBdI(0.5 * (rad(ip, iv)[0] - rad(ip, iv)[1]), fvec[iv])};
         } else if constexpr (N == 3) {
           scl = RadVec<3>{
               dinvBdI(rad(ip, iv)[0], fvec[iv]),
@@ -59,7 +59,7 @@ void to_planck(Grid<RadVec<N>, 2>& rad, Grid<RadVec<N>, 3>& jac,
               dinvBdI(0.5 * (rad(ip, iv)[0] + rad(ip, iv)[2]), fvec[iv]) -
                   dinvBdI(0.5 * (rad(ip, iv)[0] - rad(ip, iv)[2]), fvec[iv]),
               dinvBdI(0.5 * (rad(ip, iv)[0] + rad(ip, iv)[3]), fvec[iv]) -
-              dinvBdI(0.5 * (rad(ip, iv)[0] - rad(ip, iv)[3]), fvec[iv])};
+                  dinvBdI(0.5 * (rad(ip, iv)[0] - rad(ip, iv)[3]), fvec[iv])};
         }
 
         for (size_t it = 0; it < nt; it++) {

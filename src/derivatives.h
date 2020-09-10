@@ -121,6 +121,8 @@ class Target {
       return true;
   }
 
+  constexpr bool operator==(Type x) const noexcept { return mtype == x; }
+
   constexpr bool operator==(Atm x) const noexcept {
     if (mtype not_eq Type::Atm) {
       return false;
@@ -303,7 +305,6 @@ class Target {
     return os << toString(t.msubtype, t.mtype);
   }
 };
-
 }  // namespace Derivative
 
 #endif  // derivatives_h
