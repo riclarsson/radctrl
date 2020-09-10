@@ -19,7 +19,9 @@ std::vector<Point> calc_single_geometric_path(
   }
 
   // The first position
-  std::vector<Point> out{1, {nav, atm(pos)}};
+  std::vector<Point> out;
+  out.reserve(100);
+  out.push_back({nav, atm(pos)});
 
   // Move the position until we hit the surface or leave the atmosphere
   for (;;) {

@@ -5,7 +5,7 @@
 #include "species.h"
 
 namespace Derivative {
-ENUMCLASS(Type, unsigned char, Atm, Line, Sensor)
+ENUMCLASS(Type, unsigned char, Atm, Line)
 
 ENUMCLASS(Atm, unsigned char, Temperature, WindU, WindV, WindW, MagneticU,
           MagneticV, MagneticW)
@@ -18,25 +18,19 @@ ENUMCLASS(Line, unsigned char, VMR, Strength, Center, ShapeG0X0, ShapeG0X1,
           ShapeYX2, ShapeYX3, ShapeGX0, ShapeGX1, ShapeGX2, ShapeGX3, ShapeDVX0,
           ShapeDVX1, ShapeDVX2, ShapeDVX3, NLTE, SpecialParameter1)
 
-ENUMCLASS(Sensor, unsigned char, Sinefit)
-
 /** Union of quantities */
 union TypeOfTarget {
   Atm atm;
   Line line;
-  Sensor sensor;
   constexpr TypeOfTarget() noexcept : atm(Atm(-1)) {}
   constexpr TypeOfTarget(Atm a) noexcept : atm(a) {}
   constexpr TypeOfTarget(Line l) noexcept : line(l){};
-  constexpr TypeOfTarget(Sensor s) noexcept : sensor(s){};
   constexpr bool is(Type x, TypeOfTarget y) const {
     switch (x) {
       case Type::Atm:
         return atm == y.atm;
       case Type::Line:
         return line == y.line;
-      case Type::Sensor:
-        return sensor == y.sensor;
       case Type::FINAL: { /*leave last*/
       }
     }
@@ -44,10 +38,8 @@ union TypeOfTarget {
   }
 };
 
-inline TypeOfTarget toTypeOfTarget(const std::string &s, Type x) noexcept {
+inline TypeOfTarget toTypeOfTarget(const std::string& s, Type x) noexcept {
   switch (x) {
-    case Type::Sensor:
-      return TypeOfTarget(toSensor(s));
     case Type::Line:
       return TypeOfTarget(toLine(s));
     case Type::Atm:
@@ -59,8 +51,6 @@ inline TypeOfTarget toTypeOfTarget(const std::string &s, Type x) noexcept {
 
 inline std::string toString(TypeOfTarget y, Type x) noexcept {
   switch (x) {
-    case Type::Sensor:
-      return toString(y.sensor);
     case Type::Line:
       return toString(y.line);
     case Type::Atm:
@@ -115,16 +105,6 @@ class Target {
         line_id(-1),
         mperturbation(pert) {}
 
-  /** Sensor type */
-  constexpr Target(
-      Sensor type,
-      double pert = std::numeric_limits<double>::quiet_NaN()) noexcept
-      : mtype(Type::Sensor),
-        msubtype(type),
-        species_id(Species::Species::FINAL, -1),
-        line_id(-1),
-        mperturbation(pert) {}
-
   /** A default none-type */
   constexpr Target() noexcept
       : mtype(Type::FINAL),
@@ -155,16 +135,6 @@ class Target {
     if (mtype not_eq Type::Line) {
       return false;
     } else if (msubtype.line == x) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  constexpr bool operator==(Sensor x) const noexcept {
-    if (mtype not_eq Type::Sensor) {
-      return false;
-    } else if (msubtype.sensor == x) {
       return true;
     } else {
       return false;
@@ -326,6 +296,11 @@ class Target {
       return true;
     else
       return false;
+  }
+
+  friend std::ostream& operator<<(std::ostream& os, const Target& t) {
+    os << t.mtype << ' ';
+    return os << toString(t.msubtype, t.mtype);
   }
 };
 

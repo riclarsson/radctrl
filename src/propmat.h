@@ -1,6 +1,7 @@
 #ifndef propmat_h
 #define propmat_h
 
+#include <Eigen/Dense>
 #include <algorithm>
 #include <array>
 #include <iostream>
@@ -118,6 +119,21 @@ class PropMat {
 
   constexpr bool can_be_inversed() const noexcept {
     return inverse_denominator() not_eq 0;
+  }
+
+  Eigen::Matrix<double, N, N> Matrix() const noexcept {
+    if constexpr (N == 4)
+      return (Eigen::Matrix4d() << p[0], p[1], p[2], p[3], p[1], p[0], p[N],
+              p[5], p[2], -p[N], p[0], p[6], p[3], -p[5], -p[6], p[0])
+          .finished();
+    else if constexpr (N == 3)
+      return (Eigen::Matrix3d() << p[0], p[1], p[2], p[1], p[0], p[N], p[2],
+              -p[N], p[0])
+          .finished();
+    else if constexpr (N == 2)
+      return (Eigen::Matrix2d() << p[0], p[1], p[1], p[0]).finished();
+    else
+      return Eigen::Matrix<double, 1, 1>(p[0]);
   }
 };
 }  // namespace Absorption

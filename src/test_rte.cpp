@@ -224,6 +224,241 @@ void test006() {
             << '\n';
 }
 
+void test007() {
+  auto a = [](double T) { return 1 + T * 1e-3; };
+  auto b = [](double T) { return 1e-2 + T * 1e-3; };
+  auto c = [](double T) { return T * 1e-3 - 1e-2; };
+  auto d = [](double T) { return 1e-1 + 2 * T * 1e-3; };
+  auto u = [](double T) { return 2 * T * 1e-3; };
+  auto v = [](double T) { return 3 * T * 1e-3; };
+  auto w = [](double T) { return 4 * T * 1e-3; };
+  constexpr double T = 300;
+
+  Absorption::PropMat<4> K44(a(T), b(T), c(T), d(T), u(T), v(T), w(T));
+  Absorption::PropMat<3> K33(a(T), b(T), c(T), u(T));
+  Absorption::PropMat<2> K22(a(T), b(T));
+  Absorption::PropMat<1> K11(a(T));
+
+  auto T44 = RTE::linear_transmat(K44, K44, 1.0);
+  auto T33 = RTE::linear_transmat(K33, K33, 1.0);
+  auto T22 = RTE::linear_transmat(K22, K22, 1.0);
+  auto T11 = RTE::linear_transmat(K11, K11, 1.0);
+
+  std::cout << "PropMat<4>:\n"
+            << K44.Matrix() << '\n'
+            << "Becomes TraMat<4> (after 1 meter):\n"
+            << T44 << '\n';
+  std::cout << "PropMat<3>:\n"
+            << K33.Matrix() << '\n'
+            << "Becomes TraMat<3> (after 1 meter):\n"
+            << T33 << '\n';
+  std::cout << "PropMat<2>:\n"
+            << K22.Matrix() << '\n'
+            << "Becomes TraMat<2> (after 1 meter):\n"
+            << T22 << '\n';
+  std::cout << "PropMat<1>:\n"
+            << K11.Matrix() << '\n'
+            << "Becomes TraMat<1> (after 1 meter):\n"
+            << T11 << '\n';
+}
+
+void test008() {
+  auto a = [](double T) { return 5 + T * 1e-3; };
+  auto b = [](double T) { return 3e-2 + T * 1e-3; };
+  auto c = [](double T) { return T * 1e-3 - 1e-2; };
+  auto d = [](double T) { return 1e0 + 2 * T * 1e-3; };
+  auto u = [](double T) { return 2 * T * 1e-3; };
+  auto v = [](double T) { return 3 * T * 1e-3; };
+  auto w = [](double T) { return 4 * T * 1e-3; };
+  constexpr double T = 300;
+  constexpr double dT = 0.01;
+
+  Absorption::PropMat<4> K44(a(T), b(T), c(T), d(T), u(T), v(T), w(T));
+  Absorption::PropMat<3> K33(a(T), b(T), c(T), u(T));
+  Absorption::PropMat<2> K22(a(T), b(T));
+  Absorption::PropMat<1> K11(a(T));
+
+  Absorption::PropMat<4> ModK44(a(T + dT), b(T + dT), c(T + dT), d(T + dT),
+                                u(T + dT), v(T + dT), w(T + dT));
+  Absorption::PropMat<3> ModK33(a(T + dT), b(T + dT), c(T + dT), u(T + dT));
+  Absorption::PropMat<2> ModK22(a(T + dT), b(T + dT));
+  Absorption::PropMat<1> ModK11(a(T + dT));
+
+  Absorption::PropMat<4> dK44((a(T + dT) - a(T)) / dT, (b(T + dT) - b(T)) / dT,
+                              (c(T + dT) - c(T)) / dT, (d(T + dT) - d(T)) / dT,
+                              (u(T + dT) - u(T)) / dT, (v(T + dT) - v(T)) / dT,
+                              (w(T + dT) - w(T)) / dT);
+  Absorption::PropMat<3> dK33((a(T + dT) - a(T)) / dT, (b(T + dT) - b(T)) / dT,
+                              (c(T + dT) - c(T)) / dT, (u(T + dT) - u(T)) / dT);
+  Absorption::PropMat<2> dK22((a(T + dT) - a(T)) / dT, (b(T + dT) - b(T)) / dT);
+  Absorption::PropMat<1> dK11((a(T + dT) - a(T)) / dT);
+
+  auto T44 = RTE::linear_transmat(K44, ModK44, 1.0);
+  auto T33 = RTE::linear_transmat(K33, ModK33, 1.0);
+  auto T22 = RTE::linear_transmat(K22, ModK22, 1.0);
+  auto T11 = RTE::linear_transmat(K11, ModK11, 1.0);
+
+  auto ModT44 = RTE::linear_transmat(ModK44, ModK44, 1.0);
+  auto ModT33 = RTE::linear_transmat(ModK33, ModK33, 1.0);
+  auto ModT22 = RTE::linear_transmat(ModK22, ModK22, 1.0);
+  auto ModT11 = RTE::linear_transmat(ModK11, ModK11, 1.0);
+
+  auto dT44 = RTE::dlinear_transmat(T44, K44, ModK44, dK44, 1.0, 0.0);
+  auto dT33 = RTE::dlinear_transmat(T33, K33, ModK33, dK33, 1.0, 0.0);
+  auto dT22 = RTE::dlinear_transmat(T22, K22, ModK22, dK22, 1.0, 0.0);
+  auto dT11 = RTE::dlinear_transmat(T11, K11, K11, dK11, 1.0, 0.0);
+  std::cout << "\n\n\n";
+
+  std::cout << "PropMat<1>:\n"
+            << K11.Matrix() << '\n'
+            << "And PropMat<1>:\n"
+            << ModK11.Matrix() << '\n'
+            << "Becomes TraMat<1> (after 1 meter):\n"
+            << T11 << '\n';
+  std::cout << "Computed derivative <1>:\n" << dT11 << '\n';
+  std::cout << "Estimated derivative <1>:\n" << (ModT11 - T11) / dT << '\n';
+
+  std::cout << "\n";
+  std::cout << "PropMat<2>:\n"
+            << K22.Matrix() << '\n'
+            << "And PropMat<2>:\n"
+            << ModK22.Matrix() << '\n'
+            << "Becomes TraMat<2> (after 1 meter):\n"
+            << T22 << '\n';
+  std::cout << "Computed derivative <2>:\n" << dT22 << '\n';
+  std::cout << "Estimated derivative <2>:\n" << (ModT22 - T22) / dT << '\n';
+
+  std::cout << "\n";
+  std::cout << "PropMat<3>:\n"
+            << K33.Matrix() << '\n'
+            << "And PropMat<3>:\n"
+            << ModK33.Matrix() << '\n'
+            << "Becomes TraMat<3> (after 1 meter):\n"
+            << T33 << '\n';
+  std::cout << "Computed derivative <3>:\n" << dT33 << '\n';
+  std::cout << "Estimated derivative <3>:\n" << (ModT33 - T33) / dT << '\n';
+
+  std::cout << "\n";
+  std::cout << "PropMat<4>:\n"
+            << K44.Matrix() << '\n'
+            << "And PropMat<4>:\n"
+            << ModK44.Matrix() << '\n'
+            << "Becomes TraMat<4> (after 1 meter):\n"
+            << T44 << '\n';
+  std::cout << "Computed derivative <4>:\n" << dT44 << '\n';
+  std::cout << "Estimated derivative <4>:\n" << (ModT44 - T44) / dT << '\n';
+}
+
+void test009() {
+  auto a = [](double T) { return 5 + T * 1e-3; };
+  auto b = [](double T) { return 3e-2 + T * 1e-3; };
+  auto c = [](double T) { return T * 1e-3 - 1e-2; };
+  auto d = [](double T) { return 1e0 + 2 * T * 1e-3; };
+  auto u = [](double T) { return 2 * T * 1e-3; };
+  auto v = [](double T) { return 3 * T * 1e-3; };
+  auto w = [](double T) { return 4 * T * 1e-3; };
+  constexpr double T = 300;
+  //   constexpr double dT = 0.01;
+
+  Absorption::PropMat<4> K44(a(T), b(T), c(T), d(T), u(T), v(T), w(T));
+  Absorption::PropMat<3> K33(a(T), b(T), c(T), u(T));
+  Absorption::PropMat<2> K22(a(T), b(T));
+  Absorption::PropMat<1> K11(a(T));
+
+  const double B = RTE::B(T, 100e9);
+  auto J4 = RTE::source(K44, {0, 0, 0, 0}, {0, 0, 0, 0}, B);
+  auto J3 = RTE::source(K33, {0, 0, 0}, {0, 0, 0}, B);
+  auto J2 = RTE::source(K22, {0, 0}, {0, 0}, B);
+  auto J1 = RTE::source(K11, {0}, {0}, B);
+  std::cout << '\n' << '\n';
+  std::cout << "Planck:\n" << B << '\n';
+  std::cout << "Source Vector <4>:\n" << J4 << '\n';
+  std::cout << "Source Vector <3>:\n" << J3 << '\n';
+  std::cout << "Source Vector <2>:\n" << J2 << '\n';
+  std::cout << "Source Vector <1>:\n" << J1 << '\n';
+}
+
+void test010() {
+  auto a = [](double T) { return 5 + T * 1e-3; };
+  auto b = [](double T) { return 3e-2 + T * 1e-3; };
+  auto c = [](double T) { return T * 1e-3 - 1e-2; };
+  auto d = [](double T) { return 1e0 + 2 * T * 1e-3; };
+  auto u = [](double T) { return 2 * T * 1e-3; };
+  auto v = [](double T) { return 3 * T * 1e-3; };
+  auto w = [](double T) { return 4 * T * 1e-3; };
+  constexpr double T = 300;
+  constexpr double dT = 0.01;
+
+  Absorption::PropMat<4> K44(a(T), b(T), c(T), d(T), u(T), v(T), w(T));
+  Absorption::PropMat<3> K33(a(T), b(T), c(T), u(T));
+  Absorption::PropMat<2> K22(a(T), b(T));
+  Absorption::PropMat<1> K11(a(T));
+
+  Absorption::PropMat<4> ModK44(a(T + dT), b(T + dT), c(T + dT), d(T + dT),
+                                u(T + dT), v(T + dT), w(T + dT));
+  Absorption::PropMat<3> ModK33(a(T + dT), b(T + dT), c(T + dT), u(T + dT));
+  Absorption::PropMat<2> ModK22(a(T + dT), b(T + dT));
+  Absorption::PropMat<1> ModK11(a(T + dT));
+
+  Absorption::PropMat<4> dK44((a(T + dT) - a(T)) / dT, (b(T + dT) - b(T)) / dT,
+                              (c(T + dT) - c(T)) / dT, (d(T + dT) - d(T)) / dT,
+                              (u(T + dT) - u(T)) / dT, (v(T + dT) - v(T)) / dT,
+                              (w(T + dT) - w(T)) / dT);
+  Absorption::PropMat<3> dK33((a(T + dT) - a(T)) / dT, (b(T + dT) - b(T)) / dT,
+                              (c(T + dT) - c(T)) / dT, (u(T + dT) - u(T)) / dT);
+  Absorption::PropMat<2> dK22((a(T + dT) - a(T)) / dT, (b(T + dT) - b(T)) / dT);
+  Absorption::PropMat<1> dK11((a(T + dT) - a(T)) / dT);
+
+  const double B = RTE::B(T, 100e9);
+  const double ModB = RTE::B(T + dT, 100e9);
+  const double dBdT = RTE::dBdT(T, 100e9);
+  auto J4 = RTE::source(K44, {0, 0, 0, 0}, {0, 0, 0, 0}, B);
+  auto J3 = RTE::source(K33, {0, 0, 0}, {0, 0, 0}, B);
+  auto J2 = RTE::source(K22, {0, 0}, {0, 0}, B);
+  auto J1 = RTE::source(K11, {0}, {0}, B);
+  std::cout << '\n' << '\n';
+  std::cout << "Planck:\n" << B << '\n';
+  std::cout << "Source Vector <4>:\n" << J4 << '\n';
+  std::cout << "Source Vector <3>:\n" << J3 << '\n';
+  std::cout << "Source Vector <2>:\n" << J2 << '\n';
+  std::cout << "Source Vector <1>:\n" << J1 << '\n';
+
+  auto ModJ4 = RTE::source(ModK44, {0, 0, 0, 0}, {0, 0, 0, 0}, ModB);
+  auto ModJ3 = RTE::source(ModK33, {0, 0, 0}, {0, 0, 0}, ModB);
+  auto ModJ2 = RTE::source(ModK22, {0, 0}, {0, 0}, ModB);
+  auto ModJ1 = RTE::source(ModK11, {0}, {0}, ModB);
+  std::cout << '\n' << '\n';
+  std::cout << "Mod Planck:\n" << ModB << '\n';
+  std::cout << "Mod Source Vector <4>:\n" << ModJ4 << '\n';
+  std::cout << "Mod Source Vector <3>:\n" << ModJ3 << '\n';
+  std::cout << "Mod Source Vector <2>:\n" << ModJ2 << '\n';
+  std::cout << "Mod Source Vector <1>:\n" << ModJ1 << '\n';
+
+  auto dJ4 = RTE::dsource(K44, dK44, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0},
+                          {0, 0, 0, 0}, B, dBdT);
+  auto dJ3 = RTE::dsource(K33, dK33, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0},
+                          B, dBdT);
+  auto dJ2 = RTE::dsource(K22, dK22, {0, 0}, {0, 0}, {0, 0}, {0, 0}, B, dBdT);
+  auto dJ1 = RTE::dsource(K11, dK11, {0}, {0}, {0}, {0}, B, dBdT);
+  std::cout << '\n' << '\n';
+  std::cout << "Derivative Planck:\n" << dBdT << '\n';
+  std::cout << "Derivative Source Vector <4>:\n" << dJ4 << '\n';
+  std::cout << "Derivative Source Vector <3>:\n" << dJ3 << '\n';
+  std::cout << "Derivative Source Vector <2>:\n" << dJ2 << '\n';
+  std::cout << "Derivative Source Vector <1>:\n" << dJ1 << '\n';
+
+  std::cout << '\n' << '\n';
+  std::cout << "Manual Derivative Planck:\n" << (ModB - B) / dT << '\n';
+  std::cout << "Manual Derivative Source Vector <4>:\n"
+            << (ModJ4 - J4) / dT << '\n';
+  std::cout << "Manual Derivative Source Vector <3>:\n"
+            << (ModJ3 - J3) / dT << '\n';
+  std::cout << "Manual Derivative Source Vector <2>:\n"
+            << (ModJ2 - J2) / dT << '\n';
+  std::cout << "Manual Derivative Source Vector <1>:\n"
+            << (ModJ1 - J1) / dT << '\n';
+}
+
 int main() {
   std::cout << std::setprecision(20);
   test001();  // RadVec creation, stream output
@@ -232,4 +467,8 @@ int main() {
   test004();  // RTE equation, stream output
   test005();  // PropMat to TraMat, stream output
   test006();  // RTE equation, RTE derivative
+  test007();  // Transmission matrix
+  test008();  // Transmission matrix derivative
+  test009();  // Source vector (LTE, no scattering)
+  test010();  // Source vector temperature derivative (LTE, no scattering)
 }

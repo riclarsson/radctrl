@@ -82,35 +82,23 @@ void test001() {
   constexpr Frequency<FrequencyType::Freq> fupp = 110e9;
   auto f = linspace(flow, fupp, nfreq);
 
-  const RTE::Forward::Calculations calcs{
-      f, {Derivative::Atm::Temperature}, {band}, path};
-  auto rad0 = RTE::source_vec_planck<1>(299.7, calcs.f_grid);
-  auto out = RTE::Forward::compute(rad0, calcs);
-  out.convert_to_planck(f);
+  auto rad0 = RTE::source_vec_planck<1>(299.7, f);
+  auto out = RTE::Forward::compute(rad0, f, {Derivative::Atm::Temperature}, {band}, path);
 
   Grid<double, 2> dT(0, path.size(), nfreq);
   for (size_t ip = 0; ip < path.size(); ip++) {
     auto path_dT(path);
     path_dT[ip].atm.Temp(path_dT[ip].atm.Temp() + 0.1);
 
-    const RTE::Forward::Calculations calcs_dT{
-        f, {Derivative::Atm::Temperature}, {band}, path_dT};
-    auto rad0_dT = RTE::source_vec_planck<1>(299.7, calcs_dT.f_grid);
-    auto out_dT = RTE::Forward::compute(rad0_dT, calcs_dT);
-    out_dT.convert_to_planck(f);
+    auto out_dT = RTE::Forward::compute(rad0, f, {Derivative::Atm::Temperature}, {band}, path_dT);
+    
     for (size_t iv = 0; iv < nfreq; iv++)
       dT(ip, iv) = (out_dT.x(0, iv)[0] - out.x(0, iv)[0]) / 0.1;
   }
 
-  for (size_t ip = 0; ip < path.size(); ip++) {
-    for (size_t iv = 0; iv < nfreq; iv++) {
-      std::cout << dT(ip, iv);
-      for (size_t it = 0; it < calcs.targets.size(); it++) {
-        std::cout << ' ' << out.dx(it, ip, iv)[0];
-      }
-      std::cout << '\n';
-    }
-  }
+  std::cout << out.x << '\n';
+  std::cout << out.dx << '\n';
+  std::cout << dT << '\n';
 }
 
 int main() { test001(); }

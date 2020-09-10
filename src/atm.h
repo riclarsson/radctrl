@@ -354,6 +354,7 @@ class Atm {
   Point operator()(Time newtid, Altitude<AltitudeType::meter> newalt,
                    Coordinate<CoordinateType::lat> newlat,
                    Coordinate<CoordinateType::lon> newlon) const;
+                   
   template <typename Pos>
   Point operator()(Pos pos) const {
     return operator()(pos.t(), pos.h(), pos.lat(), pos.lon());

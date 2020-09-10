@@ -5,51 +5,6 @@
 namespace Absorption {
 namespace Xsec {
 namespace Lbl {
-template <class LineShape>
-void compute_lineshape(std::vector<Complex> &comp_x,
-                       const std::vector<Frequency<FrequencyType::Freq>> &f,
-                       const Complex lm,
-                       Frequency<FrequencyType::Freq> cutoff_low,
-                       Frequency<FrequencyType::Freq> cutoff_upp,
-                       LineShape ls) {
-  const size_t nv = f.size();
-  for (size_t iv = 0; iv < nv; iv++) {
-    if (cutoff_low <= f[iv] and f[iv] <= cutoff_upp) {
-      comp_x[iv] = lm * ls(f[iv]);
-    } else {
-      comp_x[iv] = Complex(0, 0);
-    }
-  }
-
-  if (cutoff_upp > 0.0) {
-    ls(cutoff_upp);
-    for (size_t iv = 0; iv < nv; iv++) {
-      if (cutoff_low <= f[iv] and f[iv] <= cutoff_upp) comp_x[iv] -= lm * ls.F;
-    }
-  }
-}
-
-template <class LineShape>
-void compute_mirrored_lineshape(
-    std::vector<Complex> &comp_x,
-    const std::vector<Frequency<FrequencyType::Freq>> &f, const Complex lm,
-    Frequency<FrequencyType::Freq> cutoff_low,
-    Frequency<FrequencyType::Freq> cutoff_upp, LineShape ls) {
-  const size_t nv = f.size();
-  for (size_t iv = 0; iv < nv; iv++) {
-    if (cutoff_low <= f[iv] and f[iv] <= cutoff_upp)
-      comp_x[iv] += lm * conj(ls(f[iv]));
-  }
-
-  if (cutoff_upp > 0.0) {
-    ls(cutoff_upp);
-    for (size_t iv = 0; iv < nv; iv++) {
-      if (cutoff_low <= f[iv] and f[iv] <= cutoff_upp)
-        comp_x[iv] -= lm * conj(ls.F);
-    }
-  }
-}
-
 union ComputedDerivData {
   double d;
   LineShape::Output lso;

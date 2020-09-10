@@ -3681,8 +3681,9 @@ class Voigt {
   }
   template <typename LineData>
   Complex dFdT(LineData d, double T) const noexcept {
-    return dFdVMR(d) + Constant::pow2(invGD) * (z * dF + invGD * F) /
-                           (2 * Constant::sqrt_ln_2 * T);
+    return -(F * invGD + dF * z) * (2 * T * (d.D0 + d.DV) + mF0) /
+               (2 * T * invGD * mF0) +
+           dFdVMR(d);
   }
   static constexpr Complex dFdETA(double) noexcept { return 0; }
   static constexpr Complex dFdFVC(double) noexcept { return 0; }
@@ -3769,13 +3770,10 @@ class Doppler {
 
   template <typename LineData>
   double dFdT(LineData, double T) const noexcept {
-    return -(Constant::pow2(x) - 0.5) * Constant::pow3(invGD) /
-           (Constant::sqrt_ln_2 * T) * F;
+    return F * (2 * Constant::pow2(x) - 1) / (2 * T);
   }
   double dFdf() const noexcept { return -2 * invGD * F * x; }
-  double dFdF0() const noexcept {
-    return F * Constant::pow2(x) * (2 / mF0) + F * x * 2 * (invGD - 1 / mF0);
-  }
+  double dFdF0() const noexcept { return 4 * F * invGD * x - F / mF0; }
   double dFdH(double dZ) const noexcept { return dZ * dFdF0(); }
   static constexpr double dFdFVC(double) noexcept { return 0; }
   static constexpr double dFdETA(double) noexcept { return 0; }

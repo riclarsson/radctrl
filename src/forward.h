@@ -7,13 +7,6 @@
 #include "xsec.h"
 
 namespace RTE::Forward {
-struct Calculations {
-  std::vector<Frequency<FrequencyType::Freq>> f_grid;  // size: nf
-  std::vector<Derivative::Target> targets;             // size: nt
-  std::vector<Absorption::Band> bands;                 // size: nb
-  std::vector<Path::Point> path;                       // size: np
-};
-
 template <size_t N>
 struct Results {
   Grid<RadVec<N>, 2> x;   // size (np, nf)
@@ -21,17 +14,17 @@ struct Results {
   Grid<RadVec<N>, 3> dx;  // size (nt, np, nf)
 
   Results(const std::vector<RadVec<N>> &rad0,
-          const Calculations &calcs) noexcept
-      : x({}, calcs.path.size(), calcs.f_grid.size()),
-        T({}, calcs.path.size(), calcs.f_grid.size()),
-        dx({}, calcs.targets.size(), calcs.path.size(), calcs.f_grid.size()) {
-    if (calcs.f_grid.size() not_eq rad0.size() or calcs.path.size() == 0) {
+          const std::size_t np, const std::size_t nf, const std::size_t nt) noexcept
+      : x({}, np, nf),
+        T({}, np, nf),
+        dx({}, nt, np, nf) {
+    if (nf not_eq rad0.size() or np == 0) {
       std::cerr << "Bad sizes\n";
       std::terminate();
     }
 
-    for (size_t i = 0; i < calcs.f_grid.size(); i++) {
-      x(calcs.path.size() - 1, i) = rad0[i];
+    for (size_t i = 0; i < nf; i++) {
+      x(np - 1, i) = rad0[i];
     }
   }
 
@@ -49,16 +42,32 @@ struct Results {
 };
 
 Results<1> compute(const std::vector<RadVec<1>> &rad0,
-                   const Calculations &calcs);
+                   const std::vector<Frequency<FrequencyType::Freq>>& f_grid,
+                   const std::vector<Derivative::Target>& targets,
+                   const std::vector<Absorption::Band>& bands,
+                   const std::vector<Path::Point>& path
+                  );
 
 Results<2> compute(const std::vector<RadVec<2>> &rad0,
-                   const Calculations &calcs);
+                   const std::vector<Frequency<FrequencyType::Freq>>& f_grid,
+                   const std::vector<Derivative::Target>& targets,
+                   const std::vector<Absorption::Band>& bands,
+                   const std::vector<Path::Point>& path
+                  );
 
 Results<3> compute(const std::vector<RadVec<3>> &rad0,
-                   const Calculations &calcs);
+                   const std::vector<Frequency<FrequencyType::Freq>>& f_grid,
+                   const std::vector<Derivative::Target>& targets,
+                   const std::vector<Absorption::Band>& bands,
+                   const std::vector<Path::Point>& path
+                  );
 
 Results<4> compute(const std::vector<RadVec<4>> &rad0,
-                   const Calculations &calcs);
+                   const std::vector<Frequency<FrequencyType::Freq>>& f_grid,
+                   const std::vector<Derivative::Target>& targets,
+                   const std::vector<Absorption::Band>& bands,
+                   const std::vector<Path::Point>& path
+                  );
 }  // namespace RTE::Forward
 
 #endif  // forward_h

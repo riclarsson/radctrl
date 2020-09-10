@@ -9,18 +9,15 @@
 #include <vector>
 
 template <typename... Inds>
-constexpr std::size_t mul(std::size_t val, Inds... inds) {
-  if constexpr (sizeof...(Inds) == 0)
-    return val;
-  else
-    return val * mul(inds...);
+constexpr std::size_t mul(Inds... inds) {
+  return (std::size_t(inds) * ...);
 }
 
 /** Row-major grid creation */
-template <typename base, std::size_t N>
+template <typename b, std::size_t n>
 class Grid {
-  std::unique_ptr<base[]> ptr;
-  std::array<std::size_t, N> gridsize;
+  std::unique_ptr<b[]> ptr;
+  std::array<std::size_t, n> gridsize;
 
   std::size_t nelem() const {
     return std::reduce(gridsize.cbegin(), gridsize.cend(), 1,
@@ -28,7 +25,9 @@ class Grid {
   }
 
  public:
-  static constexpr std::size_t dim = N;
+  static constexpr std::size_t N = n;
+  using base = b;
+  static_assert(N, "Must have size");
 
   template <typename... Inds>
   Grid(const base &fillval, Inds... inds)
@@ -89,18 +88,18 @@ class Grid {
   auto begin() const { return data(); }
   auto end() const { return data() + nelem(); }
 
-  const auto cbegin() const { return data(); }
+  auto cbegin() const { return data(); }
   auto cend() const { return data() + nelem(); }
 
   friend std::ostream &operator<<(std::ostream &os, const Grid &g) {
     std::size_t i = 0;
-    const std::size_t n = g.nelem();
-    while (i < n) {
+    const std::size_t nel = g.nelem();
+    while (i < nel) {
       os << g.ptr[i];
       i++;
-      if (i not_eq 0 and i not_eq n and i % g.gridsize.back() == 0)
+      if (i not_eq 0 and i not_eq nel and i % g.gridsize.back() == 0)
         os << '\n';
-      else if (i not_eq n)
+      else if (i not_eq nel)
         os << ' ';
     }
 
@@ -109,13 +108,6 @@ class Grid {
 
  private:
   std::size_t index(std::array<std::size_t, N> ind) const noexcept {
-    [[unlikely]] if (std::any_of(ind.cbegin(), ind.cend(),
-                                 [](auto &a) { return a < 0; }) or
-                     gridsize.back() <= ind.back()) {
-      std::cerr << "Out of range\n";
-      std::terminate();
-    }
-
     std::size_t posmul{gridsize.back()};
     std::size_t pos{ind.back()};
     for (std::size_t i{N - 2}; i < N; i--) {
@@ -126,89 +118,90 @@ class Grid {
         std::terminate();
       }
     }
-    //     std::cout << pos << '\n';
     return pos;
   }
 };  // Grid
 
-template <typename base, std::size_t N>
-class SubGrid {
+template <class GridClass>
+class Sub {
   const std::size_t axis;
   const std::size_t axispos;
-  Grid<base, N> &grid;
+  GridClass &grid;
 
-  std::array<std::size_t, N> index(
-      std::array<std::size_t, N - 1> inds) const noexcept {
+ public:
+  static constexpr std::size_t N = GridClass::N - 1;
+  static_assert(N, "Must (still?) have size");
+
+  Sub(GridClass &g, std::size_t a, std::size_t p) noexcept
+      : axis(a), axispos(p), grid(g) {}
+
+  template <typename... Inds>
+  typename GridClass::base &operator()(Inds... inds) noexcept {
+    return grid(index(std::array<std::size_t, N>{std::size_t(inds)...}));
+  }
+
+  template <typename... Inds>
+  const typename GridClass::base &operator()(Inds... inds) const noexcept {
+    return grid(index(std::array<std::size_t, N>{std::size_t(inds)...}));
+  }
+
+  typename GridClass::base &operator[](std::size_t ind) noexcept {
+    static_assert(N == 1);
+    if (axis == 0)
+      return grid(axispos, ind);
+    else
+      return grid(ind, axispos);
+  }
+
+  const typename GridClass::base &operator[](std::size_t ind) const noexcept {
+    static_assert(N == 1);
+    if (axis == 0)
+      return grid(axispos, ind);
+    else
+      return grid(ind, axispos);
+  }
+
+  std::array<std::size_t, N> sizes() const {
+    const std::array<std::size_t, N + 1> out_orig = grid.sizes();
     std::array<std::size_t, N> out;
-    for (std::size_t i = 0; i < N - 1; i++) {
+    for (std::size_t i = 0; i < N; i++) {
+      out[i] =
+          out_orig[i + (i >= axis)];  // at i before axis, at i+1 after axis
+    }
+    return out;
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const Sub &s) {
+    const auto size = s.sizes();
+    if constexpr (Sub::N == 1) {
+      for (std::size_t pos = 0; pos < size[0]; pos++) {
+        os << s[pos];
+        if (pos not_eq size[0] - 1) {
+          os << ' ';
+        }
+      }
+    } else {
+      for (std::size_t dim = 0; dim < Sub::N; dim++) {
+        for (std::size_t pos = 0; pos < size[dim]; pos++) {
+          os << Sub(s, dim, pos);
+          if (pos not_eq size[dim] - 1) {
+            os << '\n';
+          }
+        }
+      }
+    }
+    return os;
+  }
+
+ private:
+  std::array<std::size_t, N + 1> index(
+      std::array<std::size_t, N> inds) const noexcept {
+    std::array<std::size_t, N + 1> out;
+    for (std::size_t i = 0; i < N; i++) {
       out[i + (i >= axis)] = inds[i];  // at i before axis, at i+1 after axis
     }
     out[axis] = axispos;
     return out;
-  }
-
- public:
-  SubGrid(Grid<base, N> &g, std::size_t a, std::size_t p) noexcept
-      : axis(a), axispos(p), grid(g) {}
-
-  template <typename... Inds>
-  base &operator()(Inds... inds) noexcept {
-    return grid(index(std::array<std::size_t, N - 1>{std::size_t(inds)...}));
-  }
-
-  template <typename... Inds>
-  const base &operator()(Inds... inds) const noexcept {
-    return grid(index(std::array<std::size_t, N - 1>{std::size_t(inds)...}));
-  }
-
-  base &operator[](std::size_t ind) noexcept {
-    static_assert(N == 2);
-    if (axis == 0)
-      return grid(axispos, ind);
-    else
-      return grid(ind, axispos);
-  }
-
-  const base &operator[](std::size_t ind) const noexcept {
-    static_assert(N == 2);
-    if (axis == 0)
-      return grid(axispos, ind);
-    else
-      return grid(ind, axispos);
-  }
-};
-
-template <typename base, std::size_t N>
-class ConstSubGrid {
-  const std::size_t axis;
-  const std::size_t axispos;
-  const Grid<base, N> &grid;
-
-  std::array<std::size_t, N> index(
-      std::array<std::size_t, N - 1> inds) const noexcept {
-    std::array<std::size_t, N> out;
-    for (std::size_t i = 0; i < N - 1; i++) {
-      out[i + (i >= axis)] = inds[i];  // at i before axis, at i+1 after axis
-    }
-    out[axis] = axispos;
-    return out;
-  }
-
- public:
-  ConstSubGrid(const Grid<base, N> &g, std::size_t a, std::size_t p) noexcept
-      : axis(a), axispos(p), grid(g) {}
-
-  template <typename... Inds>
-  const base &operator()(Inds... inds) const noexcept {
-    return grid(index(std::array<std::size_t, N - 1>{std::size_t(inds)...}));
-  }
-
-  const base &operator[](std::size_t ind) const noexcept {
-    static_assert(N == 2);
-    if (axis == 0)
-      return grid(axispos, ind);
-    else
-      return grid(ind, axispos);
   }
 };
 

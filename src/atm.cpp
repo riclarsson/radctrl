@@ -36,6 +36,64 @@ Point &Point::operator+=(const LazyPoint &x) noexcept {
   return *this;
 }
 
+struct LinearInterpPoint {
+  double w;  // Lower weight
+  size_t i;  // Lower index
+  LinearInterpPoint(double W, size_t I) noexcept : w(W), i(I) {}
+};
+struct AtmInterPoints {
+  LinearInterpPoint tid;
+  LinearInterpPoint alt;
+  LinearInterpPoint lat;
+  LinearInterpPoint lon;
+};
+
+AtmInterPoints forwardmap(
+  const std::vector<Time> & tid,
+  const Time newtid,
+  const std::vector<Altitude<AltitudeType::meter>> & alt,
+  const Altitude<AltitudeType::meter> newalt,
+  const std::vector<Coordinate<CoordinateType::lat>> & lat,
+  const Coordinate<CoordinateType::lat> newlat,
+  const std::vector<Coordinate<CoordinateType::lon>> & lon,
+  const Coordinate<CoordinateType::lon> newlon) noexcept {
+    auto tidpos = std::find_if(tid.cbegin(), tid.cend(), [newtid](auto a) {
+      return not(a < newtid) and not(a == newtid);
+    });
+    auto tidlow = (tidpos == tid.cbegin()) ? tid.cbegin() : tidpos - 1;
+    auto tidw = (tidpos == tid.cend())
+    ? 1.0
+    : Interp::weight(newtid.Seconds(), tidlow->Seconds(),
+                     tidpos->Seconds());
+    
+    auto altpos = std::find_if(alt.cbegin(), alt.cend(),
+                               [newalt](auto a) { return newalt <= a; });
+    auto altlow = (altpos == alt.cbegin()) ? alt.cbegin() : altpos - 1;
+    auto altw = (altpos == alt.cend())
+    ? 1.0
+    : Interp::weight(newalt, altlow->value(), altpos->value());
+    
+    auto latpos = std::find_if(lat.cbegin(), lat.cend(),
+                               [newlat](auto a) { return newlat <= a; });
+    auto latlow = (latpos == lat.cbegin()) ? lat.cbegin() : latpos - 1;
+    auto latw = (latpos == lat.cend())
+    ? 1.0
+    : Interp::weight(newlat, latlow->value(), latpos->value());
+    
+    auto lonpos = std::find_if(lon.cbegin(), lon.cend(),
+                               [newlon](auto a) { return newlon <= a; });
+    auto lonlow = (lonpos == lon.cbegin()) ? lon.cbegin() : lonpos - 1;
+    auto lonw = (lonpos == lon.cend())
+    ? 1.0
+    : Interp::weight(newlon, lonlow->value(), lonpos->value());
+    
+    return {
+      {tidw, size_t(tidlow - tid.cbegin())},
+      {altw, size_t(altlow - alt.cbegin())},
+      {latw, size_t(latlow - lat.cbegin())},
+      {lonw, size_t(lonlow - lon.cbegin())}};
+}
+
 Point Atm::operator()(Time newtid, Altitude<AltitudeType::meter> newalt,
                       Coordinate<CoordinateType::lat> newlat,
                       Coordinate<CoordinateType::lon> newlon) const {

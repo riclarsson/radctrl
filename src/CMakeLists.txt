@@ -177,6 +177,14 @@ target_link_libraries(forward PUBLIC absorption rte)
 ########################################################################################
 
 ########################################################################################
+# Cross-section library:  For computing cross-sections of any kind
+add_library (inverse STATIC
+             inverse.cpp
+             )
+target_link_libraries(inverse PUBLIC forward)
+########################################################################################
+
+########################################################################################
 # Radiative Transfer Library:  For equations and classes for computing the path and geometry
 add_library (rte STATIC
              rte.cpp
@@ -279,6 +287,12 @@ target_link_libraries(test_gui PUBLIC gui)
 # Test atmosphere pathing interface
 add_executable(test_atmpath test_atmpath.cpp)
 target_link_libraries(test_atmpath PUBLIC atmpath)
+########################################################################################
+
+########################################################################################
+# Test line shapes calculations
+add_executable(test_lineshapes test_lineshapes.cpp)
+target_link_libraries(test_lineshapes PUBLIC xsec_lbl)
 ########################################################################################
 
 ########################################################################################
