@@ -84,8 +84,12 @@ class Line {
   }
 
   Frequency<FrequencyType::Freq> F0() const noexcept { return f0; }
+  void F0(Frequency<FrequencyType::Freq> x) noexcept { f0 = x; }
   LineStrength<FrequencyType::Freq, AreaType::m2> I0() const noexcept {
     return i0;
+  }
+  void I0(LineStrength<FrequencyType::Freq, AreaType::m2> x) noexcept {
+    i0 = x;
   }
   Energy<EnergyType::Joule> E0() const noexcept { return e0; }
   Zeeman::Model Ze() const noexcept { return zeeman; }
@@ -136,6 +140,7 @@ class Line {
     return local_lower[i];
   }
   const LineShape::Model &ShapeModel() const noexcept { return lineshape; }
+  LineShape::Model &ShapeModel() noexcept { return lineshape; }
 
   friend void readBand(File::File<File::Operation::Read, File::Type::Xml> &file,
                        Band &band, const std::string &key);

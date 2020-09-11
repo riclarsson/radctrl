@@ -2,11 +2,50 @@
 #define inverse_h
 
 #include "atm.h"
-#include "forward.h"
 
 namespace RTE::Inverse {
-ENUMCLASS(BeamType, char, PencilBeam)
-ENUMCLASS(Stokes, char, Full, None)
+ENUMCLASS(BeamType, unsigned char, PencilBeam)
+
+struct Computations {
+  Eigen::MatrixXd J;  // Jacobian
+
+  Eigen::VectorXd y;  // Radiation vector
+  Eigen::VectorXd
+      x;  // A holder of currently optimal 'true' model input (in iterative
+          // solvers) or of the a priori contribution (in linear solvers)
+  Eigen::VectorXd x0;  // A priori estimation of 'true' model input
+
+  Eigen::MatrixXd Sy;   // Covariance matrix of radiation vector
+  Eigen::MatrixXd Sx0;  // Covariance matrix of a priori estimation
+
+  /** Covariance matrix */
+  auto S() const noexcept {
+    return (Sx0.inverse() + J.transpose() * Sy.inverse() * J).inverse();
+  }
+
+  /** Contribution matrix */
+  auto D() const noexcept { return S() * J.transpose() * Sy.inverse(); }
+
+  /** Averaging kernel */
+  auto A() const noexcept { return D() * J; }
+
+  /** Linear optimal estimation of 'true' model input */
+  auto xlin() const noexcept { return x + D() * y; }
+
+  Computations(Eigen::MatrixXd sy, Eigen::MatrixXd sx0, Eigen::VectorXd x)
+      : J(sy.cols(), sx0.cols()),
+        y(sy.cols()),
+        x0(std::move(x)),
+        Sy(std::move(sy)),
+        Sx0(std::move(sx0)) {
+    if (Sx0.cols() not_eq Sx0.rows() or Sy.cols() not_eq Sy.rows() or
+        x0.size() not_eq Sx0.rows()) {
+      std::cerr << "Non-square covariance matrices or bad a priori size\n";
+      std::terminate();
+    }
+    x = S() * Sx0.inverse() * x0;  //
+  }
+};
 
 struct ForwardConvolution {
   std::size_t ntid;
@@ -28,10 +67,10 @@ struct ForwardConvolution {
         rad(Eigen::VectorXd::Zero(stokes * nf)) {
     std::size_t nt = 0;
     for (auto& deriv : derivs) {
-      if (deriv == Derivative::Type::Atm) {
-        nt += natmdata();
-      } else {
+      if (deriv == Derivative::Type::Line) {
         nt += 1;
+      } else {
+        nt += natmdata();
       }
     }
 
@@ -49,36 +88,21 @@ struct ForwardConvolution {
   }
 };
 
-void map_to_jacobian(ForwardConvolution& res,
-                     const Forward::Results<1>& partres,
-                     const std::vector<Derivative::Target>& derivs,
-                     const std::vector<Atmosphere::InterPoints>& interp_weights,
-                     const double path_weight = 1);
+Eigen::VectorXd map_derivs_to_x(const Atmosphere::Atm& atm,
+                                const std::vector<Absorption::Band>& bands,
+                                const std::vector<Derivative::Target>& derivs);
 
-void map_to_jacobian(ForwardConvolution& res,
-                     const Forward::Results<2>& partres,
-                     const std::vector<Derivative::Target>& derivs,
-                     const std::vector<Atmosphere::InterPoints>& interp_weights,
-                     const double path_weight = 1);
-
-void map_to_jacobian(ForwardConvolution& res,
-                     const Forward::Results<3>& partres,
-                     const std::vector<Derivative::Target>& derivs,
-                     const std::vector<Atmosphere::InterPoints>& interp_weights,
-                     const double path_weight = 1);
-
-void map_to_jacobian(ForwardConvolution& res,
-                     const Forward::Results<4>& partres,
-                     const std::vector<Derivative::Target>& derivs,
-                     const std::vector<Atmosphere::InterPoints>& interp_weights,
-                     const double path_weight = 1);
+void set_input_from_x(Atmosphere::Atm& atm,
+                      std::vector<Absorption::Band>& bands,
+                      const std::vector<Derivative::Target>& derivs,
+                      const Eigen::VectorXd& x);
 
 ForwardConvolution compute_forward(
     const Atmosphere::Atm& atm, const Geom::Nav& pos_los,
     const std::vector<Absorption::Band>& bands,
     const std::vector<Derivative::Target>& derivs,
     const std::vector<Frequency<FrequencyType::Freq>>& sensor_f_grid,
-    const Stokes stokes_dimension, const BeamType beamtype);
+    const std::size_t stokes_dimension, const BeamType beamtype);
 };  // namespace RTE::Inverse
 
 #endif  // inverse_h

@@ -299,9 +299,13 @@ class Magnetism {
     return is >> m.M[0] >> m.M[1] >> m.M[2];
   }
 
-  constexpr double u() const { return M[0]; }
-  constexpr double v() const { return M[1]; }
-  constexpr double w() const { return M[2]; }
+  constexpr double u() const noexcept { return M[0]; }
+  constexpr double v() const noexcept { return M[1]; }
+  constexpr double w() const noexcept { return M[2]; }
+
+  double &u() noexcept { return M[0]; }
+  double &v() noexcept { return M[1]; }
+  double &w() noexcept { return M[2]; }
 };  // Magnetism
 
 template <WindType X>
@@ -338,9 +342,13 @@ class Wind {
     return is >> w.W[0] >> w.W[1] >> w.W[2];
   }
 
-  constexpr double u() const { return W[0]; }
-  constexpr double v() const { return W[1]; }
-  constexpr double w() const { return W[2]; }
+  constexpr double u() const noexcept { return W[0]; }
+  constexpr double v() const noexcept { return W[1]; }
+  constexpr double w() const noexcept { return W[2]; }
+
+  double &u() noexcept { return W[0]; }
+  double &v() noexcept { return W[1]; }
+  double &w() noexcept { return W[2]; }
 };  // Wind
 
 template <VMRType X>

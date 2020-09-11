@@ -7,7 +7,17 @@
 namespace Path {
 struct Point {
   Geom::Nav nav;
+  Atmosphere::InterPoints ip;
   Atmosphere::Point atm;
+
+  Point(
+      const Geom::Nav &n,
+      const std::pair<Atmosphere::InterPoints, Atmosphere::Point> &ipp) noexcept
+      : nav(n), ip(ipp.first), atm(ipp.second) {}
+
+  Point(const Geom::Nav &n, const Atmosphere::Point &p) noexcept
+      : nav(n), atm(p) {}
+
   friend std::ostream &operator<<(std::ostream &os, const Point &p) {
     return os << p.nav << ' ' << p.atm;
   }

@@ -1,3 +1,6 @@
+#ifndef rtehelpers_h
+#define rtehelpers_h
+
 #include "mathhelpers.h"
 #include "rte.h"
 
@@ -112,3 +115,5 @@ void to_planck(Grid<RadVec<N>, 2>& rad, Grid<RadVec<N>, 3>& jac,
   }
 }
 }  // namespace RTE
+
+#endif  // rtehelpers_h

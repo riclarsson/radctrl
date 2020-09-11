@@ -4128,6 +4128,8 @@ class Isotope {
     }
     return {};
   }
+
+  operator Species() const noexcept { return s; }
 };  // Isotope
 
 AtomInfo getAtomInfo(Atom x) noexcept;

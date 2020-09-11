@@ -53,7 +53,7 @@ std::vector<ComputedDerivData> process_derivatives(
   for (std::size_t i = 0; i < n; i++) {
     if (derivs[i] == Derivative::Atm::Temperature) {
       out[i].lso = lsmod.dT(T, T0, P, vmr);
-    } else if (derivs[i] == Derivative::Line::VMR) {
+    } else if (derivs[i] == Derivative::Atm::VMR) {
       out[i].lso = out[i].lso = lsmod.dVMR(T, T0, P, vmr, derivs[i].Species());
     }
     LINESHAPEDERIVATIVES(G0)
@@ -97,7 +97,7 @@ void compute_lineshape(std::vector<Complex> &comp_x,
           comp_dx[id][iv] = lm * ls.dFdf();  // WARNING: Not true derivative
         } else if (derivs[id].isMagnetism()) {
           comp_dx[id][iv] = lm * ls.dFdH(cdd[id].d);
-        } else if (derivs[id] == Derivative::Line::VMR and
+        } else if (derivs[id] == Derivative::Atm::VMR and
                    isnonzero(cdd[id].lso)) {
           comp_dx[id][iv] = lm * ls.dFdVMR(cdd[id].lso) +
                             linemixing_derivative(cdd[id].lso) * ls.F;
@@ -144,7 +144,7 @@ void compute_lineshape(std::vector<Complex> &comp_x,
             comp_dx[id][iv] -= lm * ls.dFdf();  // WARNING: Not true derivative
           } else if (derivs[id].isMagnetism()) {
             comp_dx[id][iv] -= lm * ls.dFdH(cdd[id].d);
-          } else if (derivs[id] == Derivative::Line::VMR and
+          } else if (derivs[id] == Derivative::Atm::VMR and
                      isnonzero(cdd[id].lso)) {
             comp_dx[id][iv] -= lm * ls.dFdVMR(cdd[id].lso) +
                                linemixing_derivative(cdd[id].lso) * ls.F;
@@ -198,7 +198,7 @@ void compute_mirrored_lineshape(
           comp_dx[id][iv] += lm * ls.dFdf();  // WARNING: Not true derivative
         } else if (derivs[id].isMagnetism()) {
           comp_dx[id][iv] += lm * ls.dFdH(cdd[id].d);
-        } else if (derivs[id] == Derivative::Line::VMR and
+        } else if (derivs[id] == Derivative::Atm::VMR and
                    isnonzero(cdd[id].lso)) {
           comp_dx[id][iv] += lm * ls.dFdVMR(cdd[id].lso) +
                              linemixing_derivative(cdd[id].lso) * ls.F;
@@ -240,7 +240,7 @@ void compute_mirrored_lineshape(
             comp_dx[id][iv] -= lm * ls.dFdf();  // WARNING: Not true derivative
           } else if (derivs[id].isMagnetism()) {
             comp_dx[id][iv] -= lm * ls.dFdH(cdd[id].d);
-          } else if (derivs[id] == Derivative::Line::VMR and
+          } else if (derivs[id] == Derivative::Atm::VMR and
                      isnonzero(cdd[id].lso)) {
             comp_dx[id][iv] -= lm * ls.dFdVMR(cdd[id].lso) +
                                linemixing_derivative(cdd[id].lso) * ls.F;

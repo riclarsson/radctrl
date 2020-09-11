@@ -64,23 +64,27 @@ class Point {
   Point &operator+=(const LazyPoint &x) noexcept;
 
   /** Fix that must be called after using any arithmetic */
-  void expP() { P = std::exp(P); }
+  void expP() noexcept { P = std::exp(P); }
 
-  Pressure<PressureType::Pa> Pres() const { return P; }
+  Pressure<PressureType::Pa> Pres() const noexcept { return P; }
 
-  Temperature<TemperatureType::K> Temp() const { return T; }
+  Temperature<TemperatureType::K> Temp() const noexcept { return T; }
 
-  void Temp(Temperature<TemperatureType::K> x) { T = x; }
+  void Temp(Temperature<TemperatureType::K> x) noexcept { T = x; }
 
-  Magnetism<MagnetismType::T> MagField() const { return M; }
+  Magnetism<MagnetismType::T> MagField() const noexcept { return M; }
 
-  Wind<WindType::meters_per_second> WindField() const { return W; }
+  Magnetism<MagnetismType::T> &MagField() noexcept { return M; }
+
+  Wind<WindType::meters_per_second> WindField() const noexcept { return W; }
+
+  Wind<WindType::meters_per_second> &WindField() noexcept { return W; }
 
   const std::vector<VMR<VMRType::ratio>> &VolumeMixingRatios() const {
     return vmr;
   }
 
-  double VolumeMixingRatio(Species::Isotope s) const {
+  double VolumeMixingRatio(Species::Isotope s) const noexcept {
     if (auto v = std::find_if(vmr.cbegin(), vmr.cend(),
                               [s](auto &v) { return v.isot() == s; });
         v == vmr.cend())
@@ -89,9 +93,24 @@ class Point {
       return v->value();
   }
 
+  void VolumeMixingRatio(Species::Isotope s, double vmrval) noexcept {
+    if (auto v = std::find_if(vmr.begin(), vmr.end(),
+                              [s](auto &v) { return v.isot() == s; });
+        v not_eq vmr.end())
+      v->value() = vmrval;
+  }
+
   std::pair<double, double> NonLTERatios(
-      std::pair<std::size_t, std::size_t> ids) const {
+      std::pair<std::size_t, std::size_t> ids) const noexcept {
     return {nlte[ids.first], nlte[ids.second]};
+  }
+
+  NLTE<NLTEType::ratio> NonLTERatio(std::size_t id) const noexcept {
+    return nlte[id];
+  }
+
+  NLTE<NLTEType::ratio> &NonLTERatio(std::size_t id) noexcept {
+    return nlte[id];
   }
 
   double NumberDensity() const noexcept {
@@ -307,6 +326,13 @@ struct InterPoints {
   LinearInterpPoint lat;
   LinearInterpPoint lon;
 
+  constexpr InterPoints() noexcept
+      : tid(0, 1), alt(0, 1), lat(0, 1), lon(0, 1) {}
+
+  constexpr InterPoints(LinearInterpPoint a, LinearInterpPoint b,
+                        LinearInterpPoint c, LinearInterpPoint d) noexcept
+      : tid(a), alt(b), lat(c), lon(d) {}
+
   struct Uses {
     double w;
     size_t itid;
@@ -444,8 +470,9 @@ class Atm {
   }
 
   template <typename Pos>
-  Point operator()(Pos pos) const {
-    return operator()(pos.t(), pos.h(), pos.lat(), pos.lon());
+  std::pair<InterPoints, Point> operator()(Pos pos) const {
+    auto ip = interpPoints(pos.t(), pos.h(), pos.lat(), pos.lon());
+    return {ip, operator()(ip)};
   }
 
   friend void saveAtm(File::File<File::Operation::Write, File::Type::Xml> &file,
