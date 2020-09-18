@@ -36,6 +36,8 @@ class RadVec {
     for (size_t i = 0; i < N; i++) b[i] = pm[i];
   }
 
+  static constexpr size_t size() noexcept { return N; }
+
   constexpr RadVec() noexcept {
     for (size_t i = 0; i < N; i++) b[i] = 0;
   }
@@ -295,40 +297,6 @@ constexpr RadVec<4> operator*(const TraMat<4> &T, const RadVec<4> &R) {
       R[0] * T(2, 0) + R[1] * T(2, 1) + R[2] * T(2, 2) + R[3] * T(2, 3),
       R[0] * T(3, 0) + R[1] * T(3, 1) + R[2] * T(3, 2) + R[3] * T(3, 3)};
 }
-
-ENUMCLASS(PolarizationType, unsigned char, I, Q, U, V, IpQ, ImQ, IpU, ImU, IpV,
-          ImV)
-
-template <size_t N>
-struct Polarization {
-  PolarizationType pol;
-  TraMat<N> rotation;
-
-  constexpr Polarization(
-      PolarizationType p,
-      [[maybe_unused]] Angle<AngleType::deg> circular_rotation = 0) noexcept
-      : pol(p) {
-    using Conversion::cosd;
-    using Conversion::sind;
-    if constexpr (N == 4) {
-      rotation(0, 0) = 1;
-      rotation(1, 1) = rotation(2, 2) = cosd(2 * circular_rotation);
-      rotation(1, 2) = -sind(2 * circular_rotation);
-      rotation(2, 1) = sind(2 * circular_rotation);
-      rotation(3, 3) = 1;
-    } else if constexpr (N == 3) {
-      rotation(0, 0) = 1;
-      rotation(1, 1) = rotation(2, 2) = cosd(2 * circular_rotation);
-      rotation(1, 2) = -sind(2 * circular_rotation);
-      rotation(2, 1) = sind(2 * circular_rotation);
-    } else if constexpr (N == 2) {
-      rotation(0, 0) = 1;
-      rotation(1, 1) = cosd(2 * circular_rotation);  // Destructive...
-    } else if constexpr (N == 2) {
-      rotation(0, 0) = 1;
-    }
-  }
-};
 
 /** Returns T (I - J) + J */
 template <size_t N>

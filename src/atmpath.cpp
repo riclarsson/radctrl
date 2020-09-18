@@ -21,13 +21,15 @@ std::vector<Point> calc_single_geometric_path(
   // The first position
   std::vector<Point> out;
   out.reserve(100);
-  out.push_back({nav, atm(pos)});
+  std::pair<Atmosphere::InterPoints, Atmosphere::Point> data = atm(pos);
+  out.push_back(Point{nav, data});
 
   // Move the position until we hit the surface or leave the atmosphere
   for (;;) {
     bool hit_surface = nav.move(dist);
     pos = nav.ellipsoidPos();
-    out.push_back({nav, atm(pos)});
+    data = atm(pos);
+    out.push_back({nav, data});
     if (hit_surface or pos.h() > alt_of_atm) break;
   }
 
@@ -37,7 +39,8 @@ std::vector<Point> calc_single_geometric_path(
   if (pos.h() > alt_of_atm) {
     nav.move(alt_of_atm, false);
     pos = nav.ellipsoidPos();
-    out.back() = {nav, atm(pos)};
+    data = atm(pos);
+    out.back() = Point{nav, data};
   }
 
   return out;

@@ -45,13 +45,34 @@ class Pos {
   std::array<double, 3> pos;
 
  public:
-  double r() const noexcept { return pos[0]; }
-  double h() const noexcept { return pos[0]; }
-  double lat() const noexcept { return pos[1]; }
-  double lon() const noexcept { return pos[2]; }
-  double x() const noexcept { return pos[0]; }
-  double y() const noexcept { return pos[1]; }
-  double z() const noexcept { return pos[2]; }
+  double r() const noexcept {
+    static_assert(T == PosType::Spherical);
+    return pos[0];
+  }
+  double h() const noexcept {
+    static_assert(T == PosType::Ellipsoidal);
+    return pos[0];
+  }
+  double lat() const noexcept {
+    static_assert(T == PosType::Spherical or T == PosType::Ellipsoidal);
+    return pos[1];
+  }
+  double lon() const noexcept {
+    static_assert(T == PosType::Spherical or T == PosType::Ellipsoidal);
+    return pos[2];
+  }
+  double x() const noexcept {
+    static_assert(T == PosType::Xyz);
+    return pos[0];
+  }
+  double y() const noexcept {
+    static_assert(T == PosType::Xyz);
+    return pos[1];
+  }
+  double z() const noexcept {
+    static_assert(T == PosType::Xyz);
+    return pos[2];
+  }
   Time t() const noexcept { return time; }
   std::array<double, 3> arr() const noexcept { return pos; }
 
@@ -72,21 +93,21 @@ class Pos {
     using Conversion::atan2d;
     using Conversion::cosd;
     using Conversion::sind;
-    if (T == P) {
-    } else if (T == PosType::Xyz and P == PosType::Spherical) {
+    if constexpr (T == P) {
+    } else if constexpr (T == PosType::Xyz and P == PosType::Spherical) {
       pos[0] = p.r() * cosd(p.lat()) * cosd(p.lon());
       pos[1] = p.r() * cosd(p.lat()) * sind(p.lon());
       pos[2] = p.r() * sind(p.lat());
-    } else if (T == PosType::Xyz and P == PosType::Ellipsoidal) {
+    } else if constexpr (T == PosType::Xyz and P == PosType::Ellipsoidal) {
       const double N = ell.N(p.lat());
       pos[0] = (N + p.h()) * cosd(p.lon()) * cosd(p.lat());
       pos[1] = (N + p.h()) * sind(p.lon()) * cosd(p.lat());
       pos[2] = (N * (1 - pow2(ell.e())) + p.h()) * sind(p.lat());
-    } else if (T == PosType::Spherical and P == PosType::Xyz) {
+    } else if constexpr (T == PosType::Spherical and P == PosType::Xyz) {
       pos[0] = std::hypot(p.z(), p.y(), p.x());
       pos[1] = asind(p.z() / r());
       pos[2] = atan2d(p.y(), p.x());
-    } else if (T == PosType::Ellipsoidal and P == PosType::Xyz) {
+    } else if constexpr (T == PosType::Ellipsoidal and P == PosType::Xyz) {
       // Following Zeng: "Explicitly computing geodetic coordinates from
       // Cartesian coordinates", EPS 65, 291-296 (2013)
       const double X = p.x();
@@ -141,9 +162,9 @@ class Pos {
     return is >> p.time >> p.pos[0] >> p.pos[1] >> p.pos[2];
   }
 
-  Pos(Pos a, Pos b, Ellipsoid ell) noexcept
+  Pos(Pos a, Pos b, [[maybe_unused]] Ellipsoid ell) noexcept
       : time(a.time), pos({a.x() + b.x(), a.y() + b.y(), a.z() + b.z()}) {
-    if (T == PosType::Xyz) {
+    if constexpr (T == PosType::Xyz) {
     } else {
       *this = Pos<T>(Pos<PosType::Xyz>(Pos<PosType::Xyz>(a, ell),
                                        Pos<PosType::Xyz>(b, ell), ell),
@@ -168,12 +189,30 @@ class Los {
   std::array<double, 3> los;
 
  public:
-  constexpr double dx() const noexcept { return los[0]; }
-  constexpr double dy() const noexcept { return los[1]; }
-  constexpr double dz() const noexcept { return los[2]; }
-  constexpr double za() const noexcept { return los[0]; }
-  constexpr double aa() const noexcept { return los[1]; }
-  constexpr double dr() const noexcept { return los[2]; }
+  constexpr double dx() const noexcept {
+    static_assert(T == LosType::Xyz);
+    return los[0];
+  }
+  constexpr double dy() const noexcept {
+    static_assert(T == LosType::Xyz);
+    return los[1];
+  }
+  constexpr double dz() const noexcept {
+    static_assert(T == LosType::Xyz);
+    return los[2];
+  }
+  constexpr double za() const noexcept {
+    static_assert(T == LosType::Spherical);
+    return los[0];
+  }
+  constexpr double aa() const noexcept {
+    static_assert(T == LosType::Spherical);
+    return los[1];
+  }
+  constexpr double dr() const noexcept {
+    static_assert(T == LosType::Spherical);
+    return los[2];
+  }
   std::array<double, 3> arr() const noexcept { return los; }
 
   constexpr Los() noexcept : los({0, 0, 0}) {}
@@ -184,16 +223,18 @@ class Los {
   constexpr Los(std::array<double, 3> l) noexcept : los(l) {}
 
   template <LosType L, PosType P>
-  Los(Los<L> l, Pos<P> p, Ellipsoid ell) noexcept : los(l.arr()) {
+  Los(Los<L> l, [[maybe_unused]] Pos<P> p,
+      [[maybe_unused]] Ellipsoid ell) noexcept
+      : los(l.arr()) {
     using Conversion::acosd;
     using Conversion::asind;
     using Conversion::cosd;
     using Conversion::sind;
     using std::abs;
 
-    if (T == L) {
-    } else if (T == LosType::Spherical and L == LosType::Xyz and
-               P == PosType::Spherical) {
+    if constexpr (T == L) {
+    } else if constexpr (T == LosType::Spherical and L == LosType::Xyz and
+                         P == PosType::Spherical) {
       const auto norm = l.norm();
 
       const auto r = p.r();
@@ -222,8 +263,8 @@ class Los {
       } else if (dlon < 0) {
         los[1] = -los[1];
       }
-    } else if (T == LosType::Xyz and L == LosType::Spherical and
-               P == PosType::Spherical) {
+    } else if constexpr (T == LosType::Xyz and L == LosType::Spherical and
+                         P == PosType::Spherical) {
       const auto norm = l.norm();
       const auto sza = sind(l.za());
       const auto cza = cosd(l.za());
@@ -253,11 +294,12 @@ class Los {
   }
 
   constexpr double norm2() const noexcept {
-    if (T == LosType::Spherical)
+    if constexpr (T == LosType::Spherical)
       return Constant::pow2(dr());
-    else if (T == LosType::Xyz)
+    else if constexpr (T == LosType::Xyz)
       return Constant::pow2(dx()) + Constant::pow2(dy()) + Constant::pow2(dz());
   }
+
   double norm() const noexcept { return std::sqrt(norm2()); }
 
   friend std::ostream &operator<<(std::ostream &os, Los l) {
@@ -269,27 +311,42 @@ class Los {
   }
 
   friend constexpr Los operator*(double x, Los l) {
-    if (T == LosType::Xyz) {
+    if constexpr (T == LosType::Xyz) {
       return Los({l.dx() * x, l.dy() * x, l.dz() * x});
-    } else if (T == LosType::Spherical) {
+    } else if constexpr (T == LosType::Spherical) {
       return Los({l.za(), l.aa(), l.dr() * x});
     }
   }
 
   operator Pos<PosType::Xyz>() const {
-    if (T == LosType::Xyz)
+    if constexpr (T == LosType::Xyz)
       return Pos<PosType::Xyz>{los};
-    else if (T == LosType::Spherical)
+    else if constexpr (T == LosType::Spherical)
       throw std::runtime_error("not yet supported");
   }
 
   Los operator-() const noexcept {
-    if (T == LosType::Xyz)
+    if constexpr (T == LosType::Xyz)
       return Los({-dx(), -dy(), -dz()});
-    else if (T == LosType::Spherical)
+    else if constexpr (T == LosType::Spherical)
       return Los({180 - za(), 360 - aa(), dr()});
   }
+
+  Los normalize() const noexcept {
+    if constexpr (T == LosType::Xyz) {
+      const auto normalization_fac = norm();
+      return std::array<double, 3>{dx() / normalization_fac,
+                                   dy() / normalization_fac,
+                                   dz() / normalization_fac};
+    } else if constexpr (T == LosType::Spherical) {
+      return std::array<double, 3>{za(), aa(), 1};
+    }
+  }
 };
+
+/* returns b rotated around a by angle degrees */
+Los<LosType::Xyz> rotate(const Los<LosType::Xyz> a, const Los<LosType::Xyz> b,
+                         const double angle);
 
 class Nav {
   enum class HitTarget : char { PlusX, MinusX, PlusY, MinusY, PlusZ, MinusZ };
@@ -451,6 +508,21 @@ class Nav {
   Nav(const Nav &old, Distance<DistanceType::meter> d) noexcept
       : pos(old.pos), los(old.los), ell(old.ell) {
     move(d);
+  }
+
+  Nav(const Nav &old, double zenith_offset, double angle_rotation) noexcept
+      : pos(old.pos), los(old.los), ell(old.ell) {
+    const auto l_target = old.sphericalLos();
+    const auto dr = l_target.dr();
+    const auto l_new =
+        rotate(old.los.normalize(),
+               Los<LosType::Xyz>(
+                   Los<LosType::Spherical>{
+                       {l_target.za() + zenith_offset, l_target.aa(), 1}},
+                   pos, ell),
+               angle_rotation);
+    los = std::array<double, 3>{l_new.dx() * dr, l_new.dy() * dr,
+                                l_new.dz() * dr};
   }
 
   bool move(Altitude<AltitudeType::meter> alt, bool forward_first = true) {

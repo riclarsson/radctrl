@@ -19,7 +19,7 @@ struct Point {
       : nav(n), atm(p) {}
 
   friend std::ostream &operator<<(std::ostream &os, const Point &p) {
-    return os << p.nav << ' ' << p.atm;
+    return os << p.nav << ' ' << p.ip << ' ' << p.atm;
   }
 
   double DopplerShiftRatio() const noexcept {

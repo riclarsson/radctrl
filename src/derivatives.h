@@ -330,7 +330,7 @@ class Target {
   }
 
   Atm AtmType() const noexcept {
-    [[unlikely]] if (mtype != Type::Atm) {
+    if (mtype != Type::Atm) {
       std::cerr << "Bad access of atm type\n";
       std::terminate();
     }
@@ -338,7 +338,7 @@ class Target {
   }
 
   Line LineType() const noexcept {
-    [[unlikely]] if (mtype != Type::Line) {
+    if (mtype != Type::Line) {
       std::cerr << "Bad access of line type\n";
       std::terminate();
     }

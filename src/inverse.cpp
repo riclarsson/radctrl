@@ -5,49 +5,6 @@
 #include "forward.h"
 
 namespace RTE::Inverse {
-template <std::size_t N>
-void convolve_forward_simulation(
-    ForwardConvolution& res, const Forward::Results<N>& partres,
-    const std::vector<Derivative::Target>& derivs,
-    const std::vector<Atmosphere::InterPoints>& interp_weights,
-    const double path_weight) {
-  const std::size_t np = partres.x.sizes()[0];
-  const std::size_t nf = partres.x.sizes()[1];
-  const std::size_t nt = derivs.size();
-
-  std::size_t NT0 = 0;
-  for (std::size_t ip = 0; ip < np; ip++) {
-    auto weights = interp_weights[ip].Weights();
-
-    for (std::size_t it = 0; it < nt; it++) {
-      for (std::size_t iv = 0; iv < nf; iv++) {
-        // Path-weighted radiation derivative vector
-        const RadVec<N> this_val = path_weight * partres.dx(it, ip, iv);
-        for (std::size_t is = 0; is < N; is++) {
-          for (auto& iw : weights) {
-            // Add if there is weight... note that 0 weight might mean out of
-            // bound index.
-            if (iw.w not_eq 0) {
-              res.jac(iv * N + is,
-                      NT0 + res.iatmdata(iw.itid, iw.ialt, iw.ilat, iw.ilon)) +=
-                  iw.w * this_val[is];
-            }
-          }
-        }
-      }
-
-      // Move derivative pointer
-      NT0 += (derivs[it] == Derivative::Type::Line) ? 1 : res.natmdata();
-    }
-  }
-
-  auto ypart = partres.sensor_results();
-  for (std::size_t iv = 0; iv < nf; iv++) {
-    for (std::size_t is = 0; is < N; is++) {
-      res.rad[iv] += path_weight * ypart[iv][is];
-    }
-  }
-}
 
 #define ATMVARSETTEREXEC(ACCESSOPERATION)                  \
   for (size_t itid = 0; itid < atm.ntid(); itid++) {       \
@@ -127,15 +84,16 @@ void convolve_forward_simulation(
     }                                                               \
     break
 
-size_t size_of_x(const std::vector<Derivative::Target>& derivs, size_t natm) {
+size_t size_of_x(const std::vector<Derivative::Target>& derivs,
+                 const std::size_t natm) {
   size_t nt = 0;
   for (auto& d : derivs) nt += (d == Derivative::Type::Line ? 1 : natm);
   return nt;
 }
 
-Eigen::VectorXd map_derivs_to_x(const Atmosphere::Atm& atm,
-                                const std::vector<Absorption::Band>& bands,
-                                const std::vector<Derivative::Target>& derivs) {
+Eigen::VectorXd map_input_to_x(const Atmosphere::Atm& atm,
+                               const std::vector<Absorption::Band>& bands,
+                               const std::vector<Derivative::Target>& derivs) {
   const size_t natm = atm.ntid() * atm.nalt() * atm.nlat() * atm.nlon();
   Eigen::VectorXd out(size_of_x(derivs, natm));
 
@@ -356,76 +314,34 @@ void set_input_from_x(Atmosphere::Atm& atm,
 #undef ATMVARSETTEREXEC
 #undef SHAPEVALSETTER
 
-ForwardConvolution compute_forward(
-    const Atmosphere::Atm& atm, const Geom::Nav& pos_los,
-    const std::vector<Absorption::Band>& bands,
-    const std::vector<Derivative::Target>& derivs,
-    const std::vector<Frequency<FrequencyType::Freq>>& sensor_f_grid,
-    const std::size_t stokes_dimension, const BeamType beamtype) {
-  ForwardConvolution out(sensor_f_grid.size(), stokes_dimension, atm, derivs);
+Results compute(Atmosphere::Atm& atm, std::vector<Absorption::Band>& bands,
+                const Geom::Nav& pos_los,
+                const std::vector<Derivative::Target>& derivs,
+                const Sensor::Properties& sensor_prop,
+                const Distance<DistanceType::meter> layer_thickness,
+                const Eigen::MatrixXd& sy, const Eigen::MatrixXd& sx,
+                const Eigen::VectorXd& y, const Eigen::VectorXd& x0) {
+  Results out;
 
-  std::vector<std::pair<std::vector<Path::Point>, double>> paths;
-  switch (beamtype) {
-    case BeamType::PencilBeam:
-      paths = {std::pair<std::vector<Path::Point>, double>{
-          Path::calc_single_geometric_path(pos_los, atm, 1e3, 90e3), 1}};
-      break;
-    case BeamType::FINAL: { /* Leave last */
-    }
-  }
+  Computations comp(ComputationsType::Linear, sy, sx, x0, y);
 
-  // Compute and convolve all the different paths (stokes dim must be compiled
-  // separately)
-  for (auto& [path, path_weight] : paths) {
-    if (stokes_dimension == 4) {
-      const auto rad0 = RTE::source_vec_planck<4>(
-          path.front().atm.Temp(),
-          sensor_f_grid);  // FIXME: COMPUTE INITIAL RADIATION BETTER!
-      auto forward_results =
-          Forward::compute(rad0, sensor_f_grid, derivs, bands, path);
-      std::vector<Atmosphere::InterPoints> interp_weights(path.size());
-      std::transform(path.cbegin(), path.cend(), interp_weights.begin(),
-                     [](auto& p) { return p.ip; });
-      convolve_forward_simulation(out, forward_results, derivs, interp_weights,
-                                  path_weight);
-    } else if (stokes_dimension == 3) {
-      const auto rad0 = RTE::source_vec_planck<3>(
-          path.front().atm.Temp(),
-          sensor_f_grid);  // FIXME: COMPUTE INITIAL RADIATION BETTER!
-      auto forward_results =
-          Forward::compute(rad0, sensor_f_grid, derivs, bands, path);
-      std::vector<Atmosphere::InterPoints> interp_weights(path.size());
-      std::transform(path.cbegin(), path.cend(), interp_weights.begin(),
-                     [](auto& p) { return p.ip; });
-      convolve_forward_simulation(out, forward_results, derivs, interp_weights,
-                                  path_weight);
-    } else if (stokes_dimension == 2) {
-      const auto rad0 = RTE::source_vec_planck<2>(
-          path.front().atm.Temp(),
-          sensor_f_grid);  // FIXME: COMPUTE INITIAL RADIATION BETTER!
-      auto forward_results =
-          Forward::compute(rad0, sensor_f_grid, derivs, bands, path);
-      std::vector<Atmosphere::InterPoints> interp_weights(path.size());
-      std::transform(path.cbegin(), path.cend(), interp_weights.begin(),
-                     [](auto& p) { return p.ip; });
-      convolve_forward_simulation(out, forward_results, derivs, interp_weights,
-                                  path_weight);
-    } else if (stokes_dimension == 1) {
-      const auto rad0 = RTE::source_vec_planck<1>(
-          path.front().atm.Temp(),
-          sensor_f_grid);  // FIXME: COMPUTE INITIAL RADIATION BETTER!
-      auto forward_results =
-          Forward::compute(rad0, sensor_f_grid, derivs, bands, path);
-      std::vector<Atmosphere::InterPoints> interp_weights(path.size());
-      std::transform(path.cbegin(), path.cend(), interp_weights.begin(),
-                     [](auto& p) { return p.ip; });
-      convolve_forward_simulation(out, forward_results, derivs, interp_weights,
-                                  path_weight);
-    } else {
-      std::cerr << "Bad Stokes Dim\n";
-      std::terminate();
-    }
-  }
+  do {
+    const RTE::Forward::Convolution forward = RTE::Forward::compute_convolution(
+        atm, pos_los, bands, derivs, sensor_prop, layer_thickness);
+    comp.fx.noalias() = forward.rad;
+    comp.J.noalias() = forward.jac;
+    set_input_from_x(atm, bands, derivs, comp.update_x());
+  } while (not comp.is_done());
+
+  out.y = y;
+  out.x = map_input_to_x(atm, bands, derivs);
+  out.fx = comp.fx;
+  out.J = comp.J;
+  out.S = comp.S();
+  out.D = comp.D();
+  out.A = comp.A();
+
+  // FIXME: Add Sensor Errors
 
   return out;
 }

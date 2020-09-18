@@ -9,6 +9,7 @@
 #include "enums.h"
 #include "file.h"
 #include "grids.h"
+#include "mathhelpers.h"
 #include "species.h"
 #include "timeclass.h"
 #include "units.h"
@@ -40,10 +41,17 @@ class Point {
     for (size_t i = 0; i < s.size(); i++) vmr[i].isot(s[i]);
   }
 
-  Point(Point &&ap) = default;
-  Point(const Point &ap) = default;
-  Point &operator=(const Point &ap) = default;
-  Point &operator=(Point &&ap) = default;
+  Point(const Point &ap) noexcept
+      : P(ap.P), T(ap.T), M(ap.M), W(ap.W), vmr(ap.vmr), nlte(ap.nlte) {}
+  Point &operator=(const Point &ap) noexcept {
+    P = ap.P;
+    T = ap.T;
+    M = ap.M;
+    W = ap.W;
+    vmr = ap.vmr;
+    nlte = ap.nlte;
+    return *this;
+  }
 
   decltype(vmr)::size_type size() const { return vmr.size(); }
 
@@ -314,68 +322,179 @@ class LazyPoint {
   }
 };  // LazyPoint
 
-struct LinearInterpPoint {
+class LinearInterpPoint {
   double w;  // Lower weight
   size_t i;  // Lower index
-  constexpr LinearInterpPoint(double W, size_t I) noexcept : w(W), i(I) {}
+ public:
+  constexpr LinearInterpPoint(double W = 1, size_t I = 0) noexcept
+      : w(W), i(I) {}
+  constexpr LinearInterpPoint(const LinearInterpPoint &lip) noexcept
+      : w(lip.w), i(lip.i) {}
+  constexpr LinearInterpPoint &operator=(
+      const LinearInterpPoint &lip) noexcept {
+    w = lip.w;
+    i = lip.i;
+    return *this;
+  }
+  friend std::ostream &operator<<(std::ostream &os,
+                                  const LinearInterpPoint &lip) {
+    return os << lip.w << ' ' << lip.i;
+  }
+  constexpr double weight() const noexcept { return w; }
+  constexpr size_t index() const noexcept { return i; }
 };
 
-struct InterPoints {
+class InterPoints {
   LinearInterpPoint tid;
   LinearInterpPoint alt;
   LinearInterpPoint lat;
   LinearInterpPoint lon;
 
+ public:
   constexpr InterPoints() noexcept
-      : tid(0, 1), alt(0, 1), lat(0, 1), lon(0, 1) {}
+      : tid(1, 0), alt(1, 0), lat(1, 0), lon(1, 0) {}
 
-  constexpr InterPoints(LinearInterpPoint a, LinearInterpPoint b,
-                        LinearInterpPoint c, LinearInterpPoint d) noexcept
-      : tid(a), alt(b), lat(c), lon(d) {}
+  constexpr InterPoints(LinearInterpPoint time, LinearInterpPoint altitude,
+                        LinearInterpPoint latitude,
+                        LinearInterpPoint longitude) noexcept
+      : tid(time), alt(altitude), lat(latitude), lon(longitude) {}
 
-  struct Uses {
+  constexpr InterPoints(const InterPoints &ip) noexcept
+      : tid(ip.tid), alt(ip.alt), lat(ip.lat), lon(ip.lon) {}
+
+  constexpr InterPoints &operator=(const InterPoints &ip) noexcept {
+    tid = ip.tid;
+    alt = ip.alt;
+    lat = ip.lat;
+    lon = ip.lon;
+    return *this;
+  }
+
+  class Uses {
     double w;
     size_t itid;
     size_t ialt;
     size_t ilat;
     size_t ilon;
+
+   public:
+    constexpr Uses(double W = 1, size_t ti = 0, size_t al = 0, size_t la = 0,
+                   size_t lo = 0) noexcept
+        : w(W), itid(ti), ialt(al), ilat(la), ilon(lo) {}
+    friend std::ostream &operator<<(std::ostream &os, const Uses &u) {
+      return os << u.w << ' ' << u.itid << ' ' << u.ialt << ' ' << u.ilat << ' '
+                << u.ilon;
+    }
+    constexpr Uses(Uses &&u) noexcept
+        : w(u.w), itid(u.itid), ialt(u.ialt), ilat(u.ilat), ilon(u.ilon) {}
+    constexpr Uses(const Uses &u) noexcept
+        : w(u.w), itid(u.itid), ialt(u.ialt), ilat(u.ilat), ilon(u.ilon) {}
+    constexpr Uses &operator=(const Uses &u) noexcept {
+      w = u.w;
+      itid = u.itid;
+      ialt = u.ialt;
+      ilat = u.ilat;
+      ilon = u.ilon;
+      return *this;
+    }
+    constexpr double weight() const noexcept { return w; }
+    constexpr size_t tid() const noexcept { return itid; }
+    constexpr size_t alt() const noexcept { return ialt; }
+    constexpr size_t lat() const noexcept { return ilat; }
+    constexpr size_t lon() const noexcept { return ilon; }
   };
 
-  constexpr std::array<Uses, 16> Weights() const noexcept {
-    return {
-        Uses{(0 + tid.w) * (0 + alt.w) * (0 + lat.w) * (0 + lon.w), tid.i + 0,
-             alt.i + 0, lat.i + 0, lon.i + 0},
-        Uses{(0 + tid.w) * (0 + alt.w) * (0 + lat.w) * (1 - lon.w), tid.i + 0,
-             alt.i + 0, lat.i + 0, lon.i + 1},
-        Uses{(0 + tid.w) * (0 + alt.w) * (1 - lat.w) * (0 + lon.w), tid.i + 0,
-             alt.i + 0, lat.i + 1, lon.i + 0},
-        Uses{(0 + tid.w) * (0 + alt.w) * (1 - lat.w) * (1 - lon.w), tid.i + 0,
-             alt.i + 0, lat.i + 1, lon.i + 1},
-        Uses{(0 + tid.w) * (1 - alt.w) * (0 + lat.w) * (0 + lon.w), tid.i + 0,
-             alt.i + 1, lat.i + 0, lon.i + 0},
-        Uses{(0 + tid.w) * (1 - alt.w) * (0 + lat.w) * (1 - lon.w), tid.i + 0,
-             alt.i + 1, lat.i + 0, lon.i + 1},
-        Uses{(0 + tid.w) * (1 - alt.w) * (1 - lat.w) * (0 + lon.w), tid.i + 0,
-             alt.i + 1, lat.i + 1, lon.i + 0},
-        Uses{(0 + tid.w) * (1 - alt.w) * (1 - lat.w) * (1 - lon.w), tid.i + 0,
-             alt.i + 1, lat.i + 1, lon.i + 1},
-        Uses{(1 - tid.w) * (0 + alt.w) * (0 + lat.w) * (0 + lon.w), tid.i + 1,
-             alt.i + 0, lat.i + 0, lon.i + 0},
-        Uses{(1 - tid.w) * (0 + alt.w) * (0 + lat.w) * (1 - lon.w), tid.i + 1,
-             alt.i + 0, lat.i + 0, lon.i + 1},
-        Uses{(1 - tid.w) * (0 + alt.w) * (1 - lat.w) * (0 + lon.w), tid.i + 1,
-             alt.i + 0, lat.i + 1, lon.i + 0},
-        Uses{(1 - tid.w) * (0 + alt.w) * (1 - lat.w) * (1 - lon.w), tid.i + 1,
-             alt.i + 0, lat.i + 1, lon.i + 1},
-        Uses{(1 - tid.w) * (1 - alt.w) * (0 + lat.w) * (0 + lon.w), tid.i + 1,
-             alt.i + 1, lat.i + 0, lon.i + 0},
-        Uses{(1 - tid.w) * (1 - alt.w) * (0 + lat.w) * (1 - lon.w), tid.i + 1,
-             alt.i + 1, lat.i + 0, lon.i + 1},
-        Uses{(1 - tid.w) * (1 - alt.w) * (1 - lat.w) * (0 + lon.w), tid.i + 1,
-             alt.i + 1, lat.i + 1, lon.i + 0},
-        Uses{(1 - tid.w) * (1 - alt.w) * (1 - lat.w) * (1 - lon.w), tid.i + 1,
-             alt.i + 1, lat.i + 1, lon.i + 1},
-    };
+  class Output {
+    std::array<InterPoints::Uses, 16> data;
+
+   public:
+    constexpr InterPoints::Uses operator[](const size_t i) const noexcept {
+      return data[i];
+    }
+    static constexpr size_t size() noexcept { return 16; }
+    friend std::ostream &operator<<(std::ostream &os, const Output &o) {
+      os << o.data[0];
+      for (size_t i = 1; i < o.size(); i++) os << '\n' << o.data[i];
+      return os;
+    }
+    constexpr Output(decltype(data) d) noexcept {
+      for (size_t i = 0; i < size(); i++) data[i] = d[i];
+    }
+    constexpr Output() noexcept {
+      for (auto &x : data) x = InterPoints::Uses();
+    }
+  };
+
+  constexpr Output Weights() const noexcept {
+    return Output(std::array<Uses, Output::size()>(
+        {Uses((0 + tid.weight()) * (0 + alt.weight()) * (0 + lat.weight()) *
+                  (0 + lon.weight()),
+              tid.index() + 0, alt.index() + 0, lat.index() + 0,
+              lon.index() + 0),
+         Uses((0 + tid.weight()) * (0 + alt.weight()) * (0 + lat.weight()) *
+                  (1 - lon.weight()),
+              tid.index() + 0, alt.index() + 0, lat.index() + 0,
+              lon.index() + 1),
+         Uses((0 + tid.weight()) * (0 + alt.weight()) * (1 - lat.weight()) *
+                  (0 + lon.weight()),
+              tid.index() + 0, alt.index() + 0, lat.index() + 1,
+              lon.index() + 0),
+         Uses((0 + tid.weight()) * (0 + alt.weight()) * (1 - lat.weight()) *
+                  (1 - lon.weight()),
+              tid.index() + 0, alt.index() + 0, lat.index() + 1,
+              lon.index() + 1),
+         Uses((0 + tid.weight()) * (1 - alt.weight()) * (0 + lat.weight()) *
+                  (0 + lon.weight()),
+              tid.index() + 0, alt.index() + 1, lat.index() + 0,
+              lon.index() + 0),
+         Uses((0 + tid.weight()) * (1 - alt.weight()) * (0 + lat.weight()) *
+                  (1 - lon.weight()),
+              tid.index() + 0, alt.index() + 1, lat.index() + 0,
+              lon.index() + 1),
+         Uses((0 + tid.weight()) * (1 - alt.weight()) * (1 - lat.weight()) *
+                  (0 + lon.weight()),
+              tid.index() + 0, alt.index() + 1, lat.index() + 1,
+              lon.index() + 0),
+         Uses((0 + tid.weight()) * (1 - alt.weight()) * (1 - lat.weight()) *
+                  (1 - lon.weight()),
+              tid.index() + 0, alt.index() + 1, lat.index() + 1,
+              lon.index() + 1),
+         Uses((1 - tid.weight()) * (0 + alt.weight()) * (0 + lat.weight()) *
+                  (0 + lon.weight()),
+              tid.index() + 1, alt.index() + 0, lat.index() + 0,
+              lon.index() + 0),
+         Uses((1 - tid.weight()) * (0 + alt.weight()) * (0 + lat.weight()) *
+                  (1 - lon.weight()),
+              tid.index() + 1, alt.index() + 0, lat.index() + 0,
+              lon.index() + 1),
+         Uses((1 - tid.weight()) * (0 + alt.weight()) * (1 - lat.weight()) *
+                  (0 + lon.weight()),
+              tid.index() + 1, alt.index() + 0, lat.index() + 1,
+              lon.index() + 0),
+         Uses((1 - tid.weight()) * (0 + alt.weight()) * (1 - lat.weight()) *
+                  (1 - lon.weight()),
+              tid.index() + 1, alt.index() + 0, lat.index() + 1,
+              lon.index() + 1),
+         Uses((1 - tid.weight()) * (1 - alt.weight()) * (0 + lat.weight()) *
+                  (0 + lon.weight()),
+              tid.index() + 1, alt.index() + 1, lat.index() + 0,
+              lon.index() + 0),
+         Uses((1 - tid.weight()) * (1 - alt.weight()) * (0 + lat.weight()) *
+                  (1 - lon.weight()),
+              tid.index() + 1, alt.index() + 1, lat.index() + 0,
+              lon.index() + 1),
+         Uses((1 - tid.weight()) * (1 - alt.weight()) * (1 - lat.weight()) *
+                  (0 + lon.weight()),
+              tid.index() + 1, alt.index() + 1, lat.index() + 1,
+              lon.index() + 0),
+         Uses((1 - tid.weight()) * (1 - alt.weight()) * (1 - lat.weight()) *
+                  (1 - lon.weight()),
+              tid.index() + 1, alt.index() + 1, lat.index() + 1,
+              lon.index() + 1)}));
+  }
+
+  friend std::ostream &operator<<(std::ostream &os, const InterPoints &ip) {
+    return os << ip.tid << ' ' << ip.alt << ' ' << ip.lat << ' ' << ip.lon;
   }
 };
 
@@ -455,7 +574,7 @@ class Atm {
     return data(i, j, k, m);
   }
 
-  Point operator()(InterPoints aip) const noexcept;
+  Point operator()(const InterPoints &aip) const noexcept;
 
   InterPoints interpPoints(
       const Time newtid, const Altitude<AltitudeType::meter> newalt,
@@ -644,6 +763,8 @@ class Atm {
 
     file.leave_child();
   }
+
+  Altitude<AltitudeType::meter> max_alt() const noexcept { return max(alt); }
 };  // Atm
 }  // namespace Atmosphere
 

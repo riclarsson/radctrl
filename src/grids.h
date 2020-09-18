@@ -113,7 +113,7 @@ class Grid {
     for (std::size_t i{N - 2}; i < N; i--) {
       pos += posmul * ind[i];
       posmul *= gridsize[i];
-      [[unlikely]] if (ind[i] >= gridsize[i]) {
+      if (ind[i] >= gridsize[i]) {
         std::cerr << "Out of range\n";
         std::terminate();
       }

@@ -1,6 +1,8 @@
 #ifndef forward_h
 #define forward_h
 
+#include "antenna.h"
+#include "enums.h"
 #include "grids.h"
 #include "jacobian.h"
 #include "rtehelpers.h"
@@ -62,6 +64,67 @@ Results<4> compute(const std::vector<RadVec<4>>& rad0,
                    const std::vector<Derivative::Target>& targets,
                    const std::vector<Absorption::Band>& bands,
                    const std::vector<Path::Point>& path);
+
+inline std::size_t num_derivs(const std::vector<Derivative::Target>& derivs,
+                              std::size_t n) noexcept {
+  std::size_t nderivs = 0;
+  for (auto& deriv : derivs) {
+    if (deriv == Derivative::Type::Line) {
+      nderivs += 1;
+    } else {
+      nderivs += n;
+    }
+  }
+  return nderivs;
+}
+
+struct Convolution {
+  std::size_t ntid;
+  std::size_t nalt;
+  std::size_t nlat;
+  std::size_t nlon;
+  std::size_t npolarizations;
+  Eigen::VectorXd rad;
+  Eigen::MatrixXd jac;
+
+  Convolution(std::size_t nf, std::size_t polarizations,
+              const Atmosphere::Atm& atm,
+              const std::vector<Derivative::Target>& derivs) noexcept
+      : ntid(atm.ntid()),
+        nalt(atm.nalt()),
+        nlat(atm.nlat()),
+        nlon(atm.nlon()),
+        npolarizations(polarizations),
+        rad(Eigen::VectorXd::Zero(polarizations * nf)),
+        jac(Eigen::MatrixXd::Zero(polarizations * nf,
+                                  num_derivs(derivs, natmdata()))) {}
+
+  std::size_t natmdata() const noexcept { return ntid * nalt * nlat * nlon; }
+  std::size_t iatmdata(std::size_t itid, std::size_t ialt, std::size_t ilat,
+                       std::size_t ilon) const noexcept {
+    if (ilon > nlon or ilat > nlat or ialt > nalt or itid > ntid) {
+      std::cerr << "Out of range\n";
+      std::cerr << '\t' << "NumLon:" << ' ' << nlon << ',' << ' '
+                << "ILon: " << ilon << '\n';
+      std::cerr << '\t' << "NumLat:" << ' ' << nlat << ',' << ' '
+                << "ILat: " << ilat << '\n';
+      std::cerr << '\t' << "NumAlt:" << ' ' << nalt << ',' << ' '
+                << "IAlt: " << ialt << '\n';
+      std::cerr << '\t' << "NumTid:" << ' ' << ntid << ',' << ' '
+                << "ITid: " << itid << '\n';
+      std::terminate();
+    }
+    return ilon + ilat * nlon + ialt * nlat * nlon + itid * nalt * nlat * nlon;
+  }
+};
+
+Convolution compute_convolution(
+    const Atmosphere::Atm& atm, const Geom::Nav& pos_los,
+    const std::vector<Absorption::Band>& bands,
+    const std::vector<Derivative::Target>& derivs,
+    const Sensor::Properties& sensor_prop,
+    const Distance<DistanceType::meter> layer_thickness);
+
 }  // namespace RTE::Forward
 
 #endif  // forward_h

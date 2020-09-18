@@ -1,5 +1,5 @@
 # Global compile time options
-add_compile_options(-Wall -Wextra -Wdouble-promotion -Wimplicit-fallthrough=5 -Wno-ignored-attributes -O3 -march=native -fvisibility=hidden -flto)
+add_compile_options(-Wall -Wextra -Wdouble-promotion -Wimplicit-fallthrough=5 -Wno-ignored-attributes -O3 -march=native -Wno-dev -fvisibility=hidden -flto)
 
 # Sub directories
 
@@ -141,6 +141,15 @@ add_library (atmpath STATIC
 target_link_libraries(atmpath PUBLIC atm geom)
 ########################################################################################
 
+
+########################################################################################
+# Antenna Library
+add_library (antenna STATIC
+             antenna.cpp
+             )
+target_link_libraries(antenna PUBLIC atmpath math)
+########################################################################################
+
 ########################################################################################
 # Cross-section line-by-line library:  For computing cross-sections of absorption lines
 add_library (xsec_lbl STATIC
@@ -169,11 +178,11 @@ target_link_libraries(absorption PUBLIC species files xsec)
 ########################################################################################
 
 ########################################################################################
-# Cross-section library:  For computing cross-sections of any kind
+# Forward calculations:  For computing forward radiation (including sensor effects)
 add_library (forward STATIC
              forward.cpp
              )
-target_link_libraries(forward PUBLIC absorption rte)
+target_link_libraries(forward PUBLIC absorption rte antenna)
 ########################################################################################
 
 ########################################################################################
