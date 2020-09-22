@@ -1,0 +1,82 @@
+#!/bin/bash
+# author: Lukas Kluft
+# version: 06.02.2017
+#
+# purpose: update vim's ARTS syntax highlighting
+
+# path to ARTS executable. This variable has to be set in order to run run the script
+# e.g. arts="$HOME/arts/build/src/arts"
+
+[[ $# -eq 1 ]] && ARTS_BIN=$1 || ARTS_BIN=arts
+
+if ! which &> /dev/null $ARTS_BIN; then
+    echo "ERROR: $ARTS_BIN not found"
+    echo "Usage: $0 [PATH_TO_ARTS_BINARY]"
+    exit 1
+fi
+
+# create subdirectories in ~/.vim
+mkdir -p $HOME/.vim/{syntax,ftdetect}
+
+# path to vim syntax file
+f="$HOME/.vim/ftdetect/arts.vim"
+
+# enable file extension for auto recognition
+echo "au BufRead,BufNewFile *.arts set filetype=arts" > $f
+echo "Written $f"
+
+# generate arts.vim file
+f="$HOME/.vim/syntax/arts.vim"
+
+cat << 'EOF' > $f
+" Vim syntax file
+" Language: ARTS
+" Maintainer: via update-vim-arts-syntax script
+EOF
+
+echo \" Latest Revision: $(date) >> $f
+
+cat << 'EOF' >> $f
+if exists("b:current_syntax")
+  finish
+endif
+
+" highlighting style for different classes
+hi def link ArtsMethod Constant
+hi def link ArtsComment Comment
+hi def link ArtsVariable Structure
+hi def link ArtsGroup Type
+hi def link ArtsNumber Number
+hi def link ArtsString Statement
+
+let b:current_syntax = "arts"
+
+" definition of comments
+syn match ArtsComment "#.*$"
+setlocal commentstring=#\ %s
+
+" definition of numbers. Taken from the Python synatx highlighting:
+" https://github.com/hdima/python-syntax/blob/master/syntax/python.vim#L392
+syn match ArtsNumber "\<\d[lL]\=\>" display
+syn match ArtsNumber "\<[0-9]\d\+[lL]\=\>" display
+syn match ArtsNumber "\<\d\+[lLjJ]\>" display
+syn match ArtsNumber "\.\d\+\%([eE][+-]\=\d\+\)\=[jJ]\=\>" display
+syn match ArtsNumber "\<\d\+[eE][+-]\=\d\+[jJ]\=\>" display
+syn match ArtsNumber "\<\d\+\.\d*\%([eE][+-]\=\d\+\)\=[jJ]\=" display
+
+" definition of strings
+syn region ArtsString start='"' end='"'
+EOF
+
+echo -e \\n\" workspace methods >> $f
+$ARTS_BIN -p -m all | sed 's/^/syn keyword ArtsMethod /g' >> $f
+
+echo -e \\n\" workspace variables >> $f
+$ARTS_BIN -p -w all | sed 's/^/syn keyword ArtsVariable /g' >> $f
+
+echo -e \\n\" groups of variables >> $f
+$ARTS_BIN -p -g all | sed 's/^/syn keyword ArtsGroup /g' >> $f
+
+echo "Written $f"
+
+exit 0

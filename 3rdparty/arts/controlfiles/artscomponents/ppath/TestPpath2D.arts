@@ -1,0 +1,187 @@
+#DEFINITIONS:  -*-sh-*-
+#
+# ARTS control file for testing 2D propagation path calculations
+#
+# It is also demonstration of how to use the ForLopp agenda.
+# 
+# 2012-02-17, Patrick Eriksson
+
+Arts2{
+
+INCLUDE "general/general.arts"
+INCLUDE "general/agendas.arts"
+INCLUDE "general/planet_earth.arts"
+
+# Agenda for scalar gas absorption calculation
+Copy(abs_xsec_agenda, abs_xsec_agenda__noCIA)
+
+# sensor-only path
+Copy( ppath_agenda, ppath_agenda__FollowSensorLosPath )
+
+
+# Number of Stokes components to be computed
+#
+IndexSet( stokes_dim, 1 )
+
+# A pressure grid rougly matching 0 to 80 km.
+#
+VectorNLogSpace( p_grid, 41, 1000e2, 1 )
+
+
+# Atmospheric dimensionality and lat/lon grids
+#
+VectorNLinSpace( lat_grid, 21, 35, 55 )
+AtmosphereSet2D
+
+
+# Water vapour needed if refraction will be calculated
+#
+abs_speciesSet( species=["H2O"] )
+
+
+# Read a 1D atmospheric case and expand to *atmosphere_dim*
+#
+AtmRawRead( basename = "testdata/tropical" )
+AtmFieldsCalcExpand1D
+
+
+# Ground altitude (z_surface)
+#
+IndexCreate( nlat )
+nelemGet( nlat, lat_grid )
+#
+MatrixSetConstant( z_surface, nlat, 1, 500 )
+
+
+# No jacobian calculations
+#
+jacobianOff
+
+# Initializing cloudbox: No scattering
+#
+cloudboxOff
+
+# Activate to make tests with cloudbox on:
+#FlagOn( cloudbox_on )
+#ArrayOfIndexSet( cloudbox_limits, [ 4, 7, 10, 11 ] )
+
+
+# A dummy frequency grid
+#
+VectorSet( f_grid, [10e9] )
+
+
+# Check if atmosphere OK
+#
+atmfields_checkedCalc
+atmgeom_checkedCalc
+cloudbox_checkedCalc
+
+
+# Max step length for the representation of the propagation path
+#
+NumericSet( ppath_lmax, 20e3 )
+
+
+
+
+#
+# A single propagation path:
+#
+
+# Set a observation position and line-of-sight (LOS)
+#
+VectorSet( rte_pos, [ 600e3, 70.1 ] )
+VectorSet( rte_los, [ -113 ] )
+VectorSet( rte_pos2, [] )                  # No transmitter involved
+
+
+#
+# no refraction
+#
+Copy( ppath_step_agenda, ppath_step_agenda__GeometricPath )
+
+# Calculate propagation path
+#
+ppathCalc
+
+
+# Print complete ppath
+#
+#Print( ppath, 0 )
+
+
+
+# Uncomment to skip batch part below
+# 
+#Exit()
+
+
+
+#
+# Run through a number of cases, that should run without error
+# 
+
+
+# Use sensor_pos/los to store each case
+#
+MatrixSet( sensor_pos, [ 600e3, 20.2;
+                         600e3, 20.3;
+                         600e3, 20.1;
+                         600e3, 70.2;
+                         600e3, 38;
+                           6e3, 40.1;
+                           6e3, 41;
+                           6e3, 36;
+                           500, 41;
+                           500, 37.6] )
+MatrixSet( sensor_los, [ 45; 95; 113; -113; 0; 34; -156; 90; 0; -112] )
+
+IndexCreate( ilast )
+nrowsGet( ilast, sensor_pos )
+IndexStepDown( ilast, ilast )
+
+AgendaSet( forloop_agenda ){
+  #Print( forloop_index, 0 )
+  VectorExtractFromMatrix( rte_pos, sensor_pos, forloop_index, "row" )
+  VectorExtractFromMatrix( rte_los, sensor_los, forloop_index, "row" )
+  ppathCalc
+}
+
+
+#
+# no refraction
+#
+Copy( ppath_step_agenda, ppath_step_agenda__GeometricPath )
+
+ForLoop( forloop_agenda, 0, ilast, 1  )
+
+
+
+#
+# Repeat with refraction
+#
+Copy( ppath_step_agenda, ppath_step_agenda__RefractedPath )
+NumericSet( ppath_lraytrace, 1e3 )
+Copy( refr_index_air_agenda, refr_index_air_agenda__GasMicrowavesEarth  )
+
+ForLoop( forloop_agenda, 0, ilast, 1  )
+
+
+
+
+
+#
+# Repeat all with non-spherical ellipsoid
+#
+
+refellipsoidEarth( refellipsoid, "WGS84" )
+
+Copy( ppath_step_agenda, ppath_step_agenda__GeometricPath )
+ForLoop( forloop_agenda, 0, ilast, 1  )
+
+Copy( ppath_step_agenda, ppath_step_agenda__RefractedPath )
+Copy( refr_index_air_agenda, refr_index_air_agenda__GasMicrowavesEarth  )
+ForLoop( forloop_agenda, 0, ilast, 1  )
+
+}

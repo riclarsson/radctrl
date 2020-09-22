@@ -2,6 +2,7 @@
 add_compile_options(-Wall -Wextra -Wdouble-promotion -Wimplicit-fallthrough=5 -Wno-ignored-attributes -O3 -march=native -Wno-dev -fvisibility=hidden -flto)
 
 # Sub directories
+add_subdirectory(arts)
 
 ########################################################################################
 # GUI Library: For basic GUI creation
@@ -30,11 +31,11 @@ add_library (math STATIC
              wigner.cpp
              openblas_interface.cpp
              )
-target_include_directories(math PUBLIC ../3rdparty/Eigen/ ../3rdparty/wigner/ ../3rdparty/Faddeeva/)
-target_link_libraries(math PUBLIC wigner Faddeeva openblas lapack kernel)
+target_include_directories(math PUBLIC ../3rdparty/ ../3rdparty/wigner/ ../3rdparty/Faddeeva/)
+target_link_libraries(math PUBLIC radctrl_wigner radctrl_Faddeeva openblas lapack kernel)
 if(FASTWIGNER)
-target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_3J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.3j\"")
-target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_6J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.6j\"")
+  target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_3J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.3j\"")
+  target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_6J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.6j\"")
 endif()
 
 ########################################################################################
@@ -213,7 +214,7 @@ target_link_libraries(background PUBLIC rte atm)
 # Python Interface Library:  For calling python code
 set(Python_ADDITIONAL_VERSIONS 3)
 add_library(python STATIC python_interface.cpp)
-target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../3rdparty/pybind11/include/ ../3rdparty/Eigen/)
+target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../3rdparty/pybind11/include/ ../3rdparty/)
 target_link_libraries(python PUBLIC ${PYTHON_LIBRARIES} pybind11::embed)
 ########################################################################################
 
@@ -344,4 +345,10 @@ target_link_libraries(test_blas PUBLIC math)
 # Tests to understand Forward
 add_executable(test_forward test_forward.cpp)
 target_link_libraries(test_forward PUBLIC forward)
+########################################################################################
+
+########################################################################################
+# Tests to understand ARTS interface
+add_executable(test_arts test_arts.cpp)
+target_link_libraries(test_arts PUBLIC arts_interface)
 ########################################################################################

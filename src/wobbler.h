@@ -1,6 +1,7 @@
 #ifndef wobbler_h
 #define wobbler_h
 
+#include <atomic>
 #include <string>
 #include <vector>
 

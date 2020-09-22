@@ -1,6 +1,7 @@
 #ifndef chopper_h
 #define chopper_h
 
+#include <atomic>
 #include <filesystem>
 #include <string>
 #include <tuple>

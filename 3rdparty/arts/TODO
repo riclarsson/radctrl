@@ -1,0 +1,8 @@
+2018-05-02, Patrick:
+The handling of extinction and transmission inside the MC methods should be
+updated and use the new features by Richard. That is, to use propmat and e.g. the
+function ext2trans should be removed.
+
+2018-05-02, Patrick:
+Revise how MAINTAG, SUBTAG ... inside jacobian_quantities are used. The options
+for MAINTAG should be something like: atmosphere, spectroscopy, surface, sensor.

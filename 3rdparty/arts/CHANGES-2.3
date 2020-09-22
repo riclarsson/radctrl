@@ -1,0 +1,132 @@
+Key features
+============
+
+
+General
+=======
+- New format of scattering meta data (see online doc of scat_meta_single).
+
+- Cleaner separation of scattering data of the different scattering species:
+  scat_data and scat_meta now organized as ArrayOfArrayOfSingleScattering/MetaData
+  with each high-level array element corresponding to one scattering species,
+  each lower level array element corresponding to one scattering element.
+
+- ScatteringParticlesSelect doesn't select on material anymore (governed by
+  sorting scattering data into ArrayOfArray...). Size range selection changed to
+  diameter based selection instead of radius based.
+
+- massdensity_field diversified into scat_species_mass_density_field,
+  scat_species_mass_flux_field, scat_species_number_density_field to allow for
+  multi-moment schemes.
+
+- Default input format for compact batch atmospheres changed from ArrayOfMatrix
+  to ArrayOfGriddedField. Selection of fields from input data now purely on the
+  basis of abs_species and scat_species definitions.
+
+- Changed tagging mechanism of field_names in
+  batch_atm_fields_compactFromArrayOfMatrix. Now absorption species and
+  scattering species related fields have to be marked as such. Scattering
+  species fields additionally require a tag to indicate the type of field (mass
+  density, mass flux, number density).
+
+- DoitInit required to be called before DoitGetIncoming.
+
+- DOIT's first guess field can now be initialized with a (precalculated)
+  complete in-cloudbox field providing an alternative to deriving it from
+  the clearsky fields.
+
+- Initialization of the first guess field is now done outside of
+  doit_mono_agenda. The order is DoitInit, DoitGetIncoming and then the
+  initializiation (e.g. doit_i_fieldSetClearsky or doit_i_fieldSetFromPrecalc)
+
+- Create WSMs are not allowed to be called inside Agendas anymore. Avoids
+  confusion because variables are always global independent of where they are
+  created.
+
+- WSM DoitCloudboxFieldPut removed, not needed anymore.
+
+- WSM doit_i_fieldSetFromPrecalc now takes a generic Tensor7
+  (stored doit_i_field) instead of the removed WSV doit_i_field1D_spectrum.
+
+- WSM DoitWriteIterationFields now takes a list of frequency indexes in
+  addition to the iterations. Value to select all frequencies/iterations is now
+  -1 instead of 0. Filenames are now unique based on frequency index and iteration
+  counter.
+
+- Polarisation index coding of left- and right hand circular polarisation
+  changed. See on-line doc of sensor_pol for present coding. Before the wrong
+  polarisation was obtained when using the sensor part to extract the V Stokes
+  element.
+  
+- Artscat5 is new.  Allows easier-to-read and modify line data.  Presently
+  contains indexing for various pressure broadening schemes, for various
+  line mixing schemes, and for quantum numbers.  Pressure broadening added
+  features includes water+air broadening.  Simple NLTE support exists but
+  it still needs more testing.
+
+- backend_channel_responseGaussian now takes Vectors instead of Numerics as
+  inputs making it possible to define different responses for each channel.
+
+- NetCDF support is disabled by default. If needed, it can be enabled with
+  the cmake option -DENABLE_NETCDF=1
+
+- batch_atm_fields_compactFromArrayOfMatrix does not support adding extra
+  fields anymore. Use batch_atm_fields_compactAddConstant instead.
+
+- Added new method OptimizeDoitPressureGrid for pressure grid optimization of 
+  DOIT
+
+- Added a convergence acceleration for DOIT calculations 
+
+- New format of scattering data for azimuthally randomly oriented scatterers
+  (formerly known as horizontally aligned or p30). See AUG. Old format data is
+  automatically converted when read.
+
+- Interfaces to scattering solvers Disort and RT4.
+
+- new, more general approach for pnd_field calculation from particle (e.g.
+  hydrometeor) fields and particle size distributions
+  (pnd_fieldCalcFromParticleBulkProp) using ArrayOfAgenda.
+
+- cloudboxSetAutomatically now takes only a single Tensor4 field collection, but
+  can start from/update previously determined cloudbox_limits. For processing
+  scat_species_XXX_fields, the WSM needs to be called separately with each of
+  these WSV (and using cloudbox_limits update option).
+
+- scat_data now has to be preprocessed such that the f_grids of the scattering
+  elements are either identical to the calculations f_grid or only have a single
+  entry. Previous arbitrary-f_grid scat_data is now in scat_data_raw. DOIT and
+  MC so far still use scat_data_raw.
+
+- all WSM that set/calculate pnd_field now also output dpnd_field_dx initialized
+  to the correct size according to jacobian_quantities. That includes, that
+  jacobians need to be readily defined before these methods are called, or, more
+  generalized, that jacobians have to be defined before the cloudbox is set.
+
+- opt_prop_part_agenda removed. Internally replaced by method opt_prop_bulkCalc.
+
+NAME CHANGES-2.3
+================
+
+- sensor_pol -> instrument_pol (note that there is a new sensor_pol)
+- sensor_pol_array -> instrument_pol_array
+- part_species -> scat_species
+- ParticleSpeciesInit -> scat_speciesInit
+- ParticleSpeciesSet -> scat_speciesSet
+- scat_data_per_part_species -> scat_data_per_scat_species
+- scat_data_array -> scat_data -> scat_data_raw
+- scat_meta_array -> scat_meta
+- CloudboxGetIncoming -> DoitGetIncoming
+- ScatteringDoit -> DoitCalc
+- doit_i_fieldSetFromdoit_i_field1D_spectrum -> doit_i_fieldSetFromPrecalc
+- doit_i_fieldIterate -> doit_i_field_monoIterate
+- Massdensity_cleanup -> scat_species_fieldCleanup
+- pnd_fieldSetup -> pnd_fieldCalcFromscat_speciesFields
+- pnd_fieldCalc -> pnd_fieldCalcFrompnd_field_raw
+- particle_massesFromMetaDataAndScat_species -> particle_massesFromMetaData
+- refr_index_airThayer -> refr_index_airMicrowavesEarth
+- refr_index_airMWgeneral -> refr_index_airMicrowavesGeneral
+- refr_index_airIR -> refr_index_airInfraredEarth
+- refr_index_air_agenda__* predefinition renamed according to above
+- scat_species_fieldCleanup -> particle_fieldCleanup
+
