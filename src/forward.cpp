@@ -166,7 +166,7 @@ void convolve_forward_simulation(
   const std::size_t nt = derivs.size();
   const std::size_t ns = measurement_polarization.size();
   constexpr std::size_t nw = Atmosphere::InterPoints::Output::size();
-  
+
   std::size_t NT0 = 0;
   for (std::size_t it = 0; it < nt; it++) {
     for (std::size_t ip = 0; ip < np; ip++) {
@@ -174,7 +174,8 @@ void convolve_forward_simulation(
       for (std::size_t iv = 0; iv < nf; iv++) {
         const RadVec<N> this_val = path_weight * partres.dx(it, ip, iv);
         for (std::size_t is = 0; is < ns; is++) {
-          const double this_res = measurement_polarization[is].get_value(this_val);
+          const double this_res =
+              measurement_polarization[is].get_value(this_val);
           for (std::size_t iw = 0; iw < nw; iw++) {
             const Atmosphere::InterPoints::Uses weight = weights[iw];
             const double w = weight.weight();
@@ -183,15 +184,17 @@ void convolve_forward_simulation(
             const size_t m = weight.lat();
             const size_t n = weight.lon();
             if (w not_eq 0 /* w==0 might make iatmdata(...) fail */) {
-              res.jac.coeffRef(iv * ns + is, NT0 + res.iatmdata(i, j, m, n)) += w * this_res;
+              res.jac.coeffRef(iv * ns + is, NT0 + res.iatmdata(i, j, m, n)) +=
+                  w * this_res;
             }
           }
         }
       }
     }
-    
+
     // Move derivative pointer
-    NT0 += (derivs[it] == Derivative::Type::Line) ? 1 : res.natmdata();
+    NT0 += derivs[it].JacobianCount(res.natmdata(),
+                                    0);  // FIXME: SURFACE VARIABLE COUNT
   }
 
   auto ypart = partres.sensor_results();
@@ -205,7 +208,8 @@ void convolve_forward_simulation(
 
 template <std::size_t N>
 void compute_convolution_single_path(
-    Convolution& out, const std::vector<Absorption::Band>& bands,
+    Convolution& out, const Background::Background& background,
+    const std::vector<Absorption::Band>& bands,
     const std::vector<Frequency<FrequencyType::Freq>>& sensor_f_grid,
     const std::vector<Derivative::Target>& derivs,
     const std::vector<Sensor::Polarization>& measurement_polarization,
@@ -216,28 +220,29 @@ void compute_convolution_single_path(
     weights[ip] = antenna.path[ip].ip.Weights();
 
   // FIXME: COMPUTE INITIAL RADIATION BETTER!
-  const auto rad0 =
-      RTE::source_vec_planck<N>(antenna.path.front().atm.Temp(), sensor_f_grid);
+  const auto [bkweight, rad0] = background.compute<N>(antenna.background, antenna.path.front().nav.ellipsoidPos(), sensor_f_grid);
 
-  auto forward_results = Forward::compute(rad0, sensor_f_grid, derivs, bands, antenna.path);
-  
+  auto forward_results =
+      Forward::compute(rad0, sensor_f_grid, derivs, bands, antenna.path);
+
   switch (unit) {
     case Sensor::MeasurementUnit::PlanckBT:
       forward_results.convert_to_planck(sensor_f_grid);
       break;
     case Sensor::MeasurementUnit::Pure:
       break;
-    case Sensor::MeasurementUnit::FINAL:  {/* Leave last */}
+    case Sensor::MeasurementUnit::FINAL: { /* Leave last */
+    }
   }
-  
+
   convolve_forward_simulation<N>(out, forward_results, derivs,
                                  measurement_polarization, weights,
                                  antenna.weight);
 }
 
 Convolution compute_convolution(
-    const Atmosphere::Atm& atm, const Geom::Nav& pos_los,
-    const std::vector<Absorption::Band>& bands,
+    const Atmosphere::Atm& atm, const Background::Background& background,
+    const Geom::Nav& pos_los, const std::vector<Absorption::Band>& bands,
     const std::vector<Derivative::Target>& derivs,
     const Sensor::Properties& sensor_prop,
     const Distance<DistanceType::meter> layer_thickness) {
@@ -251,17 +256,21 @@ Convolution compute_convolution(
   // separately)
   for (auto& single_path : paths) {
     if (sensor_prop.stokes_dim == 4) {
-      compute_convolution_single_path<4>(out, bands, sensor_prop.f_grid, derivs,
-                                         sensor_prop.polar, single_path, sensor_prop.unit);
+      compute_convolution_single_path<4>(out, background, bands, sensor_prop.f_grid, derivs,
+                                         sensor_prop.polar, single_path,
+                                         sensor_prop.unit);
     } else if (sensor_prop.stokes_dim == 3) {
-      compute_convolution_single_path<3>(out, bands, sensor_prop.f_grid, derivs,
-                                         sensor_prop.polar, single_path, sensor_prop.unit);
+      compute_convolution_single_path<3>(out, background, bands, sensor_prop.f_grid, derivs,
+                                         sensor_prop.polar, single_path,
+                                         sensor_prop.unit);
     } else if (sensor_prop.stokes_dim == 2) {
-      compute_convolution_single_path<2>(out, bands, sensor_prop.f_grid, derivs,
-                                         sensor_prop.polar, single_path, sensor_prop.unit);
+      compute_convolution_single_path<2>(out, background, bands, sensor_prop.f_grid, derivs,
+                                         sensor_prop.polar, single_path,
+                                         sensor_prop.unit);
     } else if (sensor_prop.stokes_dim == 1) {
-      compute_convolution_single_path<1>(out, bands, sensor_prop.f_grid, derivs,
-                                         sensor_prop.polar, single_path, sensor_prop.unit);
+      compute_convolution_single_path<1>(out, background, bands, sensor_prop.f_grid, derivs,
+                                         sensor_prop.polar, single_path,
+                                         sensor_prop.unit);
     } else {
       std::cerr << "Bad Stokes Dim\n";
       std::terminate();

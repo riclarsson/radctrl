@@ -67,7 +67,7 @@ void test001() {
 
   std::cout << "Pathing:\n";
   auto nav = Path::calc_single_geometric_path(n, atm, 1e3, 90e3);
-  for (auto x : nav) std::cout << x << ' ' << x.nav.ellipsoidPos().h() << '\n';
+  for (auto x : nav.first) std::cout << x << ' ' << x.nav.ellipsoidPos().h() << '\n';
 }
 
 void test002() {
@@ -134,7 +134,7 @@ void test002() {
 
   std::cout << "NumberDensity:\n";
   auto nav = Path::calc_single_geometric_path(n, atm, 1, 90e3);
-  for (auto x : nav)
+  for (auto x : nav.first)
     std::cout << x.nav.ellipsoidPos().h() << ' ' << x.atm.Pres() << ' '
               << x.atm.NumberDensity() << '\n';
 }

@@ -84,15 +84,15 @@ void test001() {
 
   auto rad0 = RTE::source_vec_planck<1>(299.7, f);
   auto out = RTE::Forward::compute(rad0, f, {Derivative::Atm::Temperature},
-                                   {band}, path);
+                                   {band}, path.first);
 
-  Grid<double, 2> dT(0, path.size(), nfreq);
-  for (size_t ip = 0; ip < path.size(); ip++) {
+  Grid<double, 2> dT(0, path.first.size(), nfreq);
+  for (size_t ip = 0; ip < path.first.size(); ip++) {
     auto path_dT(path);
-    path_dT[ip].atm.Temp(path_dT[ip].atm.Temp() + 0.1);
+    path_dT.first[ip].atm.Temp(path_dT.first[ip].atm.Temp() + 0.1);
 
     auto out_dT = RTE::Forward::compute(rad0, f, {Derivative::Atm::Temperature},
-                                        {band}, path_dT);
+                                        {band}, path_dT.first);
 
     for (size_t iv = 0; iv < nfreq; iv++)
       dT(ip, iv) = (out_dT.x(0, iv)[0] - out.x(0, iv)[0]) / 0.1;
@@ -181,21 +181,24 @@ void test002() {
   constexpr size_t nfreq = 21;
   constexpr Frequency<FrequencyType::Freq> flow = 90e9;
   constexpr Frequency<FrequencyType::Freq> fupp = 110e9;
-  Sensor::Properties sensor_prop{
-    Sensor::MeasurementUnit::PlanckBT, 1,
-//     Sensor::Antenna{Sensor::BeamType::PencilBeam},
-    Sensor::Antenna{Sensor::BeamType::AiryDisk, 1e-2, 5, 101, 1},
+  const Sensor::Properties sensor_prop{
+      Sensor::MeasurementUnit::PlanckBT, 1,
+      //     Sensor::Antenna{Sensor::BeamType::PencilBeam},
+      Sensor::Antenna{Sensor::BeamType::AiryDisk, 1e-2, 5, 101, 1},
       std::vector<Sensor::Polarization>{
           Sensor::Polarization{Sensor::PolarizationType::I}},
       linspace(flow, fupp, nfreq)};
 
-  auto conv = RTE::Forward::compute_convolution(atm, n, {band}, {Derivative::Atm::Temperature}, sensor_prop, 1e3);
+      const Background::Background background(Background::Surface{atm});
+      
+  auto conv = RTE::Forward::compute_convolution(
+    atm, background, n, {band}, {Derivative::Atm::Temperature}, sensor_prop, 1e3);
   std::cout << conv.rad.transpose() << '\n';
-//   std::cout << conv.jac << '\n';
+  //   std::cout << conv.jac << '\n';
 }
 
 int main() {
-//     test001();
-//   std::cout << "\n\n\n";
+  //     test001();
+  //   std::cout << "\n\n\n";
   test002();
 }

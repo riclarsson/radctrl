@@ -314,35 +314,27 @@ void set_input_from_x(Atmosphere::Atm& atm,
 #undef ATMVARSETTEREXEC
 #undef SHAPEVALSETTER
 
-Results compute(Atmosphere::Atm& atm, std::vector<Absorption::Band>& bands,
+Results compute(Atmosphere::Atm& atm, Background::Background& background, std::vector<Absorption::Band>& bands,
                 const Geom::Nav& pos_los,
                 const std::vector<Derivative::Target>& derivs,
                 const Sensor::Properties& sensor_prop,
                 const Distance<DistanceType::meter> layer_thickness,
                 const Eigen::MatrixXd& sy, const Eigen::MatrixXd& sx,
                 const Eigen::VectorXd& y, const Eigen::VectorXd& x0) {
-  Results out;
-
   Computations comp(ComputationsType::Linear, sy, sx, x0, y);
 
   do {
     const RTE::Forward::Convolution forward = RTE::Forward::compute_convolution(
-        atm, pos_los, bands, derivs, sensor_prop, layer_thickness);
+        atm, background, pos_los, bands, derivs, sensor_prop, layer_thickness);
     comp.fx.noalias() = forward.rad;
     comp.J.noalias() = forward.jac;
     set_input_from_x(atm, bands, derivs, comp.update_x());
   } while (not comp.is_done());
 
-  out.y = y;
-  out.x = map_input_to_x(atm, bands, derivs);
-  out.fx = comp.fx;
-  out.J = comp.J;
-  out.S = comp.S();
-  out.D = comp.D();
-  out.A = comp.A();
-
   // FIXME: Add Sensor Errors
-
-  return out;
+  return Results{y,        map_input_to_x(atm, bands, derivs),
+                 comp.fx,  comp.J,
+                 comp.S(), comp.D(),
+                 comp.A()};
 }
 }  // namespace RTE::Inverse

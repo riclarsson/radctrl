@@ -5,15 +5,6 @@
 
 void test001() {
   const std::size_t N = 3;
-  Eigen::MatrixXd m{Eigen::MatrixXd::Zero(N, N)};
-  for (std::size_t i = 0; i < N; i++) m(i, i) = i + 3;
-  m(N - 1, N - 2) = 1;
-  std::cout << m << '\n';
-  std::cout << m.inverse() << '\n';
-}
-
-void test002() {
-  const std::size_t N = 3;
   Eigen::MatrixXcd m{Eigen::MatrixXcd::Zero(N, N)};
   for (std::size_t i = 0; i < N; i++) m(i, i) = Complex(i + 3, 5);
   m(N - 1, N - 2) = 1;
@@ -21,10 +12,10 @@ void test002() {
 
   Eigen::VectorXcd e(N);
   Eigen::MatrixXcd R(N, N), L(N, N);
-  OpenBLAS::Helper::EigComplex comp;
+  BLAS::Helper::EigComplex comp;
 
   std::cout << std::setprecision(16) << '\n' << m << '\n';
-  OpenBLAS::eig(e, L, R, m, comp);
+  BLAS::eig(e, L, R, m, comp);
   std::cout << e << '\n' << L << '\n' << R << '\n' << m << '\n';
 
   Eigen::ComplexEigenSolver<Eigen::MatrixXcd> solver(m);
@@ -51,7 +42,4 @@ void test002() {
             << (R.inverse() * m * R).diagonal() << '\n';
 }
 
-int main() {
-  //   test001();
-  test002();
-}
+int main() { test001(); }

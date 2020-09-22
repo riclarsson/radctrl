@@ -182,7 +182,7 @@ target_link_libraries(absorption PUBLIC species files xsec)
 add_library (forward STATIC
              forward.cpp
              )
-target_link_libraries(forward PUBLIC absorption rte antenna)
+target_link_libraries(forward PUBLIC absorption rte antenna background)
 ########################################################################################
 
 ########################################################################################
@@ -194,11 +194,19 @@ target_link_libraries(inverse PUBLIC forward)
 ########################################################################################
 
 ########################################################################################
-# Radiative Transfer Library:  For equations and classes for computing the path and geometry
+# Radiative Transfer Library:  For equations and classes computing the radiative transfer
 add_library (rte STATIC
              rte.cpp
              )
 target_link_libraries(rte PUBLIC species absorption)
+########################################################################################
+
+########################################################################################
+# Background library:  For equations and classes computing background radiation
+add_library (background STATIC
+             background.cpp
+             )
+target_link_libraries(background PUBLIC rte atm)
 ########################################################################################
 
 ########################################################################################

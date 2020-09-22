@@ -322,28 +322,6 @@ class LazyPoint {
   }
 };  // LazyPoint
 
-class LinearInterpPoint {
-  double w;  // Lower weight
-  size_t i;  // Lower index
- public:
-  constexpr LinearInterpPoint(double W = 1, size_t I = 0) noexcept
-      : w(W), i(I) {}
-  constexpr LinearInterpPoint(const LinearInterpPoint &lip) noexcept
-      : w(lip.w), i(lip.i) {}
-  constexpr LinearInterpPoint &operator=(
-      const LinearInterpPoint &lip) noexcept {
-    w = lip.w;
-    i = lip.i;
-    return *this;
-  }
-  friend std::ostream &operator<<(std::ostream &os,
-                                  const LinearInterpPoint &lip) {
-    return os << lip.w << ' ' << lip.i;
-  }
-  constexpr double weight() const noexcept { return w; }
-  constexpr size_t index() const noexcept { return i; }
-};
-
 class InterPoints {
   LinearInterpPoint tid;
   LinearInterpPoint alt;
@@ -531,6 +509,11 @@ class Atm {
   size_t nalt() const noexcept { return alt.size(); }
   size_t nlat() const noexcept { return lat.size(); }
   size_t nlon() const noexcept { return lon.size(); }
+  
+  const std::vector<Time> & tidvec() const noexcept { return tid; }
+  const std::vector<Altitude<AltitudeType::meter>> & altvec() const noexcept { return alt; }
+  const std::vector<Coordinate<CoordinateType::lat>> & latvec() const noexcept { return lat; }
+  const std::vector<Coordinate<CoordinateType::lon>> & lonvec() const noexcept { return lon; }
 
   friend std::ostream &operator<<(std::ostream &os, const Atm &a) {
     if (not a.ok()) throw std::runtime_error("Bad atmosphere");

@@ -2,6 +2,7 @@
 #define forward_h
 
 #include "antenna.h"
+#include "background.h"
 #include "enums.h"
 #include "grids.h"
 #include "jacobian.h"
@@ -66,16 +67,10 @@ Results<4> compute(const std::vector<RadVec<4>>& rad0,
                    const std::vector<Path::Point>& path);
 
 inline std::size_t num_derivs(const std::vector<Derivative::Target>& derivs,
-                              std::size_t n) noexcept {
-  std::size_t nderivs = 0;
-  for (auto& deriv : derivs) {
-    if (deriv == Derivative::Type::Line) {
-      nderivs += 1;
-    } else {
-      nderivs += n;
-    }
-  }
-  return nderivs;
+                              std::size_t natm, std::size_t nsurf) noexcept {
+  std::size_t n = 0;
+  for (auto& deriv : derivs) n += deriv.JacobianCount(natm, nsurf);
+  return n;
 }
 
 struct Convolution {
@@ -97,7 +92,8 @@ struct Convolution {
         npolarizations(polarizations),
         rad(Eigen::VectorXd::Zero(polarizations * nf)),
         jac(Eigen::MatrixXd::Zero(polarizations * nf,
-                                  num_derivs(derivs, natmdata()))) {}
+                                  num_derivs(derivs, natmdata(), 0))) {
+  }  // FIXME: SURFACE VARIABLE COUNT
 
   std::size_t natmdata() const noexcept { return ntid * nalt * nlat * nlon; }
   std::size_t iatmdata(std::size_t itid, std::size_t ialt, std::size_t ilat,
@@ -119,8 +115,8 @@ struct Convolution {
 };
 
 Convolution compute_convolution(
-    const Atmosphere::Atm& atm, const Geom::Nav& pos_los,
-    const std::vector<Absorption::Band>& bands,
+    const Atmosphere::Atm& atm, const Background::Background& background,
+    const Geom::Nav& pos_los, const std::vector<Absorption::Band>& bands,
     const std::vector<Derivative::Target>& derivs,
     const Sensor::Properties& sensor_prop,
     const Distance<DistanceType::meter> layer_thickness);

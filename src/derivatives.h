@@ -5,7 +5,7 @@
 #include "species.h"
 
 namespace Derivative {
-ENUMCLASS(Type, unsigned char, Atm, Line)
+ENUMCLASS(Type, unsigned char, Atm, Line, Surface)
 
 ENUMCLASS(Atm, unsigned char, Temperature, WindU, WindV, WindW, MagneticU,
           MagneticV, MagneticW, VMR, NLTE)
@@ -18,19 +18,25 @@ ENUMCLASS(Line, unsigned char, Strength, Center, ShapeG0X0, ShapeG0X1,
           ShapeYX2, ShapeYX3, ShapeGX0, ShapeGX1, ShapeGX2, ShapeGX3, ShapeDVX0,
           ShapeDVX1, ShapeDVX2, ShapeDVX3)
 
+ENUMCLASS(Surface, unsigned char, Temperature)
+
 /** Union of quantities */
 union TypeOfTarget {
   Atm atm;
   Line line;
+  Surface surf;
   constexpr TypeOfTarget() noexcept : atm(Atm(-1)) {}
   constexpr TypeOfTarget(Atm a) noexcept : atm(a) {}
-  constexpr TypeOfTarget(Line l) noexcept : line(l){};
+  constexpr TypeOfTarget(Line l) noexcept : line(l) {}
+  constexpr TypeOfTarget(Surface s) noexcept : surf(s) {}
   constexpr bool is(Type x, TypeOfTarget y) const {
     switch (x) {
       case Type::Atm:
         return atm == y.atm;
       case Type::Line:
         return line == y.line;
+      case Type::Surface:
+        return surf == y.surf;
       case Type::FINAL: { /*leave last*/
       }
     }
@@ -44,6 +50,8 @@ inline TypeOfTarget toTypeOfTarget(const std::string& s, Type x) noexcept {
       return TypeOfTarget(toLine(s));
     case Type::Atm:
       return TypeOfTarget(toAtm(s));
+    case Type::Surface:
+      return TypeOfTarget(toSurface(s));
     case Type::FINAL: /* leave last, don't use default */;
   }
   return TypeOfTarget();
@@ -55,6 +63,8 @@ inline std::string toString(TypeOfTarget y, Type x) noexcept {
       return toString(y.line);
     case Type::Atm:
       return toString(y.atm);
+    case Type::Surface:
+      return toString(y.surf);
     case Type::FINAL: /* leave last, don't use default */;
   }
   return "Unrecognizable Target";
@@ -77,6 +87,21 @@ class Target {
   double mperturbation;
 
  public:
+  constexpr std::size_t JacobianCount(std::size_t natm,
+                                      std::size_t nsurf) const noexcept {
+    switch (mtype) {
+      case Type::Surface:
+        return nsurf;
+      case Type::Line:
+        return 1;
+      case Type::Atm:
+        return natm;
+      case Type::FINAL: { /*leave last*/
+      }
+    }
+    return 0;
+  }
+
   /** Atmospheric type */
   constexpr Target(
       Atm type, double pert = std::numeric_limits<double>::quiet_NaN()) noexcept
@@ -90,6 +115,16 @@ class Target {
       std::terminate();
     }
   }
+
+  /** Surface type */
+  constexpr Target(
+      Surface type,
+      double pert = std::numeric_limits<double>::quiet_NaN()) noexcept
+      : mtype(Type::Surface),
+        msubtype(type),
+        species_id(Species::Species::FINAL, -1),
+        pos_id(-1),
+        mperturbation(pert) {}
 
   /** Line type */
   constexpr Target(

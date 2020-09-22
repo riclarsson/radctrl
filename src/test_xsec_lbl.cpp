@@ -93,7 +93,7 @@ void test002() {
   auto f = linspace<Frequency<FrequencyType::Freq>>(90e9, 110e9, M);
 
   for (size_t i = 0; i < N; i++) {
-    Absorption::Xsec::Lbl::compute(sum[i], dummy_src, comp, f, band, nav[i],
+    Absorption::Xsec::Lbl::compute(sum[i], dummy_src, comp, f, band, nav.first[i],
                                    {});
   }
 

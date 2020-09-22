@@ -1,6 +1,6 @@
 #include "openblas_interface.h"
 
-namespace OpenBLAS {
+namespace BLAS {
 
 extern "C" void zgeev_(char *jobvl, char *jobvr, int *n, Complex *A, int *lda,
                        Complex *W, Complex *VL, int *ldvl, Complex *VR,
@@ -25,4 +25,4 @@ void eig(Eigen::VectorXcd &E, Eigen::MatrixXcd &L, Eigen::MatrixXcd &R,
          comp.ldl(), R.data(), comp.ldr(), comp.workdata(), comp.lsize(),
          comp.rightwork(), &info);
 }
-}  // namespace OpenBLAS
+}  // namespace BLAS

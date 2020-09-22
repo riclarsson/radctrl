@@ -270,7 +270,7 @@ constexpr double ideal_gas_constant = k * NA;
 /** Ideal gas constant convenience name [J/mol K] **/
 constexpr double R = ideal_gas_constant;
 
-/** Doppler broadening constant squared [kg/T]^2 **/
+/** Doppler broadening constant squared [kg/K]^2 **/
 constexpr double doppler_broadening_const_squared = 2000 * R / pow2(c);
 
 /** Zeroes in the first_order if first kind Bessel function */
@@ -403,6 +403,13 @@ constexpr std::array<double, 128> bessel_1storder_1stkind_zeroes{
     396.62512704117756356936297379434108734130859375,
     399.76672712481678217955050058662891387939453125,
     402.90832709258796739959507249295711517333984375};
+
+/* Cosmic microwave background temperature [K]
+ *
+ * From: https://wmap.gsfc.nasa.gov/universe/bb_cosmo_fluct.html
+ * Date: 2020-09-21
+ */
+constexpr double cosmic_microwave_background_temperature = 2.725;
 }  // namespace Constant
 
 /** Namespace containing several practical unit conversions, physical and

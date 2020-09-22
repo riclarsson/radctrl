@@ -6,7 +6,7 @@
 #include "complex.h"
 #include "grids.h"
 
-namespace OpenBLAS {
+namespace BLAS {
 namespace Helper {
 struct EigComplex {
   int n;
@@ -50,6 +50,6 @@ struct EigComplex {
 
 void eig(Eigen::VectorXcd &E, Eigen::MatrixXcd &L, Eigen::MatrixXcd &R,
          Eigen::MatrixXcd &A, Helper::EigComplex &comp);
-}  // namespace OpenBLAS
+}  // namespace BLAS
 
 #endif  // openblas_interface_h

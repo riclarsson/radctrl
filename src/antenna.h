@@ -66,6 +66,7 @@ class Antenna {
 
   struct Output {
     std::vector<Path::Point> path;
+    Path::BackgroundType background;
     double weight;
   };
 
@@ -135,7 +136,7 @@ class Polarization {
   }
 };
 
-ENUMCLASS (MeasurementUnit, char, Pure, PlanckBT)
+ENUMCLASS(MeasurementUnit, char, Pure, PlanckBT)
 
 struct Properties {
   MeasurementUnit unit;

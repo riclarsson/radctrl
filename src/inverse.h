@@ -92,14 +92,12 @@ void set_input_from_x(Atmosphere::Atm& atm,
                       const std::vector<Derivative::Target>& derivs,
                       const Eigen::VectorXd& x);
 
-Results compute(
-    Atmosphere::Atm& atm, std::vector<Absorption::Band>& bands,
-    const std::vector<Derivative::Target>& derivs,
-    const std::vector<Frequency<FrequencyType::Freq>>& sensor_f_grid,
-    const Sensor::Properties& sensor_prop,
-    const Distance<DistanceType::meter> layer_thickness,
-    const Eigen::MatrixXd& sy, const Eigen::MatrixXd& sx,
-    const Eigen::VectorXd& y, const Eigen::VectorXd& x0);
+Results compute(Atmosphere::Atm& atm, std::vector<Absorption::Band>& bands,
+                const std::vector<Derivative::Target>& derivs,
+                const Sensor::Properties& sensor_prop,
+                const Distance<DistanceType::meter> layer_thickness,
+                const Eigen::MatrixXd& sy, const Eigen::MatrixXd& sx,
+                const Eigen::VectorXd& y, const Eigen::VectorXd& x0);
 
 }  // namespace RTE::Inverse
 
