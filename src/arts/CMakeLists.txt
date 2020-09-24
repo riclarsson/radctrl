@@ -1,10 +1,22 @@
+include (FindOpenMP)
+if (NOT ${OPENMP_FOUND})
+  message(FATAL_ERROR "No OPEN MP found, ARTS requires it")
+endif()
+
 ########################################################################################
-# ARTS Library: For ARTS usage
-add_library (arts_interface STATIC
-             interface.cpp)
-target_link_libraries(arts_interface PRIVATE artscore methods matpack cdisort)
-target_include_directories(arts_interface PRIVATE ${ARTS_BINARY_DIR}
+# ARTS API STATIC: For ARTS usage
+add_library (arts_api_static STATIC ${ARTS_SOURCE_DIR}/src/interactive_workspace.cc
+                                    ${ARTS_SOURCE_DIR}/src/arts_api_classes.cc)
+target_link_libraries (arts_api_static artscore methods matpack cdisort OpenMP::OpenMP_CXX Faddeeva)
+target_include_directories(arts_api_static PUBLIC ${ARTS_BINARY_DIR}
                                                   ${ARTS_BINARY_DIR}/src/
                                                   ${ARTS_SOURCE_DIR}/src/
-                                                  ${ARTS_SOURCE_DIR}/3rdparty/)
+                                                  ${ARTS_SOURCE_DIR}/3rdparty/
+                                                  ${ARTS_SOURCE_DIR}/3rdparty/invlib/src)
+########################################################################################
+                                                   
+########################################################################################
+# ARTS Library: For ARTS usage
+add_library (arts_interface STATIC interface.cpp)
+target_link_libraries(arts_interface PRIVATE multithread arts_api_static)
 ########################################################################################

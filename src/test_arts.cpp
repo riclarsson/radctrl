@@ -3,5 +3,8 @@
 #include "arts/interface.h"
 
 int main() {
-  std::cout << ARTS::test() << '\n';
+  auto x = ARTS::test();
+  std::cout << '\n';
+  std::cout << "DOH" << '\n';
+  std::cout << x << '\n';
 }

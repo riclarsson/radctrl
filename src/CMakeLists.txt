@@ -352,3 +352,9 @@ target_link_libraries(test_forward PUBLIC forward)
 add_executable(test_arts test_arts.cpp)
 target_link_libraries(test_arts PUBLIC arts_interface)
 ########################################################################################
+
+########################################################################################
+# Generate the internal structure for the ARTS interface
+add_executable(genautoarts genautoarts.cpp)
+target_link_libraries(genautoarts PUBLIC arts_interface)
+########################################################################################
