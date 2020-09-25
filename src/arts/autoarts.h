@@ -1,3 +1,6 @@
+#ifndef autoarts_h
+#define autoarts_h
+
 #include <arts.h>
 #include <auto_md.h>
 #include <auto_workspace.h>
@@ -28,8 +31,12 @@ The grid must be sorted in increasing order, with no repetitions.
 Usage:      Set by the user.
 
 Unit:       degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& aa_grid(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[0]); }
+[[nodiscard]] Vector& aa_grid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[0]);
+}
 
 /*! Azimuth angle index for scattering calculations.
 
@@ -41,8 +48,12 @@ scattering properties of particles can be different from that used
 for radiative transfer calculation.
 
 Usage:    Method output.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& aa_index(Workspace& ws) noexcept { return *static_cast<Index*>(ws[1]); }
+[[nodiscard]] Index& aa_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[1]);
+}
 
 /*! HITRAN Collision Induced Absorption (CIA) Data.
 
@@ -74,8 +85,10 @@ fixed frequency range).
 Units:
 Frequencies: Hz
 Binary absorption cross-sections: m^5*molecule^-2
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfCIARecord& abs_cia_data(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfCIARecord& abs_cia_data(Workspace& ws) noexcept {
   return *static_cast<ArrayOfCIARecord*>(ws[2]);
 }
 
@@ -94,8 +107,10 @@ the lookup table.
 Dimensions: [f_grid, abs_p]
 
 Unit: 1/m
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& abs_coef(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& abs_coef(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[3]);
 }
 
@@ -103,8 +118,10 @@ Matrix& abs_coef(Workspace& ws) noexcept {
 
 The Array contains one matrix of absorption coefficients for each
 tag group, where the matrix format is the same as that of *abs_coef*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& abs_coef_per_species(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& abs_coef_per_species(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[4]);
 }
 
@@ -114,8 +131,10 @@ See the WSV `abs_cont_names' for a detailed description
 of the allowed continuum models. There should be one string here
 for each entry in `abs_cont_names'.See also the online
 documentation in arts/doc/doxygen/html/continua_cc.html.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& abs_cont_models(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& abs_cont_models(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[5]);
 }
 
@@ -267,8 +286,10 @@ Rain extinction parameterization ('rain-MPM93') from the
     not just the absorption. Therefore it is not suitable for
     calculating thermal emission by rain!
     Please use rain-MPM93 only for calculation of attenuation.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& abs_cont_names(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& abs_cont_names(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[6]);
 }
 
@@ -278,8 +299,10 @@ for a detailed description of the allowed continuum models. There
 should be one parameter vector here for each entry in
 *abs_cont_names*. See also the online documentation in
 arts/doc/doxygen/html/continua_cc.html.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfVector& abs_cont_parameters(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfVector& abs_cont_parameters(Workspace& ws) noexcept {
   return *static_cast<ArrayOfVector*>(ws[7]);
 }
 
@@ -295,8 +318,10 @@ As a special case, order 0 in this particular case means no
 interpolation. In that case f_grid must match exactly the grid inside
 the lookup table. This is the global default value, set in
 general.arts.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& abs_f_interp_order(Workspace& ws) noexcept {
+[[nodiscard]] Index& abs_f_interp_order(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[8]);
 }
 
@@ -304,14 +329,19 @@ Index& abs_f_interp_order(Workspace& ws) noexcept {
 
 This variable holds HITRAN line mixing data
 as per J. Lamouroux, L. Realia, X. Thomas, et al., J.Q.S.R.T. 151 (2015), 88-96
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-HitranRelaxationMatrixData& abs_hitran_relmat_data(Workspace& ws) noexcept {
+[[nodiscard]] HitranRelaxationMatrixData& abs_hitran_relmat_data(
+    Workspace& ws) noexcept {
   return *static_cast<HitranRelaxationMatrixData*>(ws[9]);
 }
 
 /*! A list of spectral line data.
- */
-ArrayOfAbsorptionLines& abs_lines(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfAbsorptionLines& abs_lines(Workspace& ws) noexcept {
   return *static_cast<ArrayOfAbsorptionLines*>(ws[10]);
 }
 
@@ -319,8 +349,11 @@ ArrayOfAbsorptionLines& abs_lines(Workspace& ws) noexcept {
 
 Dimensions: [*abs_species*.nelem()][Depends on how many bands there are in
 *abs_lines*]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfAbsorptionLines& abs_lines_per_species(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfAbsorptionLines& abs_lines_per_species(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfAbsorptionLines*>(ws[11]);
 }
 
@@ -333,8 +366,10 @@ routines are implemented as member functions.
 It has quite a complicated structure. For details see the Arts User
 Guide section "The gas absorption lookup table" or the source code
 documentation in gas_abs_lookup.h.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GasAbsLookup& abs_lookup(Workspace& ws) noexcept {
+[[nodiscard]] GasAbsLookup& abs_lookup(Workspace& ws) noexcept {
   return *static_cast<GasAbsLookup*>(ws[12]);
 }
 
@@ -342,8 +377,10 @@ GasAbsLookup& abs_lookup(Workspace& ws) noexcept {
 called.
 
 Values: 0=false, 1=true.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& abs_lookup_is_adapted(Workspace& ws) noexcept {
+[[nodiscard]] Index& abs_lookup_is_adapted(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[19]);
 }
 
@@ -359,8 +396,10 @@ absorption model species for water vapor and oxygen
 
 See user guide and online documentation of *abs_lookupCalc*
 for more details and usage examples.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfSpeciesTag& abs_nls(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfSpeciesTag& abs_nls(Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfSpeciesTag*>(ws[13]);
 }
 
@@ -374,8 +413,10 @@ default value, which is set in general.arts.
 
 Note that the number of points used in the interpolation scheme is
 interpolation order + 1 (e.g., two for first order interpolation).
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& abs_nls_interp_order(Workspace& ws) noexcept {
+[[nodiscard]] Index& abs_nls_interp_order(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[15]);
 }
 
@@ -387,8 +428,10 @@ This is a vector of fractional perturbations that should contain 1
 messages from some absorption routines, so a possible content for this
 variable is: [1e-24, 1, 2].
 (This is similar to *abs_t_pert*, but multiplicative, not additive.)
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& abs_nls_pert(Workspace& ws) noexcept {
+[[nodiscard]] Vector& abs_nls_pert(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[14]);
 }
 
@@ -402,8 +445,10 @@ same as that of *abs_p*
 Dimension: [nltes, 1, 1, p_grid] or [ 0, 0, 0, 0 ]
 
 Unit: K
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-EnergyLevelMap& abs_nlte(Workspace& ws) noexcept {
+[[nodiscard]] EnergyLevelMap& abs_nlte(Workspace& ws) noexcept {
   return *static_cast<EnergyLevelMap*>(ws[24]);
 }
 
@@ -419,8 +464,12 @@ is the same as that of *abs_t*
 Dimension: [p_grid]
 
 Unit: Pa
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& abs_p(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[20]); }
+[[nodiscard]] Vector& abs_p(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[20]);
+}
 
 /*! The interpolation order to use when interpolating absorption
 between pressure levels.
@@ -432,8 +481,10 @@ default value, which is set in general.arts.
 
 Note that the number of points used in the interpolation scheme is
 interpolation order + 1 (e.g., two for first order interpolation).
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& abs_p_interp_order(Workspace& ws) noexcept {
+[[nodiscard]] Index& abs_p_interp_order(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[16]);
 }
 
@@ -443,8 +494,10 @@ This is an array of arrays of SpeciesTag tag definitions. It defines the
 available tag groups for the calculation of scalar gas absorption
 coefficients.  See online documentation of method *abs_speciesSet* for
 more detailed information how tag groups work and some examples.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfSpeciesTag& abs_species(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfSpeciesTag& abs_species(Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfSpeciesTag*>(ws[21]);
 }
 
@@ -455,8 +508,10 @@ This variable selects, which absorption species are active in
 
 Dimension: A vector with one element for every active species, at max
            same number of elements as abs_species.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& abs_species_active(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& abs_species_active(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[22]);
 }
 
@@ -470,8 +525,12 @@ same as that of *abs_p*
 Dimension: [p_grid]
 
 Unit: K
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& abs_t(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[23]); }
+[[nodiscard]] Vector& abs_t(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[23]);
+}
 
 /*! The interpolation order to use when interpolating absorption between
 the temperature values given by *abs_t_pert*.
@@ -483,8 +542,10 @@ default value, which is set in general.arts.
 
 Note that the number of points used in the interpolation scheme is
 interpolation order + 1 (e.g., two for first order interpolation).
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& abs_t_interp_order(Workspace& ws) noexcept {
+[[nodiscard]] Index& abs_t_interp_order(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[18]);
 }
 
@@ -495,8 +556,10 @@ should be added to the reference temperature profile. (Similar to
 *abs_nls_pert*, but additive, not multiplicative.) Should normally
 contain 0, to include the reference profile itself. Example content:
 [-5, 0, 5].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& abs_t_pert(Workspace& ws) noexcept {
+[[nodiscard]] Vector& abs_t_pert(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[17]);
 }
 
@@ -518,8 +581,10 @@ Usage:      Output of *opt_prop_bulkCalc*
 Unit:       m^2
 
 Dimensions: [f_grid, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-StokesVector& abs_vec(Workspace& ws) noexcept {
+[[nodiscard]] StokesVector& abs_vec(Workspace& ws) noexcept {
   return *static_cast<StokesVector*>(ws[25]);
 }
 
@@ -536,30 +601,38 @@ Usage:      Input and Output of the method abs_vec_sptCalc
 Unit:        m^2
 
 Dimensions: [number of scattering elements, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfStokesVector& abs_vec_spt(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfStokesVector& abs_vec_spt(Workspace& ws) noexcept {
   return *static_cast<ArrayOfStokesVector*>(ws[26]);
 }
 
 /*! The VMRs (unit: absolute number) on the abs_p grid.
 
 Dimensions: [tag_groups.nelem(), abs_p.nelem()]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& abs_vmrs(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& abs_vmrs(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[27]);
 }
 
 /*! Agenda to calculate scalar gas absorption cross sections.
- */
-Agenda& abs_xsec_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& abs_xsec_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[29]);
 }
 
 /*! OK-flag for *abs_xsec_agenda*.
 
 Set by *abs_xsec_agenda_checkedCalc*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& abs_xsec_agenda_checked(Workspace& ws) noexcept {
+[[nodiscard]] Index& abs_xsec_agenda_checked(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[28]);
 }
 
@@ -573,8 +646,10 @@ Dimensions: [abs_species](f_grid, abs_p)
 
 Unit:       m^2 (alpha = xsec * n * VMR),
             where n is total density.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& abs_xsec_per_species(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& abs_xsec_per_species(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[30]);
 }
 
@@ -584,8 +659,10 @@ This is set during the execution of an agenda from an *ArrayOfAgenda*.
 It indicates the index of the current agenda inside the array.
 
 Unit:  Integer value.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& agenda_array_index(Workspace& ws) noexcept {
+[[nodiscard]] Index& agenda_array_index(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[31]);
 }
 
@@ -599,8 +676,10 @@ antenna has both a zenith and azimuth variation.
 Usage: Set by the user.
 
 Unit:  Integer value [1-2].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& antenna_dim(Workspace& ws) noexcept {
+[[nodiscard]] Index& antenna_dim(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[32]);
 }
 
@@ -625,8 +704,10 @@ Usage: Set by the user.
 Unit:  [ degrees, degrees ]
 
 Size:  [ number of antennae, 1 or 2 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& antenna_dlos(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& antenna_dlos(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[33]);
 }
 
@@ -666,8 +747,10 @@ Dimensions:
       Vector za_grid[N_za]
       Vector aa_grid[N_aa]
       Tensor4 data[N_pol][N_f][N_za][N_aa]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField4& antenna_response(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField4& antenna_response(Workspace& ws) noexcept {
   return *static_cast<GriddedField4*>(ws[34]);
 }
 
@@ -721,8 +804,10 @@ Dimensions:
       Vector lat_grid[N_lat]
       Vector lon_grid[N_lon]
       Tensor4 data[N_fields][N_p][N_lat][N_lon]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField4& atm_fields_compact(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField4& atm_fields_compact(Workspace& ws) noexcept {
   return *static_cast<GriddedField4*>(ws[38]);
 }
 
@@ -741,8 +826,10 @@ is denoted as *atmgeom_checked*. The cloudbox is covered by
 
 Shall be set by *atmfields_checkedCalc*. See that WSMs for treated
 WSVs. Only the value 1 is taken as OK.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& atmfields_checked(Workspace& ws) noexcept {
+[[nodiscard]] Index& atmfields_checked(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[36]);
 }
 
@@ -756,8 +843,10 @@ See also *atmfields_checked*.
 
 Shall be set by *atmgeom_checkedCalc*. Only the value 1 is taken
 as OK.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& atmgeom_checked(Workspace& ws) noexcept {
+[[nodiscard]] Index& atmgeom_checked(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[37]);
 }
 
@@ -776,8 +865,10 @@ changed. However, not all methods are working for higher dimensions.
 Usage: Set by the user.
 
 Unit: Integer value.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& atmosphere_dim(Workspace& ws) noexcept {
+[[nodiscard]] Index& atmosphere_dim(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[35]);
 }
 
@@ -787,8 +878,12 @@ This matrix is the partial derivative of the retrieved state vector
 with respect to the measurement vector (*y*).
 
 Usage: Used and set by inversion methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& avk(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[39]); }
+[[nodiscard]] Matrix& avk(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[39]);
+}
 
 /*! The response of each backend channel.
 
@@ -810,8 +905,11 @@ Size:  Array[N_ch]
        GriddedField1
         [N_f]
        [N_f]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfGriddedField1& backend_channel_response(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfGriddedField1& backend_channel_response(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfGriddedField1*>(ws[40]);
 }
 
@@ -822,8 +920,10 @@ See *f_backend_multi* for when to use this variable and size
 constraints.
 
 Usage: Set by the user.
- */
-ArrayOfArrayOfGriddedField1& backend_channel_response_multi(
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfArrayOfGriddedField1& backend_channel_response_multi(
     Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfGriddedField1*>(ws[41]);
 }
@@ -832,8 +932,11 @@ ArrayOfArrayOfGriddedField1& backend_channel_response_multi(
 
 Used by line mixing calculations to identify which bands to match to the
 line database.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfQuantumIdentifier& band_identifiers(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfQuantumIdentifier& band_identifiers(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfQuantumIdentifier*>(ws[43]);
 }
 
@@ -841,8 +944,11 @@ ArrayOfQuantumIdentifier& band_identifiers(Workspace& ws) noexcept {
 
 This is used to hold a set of *atm_fields_compact* for batch
 calculations. For further information see *atm_fields_compact*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfGriddedField4& batch_atm_fields_compact(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfGriddedField4& batch_atm_fields_compact(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfGriddedField4*>(ws[42]);
 }
 
@@ -850,8 +956,11 @@ ArrayOfGriddedField4& batch_atm_fields_compact(Workspace& ws) noexcept {
 
 This is used to hold a set of *cloudbox_limits* for batch
 calculations.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfIndex& batch_cloudbox_limits(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfIndex& batch_cloudbox_limits(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfIndex*>(ws[44]);
 }
 
@@ -859,8 +968,10 @@ ArrayOfArrayOfIndex& batch_cloudbox_limits(Workspace& ws) noexcept {
 
 This is used to hold a set of 1D *pnd_field* for batch
 calculations.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTensor4& batch_pnd_fields(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTensor4& batch_pnd_fields(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTensor4*>(ws[45]);
 }
 
@@ -877,8 +988,11 @@ Each ArrayOfIndex gives the index of the values in *f_grid* associated
 with the channel of concern. For a pure double-sideband receiver, where
 there is one monochromatic frequency per passband, this argument could
 look like: [[0,5],[1,4],[2,3],[7,8],[7,8]].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfIndex& channel2fgrid_indexes(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfIndex& channel2fgrid_indexes(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfIndex*>(ws[46]);
 }
 
@@ -890,8 +1004,10 @@ together with the accompanying WSV *channel2fgrid_indexes*.
 This WSV shall have excatly the same sizes as *channel2fgrid_indexes*.
 Each element gives the weight to be assigned to the associated
 monochromatic frequency.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfVector& channel2fgrid_weights(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfVector& channel2fgrid_weights(Workspace& ws) noexcept {
   return *static_cast<ArrayOfVector*>(ws[47]);
 }
 
@@ -905,8 +1021,10 @@ space between the cloudbox and edges of the model atmosphere (for
 
 Relevant checks are performed by *cloudbox_checkedCalc. Only the
 value 1 is taken as OK.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& cloudbox_checked(Workspace& ws) noexcept {
+[[nodiscard]] Index& cloudbox_checked(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[48]);
 }
 
@@ -930,8 +1048,10 @@ Unit: W / (m^2 Hz sr) for each Stokes component.
 
 Note: For 1D, the size of the latitude, longitude and azimuth
 dimension (N_aa) are all 1.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor7& cloudbox_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor7& cloudbox_field(Workspace& ws) noexcept {
   return *static_cast<Tensor7*>(ws[49]);
 }
 
@@ -952,8 +1072,10 @@ Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
 
 Note: For 1D, the size of the azimuth angle dimension (N_aa) is
 always 1.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor6& cloudbox_field_mono(Workspace& ws) noexcept {
+[[nodiscard]] Tensor6& cloudbox_field_mono(Workspace& ws) noexcept {
   return *static_cast<Tensor6*>(ws[50]);
 }
 
@@ -973,8 +1095,10 @@ Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
        (cloudbox_limits[3] - cloudbox_limits[2]) +1,
        (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         N_za, N_aa, N_i ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor6& cloudbox_field_mono_old(Workspace& ws) noexcept {
+[[nodiscard]] Tensor6& cloudbox_field_mono_old(Workspace& ws) noexcept {
   return *static_cast<Tensor6*>(ws[51]);
 }
 
@@ -1013,8 +1137,10 @@ Usage: Set by the user, either directly or using a method
 Unit:  Index values.
 
 Size:  [ 2 * atmosphere_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& cloudbox_limits(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& cloudbox_limits(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[52]);
 }
 
@@ -1032,21 +1158,29 @@ this variable is discussed. The variable is listed as a subentry to
 Usage: Set by the user.
 
 Unit:  Boolean.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& cloudbox_on(Workspace& ws) noexcept {
+[[nodiscard]] Index& cloudbox_on(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[53]);
 }
 
 /*! An array of coefficients for effective collisions
- */
-ArrayOfArrayOfGriddedField1& collision_coefficients(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfArrayOfGriddedField1& collision_coefficients(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfGriddedField1*>(ws[182]);
 }
 
 /*! An array of quantum identifiers for finding collisional rates
 in *collision_coefficients*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfQuantumIdentifier& collision_line_identifiers(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfQuantumIdentifier& collision_line_identifiers(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfQuantumIdentifier*>(ws[181]);
 }
 
@@ -1076,14 +1210,18 @@ Dimensions:
       Vector T_grid[N_T]
       ArrayOfString Complex[2]
       Tensor3 data[N_f][N_T][2]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& complex_refr_index(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& complex_refr_index(Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[54]);
 }
 
 /*! Holds a list of counts, any counts.
- */
-ArrayOfIndex& counts(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfIndex& counts(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[55]);
 }
 
@@ -1093,8 +1231,10 @@ The matrix contained in this block will be added to the blocks in
 in *covmat_sx* and *covmat_se* by the corresponding WSMs. Its dimensions
 must agree with gridpoints of the correlated retrieval quantities.
 Usage:   Used by the retrievalAdd functions.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Sparse& covmat_block(Workspace& ws) noexcept {
+[[nodiscard]] Sparse& covmat_block(Workspace& ws) noexcept {
   return *static_cast<Sparse*>(ws[56]);
 }
 
@@ -1105,8 +1245,10 @@ The matrix contained in this block will be used as the inverse of the matrix
 contained in covmat_block.
 
 Usage:   Used by the retrievalAdd functions.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Sparse& covmat_inv_block(Workspace& ws) noexcept {
+[[nodiscard]] Sparse& covmat_inv_block(Workspace& ws) noexcept {
   return *static_cast<Sparse*>(ws[57]);
 }
 
@@ -1123,8 +1265,10 @@ Usage:   Used by inversion methods.
 
 Dimensions:
      [ y, y ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-CovarianceMatrix& covmat_se(Workspace& ws) noexcept {
+[[nodiscard]] CovarianceMatrix& covmat_se(Workspace& ws) noexcept {
   return *static_cast<CovarianceMatrix*>(ws[58]);
 }
 
@@ -1132,8 +1276,10 @@ CovarianceMatrix& covmat_se(Workspace& ws) noexcept {
 
 Dimensions:
      [*ybatch*.nelem()][ *ybatch*[i], *ybatch*[i] ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& covmat_sepsbatch(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& covmat_sepsbatch(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[59]);
 }
 
@@ -1147,8 +1293,10 @@ of a successful OEM calculation.
 
 Dimensions:
     [x,x]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& covmat_so(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& covmat_so(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[61]);
 }
 
@@ -1161,8 +1309,10 @@ Usage: Set by the covmat_ssCalc workspace method to characterize the.
 errors of a successful OEM calculation.
 Dimensions:
     [x,x]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& covmat_ss(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& covmat_ss(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[62]);
 }
 
@@ -1186,8 +1336,10 @@ Usage:   Used by inversion methods.
 
 Dimensions:
      [ x, x ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-CovarianceMatrix& covmat_sx(Workspace& ws) noexcept {
+[[nodiscard]] CovarianceMatrix& covmat_sx(Workspace& ws) noexcept {
   return *static_cast<CovarianceMatrix*>(ws[60]);
 }
 
@@ -1208,8 +1360,10 @@ the lookup table.
 Dimensions: [n_quantities][f_grid, abs_p]
 
 Unit: 1/m/quantity
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& dabs_coef_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& dabs_coef_dx(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[63]);
 }
 
@@ -1225,8 +1379,11 @@ Usage:      Output of *abs_xsec_agenda*.
 
 Dimensions:
      [*abs_species*][n_quantities][*f_grid*, *abs_p* ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfMatrix& dabs_xsec_per_species_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfMatrix& dabs_xsec_per_species_dx(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfMatrix*>(ws[64]);
 }
 
@@ -1245,8 +1402,10 @@ Usage:      Output of *iy_main_agenda*.
 
 Dimensions:
      [n_quantities][ n_retrieval_points, f_grid, stokes_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTensor3& diy_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTensor3& diy_dx(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTensor3*>(ws[72]);
 }
 
@@ -1258,14 +1417,18 @@ with respect to one of of the input parameters.
 Dimensions: [ quantities ] [nza, naa, nf, stokes_dim] or [0]
 
 Unit: 1/m/jacobian_quantity
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfStokesVector& dnlte_dx_source(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfStokesVector& dnlte_dx_source(Workspace& ws) noexcept {
   return *static_cast<ArrayOfStokesVector*>(ws[78]);
 }
 
 /*! Agenda defining the calculations to perform for each batch case.
- */
-Agenda& dobatch_calc_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& dobatch_calc_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[65]);
 }
 
@@ -1279,8 +1442,10 @@ Usage: Most commonly produced by *DOBatchCalc*.
 Unit:  See *cloudbox_field*.
 
 Dimensions: Number of array elements equals number of batch cases.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTensor7& dobatch_cloudbox_field(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTensor7& dobatch_cloudbox_field(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTensor7*>(ws[66]);
 }
 
@@ -1294,8 +1459,10 @@ Usage: Most commonly produced by *DOBatchCalc*.
 Unit:  See *irradiance_field*.
 
 Dimensions: Number of array elements equals number of batch cases.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTensor4& dobatch_irradiance_field(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTensor4& dobatch_irradiance_field(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTensor4*>(ws[68]);
 }
 
@@ -1309,8 +1476,10 @@ Usage: Most commonly produced by *DOBatchCalc*.
 Unit:  See *radiance_field*.
 
 Dimensions: Number of array elements equals number of batch cases.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTensor5& dobatch_radiance_field(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTensor5& dobatch_radiance_field(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTensor5*>(ws[67]);
 }
 
@@ -1325,8 +1494,11 @@ Usage: Most commonly produced by *DOBatchCalc*.
 Unit:  See *spectral_irradiance_field*.
 
 Dimensions: Number of array elements equals number of batch cases.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTensor5& dobatch_spectral_irradiance_field(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTensor5& dobatch_spectral_irradiance_field(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfTensor5*>(ws[69]);
 }
 
@@ -1338,14 +1510,18 @@ If after an iteration the convergence test is fulfilled, 1 is
 assigned which means that the iteration is completed.
 
 Usage: Method output.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& doit_conv_flag(Workspace& ws) noexcept {
+[[nodiscard]] Index& doit_conv_flag(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[80]);
 }
 
 /*! Agenda executing the DOIT convergence test.
- */
-Agenda& doit_conv_test_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& doit_conv_test_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[81]);
 }
 
@@ -1353,8 +1529,10 @@ Agenda& doit_conv_test_agenda(Workspace& ws) noexcept {
 
 This flag is checked by *DoitCalc* to make sure that
 *DoitInit* was called before.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& doit_is_initialized(Workspace& ws) noexcept {
+[[nodiscard]] Index& doit_is_initialized(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[82]);
 }
 
@@ -1362,20 +1540,26 @@ Index& doit_is_initialized(Workspace& ws) noexcept {
 
 This variable holds the number of iterations
 while solving the VRTE using the DOIT method.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& doit_iteration_counter(Workspace& ws) noexcept {
+[[nodiscard]] Index& doit_iteration_counter(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[83]);
 }
 
 /*! Agenda performing monochromatic DOIT calculation.
- */
-Agenda& doit_mono_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& doit_mono_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[84]);
 }
 
 /*! Agenda performing the DOIT cloudbox radiative transfer update.
- */
-Agenda& doit_rte_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& doit_rte_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[85]);
 }
 
@@ -1392,14 +1576,18 @@ Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
        (cloudbox_limits[3] - cloudbox_limits[2]) +1,
        (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         N_za, N_aa, N_i ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor6& doit_scat_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor6& doit_scat_field(Workspace& ws) noexcept {
   return *static_cast<Tensor6*>(ws[87]);
 }
 
 /*! Agenda calculating the scattering integral field in DOIT.
- */
-Agenda& doit_scat_field_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& doit_scat_field_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[86]);
 }
 
@@ -1410,8 +1598,10 @@ Output of the method *doit_za_grid_optCalc*.
 Usage:   Output of *doit_za_grid_optCalc*
 
 Unit:    degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& doit_za_grid_opt(Workspace& ws) noexcept {
+[[nodiscard]] Vector& doit_za_grid_opt(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[88]);
 }
 
@@ -1421,8 +1611,10 @@ Grid points are defined from 0 to 180 deg, for the scattering
 integral calculation.
 
 Usage: Output of *DOAngularGridsSet*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& doit_za_grid_size(Workspace& ws) noexcept {
+[[nodiscard]] Index& doit_za_grid_size(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[89]);
 }
 
@@ -1432,8 +1624,10 @@ Index& doit_za_grid_size(Workspace& ws) noexcept {
 1 - cubic interpolation
 
 Usage: Set by user in *doit_za_interpSet*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& doit_za_interp(Workspace& ws) noexcept {
+[[nodiscard]] Index& doit_za_interp(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[90]);
 }
 
@@ -1443,8 +1637,10 @@ The variable gives the particle derivate of *pnd_data* with respect
 to the quantities set in *dpnd_data_dx_names*.
 
 Dimensions: [ n_quantities, n_points, n_scattering_elements ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& dpnd_data_dx(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& dpnd_data_dx(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[73]);
 }
 
@@ -1454,8 +1650,10 @@ This variable tells an element in *pnd_agenda_array* for which
 quantities partial derivatives shall be calculated.
 
 Dimensions: [ n_quantities ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& dpnd_data_dx_names(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& dpnd_data_dx_names(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[74]);
 }
 
@@ -1469,8 +1667,10 @@ For retrieval quantities that are not scattering species, the matching
 Tensor4 is of no relevance and must be set to be empty.
 
 Dimensions: [n_quantities][ n_scattering_elements, n_p, n_lat, n_lon ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTensor4& dpnd_field_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTensor4& dpnd_field_dx(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTensor4*>(ws[75]);
 }
 
@@ -1486,8 +1686,11 @@ Dimension: [ n_quantities ] [naa, nza, nf, f(stokes_dim)]
 partial derivation
 
 Unit: 1/m/jacobian_quantity
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfPropagationMatrix& dpropmat_clearsky_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfPropagationMatrix& dpropmat_clearsky_dx(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfPropagationMatrix*>(ws[76]);
 }
 
@@ -1497,8 +1700,10 @@ The variable gives the particle derivate of *psd_data* with respect
 to the quantities set in *dpnd_data_dx_names*.
 
 Dimensions: [ n_quantities, n_points, n_scattering_elements ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& dpsd_data_dx(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& dpsd_data_dx(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[77]);
 }
 
@@ -1518,8 +1723,10 @@ the lookup table.
 Dimensions: [n_quantities][f_grid, abs_p]
 
 Unit: 1/m/quantity
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& dsrc_coef_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& dsrc_coef_dx(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[70]);
 }
 
@@ -1535,8 +1742,11 @@ Usage:      Output of *abs_xsec_agenda*.
 
 Dimensions:
      [*abs_species*][n_quantities][*f_grid*, *abs_p* ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfMatrix& dsrc_xsec_per_species_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfMatrix& dsrc_xsec_per_species_dx(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfMatrix*>(ws[71]);
 }
 
@@ -1546,8 +1756,10 @@ listed in *dsurface_names*.
 Usage: Used internally of radiative transfer methods
 
 Dimensions: [dsurface_names][f_grid, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& dsurface_emission_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& dsurface_emission_dx(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[91]);
 }
 
@@ -1556,8 +1768,10 @@ ArrayOfMatrix& dsurface_emission_dx(Workspace& ws) noexcept {
 Usage: Used internally of radiative transfer methods
 
 Dimensions: [retrieval quantity]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& dsurface_names(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& dsurface_names(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[92]);
 }
 
@@ -1567,8 +1781,10 @@ listed in *dsurface_names*.
 Usage: Used internally of radiative transfer methods
 
 Dimensions: [dsurface_names][surface_los, f_grid, stokes_dim, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTensor4& dsurface_rmatrix_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTensor4& dsurface_rmatrix_dx(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTensor4*>(ws[93]);
 }
 
@@ -1578,8 +1794,12 @@ This matrix is the partial derivative of the retrieved state vector
 with respect to the measurement vector (*y*).
 
 Usage: Used and set by inversion methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& dxdy(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[94]); }
+[[nodiscard]] Matrix& dxdy(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[94]);
+}
 
 /*! Total extinction matrix.
 
@@ -1597,8 +1817,10 @@ Usage:      Output of *opt_prop_bulkCalc*
 Unit:       m^2
 
 Dimensions: [f_grid, stokes_dim, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-PropagationMatrix& ext_mat(Workspace& ws) noexcept {
+[[nodiscard]] PropagationMatrix& ext_mat(Workspace& ws) noexcept {
   return *static_cast<PropagationMatrix*>(ws[95]);
 }
 
@@ -1613,8 +1835,10 @@ Usage:      Output of *spt_calc_agenda*
 Unit:       m^2
 
 Dimensions: [number of scattering elements, stokes_dim, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfPropagationMatrix& ext_mat_spt(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfPropagationMatrix& ext_mat_spt(Workspace& ws) noexcept {
   return *static_cast<ArrayOfPropagationMatrix*>(ws[96]);
 }
 
@@ -1623,8 +1847,10 @@ ArrayOfPropagationMatrix& ext_mat_spt(Workspace& ws) noexcept {
 Usage: Set by the user.
 
 Unit:  Hz
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& f_backend(Workspace& ws) noexcept {
+[[nodiscard]] Vector& f_backend(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[102]);
 }
 
@@ -1642,8 +1868,10 @@ also *lo_multi*.
 Usage: Set by the user.
 
 Unit:  Hz
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfVector& f_backend_multi(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfVector& f_backend_multi(Workspace& ws) noexcept {
   return *static_cast<ArrayOfVector*>(ws[103]);
 }
 
@@ -1652,8 +1880,10 @@ ArrayOfVector& f_backend_multi(Workspace& ws) noexcept {
 Usage: Set by the user.
 
 Unit:  Hz
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& f_grid(Workspace& ws) noexcept {
+[[nodiscard]] Vector& f_grid(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[104]);
 }
 
@@ -1666,22 +1896,30 @@ holding the index of the frequency treated presently.
 In some contexts, a negative f_index means all frequencies.
 
 Usage: Method output.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& f_index(Workspace& ws) noexcept { return *static_cast<Index*>(ws[105]); }
+[[nodiscard]] Index& f_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[105]);
+}
 
 /*! Index number for files.
 
 See *WriteXMLIndexed* for further information.
 
 Usage:   Input to *WriteXMLIndexed* and *ReadXMLIndexed*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& file_index(Workspace& ws) noexcept {
+[[nodiscard]] Index& file_index(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[97]);
 }
 
 /*! Agenda performing a for loop.
- */
-Agenda& forloop_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& forloop_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[98]);
 }
 
@@ -1689,20 +1927,26 @@ Agenda& forloop_agenda(Workspace& ws) noexcept {
 
 This is the index that is used by method *ForLoop* to loop over
 *forloop_agenda*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& forloop_index(Workspace& ws) noexcept {
+[[nodiscard]] Index& forloop_index(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[99]);
 }
 
 /*! So far just testing of FOS ...
- */
-Vector& fos_iyin_za_angles(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Vector& fos_iyin_za_angles(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[100]);
 }
 
 /*! So far just testing of FOS ...
- */
-Matrix& fos_scatint_angles(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Matrix& fos_scatint_angles(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[101]);
 }
 
@@ -1710,12 +1954,18 @@ Matrix& fos_scatint_angles(Workspace& ws) noexcept {
 
 This variable is "little g" at the reference ellipsiod. That is,
 for Earth this is a value around 9.81 m/s2
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& g0(Workspace& ws) noexcept { return *static_cast<Numeric*>(ws[107]); }
+[[nodiscard]] Numeric& g0(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[107]);
+}
 
 /*! Agenda providing the gravity constant.
- */
-Agenda& g0_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& g0_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[108]);
 }
 
@@ -1734,14 +1984,18 @@ Otherwise, this should be a vector having length 5. The elements are:
 Dimensions: 0 or 5
 
 Unit:  [ m, deg, deg, deg, deg ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& geo_pos(Workspace& ws) noexcept {
+[[nodiscard]] Vector& geo_pos(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[106]);
 }
 
 /*! Agenda deriving the geo-position of a pencil beam calculation.
- */
-Agenda& geo_pos_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& geo_pos_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[109]);
 }
 
@@ -1756,14 +2010,18 @@ Units: K s^-1
 Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
        (cloudbox_limits[3] - cloudbox_limits[2]) +1,
        (cloudbox_limits[5] - cloudbox_limits[4]) +1,
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& heating_rates(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& heating_rates(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[110]);
 }
 
 /*! Data for Hitran cross section species.
- */
-ArrayOfXsecRecord& hitran_xsec_data(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfXsecRecord& hitran_xsec_data(Workspace& ws) noexcept {
   return *static_cast<ArrayOfXsecRecord*>(ws[111]);
 }
 
@@ -1802,8 +2060,10 @@ Iv or Ih it could be useful to shift polarisation as first sensor
 operation.
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& instrument_pol(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& instrument_pol(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[112]);
 }
 
@@ -1813,20 +2073,27 @@ Defined as *instrument_pol* but used when multiple polarisations
 are possible/required.
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfIndex& instrument_pol_array(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfIndex& instrument_pol_array(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfIndex*>(ws[113]);
 }
 
 /*! Agenda recalculating spectra and Jacobian for iterative inversion methods.
- */
-Agenda& inversion_iterate_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& inversion_iterate_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[115]);
 }
 
 /*! Iteration counter variable for *inversion_iterate_agenda*.
- */
-Index& inversion_iteration_counter(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& inversion_iteration_counter(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[114]);
 }
 
@@ -1841,8 +2108,10 @@ Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
        (cloudbox_limits[3] - cloudbox_limits[2]) +1,
        (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         2 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor4& irradiance_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor4& irradiance_field(Workspace& ws) noexcept {
   return *static_cast<Tensor4*>(ws[116]);
 }
 
@@ -1850,8 +2119,10 @@ Tensor4& irradiance_field(Workspace& ws) noexcept {
 
 This variable can be set to default values by
 calling *isotopologue_ratiosInitFromBuiltin*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-SpeciesAuxData& isotopologue_ratios(Workspace& ws) noexcept {
+[[nodiscard]] SpeciesAuxData& isotopologue_ratios(Workspace& ws) noexcept {
   return *static_cast<SpeciesAuxData*>(ws[117]);
 }
 
@@ -1870,8 +2141,12 @@ Unit:       For passive observations, as  selected by *iy_unit*.
             For transmission type, same as for transmitted signal.
 
 Dimensions: [ f_grid, stokes_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& iy(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[118]); }
+[[nodiscard]] Matrix& iy(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[118]);
+}
 
 /*! Flag to handle recursive calls of *iy_main_agenda*
 
@@ -1881,8 +2156,10 @@ is used to tell the methods inside the agenda which is the primary
 *iy_main_agenda*, such as *yCalc*, but the user must set this
 variable to 1 if the agenda is called directly inside the control
 file (which should be a rare case).
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& iy_agenda_call1(Workspace& ws) noexcept {
+[[nodiscard]] Index& iy_agenda_call1(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[120]);
 }
 
@@ -1895,8 +2172,10 @@ data are selected by *iy_aux_vars*.
 Usage:      Provided by some radiative transfer methods.
 
 Dimensions: [quantity][ f_grid, stokes_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& iy_aux(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& iy_aux(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[121]);
 }
 
@@ -1910,14 +2189,18 @@ The possible choices vary between the methods. See the WSM you select
 for *iy_main_agenda* for the complete set of choices. Please not that
 if the calculations are done through *yCalc*, you can not select
 along-the-path variables.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& iy_aux_vars(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& iy_aux_vars(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[122]);
 }
 
 /*! Agenda deriving the intensity at boundary or interior of the cloudbox.
- */
-Agenda& iy_cloudbox_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& iy_cloudbox_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[123]);
 }
 
@@ -1948,40 +2231,57 @@ files as: WriteXMLIndexed(output_file_format,iy_id,in,filename,9)
 Setting of *iy_id* is not yet supported together with scattering
 calculations. The value of iy_id then differs, it is either set to 0
 or keeps its value set by *yCalc*.
-*/
-Index& iy_id(Workspace& ws) noexcept { return *static_cast<Index*>(ws[125]); }
 
-/*! Agenda dedicated to *iyIndependentBeamApproximation*.*/
-Agenda& iy_independent_beam_approx_agenda(Workspace& ws) noexcept {
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& iy_id(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[125]);
+}
+
+/*! Agenda dedicated to *iyIndependentBeamApproximation*.
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& iy_independent_beam_approx_agenda(
+    Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[124]);
 }
 
-/*! Agenda dedicated to *iyLoopFrequencies*.*/
-Agenda& iy_loop_freqs_agenda(Workspace& ws) noexcept {
+/*! Agenda dedicated to *iyLoopFrequencies*.
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& iy_loop_freqs_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[126]);
 }
 
 /*! Agenda calculating the single monochromatic pencil beam spectrum.
- */
-Agenda& iy_main_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& iy_main_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[127]);
 }
 
 /*! Agenda providing the downwelling radiation at the top of the atmosphere.
- */
-Agenda& iy_space_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& iy_space_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[128]);
 }
 
 /*! Agenda providing the upwelling radiation from the surface.
- */
-Agenda& iy_surface_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& iy_surface_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[129]);
 }
 
 /*! Upwelling radiation from the surface, divided into surface types.
- */
-ArrayOfAgenda& iy_surface_agenda_array(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfAgenda& iy_surface_agenda_array(Workspace& ws) noexcept {
   return *static_cast<ArrayOfAgenda*>(ws[130]);
 }
 
@@ -2000,14 +2300,18 @@ Usage:      Internally inside iy_main_agenda.
 Unit:       1
 
 Dimensions: [ f_grid, stokes_dim, stokes_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& iy_transmission(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& iy_transmission(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[131]);
 }
 
 /*! Agenda providing a transmitter signal.
- */
-Agenda& iy_transmitter_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& iy_transmitter_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[132]);
 }
 
@@ -2018,8 +2322,10 @@ is changed. The possible choices differ between the radiative
 methods, including not considering the variable at all.
 Accordingly, for details see the radiative method you have selected
 (e.g., *iyEmissionStandard*, *iyMC*, *iyActiveSingleScat* and the like).
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-String& iy_unit(Workspace& ws) noexcept {
+[[nodiscard]] String& iy_unit(Workspace& ws) noexcept {
   return *static_cast<String*>(ws[133]);
 }
 
@@ -2034,8 +2340,12 @@ Unit:       W / (m^2 Hz sr) or transmission.
 
 Dimensions: [ nlos * nf * stokes_dim ] where nlos is number of rows in
             mblock_dlos_grid, and nf is length of f_grid.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& iyb(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[119]); }
+[[nodiscard]] Vector& iyb(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[119]);
+}
 
 /*! The Jacobian matrix.
 
@@ -2050,14 +2360,18 @@ and *x*, respectively.
 Units:   See the different retrieval quantities.
 
 Dimension: [ y, number of retrieval quantities and grids ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& jacobian(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& jacobian(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[134]);
 }
 
 /*! Pure numerical Jacobian calculation agenda.
- */
-Agenda& jacobian_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& jacobian_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[135]);
 }
 
@@ -2068,8 +2382,10 @@ even if such calculations have been set-up (through the
 jacobianAddXxx methods).
 
 Needs to be 0 if cloudy-sky (Doit) Jacobians shall be calculated.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& jacobian_do(Workspace& ws) noexcept {
+[[nodiscard]] Index& jacobian_do(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[136]);
 }
 
@@ -2079,16 +2395,23 @@ An array of retrieval quantities for which the Jacobians are
 calculated.
 
 Usage: Quantities are added by the jacobianAdd WSMs.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfRetrievalQuantity& jacobian_quantities(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfRetrievalQuantity& jacobian_quantities(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfRetrievalQuantity*>(ws[137]);
 }
 
 /*! A latitude.
 
 Unit:  degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& lat(Workspace& ws) noexcept { return *static_cast<Numeric*>(ws[138]); }
+[[nodiscard]] Numeric& lat(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[138]);
+}
 
 /*! The latitude grid.
 
@@ -2113,8 +2436,10 @@ this variable is discussed. The variable is listed as a subentry to
 Usage: Set by the user.
 
 Unit:  degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& lat_grid(Workspace& ws) noexcept {
+[[nodiscard]] Vector& lat_grid(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[139]);
 }
 
@@ -2135,8 +2460,10 @@ Otherwise:
 Usage: Set by the user.
 
 Unit:  degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& lat_true(Workspace& ws) noexcept {
+[[nodiscard]] Vector& lat_true(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[140]);
 }
 
@@ -2145,24 +2472,30 @@ Vector& lat_true(Workspace& ws) noexcept {
 Usage: Set manually on own risk, or use *lbl_checkedCalc*.
 
 Unit:  Boolean
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& lbl_checked(Workspace& ws) noexcept {
+[[nodiscard]] Index& lbl_checked(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[141]);
 }
 
 /*! Irradiance as seen by a single absorption line.
 
 Used internally for, e.g., NLTE effects
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& line_irradiance(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& line_irradiance(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[142]);
 }
 
 /*! Transmission as seen by a single absorption line.
 
 Used internally for, e.g., NLTE effects
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& line_transmission(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& line_transmission(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[143]);
 }
 
@@ -2170,8 +2503,10 @@ Tensor3& line_transmission(Workspace& ws) noexcept {
 
 The values are stored following iteration order, i.e. the first
 is the gamma factor for the first iteration etc.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& lm_ga_history(Workspace& ws) noexcept {
+[[nodiscard]] Vector& lm_ga_history(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[177]);
 }
 
@@ -2184,8 +2519,12 @@ intermediate frequencies (IF).
 Unit:  Hz
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& lo(Workspace& ws) noexcept { return *static_cast<Numeric*>(ws[144]); }
+[[nodiscard]] Numeric& lo(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[144]);
+}
 
 /*! Local oscillator frequencies.
 
@@ -2197,16 +2536,22 @@ element for each LO. The size of this variable and
 Unit:  Hz
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& lo_multi(Workspace& ws) noexcept {
+[[nodiscard]] Vector& lo_multi(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[145]);
 }
 
 /*! A longitude.
 
 Unit:  degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& lon(Workspace& ws) noexcept { return *static_cast<Numeric*>(ws[146]); }
+[[nodiscard]] Numeric& lon(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[146]);
+}
 
 /*! The longitude grid.
 
@@ -2228,8 +2573,10 @@ this variable is discussed. The variable is listed as a subentry to
 Usage: Set by the user.
 
 Unit:  degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& lon_grid(Workspace& ws) noexcept {
+[[nodiscard]] Vector& lon_grid(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[147]);
 }
 
@@ -2250,8 +2597,10 @@ Otherwise:
 Usage: Set by the user.
 
 Unit:  degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& lon_true(Workspace& ws) noexcept {
+[[nodiscard]] Vector& lon_true(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[148]);
 }
 
@@ -2266,8 +2615,10 @@ everywhere.
 Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]  or [ 0 0 0 ].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& mag_u_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& mag_u_field(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[149]);
 }
 
@@ -2282,8 +2633,10 @@ everywhere.
 Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& mag_u_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& mag_u_field_raw(Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[150]);
 }
 
@@ -2298,8 +2651,10 @@ everywhere.
 Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]  or [ 0 0 0 ].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& mag_v_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& mag_v_field(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[151]);
 }
 
@@ -2314,8 +2669,10 @@ everywhere.
 Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& mag_v_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& mag_v_field_raw(Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[152]);
 }
 
@@ -2329,8 +2686,10 @@ everywhere.
 Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]  or [ 0 0 0 ].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& mag_w_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& mag_w_field(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[153]);
 }
 
@@ -2344,14 +2703,18 @@ everywhere.
 Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& mag_w_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& mag_w_field_raw(Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[154]);
 }
 
 /*! Agenda corresponding to the entire controlfile.
- */
-Agenda& main_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& main_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[155]);
 }
 
@@ -2376,8 +2739,10 @@ this variable is discussed. The variable is listed as a subentry to
 Usage: Set by the user or output of antenna WSMs.
 
 Unit:  degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& mblock_dlos_grid(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& mblock_dlos_grid(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[156]);
 }
 
@@ -2386,8 +2751,10 @@ Matrix& mblock_dlos_grid(Workspace& ws) noexcept {
 Used to tell agendas the index of present measurement block.
 
 Usage: Used internally.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& mblock_index(Workspace& ws) noexcept {
+[[nodiscard]] Index& mblock_index(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[157]);
 }
 
@@ -2395,8 +2762,10 @@ Index& mblock_index(Workspace& ws) noexcept {
 
 Usage: Input to MCGeneral. Set by *mc_antennaSetGaussian* and similar
        methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-MCAntenna& mc_antenna(Workspace& ws) noexcept {
+[[nodiscard]] MCAntenna& mc_antenna(Workspace& ws) noexcept {
   return *static_cast<MCAntenna*>(ws[158]);
 }
 
@@ -2407,8 +2776,10 @@ Usage: Output from Monte Carlo functions.
 Units: Depends on *iy_unit*.
 
 Size:  [ stokes_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& mc_error(Workspace& ws) noexcept {
+[[nodiscard]] Vector& mc_error(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[159]);
 }
 
@@ -2416,8 +2787,10 @@ Vector& mc_error(Workspace& ws) noexcept {
 scattering algorithm.
 
 Usage: Set by MCGeneral and other MC methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& mc_iteration_count(Workspace& ws) noexcept {
+[[nodiscard]] Index& mc_iteration_count(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[160]);
 }
 
@@ -2425,8 +2798,10 @@ Index& mc_iteration_count(Workspace& ws) noexcept {
 calculations.
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& mc_max_iter(Workspace& ws) noexcept {
+[[nodiscard]] Index& mc_max_iter(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[161]);
 }
 
@@ -2434,8 +2809,10 @@ Index& mc_max_iter(Workspace& ws) noexcept {
 radar calculations.
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& mc_max_scatorder(Workspace& ws) noexcept {
+[[nodiscard]] Index& mc_max_scatorder(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[162]);
 }
 
@@ -2444,8 +2821,10 @@ Index& mc_max_scatorder(Workspace& ws) noexcept {
 Usage: Set by the user.
 
 Unit: s
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& mc_max_time(Workspace& ws) noexcept {
+[[nodiscard]] Index& mc_max_time(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[163]);
 }
 
@@ -2453,8 +2832,10 @@ Index& mc_max_time(Workspace& ws) noexcept {
 calculations.
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& mc_min_iter(Workspace& ws) noexcept {
+[[nodiscard]] Index& mc_min_iter(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[164]);
 }
 
@@ -2463,8 +2844,10 @@ Index& mc_min_iter(Workspace& ws) noexcept {
 Counts the number of MC endpoints in each grid cell.
 
 Usage: Set by MCGeneral and other MC methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& mc_points(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& mc_points(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[165]);
 }
 
@@ -2478,8 +2861,10 @@ The number of such cases can be determined by comparing
 *mc_iteration_count* with the sum of the elements in this array.
 
 Usage: Set by MCGeneral and other MC methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& mc_scat_order(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& mc_scat_order(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[166]);
 }
 
@@ -2487,8 +2872,12 @@ ArrayOfIndex& mc_scat_order(Workspace& ws) noexcept {
 Monte Carlo methods.
 
 Usage: Set by MCSetSeed.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& mc_seed(Workspace& ws) noexcept { return *static_cast<Index*>(ws[168]); }
+[[nodiscard]] Index& mc_seed(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[168]);
+}
 
 /*! Rough classification of source to emission.
 
@@ -2501,16 +2890,20 @@ The values of the array give the number of cases where the emission
 source was found to be inside each "domain".
 
 Usage: Set by MCGeneral and other MC methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& mc_source_domain(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& mc_source_domain(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[167]);
 }
 
 /*! Target precision (1 std. dev.) for Monte Carlo calculations.
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& mc_std_err(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& mc_std_err(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[169]);
 }
 
@@ -2518,8 +2911,10 @@ Numeric& mc_std_err(Workspace& ws) noexcept {
 calculations.
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& mc_taustep_limit(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& mc_taustep_limit(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[171]);
 }
 
@@ -2531,8 +2926,10 @@ Usage: Set by user.
 Units: Unitless.
 
 Size:  [ stokes_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& mc_y_tx(Workspace& ws) noexcept {
+[[nodiscard]] Vector& mc_y_tx(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[170]);
 }
 
@@ -2546,8 +2943,10 @@ read in the method ybatchMetProfiles and the profiles corresponding to
 each latitude and longitude will be read in.
 
 See documentation of WSM *ybatchMetProfiles* for more information.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& met_amsu_data(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& met_amsu_data(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[172]);
 }
 
@@ -2561,8 +2960,10 @@ Usage: Set by the user.
 Unit:  [ Hz ]
 
 Size:  [ number of channels ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& met_mm_antenna(Workspace& ws) noexcept {
+[[nodiscard]] Vector& met_mm_antenna(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[173]);
 }
 
@@ -2597,8 +2998,10 @@ Usage: Set by the user.
 Unit: All entries in Hz.
 
 Size: [number of channels, 4]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& met_mm_backend(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& met_mm_backend(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[174]);
 }
 
@@ -2622,14 +3025,18 @@ Usage: Set by the user.
 Unit:  [ String ]
 
 Size:  [ number of channels ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& met_mm_polarisation(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& met_mm_polarisation(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[175]);
 }
 
 /*! Agenda for metoffice profile calculations.
- */
-Agenda& met_profile_calc_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& met_profile_calc_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[176]);
 }
 
@@ -2639,32 +3046,52 @@ This could also be referred to as the average molecular weight for
 dry air. The definition of "dry air" can differ between planets and
 methods using the WSV. For Earth, this should be a value around
 28.97.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& molarmass_dry_air(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& molarmass_dry_air(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[178]);
 }
 
 /*! Number of elements in 4th lowest dimension of a Tensor.
- */
-Index& nbooks(Workspace& ws) noexcept { return *static_cast<Index*>(ws[187]); }
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& nbooks(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[187]);
+}
 
 /*! Number of columns (elements in lowest dimension) of a Matrix or Tensor.
- */
-Index& ncols(Workspace& ws) noexcept { return *static_cast<Index*>(ws[184]); }
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& ncols(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[184]);
+}
 
 /*! Number of elements of a Vector or Array.
- */
-Index& nelem(Workspace& ws) noexcept { return *static_cast<Index*>(ws[183]); }
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& nelem(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[183]);
+}
 
 /*! Number of elements in 7th lowest dimension of a Tensor.
- */
-Index& nlibraries(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& nlibraries(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[190]);
 }
 
 /*! Flag to perform Non-LTE calculations.
- */
-Index& nlte_do(Workspace& ws) noexcept { return *static_cast<Index*>(ws[191]); }
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& nlte_do(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[191]);
+}
 
 /*! NLTE partial derivatives output is two parts:  S*dB/dx+dS/dx*B.
 This should contain the first term for one point in the atmosphere
@@ -2674,8 +3101,10 @@ with respect to one of of the input parameters.
 Dimensions: [ quantities ] [nza, naa, nf, stokes_dim] or [0]
 
 Unit: 1/m/jacobian_quantity
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfStokesVector& nlte_dsource_dx(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfStokesVector& nlte_dsource_dx(Workspace& ws) noexcept {
   return *static_cast<ArrayOfStokesVector*>(ws[79]);
 }
 
@@ -2696,8 +3125,10 @@ the levels of interest.
 Units:       [ K or % ]]
 
 Dimensions: [ NLTE levels, p_grid, lat_grid, lon_grid ] or [ 0, 0, 0, 0 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-EnergyLevelMap& nlte_field(Workspace& ws) noexcept {
+[[nodiscard]] EnergyLevelMap& nlte_field(Workspace& ws) noexcept {
   return *static_cast<EnergyLevelMap*>(ws[339]);
 }
 
@@ -2722,23 +3153,30 @@ fields:
        [N_lat]
        [N_lon]
        [N_p, N_lat, N_lon]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfGriddedField3& nlte_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfGriddedField3& nlte_field_raw(Workspace& ws) noexcept {
   return *static_cast<ArrayOfGriddedField3*>(ws[341]);
 }
 
 /*! An array of non-lte quantum identifiers for levels matching
- *nlte_field_raw* and on request *nlte_vibrational_energies*.
- */
-ArrayOfQuantumIdentifier& nlte_level_identifiers(Workspace& ws) noexcept {
+*nlte_field_raw* and on request *nlte_vibrational_energies*.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfQuantumIdentifier& nlte_level_identifiers(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfQuantumIdentifier*>(ws[179]);
 }
 
 /*! Variable to contain the additional source function due to NLTE effects.
 
 Dimensions: [ nspecies ] [nza, naa, nf, stokes_dim] or [0]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfStokesVector& nlte_source(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfStokesVector& nlte_source(Workspace& ws) noexcept {
   return *static_cast<ArrayOfStokesVector*>(ws[192]);
 }
 
@@ -2748,35 +3186,51 @@ the *nlte_source* variable.
 Unit:       1/m
 
 Dimensions: [species, f_grid, *stokes_dim*, p_grid, lat_grid, lon_grid]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor6& nlte_source_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor6& nlte_source_field(Workspace& ws) noexcept {
   return *static_cast<Tensor6*>(ws[193]);
 }
 
 /*! An list of vibrational energies matching
- *nlte_level_identifiers* and *nlte_field_raw* or being 0.
- */
-Vector& nlte_vibrational_energies(Workspace& ws) noexcept {
+*nlte_level_identifiers* and *nlte_field_raw* or being 0.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Vector& nlte_vibrational_energies(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[180]);
 }
 
 /*! Number of elements in 3rd lowest dimension of a Tensor.
- */
-Index& npages(Workspace& ws) noexcept { return *static_cast<Index*>(ws[186]); }
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& npages(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[186]);
+}
 
 /*! Number of rows (elements in 2nd lowest dimension) of a Matrix or Tensor.
- */
-Index& nrows(Workspace& ws) noexcept { return *static_cast<Index*>(ws[185]); }
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& nrows(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[185]);
+}
 
 /*! Number of elements in 5th lowest dimension of a Tensor.
- */
-Index& nshelves(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& nshelves(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[188]);
 }
 
 /*! Number of elements in 6th lowest dimension of a Tensor.
- */
-Index& nvitrines(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Index& nvitrines(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[189]);
 }
 
@@ -2796,14 +3250,18 @@ This is a vector of length 5, having the elements (0-based index):
 
 See WSM *OEM* for a definition of "cost". Values not calculated
 are set to NaN.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& oem_diagnostics(Workspace& ws) noexcept {
+[[nodiscard]] Vector& oem_diagnostics(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[194]);
 }
 
 /*! Errors encountered during OEM execution.
- */
-ArrayOfString& oem_errors(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfString& oem_errors(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[195]);
 }
 
@@ -2816,8 +3274,10 @@ This variable sets the format for output files. It could be set to
 To change the value of this variable use the workspace methods
 *output_file_formatSetAscii*, *output_file_formatSetZippedAscii*, and
 *output_file_formatSetBinary*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-String& output_file_format(Workspace& ws) noexcept {
+[[nodiscard]] String& output_file_format(Workspace& ws) noexcept {
   return *static_cast<String*>(ws[196]);
 }
 
@@ -2838,8 +3298,10 @@ this variable is discussed. The variable is listed as a subentry to
 Usage: Set by the user.
 
 Unit:  Pa
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& p_grid(Workspace& ws) noexcept {
+[[nodiscard]] Vector& p_grid(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[242]);
 }
 
@@ -2853,8 +3315,10 @@ size after the calculation with *OptimizeDoitPressureGrid*.
 Usage: Set by the user.
 
 Unit:  Pa
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& p_grid_orig(Workspace& ws) noexcept {
+[[nodiscard]] Vector& p_grid_orig(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[243]);
 }
 
@@ -2867,8 +3331,10 @@ altitude at this pressure is not changed.
 Usage: Set by the user.
 
 Unit:  Pa
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& p_hse(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& p_hse(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[244]);
 }
 
@@ -2882,8 +3348,10 @@ used, this variable must have zeros at all positions outside and at the
 border of the cloudbox.
 
 Dimensions: [ particle_bulkprop_names, p_grid, lat_grid, lon_grid ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor4& particle_bulkprop_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor4& particle_bulkprop_field(Workspace& ws) noexcept {
   return *static_cast<Tensor4*>(ws[197]);
 }
 
@@ -2894,8 +3362,10 @@ The naming is totally free. If two fields are given the same name, the
 first one will be selected.
 
 Dimensions: length should match book-dimension of *particle_bulkprop_field*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& particle_bulkprop_names(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& particle_bulkprop_names(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[198]);
 }
 
@@ -2920,8 +3390,10 @@ Usage:      Set by the user.
 Unit:       kg
 
 Dimensions: [number of scattering elements, number of mass categories]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& particle_masses(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& particle_masses(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[199]);
 }
 
@@ -2929,8 +3401,10 @@ Matrix& particle_masses(Workspace& ws) noexcept {
 
 This variable can be set to default values by
 calling *partition_functionsInitFromBuiltin*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-SpeciesAuxData& partition_functions(Workspace& ws) noexcept {
+[[nodiscard]] SpeciesAuxData& partition_functions(Workspace& ws) noexcept {
   return *static_cast<SpeciesAuxData*>(ws[200]);
 }
 
@@ -2949,8 +3423,10 @@ Usage:      Output of the method *pha_matCalc*
 Unit:        m^2
 
 Dimensions: [za_grid, aa_grid, stokes_dim, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor4& pha_mat(Workspace& ws) noexcept {
+[[nodiscard]] Tensor4& pha_mat(Workspace& ws) noexcept {
   return *static_cast<Tensor4*>(ws[201]);
 }
 
@@ -2968,8 +3444,10 @@ Unit:        m^2
 
 Dimensions: [T,za_grid, aa_grid, za_grid, aa_grid,
  stokes_dim, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor7& pha_mat_doit(Workspace& ws) noexcept {
+[[nodiscard]] Tensor7& pha_mat_doit(Workspace& ws) noexcept {
   return *static_cast<Tensor7*>(ws[202]);
 }
 
@@ -2988,8 +3466,10 @@ Unit:       m^2
 
 Dimensions: [number of scattering elements, za_grid, aa_grid,
              stokes_dim, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor5& pha_mat_spt(Workspace& ws) noexcept {
+[[nodiscard]] Tensor5& pha_mat_spt(Workspace& ws) noexcept {
   return *static_cast<Tensor5*>(ws[203]);
 }
 
@@ -3009,14 +3489,18 @@ Dimensions:
 [number of scattering elements]
 [T, za_grid, aa_grid, za_grid, aa_grid,
  stokes_dim, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTensor7& pha_mat_sptDOITOpt(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTensor7& pha_mat_sptDOITOpt(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTensor7*>(ws[205]);
 }
 
 /*! Agenda calculates the phase matrix for individual scattering elements.
- */
-Agenda& pha_mat_spt_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& pha_mat_spt_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[204]);
 }
 
@@ -3029,8 +3513,10 @@ is a value roughly 4 min less than 24 h.
 A negative value signifies a retrograde rotation, i.e. opposite to
 the rotation of Earth.
 Unit:   s
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& planet_rotation_period(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& planet_rotation_period(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[206]);
 }
 
@@ -3042,8 +3528,10 @@ That is there is a "pnd-agenda" associated with each scattering species.
 In short, each agenda takes some bulk property data as input, and returns
 particle number densities for all scattering elements of the species.
 See further *pnd_agenda_input* and associated variables.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfAgenda& pnd_agenda_array(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfAgenda& pnd_agenda_array(Workspace& ws) noexcept {
   return *static_cast<ArrayOfAgenda*>(ws[207]);
 }
 
@@ -3053,8 +3541,11 @@ This variable contains *pnd_agenda_input_names* for each agenda
 element in *pnd_agenda_array*.
 
 Dimension: [ n_scattering_species ][ n_input_variables ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfString& pnd_agenda_array_input_names(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfString& pnd_agenda_array_input_names(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfString*>(ws[210]);
 }
 
@@ -3072,8 +3563,10 @@ Each row corresponds to a position. That is, the methods in the
 pnd-agendas are expected to process multiple points in one call.
 
 Dimensions: [ n_points, n_input_variables ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& pnd_agenda_input(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& pnd_agenda_input(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[208]);
 }
 
@@ -3083,8 +3576,10 @@ The strings of this variable refer to the corresponding column in
 *pnd_agenda_input*.
 
 Dimension: [ n_input_variables ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& pnd_agenda_input_names(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& pnd_agenda_input_names(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[211]);
 }
 
@@ -3097,8 +3592,10 @@ Each element corresponds to a position. That is, the methods in the
 pnd-agendas are expected to process multiple points in one call.
 
 Dimensions: [ n_points ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& pnd_agenda_input_t(Workspace& ws) noexcept {
+[[nodiscard]] Vector& pnd_agenda_input_t(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[209]);
 }
 
@@ -3109,8 +3606,10 @@ species. The row dimension corresponds to different positions, in the
 same way as *pnd_agenda_input* is defined.
 
 Dimensions: [ n_points, n_scattering_elements ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& pnd_data(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& pnd_data(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[212]);
 }
 
@@ -3138,8 +3637,10 @@ Size: [number of scattering elements,
        (*cloudbox_limits*[1] - *cloudbox_limits*[0]) +1,
        (*cloudbox_limits*[3] - *cloudbox_limits*[2]) +1,
        (*cloudbox_limits*[5] - *cloudbox_limits*[4]) +1 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor4& pnd_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor4& pnd_field(Workspace& ws) noexcept {
   return *static_cast<Tensor4*>(ws[213]);
 }
 
@@ -3161,8 +3662,10 @@ Size:  Array[number of scattering elementst]
        [number of latitudes]
        [number of longitudes]
        [number of pressure levels, number of latitudes, number of longitudes]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfGriddedField3& pnd_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfGriddedField3& pnd_field_raw(Workspace& ws) noexcept {
   return *static_cast<ArrayOfGriddedField3*>(ws[215]);
 }
 
@@ -3174,8 +3677,10 @@ used. Most common choices should by equivalent diameter, maximum diameter
 and mass.
 
 Dimension: [ n_sizes ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& pnd_size_grid(Workspace& ws) noexcept {
+[[nodiscard]] Vector& pnd_size_grid(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[214]);
 }
 
@@ -3193,12 +3698,18 @@ find where the data structure, Ppath, for propagation paths is
 discussed. It is listed as a subentry to "data structures".
 
 Usage: Output from *ppath_agenda*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Ppath& ppath(Workspace& ws) noexcept { return *static_cast<Ppath*>(ws[216]); }
+[[nodiscard]] Ppath& ppath(Workspace& ws) noexcept {
+  return *static_cast<Ppath*>(ws[216]);
+}
 
 /*! Agenda calculating complete propagation paths.
- */
-Agenda& ppath_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& ppath_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[217]);
 }
 
@@ -3208,8 +3719,10 @@ field calculations.
 Can be ordered or not
 
 Size: user-defined
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfPpath& ppath_field(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfPpath& ppath_field(Workspace& ws) noexcept {
   return *static_cast<ArrayOfPpath*>(ws[218]);
 }
 
@@ -3221,8 +3734,10 @@ allows scattering methods to obtain propagation paths inside the
 cloudbox. Hence, this variable is for internal usage primarily.
 
 Usage: For communication between modules of arts.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& ppath_inside_cloudbox_do(Workspace& ws) noexcept {
+[[nodiscard]] Index& ppath_inside_cloudbox_do(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[219]);
 }
 
@@ -3231,8 +3746,10 @@ Index& ppath_inside_cloudbox_do(Workspace& ws) noexcept {
 See *ppath_stepGeometric* for a description of this variable.
 
 Usage: Ppath methods such as *ppath_stepGeometric*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& ppath_lmax(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& ppath_lmax(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[220]);
 }
 
@@ -3242,8 +3759,10 @@ paths.
 See *ppath_stepRefractionBasic* for a description of this variable.
 
 Usage: Refraction ppath methods such as *ppath_stepRefractionBasic*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& ppath_lraytrace(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& ppath_lraytrace(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[221]);
 }
 
@@ -3259,14 +3778,18 @@ propagation paths in the ARTS user guide.
 Usage:   In/output to/from *ppath_step_agenda*.
 
 Members: See AUG.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Ppath& ppath_step(Workspace& ws) noexcept {
+[[nodiscard]] Ppath& ppath_step(Workspace& ws) noexcept {
   return *static_cast<Ppath*>(ws[222]);
 }
 
 /*! Agenda calculating a propagation path step.
- */
-Agenda& ppath_step_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& ppath_step_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[223]);
 }
 
@@ -3277,8 +3800,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ number of frequencies, ppath.np ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& ppvar_f(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& ppvar_f(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[224]);
 }
 
@@ -3289,8 +3814,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ number of frequencies, stokes_dim, ppath.np ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& ppvar_iy(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& ppvar_iy(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[225]);
 }
 
@@ -3301,8 +3828,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ 3, ppath.np ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& ppvar_mag(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& ppvar_mag(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[226]);
 }
 
@@ -3313,8 +3842,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ number of non-lte temperatures, 1, 1, ppath.np ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-EnergyLevelMap& ppvar_nlte(Workspace& ws) noexcept {
+[[nodiscard]] EnergyLevelMap& ppvar_nlte(Workspace& ws) noexcept {
   return *static_cast<EnergyLevelMap*>(ws[227]);
 }
 
@@ -3329,8 +3860,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ ppath.np, f_grid]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& ppvar_optical_depth(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& ppvar_optical_depth(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[230]);
 }
 
@@ -3343,8 +3876,10 @@ propagation path
 Dimension: [ ppath.np ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& ppvar_p(Workspace& ws) noexcept {
+[[nodiscard]] Vector& ppvar_p(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[228]);
 }
 
@@ -3355,8 +3890,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ number of scattering elements, ppath.np ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& ppvar_pnd(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& ppvar_pnd(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[229]);
 }
 
@@ -3367,8 +3904,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ ppath.np ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& ppvar_t(Workspace& ws) noexcept {
+[[nodiscard]] Vector& ppvar_t(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[231]);
 }
 
@@ -3382,8 +3921,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ ppath.np, f_grid, stokes_dim, stokes_dim ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor4& ppvar_trans_cumulat(Workspace& ws) noexcept {
+[[nodiscard]] Tensor4& ppvar_trans_cumulat(Workspace& ws) noexcept {
   return *static_cast<Tensor4*>(ws[232]);
 }
 
@@ -3394,8 +3935,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ ppath.np, f_grid, stokes_dim, stokes_dim ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor4& ppvar_trans_partial(Workspace& ws) noexcept {
+[[nodiscard]] Tensor4& ppvar_trans_partial(Workspace& ws) noexcept {
   return *static_cast<Tensor4*>(ws[233]);
 }
 
@@ -3406,8 +3949,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ number of abs. species, ppath.np ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& ppvar_vmr(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& ppvar_vmr(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[234]);
 }
 
@@ -3418,8 +3963,10 @@ See *ppvar_p* for a general description of WSVs of ppvar-type.
 Dimension: [ 3, ppath.np ]
 
 Usage: Output of radiative transfer methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& ppvar_wind(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& ppvar_wind(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[235]);
 }
 
@@ -3430,22 +3977,29 @@ VMR values).
 Dimensions: [ abs_species ] [naa, nza, nf, f(stokes_dim)]
 
 Unit: 1/m
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfPropagationMatrix& propmat_clearsky(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfPropagationMatrix& propmat_clearsky(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfPropagationMatrix*>(ws[236]);
 }
 
 /*! Agenda calculating the absorption coefficient matrices.
- */
-Agenda& propmat_clearsky_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& propmat_clearsky_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[238]);
 }
 
 /*! OK-flag for *propmat_clearsky_agenda*.
 
 Set by *propmat_clearsky_agenda_checkedCalc*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& propmat_clearsky_agenda_checked(Workspace& ws) noexcept {
+[[nodiscard]] Index& propmat_clearsky_agenda_checked(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[237]);
 }
 
@@ -3463,8 +4017,10 @@ Unit:       1/m
 
 Dimensions: [species, f_grid, *stokes_dim*, stokes_dim, p_grid, lat_grid,
 lon_grid]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor7& propmat_clearsky_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor7& propmat_clearsky_field(Workspace& ws) noexcept {
   return *static_cast<Tensor7*>(ws[239]);
 }
 
@@ -3475,8 +4031,10 @@ species. The row dimension corresponds to different positions, in the
 same way as *pnd_agenda_input* is defined.
 
 Dimensions: [ n_points, n_scattering_elements ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& psd_data(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& psd_data(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[240]);
 }
 
@@ -3488,8 +4046,10 @@ used. Most common choices should by equivalent diameter, maximum diameter
 and mass.
 
 Dimension: [ n_sizes ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& psd_size_grid(Workspace& ws) noexcept {
+[[nodiscard]] Vector& psd_size_grid(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[241]);
 }
 
@@ -3503,8 +4063,10 @@ Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
        (cloudbox_limits[3] - cloudbox_limits[2]) +1,
        (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         N_za, N_aa
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor5& radiance_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor5& radiance_field(Workspace& ws) noexcept {
   return *static_cast<Tensor5*>(ws[245]);
 }
 
@@ -3519,8 +4081,10 @@ See the method you are using, if this variable shall hold time or
 altitude (or maybe both options are treated).
 
 Unit: m or s
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& range_bins(Workspace& ws) noexcept {
+[[nodiscard]] Vector& range_bins(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[246]);
 }
 
@@ -3544,8 +4108,10 @@ treatment of 2D cases. For 3D, models can be used, such as WGS84.
 Usage:  Set by the user.
 
 Size:   [ 2 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& refellipsoid(Workspace& ws) noexcept {
+[[nodiscard]] Vector& refellipsoid(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[250]);
 }
 
@@ -3556,14 +4122,18 @@ constituents, at one position in the atmosphere. This refractive
 is related to the phase velocity. See also *refr_index_air_group*.
 
 Unit: 1
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& refr_index_air(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& refr_index_air(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[247]);
 }
 
 /*! Agenda calculating the refractive index of air.
- */
-Agenda& refr_index_air_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& refr_index_air_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[248]);
 }
 
@@ -3575,8 +4145,10 @@ refractive index, but refers to the group velocity instead of the
 phase velocity. See also *refr_index_air*.
 
 Unit: 1
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& refr_index_air_group(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& refr_index_air_group(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[249]);
 }
 
@@ -3584,8 +4156,10 @@ Numeric& refr_index_air_group(Workspace& ws) noexcept {
 
 Dimensions: [pressures][band][n_linex, nlines]
 Units: Hz/Pa in HWHM
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfMatrix& relmat_per_band(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfMatrix& relmat_per_band(Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfMatrix*>(ws[251]);
 }
 
@@ -3597,16 +4171,20 @@ Supported types by index:
    1: Linear type relaxation matrix.
 
 Dimensions: [number of bands]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& relmat_type_per_band(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& relmat_type_per_band(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[252]);
 }
 
 /*! Flag indicating completeness and consistency of retrieval setup.
 
 Unit: Boolean
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& retrieval_checked(Workspace& ws) noexcept {
+[[nodiscard]] Index& retrieval_checked(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[253]);
 }
 
@@ -3615,8 +4193,10 @@ Index& retrieval_checked(Workspace& ws) noexcept {
 The vector contains the square roots  of the diagonal elements of  the
 covariance matrix of the error due to measurement noise, S_m in Rodgers'
  book.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& retrieval_eo(Workspace& ws) noexcept {
+[[nodiscard]] Vector& retrieval_eo(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[254]);
 }
 
@@ -3626,8 +4206,10 @@ observation system.
 The vector contains the square roots of the diagonal
 elements of the covariance matrix of the smoothing error, S_s in Rodgers'
 book.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& retrieval_ss(Workspace& ws) noexcept {
+[[nodiscard]] Vector& retrieval_ss(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[255]);
 }
 
@@ -3644,8 +4226,10 @@ velocities of the observer, relative the centre of the coordinate
 system used that is fixed to the planets centre point.
 
 Unit: [ m/s ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& rte_alonglos_v(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& rte_alonglos_v(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[256]);
 }
 
@@ -3666,8 +4250,10 @@ Usage: See above.
 Units: [ degree, degree ]
 
 Size:  [ 1 or 2 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& rte_los(Workspace& ws) noexcept {
+[[nodiscard]] Vector& rte_los(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[257]);
 }
 
@@ -3686,8 +4272,10 @@ Usage: See above.
 Units: [ m, degree, degree ]
 
 Size:  [ atmosphere_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& rte_pos(Workspace& ws) noexcept {
+[[nodiscard]] Vector& rte_pos(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[258]);
 }
 
@@ -3709,8 +4297,10 @@ Usage: See above.
 Units: [ m, degree, degree ]
 
 Size:  [ atmosphere_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& rte_pos2(Workspace& ws) noexcept {
+[[nodiscard]] Vector& rte_pos2(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[259]);
 }
 
@@ -3727,8 +4317,10 @@ Usage: Communication variable.
 Units: [ degree, degree ]
 
 Size:  [ 1 or 2 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& rtp_los(Workspace& ws) noexcept {
+[[nodiscard]] Vector& rtp_los(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[261]);
 }
 
@@ -3747,8 +4339,10 @@ Usage: Communication variable.
 Units: T
 
 Size:  [ u-component, v-component, w-component ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& rtp_mag(Workspace& ws) noexcept {
+[[nodiscard]] Vector& rtp_mag(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[260]);
 }
 
@@ -3764,8 +4358,10 @@ Usage: Communication variable.
 
 Units: [ K/# ]
 Size:  [ NLTE levels, 1, 1, 1 ] or [ 0, 0, 0, 0 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-EnergyLevelMap& rtp_nlte(Workspace& ws) noexcept {
+[[nodiscard]] EnergyLevelMap& rtp_nlte(Workspace& ws) noexcept {
   return *static_cast<EnergyLevelMap*>(ws[265]);
 }
 
@@ -3783,8 +4379,10 @@ Usage: Communication variable.
 Units: [ m, degree, degree ]
 
 Size:  [ atmosphere_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& rtp_pos(Workspace& ws) noexcept {
+[[nodiscard]] Vector& rtp_pos(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[262]);
 }
 
@@ -3798,8 +4396,10 @@ properties for a given conditions.
 Usage: Communication variable.
 
 Units: [ Pa ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& rtp_pressure(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& rtp_pressure(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[263]);
 }
 
@@ -3814,8 +4414,10 @@ properties for a given conditions.
 Usage: Communication variable.
 
 Units: [ K ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& rtp_temperature(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& rtp_temperature(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[264]);
 }
 
@@ -3832,8 +4434,10 @@ Usage: Communication variable.
 Units: [ Differ between the elements, can be VMR, kg/m3 or #/m3. ]
 
 Size:  Should match abs_species.nelem()
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& rtp_vmr(Workspace& ws) noexcept {
+[[nodiscard]] Vector& rtp_vmr(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[266]);
 }
 
@@ -3845,8 +4449,11 @@ grid or dimensions can be reduced to a single entry, meaning no
 temperature interpolation is done for the respective data.
 
 Standard approach to derive scat_data is to use *scat_dataCalc* to
-derive it from *scat_data_raw*.*/
-ArrayOfArrayOfSingleScatteringData& scat_data(Workspace& ws) noexcept {
+derive it from *scat_data_raw*.
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfArrayOfSingleScatteringData& scat_data(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfSingleScatteringData*>(ws[267]);
 }
 
@@ -3854,8 +4461,10 @@ ArrayOfArrayOfSingleScatteringData& scat_data(Workspace& ws) noexcept {
 
 Relevant checks are performed by *scat_data_checkedCalc. Only the
 value 1 is taken as OK.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& scat_data_checked(Workspace& ws) noexcept {
+[[nodiscard]] Index& scat_data_checked(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[268]);
 }
 
@@ -3865,8 +4474,11 @@ This variable holds the single scattering properties for all
 scattering species and scattering elements for a specified frequency.
 It can be calculated from *scat_data* using *scat_data_monoCalc*,
 which interpolates *scat_data* to the required frequency.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfSingleScatteringData& scat_data_mono(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfSingleScatteringData& scat_data_mono(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfSingleScatteringData*>(ws[270]);
 }
 
@@ -3900,8 +4512,11 @@ Members: SingleScatteringData:
       [f_grid, T_grid, za_grid, aa_grid, matrix_element]
 
 Dimensions: [number of scattering species][number of scattering elements]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfSingleScatteringData& scat_data_raw(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfSingleScatteringData& scat_data_raw(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfSingleScatteringData*>(ws[269]);
 }
 
@@ -3927,8 +4542,10 @@ Dimensions:  SingleScatteringData
       [f_grid, T_grid, za_grid, aa_grid, matrix_element]
   Tensor5[abs_vec_data]
       [f_grid, T_grid, za_grid, aa_grid, matrix_element]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-SingleScatteringData& scat_data_single(Workspace& ws) noexcept {
+[[nodiscard]] SingleScatteringData& scat_data_single(Workspace& ws) noexcept {
   return *static_cast<SingleScatteringData*>(ws[271]);
 }
 
@@ -3941,8 +4558,10 @@ scattering calculations are done.
 
 Usage:    Input to the methods *spt_calc_agenda*,
                                *pha_mat_spt_agenda*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& scat_lat_index(Workspace& ws) noexcept {
+[[nodiscard]] Index& scat_lat_index(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[272]);
 }
 
@@ -3955,8 +4574,10 @@ scattering calculations are done.
 
 Usage:    Input to the methods *spt_calc_agenda*,
                                *pha_mat_spt_agenda*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& scat_lon_index(Workspace& ws) noexcept {
+[[nodiscard]] Index& scat_lon_index(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[273]);
 }
 
@@ -3981,8 +4602,11 @@ Usage: Set by the user.
 
 Dimensions: [scattering species][scattering elements]
 For more details, see also *scat_meta_single*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfScatteringMetaData& scat_meta(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfScatteringMetaData& scat_meta(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfScatteringMetaData*>(ws[275]);
 }
 
@@ -4045,8 +4669,10 @@ Members:
     diameter_volume_equ, for non-spherical and mixed-material
     particles, area refers to the area covered by the substance
     mixture of the particle.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ScatteringMetaData& scat_meta_single(Workspace& ws) noexcept {
+[[nodiscard]] ScatteringMetaData& scat_meta_single(Workspace& ws) noexcept {
   return *static_cast<ScatteringMetaData*>(ws[274]);
 }
 
@@ -4059,8 +4685,10 @@ scattering calculations are done.
 
 Usage:    Input to the methods *spt_calc_agenda*,
                                *pha_mat_spt_agenda*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& scat_p_index(Workspace& ws) noexcept {
+[[nodiscard]] Index& scat_p_index(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[276]);
 }
 
@@ -4081,8 +4709,10 @@ the following structure with individual elements separated by dashes:
   currently possible PSDs see *pnd_fieldCalcFromParticleBulkProps*.
 
 Example: [''IWC-MH97'', ''LWC-H98_STCO'', ...]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& scat_species(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& scat_species(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[277]);
 }
 
@@ -4097,16 +4727,20 @@ where x is size (that could be Dveq, Dmax or mass) and a/b are parameters.
 This WSV is a in the expression above.
 The WSV matching b is *scat_species_b*.
 The WSV matching x is *scat_species_x*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& scat_species_a(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& scat_species_a(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[278]);
 }
 
 /*! Mass-size relationship parameter, for one scattering species.
 
 See *scat_species_a* for details.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& scat_species_b(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& scat_species_b(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[279]);
 }
 
@@ -4122,8 +4756,10 @@ such as mass and maximum diamater.
 See also *scat_species_a*, for example usage of this WSV.
 
 Dimension:  [number of scattering elements]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& scat_species_x(Workspace& ws) noexcept {
+[[nodiscard]] Vector& scat_species_x(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[280]);
 }
 
@@ -4135,8 +4771,10 @@ dimensions of *sensor_pos* and *sensor_los*.
 
 Shall be set by *sensor_checkedCalc*. See that WSM for treated WSVs.
 Only the value 1 is taken as OK.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& sensor_checked(Workspace& ws) noexcept {
+[[nodiscard]] Index& sensor_checked(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[281]);
 }
 
@@ -4152,8 +4790,10 @@ Usage: Set by the user.
 Unit: All entries in Hz.
 
 Size: [number of channels, 3]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& sensor_description_amsu(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& sensor_description_amsu(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[282]);
 }
 
@@ -4190,8 +4830,10 @@ Usage: Set by the user.
 Unit:  [ degrees, degrees ]
 
 Size:  [ number of measurement blocks, 1 or 2 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& sensor_los(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& sensor_los(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[283]);
 }
 
@@ -4205,8 +4847,10 @@ this variable is discussed. The variable is listed as a sub-entry to
 "workspace variables".
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& sensor_norm(Workspace& ws) noexcept {
+[[nodiscard]] Index& sensor_norm(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[284]);
 }
 
@@ -4240,8 +4884,10 @@ Usage: Set by the user.
 Unit:  [ degrees ]
 
 Size:  [ number of measurement blocks, number of channels/frequencies ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& sensor_pol(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& sensor_pol(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[285]);
 }
 
@@ -4265,8 +4911,10 @@ Usage: Set by the user.
 Unit:  [ m, degrees, degrees ]
 
 Size:  [ number of measurement blocks, atmosphere_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& sensor_pos(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& sensor_pos(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[286]);
 }
 
@@ -4285,8 +4933,10 @@ Usage: Output/input to the *sensor_response...* methods.
 Units: -
 
 Dimension: See the individual *sensor_response...* method.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Sparse& sensor_response(Workspace& ws) noexcept {
+[[nodiscard]] Sparse& sensor_response(Workspace& ws) noexcept {
   return *static_cast<Sparse*>(ws[287]);
 }
 
@@ -4299,14 +4949,18 @@ The variable shall not be set manually, it will be set together with
 Usage: Set by sensor response methods.
 
 Unit:  [ degrees ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& sensor_response_aa(Workspace& ws) noexcept {
+[[nodiscard]] Vector& sensor_response_aa(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[288]);
 }
 
 /*! Agenda providing the sensor response data for a measurement block.
- */
-Agenda& sensor_response_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& sensor_response_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[289]);
 }
 
@@ -4322,8 +4976,10 @@ The variable shall not be set manually, it will be set together with
 Usage: Set by sensor response methods.
 
 Unit:  [ degrees ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& sensor_response_dlos(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& sensor_response_dlos(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[290]);
 }
 
@@ -4337,8 +4993,10 @@ are here not repeated as in *sensor_response_dlos*
 Usage: Set by sensor response methods.
 
 Unit:  [ degrees ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& sensor_response_dlos_grid(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& sensor_response_dlos_grid(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[291]);
 }
 
@@ -4356,8 +5014,10 @@ The variable shall not be set manually, it will be set together with
 Usage: Set by sensor response methods.
 
 Unit:  [ Hz ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& sensor_response_f(Workspace& ws) noexcept {
+[[nodiscard]] Vector& sensor_response_f(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[292]);
 }
 
@@ -4371,8 +5031,10 @@ here not repeated as in *sensor_response_f*
 Usage: Set by sensor response methods.
 
 Unit:  [ Hz ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& sensor_response_f_grid(Workspace& ws) noexcept {
+[[nodiscard]] Vector& sensor_response_f_grid(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[293]);
 }
 
@@ -4389,8 +5051,10 @@ The variable shall not be set manually, it will be set together with
 Usage: Set by sensor response methods.
 
 Unit:  [ - ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& sensor_response_pol(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& sensor_response_pol(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[294]);
 }
 
@@ -4405,8 +5069,10 @@ See *instrument_pol* for coding of polarisation states.
 Usage: Set by sensor response methods.
 
 Unit:  [ - ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& sensor_response_pol_grid(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& sensor_response_pol_grid(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[295]);
 }
 
@@ -4420,8 +5086,10 @@ Usage: Set by the user.
 Unit:  [ arbitrary ]
 
 Size:  [ number of measurement blocks ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& sensor_time(Workspace& ws) noexcept {
+[[nodiscard]] Vector& sensor_time(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[296]);
 }
 
@@ -4433,8 +5101,10 @@ instrument) that can be seen as "main" band. Possible choices are:
  "upper" : High frequency sideband shall be considered as target.
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-String& sideband_mode(Workspace& ws) noexcept {
+[[nodiscard]] String& sideband_mode(Workspace& ws) noexcept {
   return *static_cast<String*>(ws[297]);
 }
 
@@ -4445,8 +5115,10 @@ See further *lo_multi* and *sideband_response_multi*. This length of
 this array must match the size of those WSVs.
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& sideband_mode_multi(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& sideband_mode_multi(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[298]);
 }
 
@@ -4470,8 +5142,10 @@ Dimensions:
    GriddedField1:
       Vector f_grid[N_f]
       Vector data[N_f]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField1& sideband_response(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField1& sideband_response(Workspace& ws) noexcept {
   return *static_cast<GriddedField1*>(ws[299]);
 }
 
@@ -4484,8 +5158,11 @@ mixers. An array element for each LO. The size of this variable and
 Unit: Hz
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfGriddedField1& sideband_response_multi(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfGriddedField1& sideband_response_multi(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfGriddedField1*>(ws[300]);
 }
 
@@ -4498,8 +5175,10 @@ Units: K J^-1 kg^-1
 Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
        (cloudbox_limits[3] - cloudbox_limits[2]) +1,
        (cloudbox_limits[5] - cloudbox_limits[4]) +1,
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& specific_heat_capacity(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& specific_heat_capacity(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[303]);
 }
 
@@ -4517,8 +5196,10 @@ Units: W m^-2 Hz^-1
        (cloudbox_limits[3] - cloudbox_limits[2]) +1,
        (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         2]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor5& spectral_irradiance_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor5& spectral_irradiance_field(Workspace& ws) noexcept {
   return *static_cast<Tensor5*>(ws[301]);
 }
 
@@ -4542,8 +5223,10 @@ Units: W / (m^2 Hz sr)
 
 Note: For 1D, the size of the latitude, longitude and azimuth
 dimension (N_aa) are all 1.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor7& spectral_radiance_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor7& spectral_radiance_field(Workspace& ws) noexcept {
   return *static_cast<Tensor7*>(ws[302]);
 }
 
@@ -4555,14 +5238,18 @@ of a zenith and azimuth angle (the later only for 3D).
 Units: degrees
 
 Size:  [ 1 or 2 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& specular_los(Workspace& ws) noexcept {
+[[nodiscard]] Vector& specular_los(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[304]);
 }
 
 /*! Agenda calculating single scattering properties from the amplitude matrix.
- */
-Agenda& spt_calc_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& spt_calc_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[305]);
 }
 
@@ -4581,8 +5268,10 @@ the lookup table.
 Dimensions: [f_grid, abs_p]
 
 Unit: 1/m
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& src_coef(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& src_coef(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[308]);
 }
 
@@ -4590,8 +5279,10 @@ Matrix& src_coef(Workspace& ws) noexcept {
 
 The Array contains one matrix of absorption coefficients for each
 tag group, where the matrix format is the same as that of *src_coef*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& src_coef_per_species(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& src_coef_per_species(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[309]);
 }
 
@@ -4605,16 +5296,20 @@ Dimensions: [abs_species](f_grid, abs_p), or
                          (0, 0)
 Unit:       m^2 (alpha = xsec * n * VMR),
             where n is total density.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& src_xsec_per_species(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& src_xsec_per_species(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[307]);
 }
 
 /*! The dimensionality of the Stokes vector (1-4).
 
 Usage:      Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& stokes_dim(Workspace& ws) noexcept {
+[[nodiscard]] Index& stokes_dim(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[306]);
 }
 
@@ -4640,8 +5335,10 @@ Units: degrees
 Size:  [ number of directions ]
 
 Usage: Set by the user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& stokes_rotation(Workspace& ws) noexcept {
+[[nodiscard]] Vector& stokes_rotation(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[310]);
 }
 
@@ -4649,8 +5346,11 @@ Vector& stokes_rotation(Workspace& ws) noexcept {
 
 See *complex_refr_index* for the expected format and how the data
 are treated.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& surface_complex_refr_index(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& surface_complex_refr_index(
+    Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[311]);
 }
 
@@ -4660,8 +5360,10 @@ See specific methods generating *surface_emission* and the user
 guide for more information.
 
 Dimensions: [ f_grid, stokes_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& surface_emission(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& surface_emission(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[312]);
 }
 
@@ -4673,8 +5375,10 @@ only for 3D), following the definition of line-of-sights.
 Units: degrees
 
 Size:  [ any number, 1 or 2 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& surface_los(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& surface_los(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[313]);
 }
 
@@ -4688,8 +5392,10 @@ for this atmospheric dimensionality.
 Units: degrees
 
 Size:  [ 1 or 2 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& surface_normal(Workspace& ws) noexcept {
+[[nodiscard]] Vector& surface_normal(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[314]);
 }
 
@@ -4702,8 +5408,10 @@ The properties are identified by the accompanying variable
 *surface_props_names*.
 
 Size:  [ number of props., lat_grid, lon_grid ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& surface_props_data(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& surface_props_data(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[315]);
 }
 
@@ -4715,8 +5423,10 @@ to include data with any name, but the surface methods making use of
 the documentation of each method for recognised choices.
 
 Size:  [ number of props. ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfString& surface_props_names(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfString& surface_props_names(Workspace& ws) noexcept {
   return *static_cast<ArrayOfString*>(ws[316]);
 }
 
@@ -4733,8 +5443,10 @@ for all frequencies.
 Usage:   Input to some surface properties methods.
 
 Dimensions: [ f_grid or 1, stokes_dim, stokes_dim]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& surface_reflectivity(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& surface_reflectivity(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[322]);
 }
 
@@ -4754,26 +5466,35 @@ Usage:      Input to methods for *surface_rtprop_agenda*.
 Units:      -
 
 Dimensions: [ surface_los, f_grid, stokes_dim, stokes_dim ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor4& surface_rmatrix(Workspace& ws) noexcept {
+[[nodiscard]] Tensor4& surface_rmatrix(Workspace& ws) noexcept {
   return *static_cast<Tensor4*>(ws[317]);
 }
 
 /*! Agenda providing radiative properties of the surface.
- */
-Agenda& surface_rtprop_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& surface_rtprop_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[318]);
 }
 
 /*! Description of surface radiative properties, divided into surface types.
- */
-ArrayOfAgenda& surface_rtprop_agenda_array(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfAgenda& surface_rtprop_agenda_array(
+    Workspace& ws) noexcept {
   return *static_cast<ArrayOfAgenda*>(ws[319]);
 }
 
 /*! Sub-agenda to *surface_rtprop_agenda*.
- */
-Agenda& surface_rtprop_sub_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& surface_rtprop_sub_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[320]);
 }
 
@@ -4795,8 +5516,10 @@ is interpreted as the reflectivities are the same for all frequencies.
 Usage:   Input to some surface properties methods.
 
 Dimensions: [ f_grid or 1, 2]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& surface_rv_rh(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& surface_rv_rh(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[323]);
 }
 
@@ -4813,8 +5536,10 @@ frequencies (ie. matches a constant vector).
 Usage:   Input to some surface properties methods.
 
 Dimensions: [ f_grid or 1]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& surface_scalar_reflectivity(Workspace& ws) noexcept {
+[[nodiscard]] Vector& surface_scalar_reflectivity(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[324]);
 }
 
@@ -4825,24 +5550,30 @@ properties of the surface, and can differ from the "bulk"
 temperature.
 
 Usage:   Input to methods for *surface_rtprop_agenda*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& surface_skin_t(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& surface_skin_t(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[321]);
 }
 
 /*! Local surface type value.
 
 See *surface_type_mask* for details.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& surface_type(Workspace& ws) noexcept {
+[[nodiscard]] Index& surface_type(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[325]);
 }
 
 /*! Auxiliary variable to *surface_type*.
 
 See *surface_type_mask* for details.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& surface_type_aux(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& surface_type_aux(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[326]);
 }
 
@@ -4869,8 +5600,10 @@ Dimensions:
       Vector Latitude [N_lat]
       Vector Longitude [N_lon]
       Matrix data [N_lat][N_lon]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField2& surface_type_mask(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField2& surface_type_mask(Workspace& ws) noexcept {
   return *static_cast<GriddedField2*>(ws[327]);
 }
 
@@ -4891,8 +5624,10 @@ Usage:      Output of *AtmFieldsCalc*.
 Unit:       K
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& t_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& t_field(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[338]);
 }
 
@@ -4914,8 +5649,10 @@ Size   GriddedField3
        [N_lat]
        [N_lon]
        [N_p, N_lat, N_lon]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& t_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& t_field_raw(Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[340]);
 }
 
@@ -4936,8 +5673,10 @@ Usage:      Set by user.
 Unit:       K
 
 Dimensions: [ lat_grid, lon_grid ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& t_surface(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& t_surface(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[342]);
 }
 
@@ -4945,58 +5684,80 @@ Matrix& t_surface(Workspace& ws) noexcept {
 
 Array should be filled with 12
 atlases, one for each month. Index 0 is January, index 11 December.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfTelsemAtlas& telsem_atlases(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfTelsemAtlas& telsem_atlases(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTelsemAtlas*>(ws[328]);
 }
 
 /*! TESSEM2 neural network parameters for horizontal polarization.
- */
-TessemNN& tessem_neth(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] TessemNN& tessem_neth(Workspace& ws) noexcept {
   return *static_cast<TessemNN*>(ws[329]);
 }
 
 /*! TESSEM2 neural network parameters for vertical polarization.
- */
-TessemNN& tessem_netv(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] TessemNN& tessem_netv(Workspace& ws) noexcept {
   return *static_cast<TessemNN*>(ws[330]);
 }
 
 /*! A dummy agenda for testing purposes.
 
 Only used for testing by developers.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Agenda& test_agenda(Workspace& ws) noexcept {
+[[nodiscard]] Agenda& test_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[331]);
 }
 
 /*! Array of agenda for TestArrayOfAgenda case.
 
 Only used for testing by developers.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfAgenda& test_agenda_array(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfAgenda& test_agenda_array(Workspace& ws) noexcept {
   return *static_cast<ArrayOfAgenda*>(ws[332]);
 }
 
 /*! A time point.
- */
-Time& time(Workspace& ws) noexcept { return *static_cast<Time*>(ws[333]); }
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Time& time(Workspace& ws) noexcept {
+  return *static_cast<Time*>(ws[333]);
+}
 
 /*! A grid of times.  Should be increasing
- */
-ArrayOfTime& time_grid(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfTime& time_grid(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTime*>(ws[335]);
 }
 
 /*! A set of times.  Can be in random order
- */
-ArrayOfTime& time_stamps(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] ArrayOfTime& time_stamps(Workspace& ws) noexcept {
   return *static_cast<ArrayOfTime*>(ws[336]);
 }
 
 /*! Stores the starting time for time measurements.
- */
-Timer& timer(Workspace& ws) noexcept { return *static_cast<Timer*>(ws[334]); }
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Timer& timer(Workspace& ws) noexcept {
+  return *static_cast<Timer*>(ws[334]);
+}
 
 /*! Transmitter positions.
 
@@ -5021,8 +5782,10 @@ be set to be empty.
 Usage: Set by the user.
 
 Unit:  [ m, degrees, degrees ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& transmitter_pos(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& transmitter_pos(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[337]);
 }
 
@@ -5039,8 +5802,10 @@ See also: *verbosityInit*
           *verbositySetAgenda*
           *verbositySetScreen*
           *verbositySetFile*
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Verbosity& verbosity(Workspace& ws) noexcept {
+[[nodiscard]] Verbosity& verbosity(Workspace& ws) noexcept {
   return *static_cast<Verbosity*>(ws[343]);
 }
 
@@ -5056,8 +5821,10 @@ this variable is discussed. The variable is listed as a subentry to
 Units: [ Differ between the elements, can be VMR, kg/m3 or #/m3. ]
 
 Dimensions: [species, p_grid, lat_grid, lon_grid]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor4& vmr_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor4& vmr_field(Workspace& ws) noexcept {
   return *static_cast<Tensor4*>(ws[344]);
 }
 
@@ -5083,14 +5850,18 @@ Size:  Array[number of absorption species]
        [N_lat]
        [N_lon]
        [N_p, N_lat, N_lon]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfGriddedField3& vmr_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfGriddedField3& vmr_field_raw(Workspace& ws) noexcept {
   return *static_cast<ArrayOfGriddedField3*>(ws[345]);
 }
 
 /*! Agenda to calculate the saturation pressure of water.
- */
-Agenda& water_p_eq_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& water_p_eq_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[346]);
 }
 
@@ -5102,8 +5873,10 @@ the pressure, latitude and longitude grids.
 Unit:       Pa
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& water_p_eq_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& water_p_eq_field(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[347]);
 }
 
@@ -5115,8 +5888,10 @@ Will hold the value of provided maximum factorial value
 The developer should always test this variable in functions
 that might require computing wigner symbols because the error
 handling is otherwise offloaded to third party software...
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& wigner_initialized(Workspace& ws) noexcept {
+[[nodiscard]] Index& wigner_initialized(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[348]);
 }
 
@@ -5132,8 +5907,10 @@ everywhere.
 Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]  or [ 0 0 0 ].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& wind_u_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& wind_u_field(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[349]);
 }
 
@@ -5149,8 +5926,10 @@ everywhere.
 Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ].
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& wind_u_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& wind_u_field_raw(Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[350]);
 }
 
@@ -5165,8 +5944,10 @@ everywhere.
 Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ] or [ 0 0 0 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& wind_v_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& wind_v_field(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[351]);
 }
 
@@ -5181,8 +5962,10 @@ everywhere.
 Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& wind_v_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& wind_v_field_raw(Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[352]);
 }
 
@@ -5196,8 +5979,10 @@ everywhere.
 Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ] or [ 0 0 0 ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& wind_w_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& wind_w_field(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[353]);
 }
 
@@ -5211,8 +5996,10 @@ everywhere.
 Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& wind_w_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& wind_w_field_raw(Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[354]);
 }
 
@@ -5221,8 +6008,10 @@ GriddedField3& wind_w_field_raw(Workspace& ws) noexcept {
 This variable can be used to select one or several instrument channels
 from the list of all possible channels. Zero-based indexing is used, so
 Channel 0 is the first instrument channel!
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& wmrf_channels(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& wmrf_channels(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[355]);
 }
 
@@ -5234,8 +6023,10 @@ sensor_response matrix.
 The dimension of the matrix is (nchan, nfreq), where nchan
 is the number of instrument channels and nfreq is the number
 of monochromatic frequencies.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Sparse& wmrf_weights(Workspace& ws) noexcept {
+[[nodiscard]] Sparse& wmrf_weights(Workspace& ws) noexcept {
   return *static_cast<Sparse*>(ws[356]);
 }
 
@@ -5259,8 +6050,12 @@ most loop, followed by latitude and longitude as outermost loop.
 Usage: Used by inversion methods.
 
 Unit:  Varies, follows unit of selected retrieval quantities.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& x(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[358]); }
+[[nodiscard]] Vector& x(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[358]);
+}
 
 /*! The a priori state vector.
 
@@ -5269,8 +6064,12 @@ This WSV matches directly the x_a-vector in the formalism by C.D. Rodgers.
 Usage: Used by inversion methods.
 
 Unit:  Varies, follows unit of selected retrieval quantities.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& xa(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[359]); }
+[[nodiscard]] Vector& xa(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[359]);
+}
 
 /*! Flag to determine whether XML output shall be binary or ascii.
 
@@ -5280,8 +6079,10 @@ One of these methods MUST be called before writing the first
 output file.
 
 Usage: Set by user.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& xml_output_type(Workspace& ws) noexcept {
+[[nodiscard]] Index& xml_output_type(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[357]);
 }
 
@@ -5307,8 +6108,12 @@ Usage: Output from radiative transfer calculations considering
 
 Unit:  Undefined. Possibilities include: K, W/(m^2 Hz sr) and
         optical thickness.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& y(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[360]); }
+[[nodiscard]] Vector& y(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[360]);
+}
 
 /*! Data auxilary to *y*.
 
@@ -5326,8 +6131,10 @@ See also *iy_aux_vars*.
 Usage:      Output of *yCalc*.
 
 Dimensions: [quantity][ element of y ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfVector& y_aux(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfVector& y_aux(Workspace& ws) noexcept {
   return *static_cast<ArrayOfVector*>(ws[361]);
 }
 
@@ -5349,8 +6156,10 @@ to have length one, with this element set to the baseline value.
 Usage: Output of retrievals.
 
 Unit:  Same as applied for *y*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& y_baseline(Workspace& ws) noexcept {
+[[nodiscard]] Vector& y_baseline(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[362]);
 }
 
@@ -5367,8 +6176,12 @@ Usage: Output from radiative transfer calculations considering
        sensor response.
 
 Unit:  [ Hz ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& y_f(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[363]); }
+[[nodiscard]] Vector& y_f(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[363]);
+}
 
 /*! The geo-positioning associated with *y*.
 
@@ -5378,8 +6191,12 @@ If no geo-position is obtained (i.e. *geo_pos_agenda* sets *geo_pos*
 to be empty), all elements of *y_geo* is set to NaN.
 
 Unit:  [ m, deg, deg, deg, deg ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& y_geo(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[364]); }
+[[nodiscard]] Matrix& y_geo(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[364]);
+}
 
 /*! The line-of-sights associated with *y*.
 
@@ -5393,8 +6210,12 @@ Usage: Output from radiative transfer calculations considering
        sensor response.
 
 Unit:  [ degrees, degrees ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& y_los(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[365]); }
+[[nodiscard]] Matrix& y_los(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[365]);
+}
 
 /*! The polarisation states associated with *y*.
 
@@ -5407,8 +6228,10 @@ Usage: Output from radiative transfer calculations considering
        sensor response.
 
 Unit:  [ - ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfIndex& y_pol(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfIndex& y_pol(Workspace& ws) noexcept {
   return *static_cast<ArrayOfIndex*>(ws[366]);
 }
 
@@ -5422,16 +6245,24 @@ Usage: Output from radiative transfer calculations considering
        sensor response.
 
 Unit:  [ m, deg, deg ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& y_pos(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[367]); }
+[[nodiscard]] Matrix& y_pos(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[367]);
+}
 
 /*! The measurement vector for a single measurement block.
 
 Exactly as *y*, but holds data only for a single measurement block.
 
 Usage: Used internally.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& yb(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[368]); }
+[[nodiscard]] Vector& yb(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[368]);
+}
 
 /*! Batch of spectra.
 
@@ -5445,8 +6276,10 @@ Unit:  Undefined. Possibilities include: K, W/(m^2 Hz sr) and
 
 Dimensions: Number of array elements equals number of batch cases,
             Vectors have length(y)
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfVector& ybatch(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfVector& ybatch(Workspace& ws) noexcept {
   return *static_cast<ArrayOfVector*>(ws[369]);
 }
 
@@ -5458,14 +6291,18 @@ See further *y_aux* and *ybatchCalc*.
 Usage: Most commonly produced by *ybatchCalc*.
 
 Dimensions: Number of array elements equals number of batch cases,
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfArrayOfVector& ybatch_aux(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfArrayOfVector& ybatch_aux(Workspace& ws) noexcept {
   return *static_cast<ArrayOfArrayOfVector*>(ws[370]);
 }
 
 /*! Agenda defining the calculations to perform for each batch case.
- */
-Agenda& ybatch_calc_agenda(Workspace& ws) noexcept {
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+[[nodiscard]] Agenda& ybatch_calc_agenda(Workspace& ws) noexcept {
   return *static_cast<Agenda*>(ws[371]);
 }
 
@@ -5473,8 +6310,10 @@ Agenda& ybatch_calc_agenda(Workspace& ws) noexcept {
 
 Dimensions: Number of array elements equals number of batch cases,
             Vectors have length depending on correction method
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfVector& ybatch_corr(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfVector& ybatch_corr(Workspace& ws) noexcept {
   return *static_cast<ArrayOfVector*>(ws[373]);
 }
 
@@ -5484,8 +6323,10 @@ See further *ybatchCalc*.
 
 Usage: Set by *ybatchCalc*, for communication with
        *ybatch_calc_agenda*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& ybatch_index(Workspace& ws) noexcept {
+[[nodiscard]] Index& ybatch_index(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[372]);
 }
 
@@ -5500,8 +6341,10 @@ Unit:  Depends on unit of y and on Jacobian type.
 Dimensions: [number of batch cases]
              (length(y),
              number of retrieval quantities and grids)
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-ArrayOfMatrix& ybatch_jacobians(Workspace& ws) noexcept {
+[[nodiscard]] ArrayOfMatrix& ybatch_jacobians(Workspace& ws) noexcept {
   return *static_cast<ArrayOfMatrix*>(ws[374]);
 }
 
@@ -5510,8 +6353,10 @@ ArrayOfMatrix& ybatch_jacobians(Workspace& ws) noexcept {
 See further *ybatchCalc*.
 
 Usage: Input to *ybatchCalc*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& ybatch_n(Workspace& ws) noexcept {
+[[nodiscard]] Index& ybatch_n(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[375]);
 }
 
@@ -5522,8 +6367,10 @@ This is set to a default of zero in *general.arts*.
 See further *ybatchCalc*.
 
 Usage: Input to *ybatchCalc*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& ybatch_start(Workspace& ws) noexcept {
+[[nodiscard]] Index& ybatch_start(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[376]);
 }
 
@@ -5535,8 +6382,12 @@ the spectrum of the fit.
 Don't confuse this variable with *y_f*.
 
 Usage: Output from inversion methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& yf(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[377]); }
+[[nodiscard]] Vector& yf(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[377]);
+}
 
 /*! The field of geometrical altitudes.
 
@@ -5564,8 +6415,10 @@ Usage:      Output of *AtmFieldsCalc*
 Unit:       m
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Tensor3& z_field(Workspace& ws) noexcept {
+[[nodiscard]] Tensor3& z_field(Workspace& ws) noexcept {
   return *static_cast<Tensor3*>(ws[381]);
 }
 
@@ -5587,8 +6440,10 @@ Size   GriddedField3
        [N_lat]
        [N_lon]
        [N_p, N_lat, N_lon]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-GriddedField3& z_field_raw(Workspace& ws) noexcept {
+[[nodiscard]] GriddedField3& z_field_raw(Workspace& ws) noexcept {
   return *static_cast<GriddedField3*>(ws[382]);
 }
 
@@ -5597,8 +6452,10 @@ GriddedField3& z_field_raw(Workspace& ws) noexcept {
 Usage: Set by the user.
 
 Unit:  m
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Numeric& z_hse_accuracy(Workspace& ws) noexcept {
+[[nodiscard]] Numeric& z_hse_accuracy(Workspace& ws) noexcept {
   return *static_cast<Numeric*>(ws[383]);
 }
 
@@ -5625,8 +6482,10 @@ Usage:      Set by user.
 Unit:       m
 
 Dimensions: [ lat_grid, lon_grid ]
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Matrix& z_surface(Workspace& ws) noexcept {
+[[nodiscard]] Matrix& z_surface(Workspace& ws) noexcept {
   return *static_cast<Matrix*>(ws[384]);
 }
 
@@ -5641,16 +6500,20 @@ The grid must be sorted in increasing order, with no repetitions.
 Usage:      Set by the user.
 
 Unit:       degrees
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& za_grid(Workspace& ws) noexcept {
+[[nodiscard]] Vector& za_grid(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[378]);
 }
 
 /*! TBD.
 
 Unit:  unitless
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Vector& za_grid_weights(Workspace& ws) noexcept {
+[[nodiscard]] Vector& za_grid_weights(Workspace& ws) noexcept {
   return *static_cast<Vector*>(ws[379]);
 }
 
@@ -5661,9 +6524,1171 @@ properties.
 
 Usage:    Input to the agendas *spt_calc_agenda*,
                                 *pha_mat_spt_agenda*.
+
+@param[in,out] Workspace ws - An ARTS workspace
 */
-Index& za_index(Workspace& ws) noexcept {
+[[nodiscard]] Index& za_index(Workspace& ws) noexcept {
   return *static_cast<Index*>(ws[380]);
+}
+
+/*! Creates in, and returns from, Workspace a/an AbsorptionLines
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] AbsorptionLines& AbsorptionLinesCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<AbsorptionLines*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 0})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Agenda
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Agenda& AgendaCreate(Workspace& ws, const String& name,
+                                   const String& desc = "nodescription") {
+  return *static_cast<Agenda*>(ws[ws.add_wsv({name.c_str(), desc.c_str(), 1})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Any
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Any& AnyCreate(Workspace& ws, const String& name,
+                             const String& desc = "nodescription") {
+  return *static_cast<Any*>(ws[ws.add_wsv({name.c_str(), desc.c_str(), 2})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfAbsorptionLines
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfAbsorptionLines& ArrayOfAbsorptionLinesCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfAbsorptionLines*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 3})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfAgenda
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfAgenda& ArrayOfAgendaCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfAgenda*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 5})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfAbsorptionLines
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfAbsorptionLines&
+ArrayOfArrayOfAbsorptionLinesCreate(Workspace& ws, const String& name,
+                                    const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfAbsorptionLines*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 4})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfGriddedField1
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfGriddedField1& ArrayOfArrayOfGriddedField1Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfGriddedField1*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 6})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfGriddedField2
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfGriddedField2& ArrayOfArrayOfGriddedField2Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfGriddedField2*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 7})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfGriddedField3
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfGriddedField3& ArrayOfArrayOfGriddedField3Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfGriddedField3*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 8})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfIndex
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfIndex& ArrayOfArrayOfIndexCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfIndex*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 9})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfMatrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfMatrix& ArrayOfArrayOfMatrixCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfMatrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 10})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfPropagationMatrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfPropagationMatrix&
+ArrayOfArrayOfPropagationMatrixCreate(Workspace& ws, const String& name,
+                                      const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfPropagationMatrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 12})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfRadiationVector
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfRadiationVector&
+ArrayOfArrayOfRadiationVectorCreate(Workspace& ws, const String& name,
+                                    const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfRadiationVector*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 13})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an
+ArrayOfArrayOfScatteringMetaData
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfScatteringMetaData&
+ArrayOfArrayOfScatteringMetaDataCreate(Workspace& ws, const String& name,
+                                       const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfScatteringMetaData*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 14})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an
+ArrayOfArrayOfSingleScatteringData
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfSingleScatteringData&
+ArrayOfArrayOfSingleScatteringDataCreate(Workspace& ws, const String& name,
+                                         const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfSingleScatteringData*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 15})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfSpeciesTag
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfSpeciesTag& ArrayOfArrayOfSpeciesTagCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfSpeciesTag*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 16})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfStokesVector
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfStokesVector& ArrayOfArrayOfStokesVectorCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfStokesVector*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 17})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfString
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfString& ArrayOfArrayOfStringCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfString*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 18})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfTensor3
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfTensor3& ArrayOfArrayOfTensor3Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfTensor3*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 19})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfTensor6
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfTensor6& ArrayOfArrayOfTensor6Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfTensor6*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 20})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfTime
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfTime& ArrayOfArrayOfTimeCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfTime*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 21})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an
+ArrayOfArrayOfTransmissionMatrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfTransmissionMatrix&
+ArrayOfArrayOfTransmissionMatrixCreate(Workspace& ws, const String& name,
+                                       const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfTransmissionMatrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 22})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfArrayOfVector
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfArrayOfVector& ArrayOfArrayOfVectorCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfArrayOfVector*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 23})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfCIARecord
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfCIARecord& ArrayOfCIARecordCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfCIARecord*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 24})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfGriddedField1
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfGriddedField1& ArrayOfGriddedField1Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfGriddedField1*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 25})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfGriddedField2
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfGriddedField2& ArrayOfGriddedField2Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfGriddedField2*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 26})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfGriddedField3
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfGriddedField3& ArrayOfGriddedField3Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfGriddedField3*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 27})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfGriddedField4
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfGriddedField4& ArrayOfGriddedField4Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfGriddedField4*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 28})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfIndex
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfIndex& ArrayOfIndexCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfIndex*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 29})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfMatrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfMatrix& ArrayOfMatrixCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfMatrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 30})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfPpath
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfPpath& ArrayOfPpathCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfPpath*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 11})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfPropagationMatrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfPropagationMatrix& ArrayOfPropagationMatrixCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfPropagationMatrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 31})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfQuantumIdentifier
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfQuantumIdentifier& ArrayOfQuantumIdentifierCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfQuantumIdentifier*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 32})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfRadiationVector
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfRadiationVector& ArrayOfRadiationVectorCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfRadiationVector*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 33})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfRetrievalQuantity
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfRetrievalQuantity& ArrayOfRetrievalQuantityCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfRetrievalQuantity*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 34})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfScatteringMetaData
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfScatteringMetaData& ArrayOfScatteringMetaDataCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfScatteringMetaData*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 35})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfSingleScatteringData
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfSingleScatteringData& ArrayOfSingleScatteringDataCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfSingleScatteringData*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 36})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfSparse
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfSparse& ArrayOfSparseCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfSparse*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 37})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfStokesVector
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfStokesVector& ArrayOfStokesVectorCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfStokesVector*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 38})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfString
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfString& ArrayOfStringCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfString*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 39})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfTelsemAtlas
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfTelsemAtlas& ArrayOfTelsemAtlasCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfTelsemAtlas*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 40})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfTensor3
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfTensor3& ArrayOfTensor3Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfTensor3*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 41})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfTensor4
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfTensor4& ArrayOfTensor4Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfTensor4*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 42})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfTensor5
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfTensor5& ArrayOfTensor5Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfTensor5*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 43})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfTensor6
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfTensor6& ArrayOfTensor6Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfTensor6*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 44})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfTensor7
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfTensor7& ArrayOfTensor7Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfTensor7*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 45})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfTime
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfTime& ArrayOfTimeCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfTime*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 46})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfTransmissionMatrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfTransmissionMatrix& ArrayOfTransmissionMatrixCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfTransmissionMatrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 47})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfVector
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfVector& ArrayOfVectorCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfVector*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 48})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ArrayOfXsecRecord
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ArrayOfXsecRecord& ArrayOfXsecRecordCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ArrayOfXsecRecord*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 49})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an CIARecord
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] CIARecord& CIARecordCreate(Workspace& ws, const String& name,
+                                         const String& desc = "nodescription") {
+  return *static_cast<CIARecord*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 50})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an CovarianceMatrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] CovarianceMatrix& CovarianceMatrixCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<CovarianceMatrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 51})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an EnergyLevelMap
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] EnergyLevelMap& EnergyLevelMapCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<EnergyLevelMap*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 52})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an GasAbsLookup
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] GasAbsLookup& GasAbsLookupCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<GasAbsLookup*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 53})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an GridPos
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] GridPos& GridPosCreate(Workspace& ws, const String& name,
+                                     const String& desc = "nodescription") {
+  return *static_cast<GridPos*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 54})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an GriddedField1
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] GriddedField1& GriddedField1Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<GriddedField1*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 55})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an GriddedField2
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] GriddedField2& GriddedField2Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<GriddedField2*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 56})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an GriddedField3
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] GriddedField3& GriddedField3Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<GriddedField3*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 57})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an GriddedField4
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] GriddedField4& GriddedField4Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<GriddedField4*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 58})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an GriddedField5
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] GriddedField5& GriddedField5Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<GriddedField5*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 59})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an GriddedField6
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] GriddedField6& GriddedField6Create(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<GriddedField6*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 60})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an HitranRelaxationMatrixData
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] HitranRelaxationMatrixData& HitranRelaxationMatrixDataCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<HitranRelaxationMatrixData*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 61})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Index
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Index& IndexCreate(Workspace& ws, const String& name,
+                                 const String& desc = "nodescription") {
+  return *static_cast<Index*>(ws[ws.add_wsv({name.c_str(), desc.c_str(), 62})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an MCAntenna
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] MCAntenna& MCAntennaCreate(Workspace& ws, const String& name,
+                                         const String& desc = "nodescription") {
+  return *static_cast<MCAntenna*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 63})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Matrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Matrix& MatrixCreate(Workspace& ws, const String& name,
+                                   const String& desc = "nodescription") {
+  return *static_cast<Matrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 64})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Numeric
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Numeric& NumericCreate(Workspace& ws, const String& name,
+                                     const String& desc = "nodescription") {
+  return *static_cast<Numeric*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 65})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Ppath
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Ppath& PpathCreate(Workspace& ws, const String& name,
+                                 const String& desc = "nodescription") {
+  return *static_cast<Ppath*>(ws[ws.add_wsv({name.c_str(), desc.c_str(), 66})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an PropagationMatrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] PropagationMatrix& PropagationMatrixCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<PropagationMatrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 67})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an QuantumIdentifier
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] QuantumIdentifier& QuantumIdentifierCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<QuantumIdentifier*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 68})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an RadiationVector
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] RadiationVector& RadiationVectorCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<RadiationVector*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 69})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Rational
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Rational& RationalCreate(Workspace& ws, const String& name,
+                                       const String& desc = "nodescription") {
+  return *static_cast<Rational*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 70})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an ScatteringMetaData
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] ScatteringMetaData& ScatteringMetaDataCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<ScatteringMetaData*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 71})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an SingleScatteringData
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] SingleScatteringData& SingleScatteringDataCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<SingleScatteringData*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 72})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Sparse
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Sparse& SparseCreate(Workspace& ws, const String& name,
+                                   const String& desc = "nodescription") {
+  return *static_cast<Sparse*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 73})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an SpeciesAuxData
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] SpeciesAuxData& SpeciesAuxDataCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<SpeciesAuxData*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 74})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an StokesVector
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] StokesVector& StokesVectorCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<StokesVector*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 75})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an String
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] String& StringCreate(Workspace& ws, const String& name,
+                                   const String& desc = "nodescription") {
+  return *static_cast<String*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 76})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an TelsemAtlas
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] TelsemAtlas& TelsemAtlasCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<TelsemAtlas*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 77})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Tensor3
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Tensor3& Tensor3Create(Workspace& ws, const String& name,
+                                     const String& desc = "nodescription") {
+  return *static_cast<Tensor3*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 78})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Tensor4
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Tensor4& Tensor4Create(Workspace& ws, const String& name,
+                                     const String& desc = "nodescription") {
+  return *static_cast<Tensor4*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 79})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Tensor5
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Tensor5& Tensor5Create(Workspace& ws, const String& name,
+                                     const String& desc = "nodescription") {
+  return *static_cast<Tensor5*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 80})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Tensor6
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Tensor6& Tensor6Create(Workspace& ws, const String& name,
+                                     const String& desc = "nodescription") {
+  return *static_cast<Tensor6*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 81})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Tensor7
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Tensor7& Tensor7Create(Workspace& ws, const String& name,
+                                     const String& desc = "nodescription") {
+  return *static_cast<Tensor7*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 82})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an TessemNN
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] TessemNN& TessemNNCreate(Workspace& ws, const String& name,
+                                       const String& desc = "nodescription") {
+  return *static_cast<TessemNN*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 85})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Time
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Time& TimeCreate(Workspace& ws, const String& name,
+                               const String& desc = "nodescription") {
+  return *static_cast<Time*>(ws[ws.add_wsv({name.c_str(), desc.c_str(), 84})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Timer
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Timer& TimerCreate(Workspace& ws, const String& name,
+                                 const String& desc = "nodescription") {
+  return *static_cast<Timer*>(ws[ws.add_wsv({name.c_str(), desc.c_str(), 83})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an TransmissionMatrix
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] TransmissionMatrix& TransmissionMatrixCreate(
+    Workspace& ws, const String& name, const String& desc = "nodescription") {
+  return *static_cast<TransmissionMatrix*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 86})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Vector
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Vector& VectorCreate(Workspace& ws, const String& name,
+                                   const String& desc = "nodescription") {
+  return *static_cast<Vector*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 87})]);
+}
+
+/*! Creates in, and returns from, Workspace a/an Verbosity
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] String name - The name the variable will have in the workspace
+@param[in] String desc - The description the variable will have in the workspace
+(default: "nodescription")
+*/
+[[nodiscard]] Verbosity& VerbosityCreate(Workspace& ws, const String& name,
+                                         const String& desc = "nodescription") {
+  return *static_cast<Verbosity*>(
+      ws[ws.add_wsv({name.c_str(), desc.c_str(), 88})]);
 }
 
 }  // namespace ARTS::Var
@@ -5679,6 +7704,7 @@ This only works for a 1D atmosphere!
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AbsInputFromAtmFields(Workspace& ws) {
   AbsInputFromAtmFields(Var::abs_p(ws), Var::abs_t(ws), Var::abs_vmrs(ws),
@@ -5700,26 +7726,12 @@ parameters to *propmat_clearsky_agenda*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AbsInputFromRteScalars(Workspace& ws) {
   AbsInputFromRteScalars(Var::abs_p(ws), Var::abs_t(ws), Var::abs_vmrs(ws),
                          Var::rtp_pressure(ws), Var::rtp_temperature(ws),
                          Var::rtp_vmr(ws), Var::verbosity(ws));
-}
-
-/*! Creates a variable of group AbsorptionLines.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void AbsorptionLinesCreate(Workspace& ws, AbsorptionLines& out) {
-  AbsorptionLinesCreate(out, Var::verbosity(ws));
 }
 
 /*! Adds zenith and azimuth angles.
@@ -5736,25 +7748,11 @@ dlos=(0,0).
 @param[in] dlos - Change in line-of-sight (can be multiple LOS).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AddZaAa(Workspace& ws, Matrix& new_los, const Vector& ref_los,
              const Matrix& dlos) {
   AddZaAa(new_los, ref_los, dlos, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Agenda.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void AgendaCreate(Workspace& ws, Agenda& out) {
-  AgendaCreate(out, Var::verbosity(ws));
 }
 
 /*! Execute an agenda.
@@ -5765,6 +7763,7 @@ void AgendaCreate(Workspace& ws, Agenda& out) {
 @param[in] a - Agenda to be executed.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AgendaExecute(Workspace& ws, const Agenda& a) {
   AgendaExecute(ws, a, Var::verbosity(ws));
@@ -5782,6 +7781,7 @@ finishes. WARNING: Can cause deadlocks! Use with care.
 @param[in] a - Agenda to be executed.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AgendaExecuteExclusive(Workspace& ws, const Agenda& a) {
   AgendaExecuteExclusive(ws, a, Var::verbosity(ws));
@@ -5816,6 +7816,7 @@ to cos(0 deg), which results a unequally spaced angular grid
 @param[in] za_grid_type - Zenith angle grid type (default: "linear_mu")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AngularGridsSetFluxCalc(Workspace& ws, const Index& N_za_grid = 2,
                              const Index& N_aa_grid = 1,
@@ -5854,6 +7855,7 @@ The antenna repsonse is not normalised.
 @param[in] dx_si - Grid spacing, in terms of std. dev. (default: 0.1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AntennaConstantGaussian1D(Workspace& ws, const Index& n_za_grid,
                                const Numeric& fwhm,
@@ -5883,6 +7885,7 @@ spectra.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AntennaMultiBeamsToPencilBeams(Workspace& ws) {
   AntennaMultiBeamsToPencilBeams(Var::sensor_pos(ws), Var::sensor_los(ws),
@@ -5902,6 +7905,7 @@ sensor is included, but the antenna pattern is neglected.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AntennaOff(Workspace& ws) {
   AntennaOff(Var::antenna_dim(ws), Var::mblock_dlos_grid(ws),
@@ -5938,6 +7942,7 @@ were thought or found to be useful. (See variable list below.).
 "trailing" dimension. (default: "leading")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void Append(Workspace& ws, std::pair<Any_0, String>& out,
@@ -5948,36 +7953,6 @@ void Append(Workspace& ws, std::pair<Any_0, String>& out,
          dimension.second, Var::verbosity(ws));
 }
 
-/*! Creates a variable of group ArrayOfAbsorptionLines.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfAbsorptionLinesCreate(Workspace& ws, ArrayOfAbsorptionLines& out) {
-  ArrayOfAbsorptionLinesCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfAgenda.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfAgendaCreate(Workspace& ws, ArrayOfAgenda& out) {
-  ArrayOfAgendaCreate(out, Var::verbosity(ws));
-}
-
 /*! Execute an agenda from an ArrayOfAgenda.
 
 @author Oliver Lemke
@@ -5986,366 +7961,11 @@ void ArrayOfAgendaCreate(Workspace& ws, ArrayOfAgenda& out) {
 @param[in] agendas - Array of agendas.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ArrayOfAgendaExecute(Workspace& ws, const ArrayOfAgenda& agendas) {
   ArrayOfAgendaExecute(ws, Var::agenda_array_index(ws), agendas,
                        Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfAbsorptionLines.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfAbsorptionLinesCreate(Workspace& ws,
-                                         ArrayOfArrayOfAbsorptionLines& out) {
-  ArrayOfArrayOfAbsorptionLinesCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfGriddedField1.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfGriddedField1Create(Workspace& ws,
-                                       ArrayOfArrayOfGriddedField1& out) {
-  ArrayOfArrayOfGriddedField1Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfGriddedField2.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfGriddedField2Create(Workspace& ws,
-                                       ArrayOfArrayOfGriddedField2& out) {
-  ArrayOfArrayOfGriddedField2Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfGriddedField3.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfGriddedField3Create(Workspace& ws,
-                                       ArrayOfArrayOfGriddedField3& out) {
-  ArrayOfArrayOfGriddedField3Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfIndex.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfIndexCreate(Workspace& ws, ArrayOfArrayOfIndex& out) {
-  ArrayOfArrayOfIndexCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfMatrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfMatrixCreate(Workspace& ws, ArrayOfArrayOfMatrix& out) {
-  ArrayOfArrayOfMatrixCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfPropagationMatrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfPropagationMatrixCreate(
-    Workspace& ws, ArrayOfArrayOfPropagationMatrix& out) {
-  ArrayOfArrayOfPropagationMatrixCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfRadiationVector.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfRadiationVectorCreate(Workspace& ws,
-                                         ArrayOfArrayOfRadiationVector& out) {
-  ArrayOfArrayOfRadiationVectorCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfScatteringMetaData.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfScatteringMetaDataCreate(
-    Workspace& ws, ArrayOfArrayOfScatteringMetaData& out) {
-  ArrayOfArrayOfScatteringMetaDataCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfSingleScatteringData.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfSingleScatteringDataCreate(
-    Workspace& ws, ArrayOfArrayOfSingleScatteringData& out) {
-  ArrayOfArrayOfSingleScatteringDataCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfSpeciesTag.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfSpeciesTagCreate(Workspace& ws,
-                                    ArrayOfArrayOfSpeciesTag& out) {
-  ArrayOfArrayOfSpeciesTagCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfStokesVector.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfStokesVectorCreate(Workspace& ws,
-                                      ArrayOfArrayOfStokesVector& out) {
-  ArrayOfArrayOfStokesVectorCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfString.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfStringCreate(Workspace& ws, ArrayOfArrayOfString& out) {
-  ArrayOfArrayOfStringCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfTensor3.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfTensor3Create(Workspace& ws, ArrayOfArrayOfTensor3& out) {
-  ArrayOfArrayOfTensor3Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfTensor6.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfTensor6Create(Workspace& ws, ArrayOfArrayOfTensor6& out) {
-  ArrayOfArrayOfTensor6Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfTime.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfTimeCreate(Workspace& ws, ArrayOfArrayOfTime& out) {
-  ArrayOfArrayOfTimeCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfTransmissionMatrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfTransmissionMatrixCreate(
-    Workspace& ws, ArrayOfArrayOfTransmissionMatrix& out) {
-  ArrayOfArrayOfTransmissionMatrixCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfArrayOfVector.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfArrayOfVectorCreate(Workspace& ws, ArrayOfArrayOfVector& out) {
-  ArrayOfArrayOfVectorCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfCIARecord.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfCIARecordCreate(Workspace& ws, ArrayOfCIARecord& out) {
-  ArrayOfCIARecordCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfGriddedField1.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfGriddedField1Create(Workspace& ws, ArrayOfGriddedField1& out) {
-  ArrayOfGriddedField1Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfGriddedField2.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfGriddedField2Create(Workspace& ws, ArrayOfGriddedField2& out) {
-  ArrayOfGriddedField2Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfGriddedField3.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfGriddedField3Create(Workspace& ws, ArrayOfGriddedField3& out) {
-  ArrayOfGriddedField3Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfGriddedField4.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfGriddedField4Create(Workspace& ws, ArrayOfGriddedField4& out) {
-  ArrayOfGriddedField4Create(out, Var::verbosity(ws));
 }
 
 /*! Get the names of all GriddedFields stored in an Array.
@@ -6359,26 +7979,12 @@ See *GriddedFieldGetName*.
 @param[in] griddedfields - Array of GriddedFields.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void ArrayOfGriddedFieldGetNames(Workspace& ws, ArrayOfString& names,
                                  const Any_0& griddedfields) {
   ArrayOfGriddedFieldGetNames(names, griddedfields, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfIndex.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfIndexCreate(Workspace& ws, ArrayOfIndex& out) {
-  ArrayOfIndexCreate(out, Var::verbosity(ws));
 }
 
 /*! Initializes an ArrayOfIndex with linear spacing.
@@ -6398,6 +8004,7 @@ The created array is [start, start+step, start+2*step, ...]
 @param[in] step - Spacing of the array.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ArrayOfIndexLinSpace(Workspace& ws, ArrayOfIndex& out, const Index& start,
                           const Index& stop, const Index& step) {
@@ -6413,6 +8020,7 @@ void ArrayOfIndexLinSpace(Workspace& ws, ArrayOfIndex& out, const Index& start,
 @param[in] value - Indexes for initializiation.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ArrayOfIndexSet(Workspace& ws, ArrayOfIndex& out,
                      const ArrayOfIndex& value) {
@@ -6429,72 +8037,11 @@ identical.
 @param[in] value - Array value..
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ArrayOfIndexSetConstant(Workspace& ws, ArrayOfIndex& out,
                              const Index& value) {
   ArrayOfIndexSetConstant(out, Var::nelem(ws), value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfMatrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfMatrixCreate(Workspace& ws, ArrayOfMatrix& out) {
-  ArrayOfMatrixCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfPpath.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfPpathCreate(Workspace& ws, ArrayOfPpath& out) {
-  ArrayOfPpathCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfPropagationMatrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfPropagationMatrixCreate(Workspace& ws,
-                                    ArrayOfPropagationMatrix& out) {
-  ArrayOfPropagationMatrixCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfQuantumIdentifier.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfQuantumIdentifierCreate(Workspace& ws,
-                                    ArrayOfQuantumIdentifier& out) {
-  ArrayOfQuantumIdentifierCreate(out, Var::verbosity(ws));
 }
 
 /*! Sets an ArrayOfQuantumIdentifier to all levels in *abs_lines_per_species*
@@ -6509,6 +8056,7 @@ Lines without defined quantum numbers are ignored
 @param[in] global - Only look at global quantum numbers (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ArrayOfQuantumIdentifierFromLines(Workspace& ws,
                                        ArrayOfQuantumIdentifier& out,
@@ -6528,118 +8076,11 @@ by converting the input ArrayOfString
 the array.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ArrayOfQuantumIdentifierSet(Workspace& ws, ArrayOfQuantumIdentifier& out,
                                  const ArrayOfString& string_initializers) {
   ArrayOfQuantumIdentifierSet(out, string_initializers, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfRadiationVector.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfRadiationVectorCreate(Workspace& ws, ArrayOfRadiationVector& out) {
-  ArrayOfRadiationVectorCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfRetrievalQuantity.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfRetrievalQuantityCreate(Workspace& ws,
-                                    ArrayOfRetrievalQuantity& out) {
-  ArrayOfRetrievalQuantityCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfScatteringMetaData.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfScatteringMetaDataCreate(Workspace& ws,
-                                     ArrayOfScatteringMetaData& out) {
-  ArrayOfScatteringMetaDataCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfSingleScatteringData.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfSingleScatteringDataCreate(Workspace& ws,
-                                       ArrayOfSingleScatteringData& out) {
-  ArrayOfSingleScatteringDataCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfSparse.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfSparseCreate(Workspace& ws, ArrayOfSparse& out) {
-  ArrayOfSparseCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfStokesVector.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfStokesVectorCreate(Workspace& ws, ArrayOfStokesVector& out) {
-  ArrayOfStokesVectorCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfString.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfStringCreate(Workspace& ws, ArrayOfString& out) {
-  ArrayOfStringCreate(out, Var::verbosity(ws));
 }
 
 /*! Sets a String array according the given text.
@@ -6652,161 +8093,11 @@ The format is text = ["String1","String2",...]
 @param[in] value - Strings for initialization.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ArrayOfStringSet(Workspace& ws, ArrayOfString& out,
                       const ArrayOfString& value) {
   ArrayOfStringSet(out, value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfTelsemAtlas.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfTelsemAtlasCreate(Workspace& ws, ArrayOfTelsemAtlas& out) {
-  ArrayOfTelsemAtlasCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfTensor3.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfTensor3Create(Workspace& ws, ArrayOfTensor3& out) {
-  ArrayOfTensor3Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfTensor4.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfTensor4Create(Workspace& ws, ArrayOfTensor4& out) {
-  ArrayOfTensor4Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfTensor5.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfTensor5Create(Workspace& ws, ArrayOfTensor5& out) {
-  ArrayOfTensor5Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfTensor6.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfTensor6Create(Workspace& ws, ArrayOfTensor6& out) {
-  ArrayOfTensor6Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfTensor7.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfTensor7Create(Workspace& ws, ArrayOfTensor7& out) {
-  ArrayOfTensor7Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfTime.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfTimeCreate(Workspace& ws, ArrayOfTime& out) {
-  ArrayOfTimeCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfTransmissionMatrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfTransmissionMatrixCreate(Workspace& ws,
-                                     ArrayOfTransmissionMatrix& out) {
-  ArrayOfTransmissionMatrixCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfVector.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfVectorCreate(Workspace& ws, ArrayOfVector& out) {
-  ArrayOfVectorCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ArrayOfXsecRecord.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ArrayOfXsecRecordCreate(Workspace& ws, ArrayOfXsecRecord& out) {
-  ArrayOfXsecRecordCreate(out, Var::verbosity(ws));
 }
 
 /*! Interpolates the input field along the pressure dimension from
@@ -6825,6 +8116,7 @@ in and out fields can be the same variable.
 @param[in] interp_order - Interpolation order. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void AtmFieldPRegrid(Workspace& ws, Any_0& out, const Any_1& in,
@@ -6861,6 +8153,7 @@ performed.
 "absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmFieldPerturb(Workspace& ws, Tensor3& perturbed_field,
                      const Tensor3& original_field, const Vector& p_ret_grid,
@@ -6895,6 +8188,7 @@ performed.
 "absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmFieldPerturbAtmGrids(Workspace& ws, Tensor3& perturbed_field,
                              const Tensor3& original_field,
@@ -6942,6 +8236,7 @@ onto given grids, instead of using and returning the original grids.
 gridnames of the *atm_fields_compact* are checked. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmFieldsAndParticleBulkPropFieldFromCompact(
     Workspace& ws, const String& delim = "-", const Numeric& p_min = 0,
@@ -6994,6 +8289,7 @@ necessary. (default: 0)
 is t. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmFieldsCalc(Workspace& ws, const Index& interp_order = 1,
                    const Index& vmr_zeropadding = 0,
@@ -7036,6 +8332,7 @@ necessary. (default: 0)
 is t. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmFieldsCalcExpand1D(Workspace& ws, const Index& interp_order = 1,
                            const Index& vmr_zeropadding = 0,
@@ -7071,6 +8368,7 @@ ellipsoid is set to be a sphere.
 performed or not. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmFieldsExpand1D(Workspace& ws, const Index& chk_vmr_nan = 1) {
   AtmFieldsExpand1D(Var::t_field(ws), Var::z_field(ws), Var::vmr_field(ws),
@@ -7092,6 +8390,7 @@ Nothing is done if *atmosphere_dim* alöready is 1.
 @param[in] ilon - Pick data having this longitude index (0-based). (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmFieldsExtract1D(Workspace& ws, const Index& ilat = 0,
                         const Index& ilon = 0) {
@@ -7133,6 +8432,7 @@ each log step is smaller than this.
 @param[in] interp_order - Interpolation order. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmFieldsRefinePgrid(Workspace& ws, const Numeric& p_step,
                           const Index& interp_order = 1) {
@@ -7177,6 +8477,7 @@ species, the same profile will be used.
 example: "/smiles_local/arts-data/atmosphere/fascod/tropical"
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmRawRead(Workspace& ws, const String& basename) {
   AtmRawRead(Var::t_field_raw(ws), Var::z_field_raw(ws), Var::vmr_field_raw(ws),
@@ -7214,6 +8515,7 @@ example: "/smiles_local/arts-data/atmosphere/fascod/tropical"
 @param[in] expect_vibrational_energies - Should ev.xml be read? (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmWithNLTERawRead(Workspace& ws, const String& basename,
                         const Index& expect_vibrational_energies = 0) {
@@ -7234,6 +8536,7 @@ are set to be empty.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmosphereSet1D(Workspace& ws) {
   AtmosphereSet1D(Var::atmosphere_dim(ws), Var::lat_grid(ws), Var::lon_grid(ws),
@@ -7249,6 +8552,7 @@ Sets *atmosphere_dim* to 2 and the longitude grid to be empty.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmosphereSet2D(Workspace& ws) {
   AtmosphereSet2D(Var::atmosphere_dim(ws), Var::lon_grid(ws),
@@ -7265,6 +8569,7 @@ set to be empty.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void AtmosphereSet3D(Workspace& ws) {
   AtmosphereSet3D(Var::atmosphere_dim(ws), Var::lat_true(ws), Var::lon_true(ws),
@@ -7281,25 +8586,11 @@ The CIA tags shown are in the same format as needed by *abs_speciesSet*.
 @param[in] cia_tags - Array of CIA tags to view, e.g. [ "N2-N2", "H2-H2" ]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void CIAInfo(Workspace& ws, const String& catalogpath,
              const ArrayOfString& cia_tags) {
   CIAInfo(catalogpath, cia_tags, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group CIARecord.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void CIARecordCreate(Workspace& ws, CIARecord& out) {
-  CIARecordCreate(out, Var::verbosity(ws));
 }
 
 /*! Reads CIARecord from Hitran-style file.
@@ -7313,6 +8604,7 @@ void CIARecordCreate(Workspace& ws, CIARecord& out) {
 @param[in] filename - Filename of HITRAN CIA data file.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void CIARecordReadFromFile(Workspace& ws, CIARecord& cia_record,
                            const String& species_tag, const String& filename) {
@@ -7337,6 +8629,7 @@ is consistent with an old, reference, value.
 @param[in] error_message - Additional error message. (default: "")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void Compare(Workspace& ws, const std::pair<Any_0, String>& var1,
@@ -7377,6 +8670,7 @@ That is, *var2* is taken as the reference value.
 @param[in] error_message - Additional error message. (default: "")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void CompareRelative(Workspace& ws, const std::pair<Any_0, String>& var1,
@@ -7413,26 +8707,12 @@ methods).
 @param[in] in - Source variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void Copy(Workspace& ws, std::pair<Any_0, String>& out,
           const std::pair<Any_1, String>& in) {
   Copy(out.first, out.second, in.first, in.second, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group CovarianceMatrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void CovarianceMatrixCreate(Workspace& ws, CovarianceMatrix& out) {
-  CovarianceMatrixCreate(out, Var::verbosity(ws));
 }
 
 /*! Sets the angular grids for Discrete Ordinate type scattering
@@ -7467,6 +8747,7 @@ value is 37. (default: 1)
 @param[in] za_grid_opt_file - Name of special grid for RT part. (default: "")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DOAngularGridsSet(Workspace& ws, const Index& N_za_grid,
                        const Index& N_aa_grid = 1,
@@ -7517,6 +8798,7 @@ that case, a warning message is written to screen and file
 failed job in the output fields is left empty. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DOBatchCalc(Workspace& ws, const Index& robust = 0) {
   DOBatchCalc(ws, Var::dobatch_cloudbox_field(ws),
@@ -7539,6 +8821,7 @@ don't need to/can't call Create for this variable again.
 @param[in] v - Variable to be deleted.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void Delete(Workspace& ws, const std::pair<Any_0, String>& v) {
@@ -7556,6 +8839,7 @@ vector on the diagonal.
 @param[in] v - The vector containing the diagonal elements.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void DiagonalMatrix(Workspace& ws, Any_0& out, const Vector& v) {
@@ -7576,6 +8860,7 @@ addition made by *AddZaAa*.
 @param[in] other_los - Other line-of-sights (can be multiple LOS).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DiffZaAa(Workspace& ws, Matrix& dlos, const Vector& ref_los,
               const Matrix& other_los) {
@@ -7656,6 +8941,7 @@ from scat_data will be used. (default: 181)
 @param[in] quiet - Silence C Disort warnings. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DisortCalc(Workspace& ws, const Index& nstreams = 8,
                 const String& pfct_method = "median", const Index& Npfct = 181,
@@ -7688,6 +8974,7 @@ solution (must be an even number). (default: 8)
 @param[in] quiet - Silence C Disort warnings. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DisortCalcClearsky(Workspace& ws, const Index& nstreams = 8,
                         const Index& quiet = 0) {
@@ -7716,6 +9003,7 @@ from scat_data will be used. (default: 181)
 @param[in] quiet - Silence C Disort warnings. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DisortCalcWithARTSSurface(Workspace& ws, const Index& nstreams = 8,
                                const String& pfct_method = "median",
@@ -7743,6 +9031,7 @@ in *f_grid*. The output is the radiation field inside the cloudbox
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DoitCalc(Workspace& ws) {
   DoitCalc(ws, Var::cloudbox_field(ws), Var::atmfields_checked(ws),
@@ -7778,6 +9067,7 @@ the user necessary.).
 interpolable. (default: 100)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DoitGetIncoming(Workspace& ws, const Index& rigorous = 1,
                      const Numeric& maxratio = 100) {
@@ -7805,6 +9095,7 @@ This method can only be used for 3D cases.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DoitGetIncoming1DAtm(Workspace& ws) {
   DoitGetIncoming1DAtm(ws, Var::cloudbox_field(ws), Var::cloudbox_on(ws),
@@ -7829,6 +9120,7 @@ BEFORE other WSMs that provide input to *DoitCalc*, e.g. before
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DoitInit(Workspace& ws) {
   DoitInit(Var::doit_scat_field(ws), Var::cloudbox_field(ws),
@@ -7852,6 +9144,7 @@ matrices are stored in *pha_mat_sptDOITOpt*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DoitScatteringDataPrepare(Workspace& ws) {
   DoitScatteringDataPrepare(
@@ -7889,6 +9182,7 @@ frequency index and iY the iteration counter.
 @param[in] frequencies - Selection of frequencies to store. (default: {-1})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void DoitWriteIterationFields(Workspace& ws,
                               const ArrayOfIndex& iterations = {-1},
@@ -7908,25 +9202,11 @@ void DoitWriteIterationFields(Workspace& ws,
 @param[in] end - End time
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Duration(Workspace& ws, Numeric& duration, const Time& start,
               const Time& end) {
   Duration(duration, start, end, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group EnergyLevelMap.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void EnergyLevelMapCreate(Workspace& ws, EnergyLevelMap& out) {
-  EnergyLevelMapCreate(out, Var::verbosity(ws));
 }
 
 /*! Sets an EnergyLevelMap
@@ -7938,6 +9218,7 @@ void EnergyLevelMapCreate(Workspace& ws, EnergyLevelMap& out) {
 @param[in] y - in
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void EnergyLevelMapSet(Workspace& ws, EnergyLevelMap& x,
                        const EnergyLevelMap& y) {
@@ -7959,6 +9240,7 @@ Ignore and other dummy method calls must still be included.
 @param[in] msg - String describing the error.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Error(Workspace& ws, const String& msg) { Error(msg, Var::verbosity(ws)); }
 
@@ -7973,6 +9255,7 @@ it is reached, it will terminate the program.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Exit(Workspace& ws) { Exit(Var::verbosity(ws)); }
 
@@ -7994,6 +9277,7 @@ In other words, the selection is always done on the first dimension.
 @param[in] index - Position of the element which should be extracted.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void Extract(Workspace& ws, Any_0& needle, const Any_1& haystack,
@@ -8015,6 +9299,7 @@ species.
 extract.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ExtractFromMetaSingleScatSpecies(Workspace& ws, Vector& meta_param,
                                       const String& meta_name,
@@ -8064,6 +9349,7 @@ propagation path of the downwelling radiation. One value per frequency.
 @param[in] fastem_version - The version of FASTEM to use. (default: 6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void FastemStandAlone(Workspace& ws, Matrix& emissivity, Matrix& reflectivity,
                       const Numeric& za, const Numeric& wind_speed,
@@ -8087,6 +9373,7 @@ GriddedField match *p_grid*, *lat_grid* and *lon_grid*.
 @param[in] in - Raw input gridded field.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void FieldFromGriddedField(Workspace& ws, Any_0& out, const Any_1& in) {
@@ -8102,6 +9389,7 @@ void FieldFromGriddedField(Workspace& ws, Any_0& out, const Any_1& in) {
 @param[out] flag - Variable to set to 0.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void FlagOff(Workspace& ws, Index& flag) { FlagOff(flag, Var::verbosity(ws)); }
 
@@ -8113,6 +9401,7 @@ void FlagOff(Workspace& ws, Index& flag) { FlagOff(flag, Var::verbosity(ws)); }
 @param[out] flag - Variable to set to 1.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void FlagOn(Workspace& ws, Index& flag) { FlagOn(flag, Var::verbosity(ws)); }
 
@@ -8133,6 +9422,7 @@ same size):
 @param[in] in - An array
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void Flatten(Workspace& ws, Any_0& out, const Any_1& in) {
@@ -8168,6 +9458,7 @@ that *ybatchCalc* may occur inside *forloop_agenda*.
 @param[in] step - Step size.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ForLoop(Workspace& ws, const Index& start, const Index& stop,
              const Index& step) {
@@ -8185,6 +9476,7 @@ This converts angular wavenumber (2*PI/wavelength) into frequency.
 @param[in] angular_wavenumber - angular wavenumber [cm^-1]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void FrequencyFromCGSAngularWavenumber(Workspace& ws, Any_0& frequency,
@@ -8204,6 +9496,7 @@ This converts Kayser wavenumber (1/wavelength) into frequency.
 @param[in] kayser_wavenumber - Kayser wavenumber [cm^-1]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void FrequencyFromCGSKayserWavenumber(Workspace& ws, Any_0& frequency,
@@ -8224,26 +9517,12 @@ vector as input.
 @param[in] wavelength - wavelength [m]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void FrequencyFromWavelength(Workspace& ws, Any_0& frequency,
                              const Any_1& wavelength) {
   FrequencyFromWavelength(frequency, wavelength, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group GasAbsLookup.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void GasAbsLookupCreate(Workspace& ws, GasAbsLookup& out) {
-  GasAbsLookupCreate(out, Var::verbosity(ws));
 }
 
 /*! Copy the contents of an environment variable to an ARTS String or Index.
@@ -8255,6 +9534,7 @@ void GasAbsLookupCreate(Workspace& ws, GasAbsLookup& out) {
 @param[in] in - Name of environment variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void GetEnvironmentVariable(Workspace& ws, Any_0& out, const String& in) {
@@ -8269,114 +9549,10 @@ void GetEnvironmentVariable(Workspace& ws, Any_0& out, const String& in) {
 @param[out] nthreads - Number of threads.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void GetNumberOfThreads(Workspace& ws, Index& nthreads) {
   GetNumberOfThreads(nthreads, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group GridPos.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void GridPosCreate(Workspace& ws, GridPos& out) {
-  GridPosCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group GriddedField1.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void GriddedField1Create(Workspace& ws, GriddedField1& out) {
-  GriddedField1Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group GriddedField2.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void GriddedField2Create(Workspace& ws, GriddedField2& out) {
-  GriddedField2Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group GriddedField3.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void GriddedField3Create(Workspace& ws, GriddedField3& out) {
-  GriddedField3Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group GriddedField4.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void GriddedField4Create(Workspace& ws, GriddedField4& out) {
-  GriddedField4Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group GriddedField5.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void GriddedField5Create(Workspace& ws, GriddedField5& out) {
-  GriddedField5Create(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group GriddedField6.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void GriddedField6Create(Workspace& ws, GriddedField6& out) {
-  GriddedField6Create(out, Var::verbosity(ws));
 }
 
 /*! Get the name of a GriddedField.
@@ -8390,6 +9566,7 @@ See *ArrayOfGriddedFieldGetNames*.
 @param[in] griddedfield - GriddedField.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void GriddedFieldGetName(Workspace& ws, String& name,
@@ -8411,6 +9588,7 @@ gfield_raw_out and gfield_raw_in can be the same variable.
 @param[in] in - Raw input gridded field.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void GriddedFieldLatLonExpand(Workspace& ws, Any_0& out, const Any_1& in) {
@@ -8433,6 +9611,7 @@ in and out fields can be the same variable.
 @param[in] interp_order - Interpolation order. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void GriddedFieldLatLonRegrid(Workspace& ws, Any_0& out, const Any_1& in,
@@ -8463,6 +9642,7 @@ in and out fields can be the same variable.
 @param[in] zeropadding - Apply zero-padding. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void GriddedFieldPRegrid(Workspace& ws, Any_0& out, const Any_1& in,
@@ -8491,6 +9671,7 @@ BETA mode.
 @param[in] zeropadding - Apply zero-padding. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void GriddedFieldZToPRegrid(Workspace& ws, GriddedField3& out,
                             const GriddedField3& in,
@@ -8499,22 +9680,6 @@ void GriddedFieldZToPRegrid(Workspace& ws, GriddedField3& out,
   GriddedFieldZToPRegrid(out, Var::p_grid(ws), Var::lat_grid(ws),
                          Var::lon_grid(ws), Var::z_field(ws), in, interp_order,
                          zeropadding, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group HitranRelaxationMatrixData.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void HitranRelaxationMatrixDataCreate(Workspace& ws,
-                                      HitranRelaxationMatrixData& out) {
-  HitranRelaxationMatrixDataCreate(out, Var::verbosity(ws));
 }
 
 /*! Includes the contents of another controlfile.
@@ -8551,6 +9716,7 @@ controlfiles.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void INCLUDE(Workspace& ws) { INCLUDE(Var::verbosity(ws)); }
 
@@ -8579,6 +9745,7 @@ supposed to use the Doppler width 'ls_sigma', but the Lorentz lineshape
 @param[in] in - Variable to be ignored.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void Ignore(Workspace& ws, const Any_0& in) {
@@ -8598,24 +9765,10 @@ The result can either be stored in the same or another index.
 @param[in] value - Value to add.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void IndexAdd(Workspace& ws, Index& out, const Index& in, const Index& value) {
   IndexAdd(out, in, value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Index.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void IndexCreate(Workspace& ws, Index& out) {
-  IndexCreate(out, Var::verbosity(ws));
 }
 
 /*! Counts number of points in the atmosphere.
@@ -8631,6 +9784,7 @@ not active.
 @param[out] n - Variable to set with number of points.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void IndexNumberOfAtmosphericPoints(Workspace& ws, Index& n) {
   IndexNumberOfAtmosphericPoints(n, Var::atmosphere_dim(ws), Var::p_grid(ws),
@@ -8647,6 +9801,7 @@ void IndexNumberOfAtmosphericPoints(Workspace& ws, Index& n) {
 @param[in] value - Value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void IndexSet(Workspace& ws, Index& out, const Index& value) {
   IndexSet(out, value, Var::verbosity(ws));
@@ -8664,6 +9819,7 @@ element (which equals nelem-1).
 @param[in] v - The method is defined for these groups.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void IndexSetToLast(Workspace& ws, const Any_0& v) {
@@ -8681,6 +9837,7 @@ Input and output can be same variable.
 @param[in] in - Input index variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void IndexStepDown(Workspace& ws, Index& out, const Index& in) {
   IndexStepDown(out, in, Var::verbosity(ws));
@@ -8697,6 +9854,7 @@ Input and output can be same variable.
 @param[in] in - Input index variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void IndexStepUp(Workspace& ws, Index& out, const Index& in) {
   IndexStepUp(out, in, Var::verbosity(ws));
@@ -8715,6 +9873,7 @@ Linear interpolation is applied.
 @param[in] field - Field to interpolate.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void InterpAtmFieldToPosition(Workspace& ws, Numeric& out,
                               const Tensor3& field) {
@@ -8742,6 +9901,7 @@ longitude as first and second dimension.
 @param[in] gfield2 - Gridded field to interpolate.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void InterpGriddedField2ToPosition(Workspace& ws, Numeric& out,
                                    const GriddedField2& gfield2) {
@@ -8770,6 +9930,7 @@ the surface altitudes.
 @param[in] field - Field to interpolate.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void InterpSurfaceFieldToPosition(Workspace& ws, Numeric& out,
                                   const Matrix& field) {
@@ -8786,24 +9947,10 @@ void InterpSurfaceFieldToPosition(Workspace& ws, Numeric& out,
 @param[out] dt - Time in seconds between local and gmt
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void LocalTimeOffset(Workspace& ws, Numeric& dt) {
   LocalTimeOffset(dt, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group MCAntenna.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void MCAntennaCreate(Workspace& ws, MCAntenna& out) {
-  MCAntennaCreate(out, Var::verbosity(ws));
 }
 
 /*! A generalised 3D reversed Monte Carlo radiative algorithm, that
@@ -8841,6 +9988,7 @@ data (so far only applied in phase matrix, not in extinction and absorption.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MCGeneral(Workspace& ws, const Index& l_mc_scat_order = 11,
                const Index& t_interp_order = 1) {
@@ -8902,6 +10050,7 @@ data (so far only applied in phase matrix, not in extinction and absorption.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MCRadar(Workspace& ws, const Numeric& ze_tref = 273.15,
              const Numeric& k2 = -1, const Index& t_interp_order = 1) {
@@ -8928,6 +10077,7 @@ void MCRadar(Workspace& ws, const Numeric& ze_tref = 273.15,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MCSetSeedFromTime(Workspace& ws) {
   MCSetSeedFromTime(Var::mc_seed(ws), Var::verbosity(ws));
@@ -8947,6 +10097,7 @@ is allowed and applied.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MagFieldsCalc(Workspace& ws, const Index& interp_order = 1) {
   MagFieldsCalc(Var::mag_u_field(ws), Var::mag_v_field(ws),
@@ -8971,6 +10122,7 @@ longitudes for 3D, to create a homogeneous atmosphere.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MagFieldsCalcExpand1D(Workspace& ws, const Index& interp_order = 1) {
   MagFieldsCalcExpand1D(Var::mag_u_field(ws), Var::mag_v_field(ws),
@@ -8992,6 +10144,7 @@ void MagFieldsCalcExpand1D(Workspace& ws, const Index& interp_order = 1) {
 (default: 1e99)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MagFieldsFromAltitudeRawCalc(Workspace& ws, const Index& interp_order = 1,
                                   const Numeric& extrapolating = 1e99) {
@@ -9019,6 +10172,7 @@ accordingly.
 example: "/data/magnetic_field"
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MagRawRead(Workspace& ws, const String& basename) {
   MagRawRead(Var::mag_u_field_raw(ws), Var::mag_v_field_raw(ws),
@@ -9034,6 +10188,7 @@ void MagRawRead(Workspace& ws, const String& basename) {
 @param[in] v - The vector to be copied.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Matrix1ColFromVector(Workspace& ws, Matrix& out, const Vector& v) {
   Matrix1ColFromVector(out, v, Var::verbosity(ws));
@@ -9048,6 +10203,7 @@ void Matrix1ColFromVector(Workspace& ws, Matrix& out, const Vector& v) {
 @param[in] v - The vector to be copied.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Matrix1RowFromVector(Workspace& ws, Matrix& out, const Vector& v) {
   Matrix1RowFromVector(out, v, Var::verbosity(ws));
@@ -9066,6 +10222,7 @@ as they are given.
 @param[in] v2 - The vector to be copied into the second column.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Matrix2ColFromVectors(Workspace& ws, Matrix& out, const Vector& v1,
                            const Vector& v2) {
@@ -9085,6 +10242,7 @@ as they are given.
 @param[in] v2 - The vector to be copied into the second row.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Matrix2RowFromVectors(Workspace& ws, Matrix& out, const Vector& v1,
                            const Vector& v2) {
@@ -9105,6 +10263,7 @@ as they are given.
 @param[in] v3 - The vector to be copied into the third column.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Matrix3ColFromVectors(Workspace& ws, Matrix& out, const Vector& v1,
                            const Vector& v2, const Vector& v3) {
@@ -9125,6 +10284,7 @@ as they are given.
 @param[in] v3 - The vector to be copied into the third row.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Matrix3RowFromVectors(Workspace& ws, Matrix& out, const Vector& v1,
                            const Vector& v2, const Vector& v3) {
@@ -9143,6 +10303,7 @@ The result can either be stored in the same or another matrix.
 @param[in] value - The value to be added to the matrix.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixAddScalar(Workspace& ws, Matrix& out, const Matrix& in,
                      const Numeric& value) {
@@ -9172,6 +10333,7 @@ followed and the unit of the returned data is W/(m3 * Hz * sr).
 @param[in] f - Frequency vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixCBR(Workspace& ws, Matrix& out, const Vector& f) {
   MatrixCBR(out, Var::stokes_dim(ws), f, Var::verbosity(ws));
@@ -9186,24 +10348,10 @@ void MatrixCBR(Workspace& ws, Matrix& out, const Vector& f) {
 @param[in] in - The sparse matrix to be copied.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixCopySparse(Workspace& ws, Matrix& out, const Sparse& in) {
   MatrixCopySparse(out, in, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Matrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void MatrixCreate(Workspace& ws, Matrix& out) {
-  MatrixCreate(out, Var::verbosity(ws));
 }
 
 /*! Extracts a Matrix from a Tensor3.
@@ -9221,6 +10369,7 @@ Higher order equivalent of *VectorExtractFromMatrix*.
 @param[in] direction - Direction. "page" or "row" or "column".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixExtractFromTensor3(Workspace& ws, Matrix& out, const Tensor3& in,
                               const Index& i, const String& direction) {
@@ -9236,6 +10385,7 @@ void MatrixExtractFromTensor3(Workspace& ws, Matrix& out, const Tensor3& in,
 @param[in] in - Input covariance matrix.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixFromCovarianceMatrix(Workspace& ws, Matrix& out,
                                 const CovarianceMatrix& in) {
@@ -9257,6 +10407,7 @@ value*I.
 @param[in] value - The value along the diagonal. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixIdentity(Workspace& ws, Matrix& out, const Index& n,
                     const Numeric& value = 1) {
@@ -9277,6 +10428,7 @@ if Y and X are the same Matrix.
 @param[in] x - The original Matrix (dimension nxc).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixMatrixMultiply(Workspace& ws, Matrix& out, const Matrix& m,
                           const Matrix& x) {
@@ -9302,6 +10454,7 @@ followed and the unit of the returned data is W/(m3 * Hz * sr).
 @param[in] t - Temperature [K].
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixPlanck(Workspace& ws, Matrix& out, const Vector& f,
                   const Numeric& t) {
@@ -9321,6 +10474,7 @@ variable.
 @param[in] value - The value to be multiplied with the matrix.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixScale(Workspace& ws, Matrix& out, const Matrix& in,
                  const Numeric& value) {
@@ -9340,6 +10494,7 @@ Usage:
 separated by commas, rows by semicolons.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixSet(Workspace& ws, Matrix& out, const Matrix& value) {
   MatrixSet(out, value, Var::verbosity(ws));
@@ -9356,6 +10511,7 @@ The size is determined by *ncols* and *nrows*.
 @param[in] value - Matrix value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixSetConstant(Workspace& ws, Matrix& out, const Numeric& value) {
   MatrixSetConstant(out, Var::nrows(ws), Var::ncols(ws), value,
@@ -9373,6 +10529,7 @@ Works as MatrixPlanck where the radiation is set to 1.
 @param[in] f - Frequency vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixUnitIntensity(Workspace& ws, Matrix& out, const Vector& f) {
   MatrixUnitIntensity(out, Var::stokes_dim(ws), f, Var::verbosity(ws));
@@ -9391,6 +10548,7 @@ are the same Vector.
 @param[in] v - The original Vector (length n).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void MatrixVectorMultiply(Workspace& ws, Vector& out, const Matrix& m,
                           const Vector& v) {
@@ -9410,25 +10568,11 @@ The result can either be stored in the same or another numeric.
 @param[in] value - Value to add.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void NumericAdd(Workspace& ws, Numeric& out, const Numeric& in,
                 const Numeric& value) {
   NumericAdd(out, in, value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Numeric.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void NumericCreate(Workspace& ws, Numeric& out) {
-  NumericCreate(out, Var::verbosity(ws));
 }
 
 /*! Derivs a numeric from a vector, following selected operation.
@@ -9448,6 +10592,7 @@ The following operations can be selected:
 @param[in] op - Selected operation.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void NumericFromVector(Workspace& ws, Numeric& out, const Vector& in,
                        const String& op) {
@@ -9467,6 +10612,7 @@ The result can either be stored in the same or another numeric.
 @param[in] value - Scaling value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void NumericInvScale(Workspace& ws, Numeric& out, const Numeric& in,
                      const Numeric& value) {
@@ -9486,6 +10632,7 @@ The result can either be stored in the same or another numeric.
 @param[in] value - Scaling value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void NumericScale(Workspace& ws, Numeric& out, const Numeric& in,
                   const Numeric& value) {
@@ -9501,6 +10648,7 @@ void NumericScale(Workspace& ws, Numeric& out, const Numeric& in,
 @param[in] value - The value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void NumericSet(Workspace& ws, Numeric& out, const Numeric& value) {
   NumericSet(out, value, Var::verbosity(ws));
@@ -9597,6 +10745,7 @@ method. (default: {})
 printed on the screen. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void OEM(
     Workspace& ws, const String& method,
@@ -9634,6 +10783,7 @@ Optimization currently only works with *stokes_dim* = 1 .
 @param[in] cloudbox_size_max - Maximum cloudbox size (default: 200)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void OptimizeDoitPressureGrid(Workspace& ws, const Numeric& tau_scat_max = 0.1,
                               const Numeric& sgl_alb_max = 0.9,
@@ -9664,24 +10814,10 @@ Note that all altitude values in the vector must be less than 120 km,
 @param[in] z_grid - Altitude grid.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void PFromZSimple(Workspace& ws, Vector& p_grid, const Vector& z_grid) {
   PFromZSimple(p_grid, z_grid, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Ppath.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void PpathCreate(Workspace& ws, Ppath& out) {
-  PpathCreate(out, Var::verbosity(ws));
 }
 
 /*! Prints a variable on the screen.
@@ -9693,6 +10829,7 @@ void PpathCreate(Workspace& ws, Ppath& out) {
 @param[in] level - Output level to use. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void Print(Workspace& ws, const Any_0& in, const Index& level = 1) {
@@ -9706,6 +10843,7 @@ void Print(Workspace& ws, const Any_0& in, const Index& level = 1) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void PrintPhysicalConstants(Workspace& ws) {
   PrintPhysicalConstants(Var::verbosity(ws));
@@ -9721,40 +10859,11 @@ allocated ones (1). (default: 1)
 @param[in] level - Output level to use. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void PrintWorkspace(Workspace& ws, const Index& only_allocated = 1,
                     const Index& level = 1) {
   PrintWorkspace(ws, only_allocated, level, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group PropagationMatrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void PropagationMatrixCreate(Workspace& ws, PropagationMatrix& out) {
-  PropagationMatrixCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group QuantumIdentifier.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void QuantumIdentifierCreate(Workspace& ws, QuantumIdentifier& out) {
-  QuantumIdentifierCreate(out, Var::verbosity(ws));
 }
 
 /*! Sets a QuantumIdentifier workspace variable to the given value
@@ -9767,6 +10876,7 @@ by converting the input String
 @param[in] string_initializer - The string representing the value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void QuantumIdentifierSet(Workspace& ws, QuantumIdentifier& out,
                           const String& string_initializer) {
@@ -9872,6 +10982,7 @@ angle interpolation in cosine (='mu') space. (default: 0)
 single scattering approximation is assumed to apply). (default: 1e-6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void RT4Calc(Workspace& ws, const Index& nstreams = 16,
              const String& pfct_method = "median",
@@ -9940,6 +11051,7 @@ angle interpolation in cosine (='mu') space. (default: 0)
 single scattering approximation is assumed to apply). (default: 1e-6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void RT4CalcWithRT4Surface(
     Workspace& ws, const Index& nstreams = 16,
@@ -9977,6 +11089,7 @@ data files converted to arts-xml). Output written to (xml-)file.
 (default: "artscomponents/polradtran/testdata/")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void RT4Test(Workspace& ws, Tensor4& out_rad,
              const String& datapath = "artscomponents/polradtran/testdata/") {
@@ -9996,27 +11109,13 @@ is also removed.
 @param[in] spectral_radiation_field - TBD
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void RadiationFieldSpectralIntegrate(Workspace& ws, Any_0& radiation_field,
                                      const Any_1& spectral_radiation_field) {
   RadiationFieldSpectralIntegrate(radiation_field, Var::f_grid(ws),
                                   spectral_radiation_field, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group RadiationVector.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void RadiationVectorCreate(Workspace& ws, RadiationVector& out) {
-  RadiationVectorCreate(out, Var::verbosity(ws));
 }
 
 /*! Adds a Rational and a value (out = in+value).
@@ -10032,25 +11131,11 @@ The result can either be stored in the same or another Rational.
 @param[in] value - Value to add.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void RationalAdd(Workspace& ws, Rational& out, const Rational& in,
                  const Rational& value) {
   RationalAdd(out, in, value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Rational.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void RationalCreate(Workspace& ws, Rational& out) {
-  RationalCreate(out, Var::verbosity(ws));
 }
 
 /*! Inversely scales/divides a Rational with a value (out = in/value).
@@ -10066,6 +11151,7 @@ The result can either be stored in the same or another Rational.
 @param[in] value - Scaling Rational.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void RationalInvScale(Workspace& ws, Rational& out, const Rational& in,
                       const Rational& value) {
@@ -10085,6 +11171,7 @@ The result can either be stored in the same or another Rational.
 @param[in] value - Scaling value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void RationalScale(Workspace& ws, Rational& out, const Rational& in,
                    const Rational& value) {
@@ -10101,6 +11188,7 @@ void RationalScale(Workspace& ws, Rational& out, const Rational& in,
 @param[in] denominator - The denominator. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void RationalSet(Workspace& ws, Rational& out, const Index& numerator,
                  const Index& denominator = 1) {
@@ -10140,6 +11228,7 @@ information.  Be careful setting the options!
 *abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ReadARTSCAT(Workspace& ws, const String& filename, const Numeric& fmin = 0,
                  const Numeric& fmax = 1e99,
@@ -10191,6 +11280,7 @@ information.  Be careful setting the options!
 *abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ReadArrayOfARTSCAT(Workspace& ws, const String& filename,
                         const Numeric& fmin = 0, const Numeric& fmax = 1e99,
@@ -10250,6 +11340,7 @@ Be careful setting the options!
 *abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ReadHITRAN(Workspace& ws, const String& filename, const Numeric& fmin = 0,
                 const Numeric& fmax = 1e99,
@@ -10301,6 +11392,7 @@ Be careful setting the options!
 *abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ReadJPL(Workspace& ws, const String& filename, const Numeric& fmin = 0,
              const Numeric& fmax = 1e99,
@@ -10349,6 +11441,7 @@ Be careful setting the options!
 *abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ReadLBLRTM(Workspace& ws, const String& filename, const Numeric& fmin = 0,
                 const Numeric& fmax = 1e99,
@@ -10399,6 +11492,7 @@ Be careful setting the options!
 *abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ReadMytran2(Workspace& ws, const String& filename, const Numeric& fmin = 0,
                  const Numeric& fmax = 1e99,
@@ -10431,6 +11525,7 @@ from <basename>.<variable_name>.nc.
 @param[in] filename - Name of the NetCDF file.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void ReadNetCDF(Workspace& ws, std::pair<Any_0, String>& out,
@@ -10474,6 +11569,7 @@ missing (default: 0)
 *abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ReadSplitARTSCAT(Workspace& ws, const String& basename,
                       const Numeric& fmin = 0, const Numeric& fmax = 1e99,
@@ -10510,6 +11606,7 @@ also look for files with an added .xml, .xml.gz and .gz extension
 @param[in] filename - Name of the XML file. (default: "")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void ReadXML(Workspace& ws, std::pair<Any_0, String>& out,
@@ -10536,6 +11633,7 @@ extension. Omitting filename works as for *ReadXML*.
 necessary. 0 means no padding (default). (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void ReadXMLIndexed(Workspace& ws, std::pair<Any_0, String>& out,
@@ -10567,6 +11665,7 @@ And so on
 @param[in] i - Over-dimensioned input
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void Reduce(Workspace& ws, Any_0& o, const Any_1& i) {
@@ -10587,6 +11686,7 @@ the current last existing scattering species in *scat_data*.
 @param[in] pnd_field_files - List of names of the corresponding pnd_field files.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ScatElementsPndAndScatAdd(Workspace& ws,
                                const ArrayOfString& scat_data_files,
@@ -10621,6 +11721,7 @@ negative, no max. limitation is applied). (default: -1.)
 @param[in] delim - Delimiter string of *scat_species* elements. (default: "-")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ScatElementsSelect(Workspace& ws, const String& species,
                         const String& sizeparam, const Numeric& sizemin = 0.,
@@ -10648,6 +11749,7 @@ instance of species 'particles' to *abs_species*.
 @param[in] pnd_field_files - List of names of the corresponding pnd_field files.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ScatElementsToabs_speciesAdd(Workspace& ws,
                                   const ArrayOfString& scat_data_files,
@@ -10703,6 +11805,7 @@ details). (default: "")
 (default: -1.)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ScatSpeciesExtendTemperature(Workspace& ws, const String& species = "",
                                   const String& scat_species_delim = "-",
@@ -10729,6 +11832,7 @@ said variable, e.g. before *ScatSpeciesPndAndScatAdd*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ScatSpeciesInit(Workspace& ws) {
   ScatSpeciesInit(Var::scat_species(ws), Var::scat_data_raw(ws),
@@ -10773,6 +11877,7 @@ This method can only be used with a 1D atmosphere.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ScatSpeciesMerge(Workspace& ws) {
   ScatSpeciesMerge(Var::pnd_field(ws), Var::scat_data(ws), Var::scat_meta(ws),
@@ -10811,6 +11916,7 @@ scattering data.
 pnd_field data.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ScatSpeciesPndAndScatAdd(Workspace& ws,
                               const ArrayOfString& scat_data_files,
@@ -10848,6 +11954,7 @@ exactly correspond to the order of the scattering meta data files.
 @param[in] scat_data_files - Array of single scattering data file names.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ScatSpeciesScatAndMetaRead(Workspace& ws,
                                 const ArrayOfString& scat_data_files) {
@@ -10892,6 +11999,7 @@ save some time. The a and b parameters are then set to -1.Default is to
 calculate a and b. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ScatSpeciesSizeMassInfo(Workspace& ws, const Index& species_index,
                              const String& x_unit,
@@ -10902,21 +12010,6 @@ void ScatSpeciesSizeMassInfo(Workspace& ws, const Index& species_index,
                           Var::scat_species_b(ws), Var::scat_meta(ws),
                           species_index, x_unit, x_fit_start, x_fit_end,
                           do_only_x, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group ScatteringMetaData.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void ScatteringMetaDataCreate(Workspace& ws, ScatteringMetaData& out) {
-  ScatteringMetaDataCreate(out, Var::verbosity(ws));
 }
 
 /*! Method to select some elements from one array and copy them to
@@ -10947,6 +12040,7 @@ needles.
 always.)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void Select(Workspace& ws, Any_0& needles, const Any_1& haystack,
@@ -10962,24 +12056,10 @@ void Select(Workspace& ws, Any_0& needles, const Any_1& haystack,
 @param[in] nthreads - Number of threads.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void SetNumberOfThreads(Workspace& ws, const Index& nthreads) {
   SetNumberOfThreads(nthreads, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group SingleScatteringData.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void SingleScatteringDataCreate(Workspace& ws, SingleScatteringData& out) {
-  SingleScatteringDataCreate(out, Var::verbosity(ws));
 }
 
 /*! Sleeps for a number of seconds
@@ -10990,24 +12070,10 @@ void SingleScatteringDataCreate(Workspace& ws, SingleScatteringData& out) {
 @param[in] time - Time to sleep for in seconds
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Sleep(Workspace& ws, const Numeric& time) {
   Sleep(time, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Sparse.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void SparseCreate(Workspace& ws, Sparse& out) {
-  SparseCreate(out, Var::verbosity(ws));
 }
 
 /*! Returns a sparse dentity matrix.
@@ -11025,6 +12091,7 @@ value*I.
 @param[in] value - The value along the diagonal. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void SparseMatrixIdentity(Workspace& ws, Sparse& out, const Index& n,
                           const Numeric& value = 1) {
@@ -11043,55 +12110,11 @@ Makes the calculation: out = m1 * m2
 @param[in] m2 - Right sparse matrix.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void SparseSparseMultiply(Workspace& ws, Sparse& out, const Sparse& m1,
                           const Sparse& m2) {
   SparseSparseMultiply(out, m1, m2, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group SpeciesAuxData.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void SpeciesAuxDataCreate(Workspace& ws, SpeciesAuxData& out) {
-  SpeciesAuxDataCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group StokesVector.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void StokesVectorCreate(Workspace& ws, StokesVector& out) {
-  StokesVectorCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group String.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void StringCreate(Workspace& ws, String& out) {
-  StringCreate(out, Var::verbosity(ws));
 }
 
 /*! Concatenate two or more strings.
@@ -11115,6 +12138,7 @@ in the input list. Up to 10 strings can be concatenated at once.
 @param[in] in10 - Input text string. (default: "")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void StringJoin(Workspace& ws, String& out, const String& in1,
                 const String& in2, const String& in3 = "",
@@ -11135,6 +12159,7 @@ void StringJoin(Workspace& ws, String& out, const String& in1,
 @param[in] text - Input text string.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void StringSet(Workspace& ws, String& out, const String& text) {
   StringSet(out, text, Var::verbosity(ws));
@@ -11153,6 +12178,7 @@ the agenda.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void SurfaceDummy(Workspace& ws) {
   SurfaceDummy(Var::dsurface_rmatrix_dx(ws), Var::dsurface_emission_dx(ws),
@@ -11180,6 +12206,7 @@ vector with the same length as *f_grid*.
 @param[in] fastem_version - The version of FASTEM to use. (default: 6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void SurfaceFastem(Workspace& ws, const Vector& transmittance,
                    const Index& fastem_version = 6) {
@@ -11220,6 +12247,7 @@ The model itself is represented by the neural networks in
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void SurfaceTessem(Workspace& ws) {
   SurfaceTessem(Var::surface_los(ws), Var::surface_rmatrix(ws),
@@ -11244,6 +12272,7 @@ Should give the same as running the tmatrix_lp executable in
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void TMatrixTest(Workspace& ws) { TMatrixTest(Var::verbosity(ws)); }
 
@@ -11264,6 +12293,7 @@ vector is set to NaN.
 @param[out] tan_pos - The position vector of the tangent point.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void TangentPointExtract(Workspace& ws, Vector& tan_pos) {
   TangentPointExtract(tan_pos, Var::ppath(ws), Var::verbosity(ws));
@@ -11282,24 +12312,10 @@ with a zenith angle of 90 deg.)
 @param[in] level - Output level to use. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void TangentPointPrint(Workspace& ws, const Index& level = 1) {
   TangentPointPrint(Var::ppath(ws), level, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group TelsemAtlas.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void TelsemAtlasCreate(Workspace& ws, TelsemAtlas& out) {
-  TelsemAtlasCreate(out, Var::verbosity(ws));
 }
 
 /*! Adds a scalar value to all elements of a tensor3.
@@ -11315,25 +12331,11 @@ variable.
 @param[in] value - The value to be added to the tensor.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor3AddScalar(Workspace& ws, Tensor3& out, const Tensor3& in,
                       const Numeric& value) {
   Tensor3AddScalar(out, in, value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Tensor3.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void Tensor3Create(Workspace& ws, Tensor3& out) {
-  Tensor3Create(out, Var::verbosity(ws));
 }
 
 /*! Extracts a Tensor3 from a Tensor4.
@@ -11351,6 +12353,7 @@ Higher order equivalent of *VectorExtractFromMatrix*.
 @param[in] direction - Direction. "book" or "page" or "row" or "column".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor3ExtractFromTensor4(Workspace& ws, Tensor3& out, const Tensor4& in,
                                const Index& i, const String& direction) {
@@ -11370,6 +12373,7 @@ variable.
 @param[in] value - The value to be multiplied with the tensor.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor3Scale(Workspace& ws, Tensor3& out, const Tensor3& in,
                   const Numeric& value) {
@@ -11387,6 +12391,7 @@ The size is determined by *ncols*, *nrows* etc.
 @param[in] value - Tensor value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor3SetConstant(Workspace& ws, Tensor3& out, const Numeric& value) {
   Tensor3SetConstant(out, Var::npages(ws), Var::nrows(ws), Var::ncols(ws),
@@ -11406,25 +12411,11 @@ variable.
 @param[in] value - The value to be added to the tensor.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor4AddScalar(Workspace& ws, Tensor4& out, const Tensor4& in,
                       const Numeric& value) {
   Tensor4AddScalar(out, in, value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Tensor4.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void Tensor4Create(Workspace& ws, Tensor4& out) {
-  Tensor4Create(out, Var::verbosity(ws));
 }
 
 /*! Scales all elements of a tensor with the specified value.
@@ -11440,6 +12431,7 @@ variable.
 @param[in] value - The value to be multiplied with the tensor.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor4Scale(Workspace& ws, Tensor4& out, const Tensor4& in,
                   const Numeric& value) {
@@ -11457,25 +12449,11 @@ The size is determined by *ncols*, *nrows* etc.
 @param[in] value - Tensor value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor4SetConstant(Workspace& ws, Tensor4& out, const Numeric& value) {
   Tensor4SetConstant(out, Var::nbooks(ws), Var::npages(ws), Var::nrows(ws),
                      Var::ncols(ws), value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Tensor5.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void Tensor5Create(Workspace& ws, Tensor5& out) {
-  Tensor5Create(out, Var::verbosity(ws));
 }
 
 /*! Scales all elements of a tensor with the specified value.
@@ -11491,6 +12469,7 @@ variable.
 @param[in] value - The value to be multiplied with the tensor.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor5Scale(Workspace& ws, Tensor5& out, const Tensor5& in,
                   const Numeric& value) {
@@ -11508,25 +12487,11 @@ The size is determined by *ncols*, *nrows* etc.
 @param[in] value - Tensor value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor5SetConstant(Workspace& ws, Tensor5& out, const Numeric& value) {
   Tensor5SetConstant(out, Var::nshelves(ws), Var::nbooks(ws), Var::npages(ws),
                      Var::nrows(ws), Var::ncols(ws), value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Tensor6.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void Tensor6Create(Workspace& ws, Tensor6& out) {
-  Tensor6Create(out, Var::verbosity(ws));
 }
 
 /*! Scales all elements of a tensor with the specified value.
@@ -11542,6 +12507,7 @@ variable.
 @param[in] value - The value to be multiplied with the tensor.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor6Scale(Workspace& ws, Tensor6& out, const Tensor6& in,
                   const Numeric& value) {
@@ -11559,26 +12525,12 @@ The size is determined by *ncols*, *nrows* etc.
 @param[in] value - Tensor value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor6SetConstant(Workspace& ws, Tensor6& out, const Numeric& value) {
   Tensor6SetConstant(out, Var::nvitrines(ws), Var::nshelves(ws),
                      Var::nbooks(ws), Var::npages(ws), Var::nrows(ws),
                      Var::ncols(ws), value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Tensor7.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void Tensor7Create(Workspace& ws, Tensor7& out) {
-  Tensor7Create(out, Var::verbosity(ws));
 }
 
 /*! Scales all elements of a tensor with the specified value.
@@ -11594,6 +12546,7 @@ variable.
 @param[in] value - The value to be multiplied with the tensor.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor7Scale(Workspace& ws, Tensor7& out, const Tensor7& in,
                   const Numeric& value) {
@@ -11611,26 +12564,12 @@ The size is determined by *ncols*, *nrows* etc.
 @param[in] value - Tensor value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Tensor7SetConstant(Workspace& ws, Tensor7& out, const Numeric& value) {
   Tensor7SetConstant(out, Var::nlibraries(ws), Var::nvitrines(ws),
                      Var::nshelves(ws), Var::nbooks(ws), Var::npages(ws),
                      Var::nrows(ws), Var::ncols(ws), value, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group TessemNN.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void TessemNNCreate(Workspace& ws, TessemNN& out) {
-  TessemNNCreate(out, Var::verbosity(ws));
 }
 
 /*! Reads the initialization data for the TESSEM NeuralNet from an ASCII file.
@@ -11643,6 +12582,7 @@ void TessemNNCreate(Workspace& ws, TessemNN& out) {
 distribution.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void TessemNNReadAscii(Workspace& ws, TessemNN& tessem_nn,
                        const String& filename) {
@@ -11661,6 +12601,7 @@ something out quickly.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Test(Workspace& ws) { Test(Var::verbosity(ws)); }
 
@@ -11672,6 +12613,7 @@ void Test(Workspace& ws) { Test(Var::verbosity(ws)); }
 @param[in] index - Index of agenda in array to execute. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void TestArrayOfAgenda(Workspace& ws, const Index& index = 0) {
   TestArrayOfAgenda(ws, Var::test_agenda_array(ws), index, Var::verbosity(ws));
@@ -11697,40 +12639,11 @@ from the Tessem 2 distribution, the input Vector should contain
 @param[in] invalues - Input data.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void TestTessem(Workspace& ws, Vector& outvalues, const TessemNN& net,
                 const Vector& invalues) {
   TestTessem(outvalues, net, invalues, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Time.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void TimeCreate(Workspace& ws, Time& out) {
-  TimeCreate(out, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Timer.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void TimerCreate(Workspace& ws, Timer& out) {
-  TimerCreate(out, Var::verbosity(ws));
 }
 
 /*! As *Ignore* but for agenda output.
@@ -11748,25 +12661,11 @@ In case the variable is not yet initialized, it is set to NaN.
 @param[out] in - Variable to do nothing with.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void Touch(Workspace& ws, Any_0& in) {
   Touch(in, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group TransmissionMatrix.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void TransmissionMatrixCreate(Workspace& ws, TransmissionMatrix& out) {
-  TransmissionMatrixCreate(out, Var::verbosity(ws));
 }
 
 /*! Adds a scalar to all elements of a vector.
@@ -11781,6 +12680,7 @@ The result can either be stored in the same or another vector.
 @param[in] value - The value to be added to the vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorAddScalar(Workspace& ws, Vector& out, const Vector& in,
                      const Numeric& value) {
@@ -11805,25 +12705,11 @@ the same WSV as any of the the other vector.
 @param[in] b - Vector to be added.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorAddVector(Workspace& ws, Vector& c, const Vector& a,
                      const Vector& b) {
   VectorAddVector(c, a, b, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Vector.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void VectorCreate(Workspace& ws, Vector& out) {
-  VectorCreate(out, Var::verbosity(ws));
 }
 
 /*! Keeps only values of a vector inside the specified range.
@@ -11842,6 +12728,7 @@ The result can either be stored in the same or another vector.
 @param[in] max_value - Maximum value to keep (default: 99e99)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorCrop(Workspace& ws, Vector& out, const Vector& in,
                 const Numeric& min_value = -99e99,
@@ -11863,6 +12750,7 @@ to create output Vector.
 @param[in] direction - Direction. "row" or "column".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorExtractFromMatrix(Workspace& ws, Vector& out, const Matrix& in,
                              const Index& i, const String& direction) {
@@ -11881,6 +12769,7 @@ either be stored in the same or another vector.
 @param[in] in - Input vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorFlip(Workspace& ws, Vector& out, const Vector& in) {
   VectorFlip(out, in, Var::verbosity(ws));
@@ -11914,6 +12803,7 @@ Generic input:
 @param[in] points - The points to insert
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorInsertGridPoints(Workspace& ws, Vector& out, const Vector& in,
                             const Vector& points) {
@@ -11937,6 +12827,7 @@ The created vector is [start, start+step, start+2*step, ...]
 @param[in] step - Spacing of the vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorLinSpace(Workspace& ws, Vector& out, const Numeric& start,
                     const Numeric& stop, const Numeric& step) {
@@ -11965,6 +12856,7 @@ Explicitly, the vector is:
 @param[in] step - The spacing of the vector. (Log coordinates!)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorLogSpace(Workspace& ws, Vector& out, const Numeric& start,
                     const Numeric& stop, const Numeric& step) {
@@ -11986,6 +12878,7 @@ multiplying the H Matrix to spectra.
 @param[in] v - The original Vector (dimension n).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorMatrixMultiply(Workspace& ws, Vector& out, const Matrix& m,
                           const Vector& v) {
@@ -12005,6 +12898,7 @@ The length (*nelem*) must be larger than 1.
 @param[in] stop - End value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorNLinSpace(Workspace& ws, Vector& out, const Numeric& start,
                      const Numeric& stop) {
@@ -12024,6 +12918,7 @@ The length (*nelem*) must be larger than 1.
 @param[in] stop - End value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorNLogSpace(Workspace& ws, Vector& out, const Numeric& start,
                      const Numeric& stop) {
@@ -12044,6 +12939,7 @@ order. The ouput vector has the same length for both options.
 @param[in] direction - Direction. "row" or "column". (default: "column")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorReshapeMatrix(Workspace& ws, Vector& out, const Matrix& in,
                          const String& direction = "column") {
@@ -12062,6 +12958,7 @@ The result can either be stored in the same or another vector.
 @param[in] value - Scaling value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorScale(Workspace& ws, Vector& out, const Vector& in,
                  const Numeric& value) {
@@ -12080,6 +12977,7 @@ void VectorScale(Workspace& ws, Vector& out, const Vector& in,
 @param[in] value - The vector elements.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorSet(Workspace& ws, Vector& out, const Vector& value) {
   VectorSet(out, value, Var::verbosity(ws));
@@ -12096,6 +12994,7 @@ The vector length is determined by *nelem*.
 @param[in] value - Vector value.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorSetConstant(Workspace& ws, Vector& out, const Numeric& value) {
   VectorSetConstant(out, Var::nelem(ws), value, Var::verbosity(ws));
@@ -12119,6 +13018,7 @@ the same WSV as any of the the other vector.
 @param[in] b - Vector to be subtracted.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorSubtractVector(Workspace& ws, Vector& c, const Vector& a,
                           const Vector& b) {
@@ -12138,6 +13038,7 @@ the same as any of the input Vectors.
 @param[in] v2 - Original Vector #2 (dimension m).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorVectorMultiply(Workspace& ws, Vector& out, const Vector& v1,
                           const Vector& v2) {
@@ -12159,6 +13060,7 @@ only for 1D. The zenith angles are always set to be positive.
 @param[in] v_ztan - Vector with tangent altitudes.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorZtanToZa1D(Workspace& ws, Vector& v_za, const Vector& v_ztan) {
   VectorZtanToZa1D(v_za, Var::sensor_pos(ws), Var::refellipsoid(ws),
@@ -12180,6 +13082,7 @@ only for 1D. The zenith angles are always set to be positive.
 @param[in] v_ztan - Vector with tangent altitudes.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void VectorZtanToZaRefr1D(Workspace& ws, Vector& v_za, const Vector& v_ztan) {
   VectorZtanToZaRefr1D(ws, v_za, Var::refr_index_air_agenda(ws),
@@ -12187,21 +13090,6 @@ void VectorZtanToZaRefr1D(Workspace& ws, Vector& v_za, const Vector& v_ztan) {
                        Var::z_field(ws), Var::vmr_field(ws),
                        Var::refellipsoid(ws), Var::atmosphere_dim(ws),
                        Var::f_grid(ws), v_ztan, Var::verbosity(ws));
-}
-
-/*! Creates a variable of group Verbosity.
-
-After being created, the variable is uninitialized.
-
-@author Oliver Lemke
-
-@param[in,out] Workspace ws - An ARTS workspace
-@param[out] out - Variable to create.
-
-Use the ARTS documentation to read more on how the workspace is manipulated
-*/
-void VerbosityCreate(Workspace& ws, Verbosity& out) {
-  VerbosityCreate(out, Var::verbosity(ws));
 }
 
 /*! Select some channels for WMRF calculation.
@@ -12224,6 +13112,7 @@ channels. It changes a number of variables in consistent fashion:
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void WMRFSelectChannels(Workspace& ws) {
   WMRFSelectChannels(Var::f_grid(ws), Var::wmrf_weights(ws), Var::f_backend(ws),
@@ -12243,6 +13132,7 @@ replacements (default: 20000000)
 initializing factorials (e.g., largest J or L) (default: 250)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Wigner3Init(Workspace& ws,
                  const Index& fast_wigner_stored_symbols = 20000000,
@@ -12258,6 +13148,7 @@ void Wigner3Init(Workspace& ws,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Wigner3Unload(Workspace& ws) {
   Wigner3Unload(Var::wigner_initialized(ws), Var::verbosity(ws));
@@ -12276,6 +13167,7 @@ replacements (default: 20000000)
 initializing factorials (e.g., largest J or L) (default: 250)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Wigner6Init(Workspace& ws,
                  const Index& fast_wigner_stored_symbols = 20000000,
@@ -12291,6 +13183,7 @@ void Wigner6Init(Workspace& ws,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void Wigner6Unload(Workspace& ws) {
   Wigner6Unload(Var::wigner_initialized(ws), Var::verbosity(ws));
@@ -12303,6 +13196,7 @@ void Wigner6Unload(Workspace& ws) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void WignerFastInfoPrint(Workspace& ws) {
   WignerFastInfoPrint(Var::wigner_initialized(ws), Var::verbosity(ws));
@@ -12322,6 +13216,7 @@ is allowed and applied.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void WindFieldsCalc(Workspace& ws, const Index& interp_order = 1) {
   WindFieldsCalc(Var::wind_u_field(ws), Var::wind_v_field(ws),
@@ -12346,6 +13241,7 @@ longitudes for 3D, to create a homogeneous atmosphere.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void WindFieldsCalcExpand1D(Workspace& ws, const Index& interp_order = 1) {
   WindFieldsCalcExpand1D(Var::wind_u_field(ws), Var::wind_v_field(ws),
@@ -12372,6 +13268,7 @@ accordingly.
 example: "/data/wind_field"
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void WindRawRead(Workspace& ws, const String& basename) {
   WindRawRead(Var::wind_u_field_raw(ws), Var::wind_v_field_raw(ws),
@@ -12395,6 +13292,7 @@ used by libRadtran (option molecular_tau_file).
 @param[in] filename - Name of the *molecular_tau_file*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void WriteMolTau(Workspace& ws, const String& filename) {
   WriteMolTau(Var::f_grid(ws), Var::z_field(ws),
@@ -12416,6 +13314,7 @@ to <basename>.<variable_name>.nc.
 @param[in] filename - Name of the NetCDF file. (default: "")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void WriteNetCDF(Workspace& ws, const std::pair<Any_0, String>& in,
@@ -12438,6 +13337,7 @@ to <basename>.<variable_name>.nc.
 @param[in] filename - Name of the NetCDF file. (default: "")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void WriteNetCDFIndexed(Workspace& ws, const std::pair<Any_0, String>& in,
@@ -12465,6 +13365,7 @@ appended to the filename if the file already exists.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void WriteXML(Workspace& ws, const std::pair<Any_0, String>& in,
@@ -12493,6 +13394,7 @@ extension. Omitting filename works as for *WriteXML*.
 necessary. 0 means no padding (default). (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void WriteXMLIndexed(Workspace& ws, const std::pair<Any_0, String>& in,
@@ -12520,6 +13422,7 @@ Note that all pressure values in the vector must be greater than 0.01.
 @param[in] p_grid - Pressure grid.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ZFromPSimple(Workspace& ws, Vector& z_grid, const Vector& p_grid) {
   ZFromPSimple(z_grid, p_grid, Var::verbosity(ws));
@@ -12540,6 +13443,7 @@ species in cia_record are not in *abs_cia_data*, the CIARecord is pushed back.
 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_cia_dataAddCIARecord(Workspace& ws, const CIARecord& cia_record,
                               const Index& clobber = 0) {
@@ -12563,6 +13467,7 @@ of Hz and m^5 molec^(-2).
 @param[in] catalogpath - Path to the CIA catalog directory.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_cia_dataReadFromCIA(Workspace& ws, const String& catalogpath) {
   abs_cia_dataReadFromCIA(Var::abs_cia_data(ws), Var::abs_species(ws),
@@ -12580,6 +13485,7 @@ The units of the data are described in *abs_cia_dataReadFromCIA*.
 @param[in] filename - Name of the XML file. (default: "")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_cia_dataReadFromXML(Workspace& ws, const String& filename = "") {
   abs_cia_dataReadFromXML(Var::abs_cia_data(ws), Var::abs_species(ws), filename,
@@ -12599,6 +13505,7 @@ Cross sections are multiplied by n*VMR.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_coefCalcFromXsec(Workspace& ws) {
   abs_coefCalcFromXsec(
@@ -12633,6 +13540,7 @@ selected model. The meaning of the parameters and how many parameters are
 required depends on the model. (default: {})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_cont_descriptionAppend(Workspace& ws, const String& tagname,
                                 const String& model,
@@ -12660,6 +13568,7 @@ want to use any continua.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_cont_descriptionInit(Workspace& ws) {
   abs_cont_descriptionInit(Var::abs_cont_names(ws), Var::abs_cont_models(ws),
@@ -12696,6 +13605,7 @@ https://hitran.org/supplementary/
 "SDVP_Y", "FullW", and "VP_W" (default: "VP_W")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_hitran_relmat_dataReadHitranRelmatDataAndLines(
     Workspace& ws, const String& basedir, const Numeric& linemixinglimit = -1,
@@ -12728,6 +13638,7 @@ quantum numbers in *safe* mode.
 @param[in] safe - Flag whether to check quantum numbers or not (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesAppendWithLines(Workspace& ws,
                               const ArrayOfAbsorptionLines& appending_lines,
@@ -12750,6 +13661,7 @@ void abs_linesAppendWithLines(Workspace& ws,
 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesChangeBaseParameterForMatchingLevel(Workspace& ws,
                                                   const QuantumIdentifier& QI,
@@ -12773,6 +13685,7 @@ void abs_linesChangeBaseParameterForMatchingLevel(Workspace& ws,
 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesChangeBaseParameterForMatchingLevels(
     Workspace& ws, const ArrayOfQuantumIdentifier& QI,
@@ -12806,6 +13719,7 @@ identifier
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesChangeBaseParameterForMatchingLines(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
@@ -12860,6 +13774,7 @@ Throws an error if it cannot find any targets to change
 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesChangeLineShapeModelParameterForMatchingLines(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
@@ -12877,6 +13792,7 @@ void abs_linesChangeLineShapeModelParameterForMatchingLines(
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesCleanupEmpty(Workspace& ws) {
   abs_linesCleanupEmpty(Var::abs_lines(ws), Var::verbosity(ws));
@@ -12891,6 +13807,7 @@ cutoff frequency range
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesCompact(Workspace& ws) {
   abs_linesCompact(Var::abs_lines(ws), Var::f_grid(ws), Var::verbosity(ws));
@@ -12908,6 +13825,7 @@ Otherwise deletes all lines with a frequency above f0.
 @param[in] lower - Lower or upper flag (eval as boolean) (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesDeleteBadF0(Workspace& ws, const Numeric& f0,
                           const Index& lower = 1) {
@@ -12922,6 +13840,7 @@ that change more than 1 between energy levels
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesDeleteLinesWithBadOrHighChangingJs(Workspace& ws) {
   abs_linesDeleteLinesWithBadOrHighChangingJs(Var::abs_lines(ws),
@@ -12937,6 +13856,7 @@ void abs_linesDeleteLinesWithBadOrHighChangingJs(Workspace& ws) {
 @param[in] quantumnumber_value - Value
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesDeleteLinesWithQuantumNumberAbove(
     Workspace& ws, const String& quantumnumber,
@@ -12953,6 +13873,7 @@ void abs_linesDeleteLinesWithQuantumNumberAbove(
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesDeleteLinesWithUndefinedLocalQuanta(Workspace& ws) {
   abs_linesDeleteLinesWithUndefinedLocalQuanta(Var::abs_lines(ws),
@@ -12972,6 +13893,7 @@ quantum numbers. There is no need to have all values correct.
 @param[in] deleting_lines - Line-array that removes lines from *abs_lines*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesDeleteWithLines(Workspace& ws,
                               const ArrayOfAbsorptionLines& deleting_lines) {
@@ -12992,6 +13914,7 @@ The latter means the isotopologue has to be ignores.
 @param[in] ignore_isot - If isotopologue is to be ignored (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesKeepBands(Workspace& ws, const QuantumIdentifier& qid,
                         const Index& ignore_spec = 1,
@@ -13007,6 +13930,7 @@ void abs_linesKeepBands(Workspace& ws, const QuantumIdentifier& qid,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesPrintDefinedQuantumNumbers(Workspace& ws) {
   abs_linesPrintDefinedQuantumNumbers(Var::abs_lines(ws), Var::verbosity(ws));
@@ -13022,6 +13946,7 @@ void abs_linesPrintDefinedQuantumNumbers(Workspace& ws) {
 continues] (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesReadSpeciesSplitCatalog(Workspace& ws, const String& basename,
                                       const Index& robust = 0) {
@@ -13037,6 +13962,7 @@ void abs_linesReadSpeciesSplitCatalog(Workspace& ws, const String& basename,
 @param[in] qid - Band ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesRemoveBand(Workspace& ws, const QuantumIdentifier& qid) {
   abs_linesRemoveBand(Var::abs_lines(ws), qid, Var::verbosity(ws));
@@ -13049,6 +13975,7 @@ void abs_linesRemoveBand(Workspace& ws, const QuantumIdentifier& qid) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesRemoveUnusedLocalQuantumNumbers(Workspace& ws) {
   abs_linesRemoveUnusedLocalQuantumNumbers(Var::abs_lines(ws),
@@ -13070,6 +13997,7 @@ quantum numbers.
 @param[in] replacing_lines - Line-array that replace lines in *abs_lines*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesReplaceWithLines(Workspace& ws,
                                const ArrayOfAbsorptionLines& replacing_lines) {
@@ -13089,6 +14017,7 @@ void abs_linesReplaceWithLines(Workspace& ws,
 @param[in] change - Value with which to set matching level's value
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetBaseParameterForMatchingLevel(Workspace& ws,
                                                const QuantumIdentifier& QI,
@@ -13108,6 +14037,7 @@ void abs_linesSetBaseParameterForMatchingLevel(Workspace& ws,
 @param[in] change - Value with which to set matching level's value
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetBaseParameterForMatchingLevels(
     Workspace& ws, const ArrayOfQuantumIdentifier& QI,
@@ -13137,6 +14067,7 @@ identifier
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetBaseParameterForMatchingLines(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
@@ -13167,6 +14098,7 @@ frequency
 @param[in] value - Value of cutoff
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetCutoff(Workspace& ws, const String& option,
                         const Numeric& value) {
@@ -13185,6 +14117,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetCutoffForMatch(Workspace& ws, const String& option,
                                 const Numeric& value,
@@ -13203,6 +14136,7 @@ and computational time by not doing unecessary calculations
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetEmptyBroadeningParametersToEmpty(Workspace& ws) {
   abs_linesSetEmptyBroadeningParametersToEmpty(Var::abs_lines(ws),
@@ -13247,6 +14181,7 @@ Throws an error if it cannot find any targets to change
 @param[in] change - Sets the value found
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetLineShapeModelParameterForMatchingLines(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
@@ -13273,6 +14208,7 @@ See the theory guide for more details.
 @param[in] option - Method of line shape calculations
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetLineShapeType(Workspace& ws, const String& option) {
   abs_linesSetLineShapeType(Var::abs_lines(ws), option, Var::verbosity(ws));
@@ -13289,6 +14225,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetLineShapeTypeForMatch(Workspace& ws, const String& option,
                                        const QuantumIdentifier& ID) {
@@ -13307,6 +14244,7 @@ Otherwise, line mixing is inactive if the pressure is below the limit.
 @param[in] value - Value of limit
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetLinemixingLimit(Workspace& ws, const Numeric& value) {
   abs_linesSetLinemixingLimit(Var::abs_lines(ws), value, Var::verbosity(ws));
@@ -13323,6 +14261,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetLinemixingLimitForMatch(Workspace& ws, const Numeric& value,
                                          const QuantumIdentifier& ID) {
@@ -13349,6 +14288,7 @@ other frequency offsets might not work as hoped.
 @param[in] option - Method of line mirroring
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetMirroring(Workspace& ws, const String& option) {
   abs_linesSetMirroring(Var::abs_lines(ws), option, Var::verbosity(ws));
@@ -13365,6 +14305,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetMirroringForMatch(Workspace& ws, const String& option,
                                    const QuantumIdentifier& ID) {
@@ -13388,6 +14329,7 @@ See the theory guide for more details.
 @param[in] option - Method of line normalizations
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetNormalization(Workspace& ws, const String& option) {
   abs_linesSetNormalization(Var::abs_lines(ws), option, Var::verbosity(ws));
@@ -13404,6 +14346,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetNormalizationForMatch(Workspace& ws, const String& option,
                                        const QuantumIdentifier& ID) {
@@ -13428,6 +14371,7 @@ You must have set *nlte_field* and/or its ilk to use the NLTE methods.
 @param[in] option - Method of line population
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetPopulation(Workspace& ws, const String& option) {
   abs_linesSetPopulation(Var::abs_lines(ws), option, Var::verbosity(ws));
@@ -13444,6 +14388,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetPopulationForMatch(Workspace& ws, const String& option,
                                     const QuantumIdentifier& ID) {
@@ -13463,6 +14408,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetQuantumNumberForMatch(Workspace& ws,
                                        const String& quantum_number,
@@ -13480,6 +14426,7 @@ void abs_linesSetQuantumNumberForMatch(Workspace& ws,
 @param[in] value - Value of T0
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetT0(Workspace& ws, const Numeric& value) {
   abs_linesSetT0(Var::abs_lines(ws), value, Var::verbosity(ws));
@@ -13496,6 +14443,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesSetT0ForMatch(Workspace& ws, const Numeric& value,
                             const QuantumIdentifier& ID) {
@@ -13510,6 +14458,7 @@ and then recombine the line list.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesTruncateGlobalQuantumNumbers(Workspace& ws) {
   abs_linesTruncateGlobalQuantumNumbers(Var::abs_lines(ws), Var::verbosity(ws));
@@ -13524,6 +14473,7 @@ per species
 @param[in] basename - Path to store the files at
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesWriteSpeciesSplitXML(Workspace& ws, const String& basename) {
   abs_linesWriteSpeciesSplitXML(Var::output_file_format(ws), Var::abs_lines(ws),
@@ -13544,6 +14494,7 @@ where N>=0 and the species name is something line "H2O".
 @param[in] basename - Path to store the files at
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_linesWriteSplitXML(Workspace& ws, const String& basename) {
   abs_linesWriteSplitXML(Var::output_file_format(ws), Var::abs_lines(ws),
@@ -13562,6 +14513,7 @@ void abs_linesWriteSplitXML(Workspace& ws, const String& basename) {
 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesChangeBaseParameterForMatchingLevel(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
@@ -13583,6 +14535,7 @@ void abs_lines_per_speciesChangeBaseParameterForMatchingLevel(
 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesChangeBaseParameterForMatchingLevels(
     Workspace& ws, const ArrayOfQuantumIdentifier& QI,
@@ -13607,6 +14560,7 @@ void abs_lines_per_speciesChangeBaseParameterForMatchingLevels(
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesChangeBaseParameterForMatchingLines(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
@@ -13632,6 +14586,7 @@ void abs_lines_per_speciesChangeBaseParameterForMatchingLines(
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesChangeBaseParameterForSpecies(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
@@ -13656,6 +14611,7 @@ void abs_lines_per_speciesChangeBaseParameterForSpecies(
 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesChangeLineShapeModelParameterForMatchingLines(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
@@ -13681,6 +14637,7 @@ void abs_lines_per_speciesChangeLineShapeModelParameterForMatchingLines(
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesChangeLineShapeModelParameterForSpecies(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
@@ -13699,6 +14656,7 @@ void abs_lines_per_speciesChangeLineShapeModelParameterForSpecies(
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesCompact(Workspace& ws) {
   abs_lines_per_speciesCompact(Var::abs_lines_per_species(ws), Var::f_grid(ws),
@@ -13715,6 +14673,7 @@ There will be no respect for the internal layer of *abs_species*
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesCreateFromLines(Workspace& ws) {
   abs_lines_per_speciesCreateFromLines(Var::abs_lines_per_species(ws),
@@ -13733,6 +14692,7 @@ a single file per species of *ArrayOfAbsorptionLines*
 continues] (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesReadSpeciesSplitCatalog(Workspace& ws,
                                                   const String& basename,
@@ -13753,6 +14713,7 @@ Note that this will sort the isotopologue
 @param[in] basename - The path to the split catalog files
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesReadSplitCatalog(Workspace& ws,
                                            const String& basename) {
@@ -13771,6 +14732,7 @@ void abs_lines_per_speciesReadSplitCatalog(Workspace& ws,
 @param[in] change - Value with which to set matching level's value
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetBaseParameterForMatchingLevel(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
@@ -13790,6 +14752,7 @@ void abs_lines_per_speciesSetBaseParameterForMatchingLevel(
 @param[in] change - Value with which to set matching level's value
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetBaseParameterForMatchingLevels(
     Workspace& ws, const ArrayOfQuantumIdentifier& QI,
@@ -13811,6 +14774,7 @@ void abs_lines_per_speciesSetBaseParameterForMatchingLevels(
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetBaseParameterForMatchingLines(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
@@ -13833,6 +14797,7 @@ void abs_lines_per_speciesSetBaseParameterForMatchingLines(
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetBaseParameterForSpecies(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
@@ -13852,6 +14817,7 @@ void abs_lines_per_speciesSetBaseParameterForSpecies(
 @param[in] value - Value of cutoff
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetCutoff(Workspace& ws, const String& option,
                                     const Numeric& value) {
@@ -13871,6 +14837,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetCutoffForMatch(Workspace& ws, const String& option,
                                             const Numeric& value,
@@ -13889,6 +14856,7 @@ void abs_lines_per_speciesSetCutoffForMatch(Workspace& ws, const String& option,
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetCutoffForSpecies(Workspace& ws,
                                               const String& option,
@@ -13906,6 +14874,7 @@ void abs_lines_per_speciesSetCutoffForSpecies(Workspace& ws,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetEmpty(Workspace& ws) {
   abs_lines_per_speciesSetEmpty(Var::abs_lines_per_species(ws),
@@ -13924,6 +14893,7 @@ void abs_lines_per_speciesSetEmpty(Workspace& ws) {
 @param[in] change - Sets the value found
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetLineShapeModelParameterForMatchingLines(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
@@ -13946,6 +14916,7 @@ void abs_lines_per_speciesSetLineShapeModelParameterForMatchingLines(
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetLineShapeModelParameterForSpecies(
     Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
@@ -13964,6 +14935,7 @@ void abs_lines_per_speciesSetLineShapeModelParameterForSpecies(
 @param[in] option - Method of line shape calculations
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetLineShapeType(Workspace& ws,
                                            const String& option) {
@@ -13982,6 +14954,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetLineShapeTypeForMatch(
     Workspace& ws, const String& option, const QuantumIdentifier& ID) {
@@ -13998,6 +14971,7 @@ void abs_lines_per_speciesSetLineShapeTypeForMatch(
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetLineShapeTypeForSpecies(
     Workspace& ws, const String& option, const String& species_tag) {
@@ -14014,6 +14988,7 @@ void abs_lines_per_speciesSetLineShapeTypeForSpecies(
 @param[in] value - Value of limit
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetLinemixingLimit(Workspace& ws,
                                              const Numeric& value) {
@@ -14032,6 +15007,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetLinemixingLimitForMatch(
     Workspace& ws, const Numeric& value, const QuantumIdentifier& ID) {
@@ -14048,6 +15024,7 @@ void abs_lines_per_speciesSetLinemixingLimitForMatch(
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetLinemixingLimitForSpecies(
     Workspace& ws, const Numeric& value, const String& species_tag) {
@@ -14064,6 +15041,7 @@ void abs_lines_per_speciesSetLinemixingLimitForSpecies(
 @param[in] option - Method of line mirroring
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetMirroring(Workspace& ws, const String& option) {
   abs_lines_per_speciesSetMirroring(Var::abs_lines_per_species(ws), option,
@@ -14081,6 +15059,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetMirroringForMatch(Workspace& ws,
                                                const String& option,
@@ -14098,6 +15077,7 @@ void abs_lines_per_speciesSetMirroringForMatch(Workspace& ws,
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetMirroringForSpecies(Workspace& ws,
                                                  const String& option,
@@ -14115,6 +15095,7 @@ void abs_lines_per_speciesSetMirroringForSpecies(Workspace& ws,
 @param[in] option - Method of line normalizations
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetNormalization(Workspace& ws,
                                            const String& option) {
@@ -14133,6 +15114,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetNormalizationForMatch(
     Workspace& ws, const String& option, const QuantumIdentifier& ID) {
@@ -14149,6 +15131,7 @@ void abs_lines_per_speciesSetNormalizationForMatch(
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetNormalizationForSpecies(
     Workspace& ws, const String& option, const String& species_tag) {
@@ -14165,6 +15148,7 @@ void abs_lines_per_speciesSetNormalizationForSpecies(
 @param[in] option - Method of line population
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetPopulation(Workspace& ws, const String& option) {
   abs_lines_per_speciesSetPopulation(Var::abs_lines_per_species(ws), option,
@@ -14182,6 +15166,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetPopulationForMatch(Workspace& ws,
                                                 const String& option,
@@ -14199,6 +15184,7 @@ void abs_lines_per_speciesSetPopulationForMatch(Workspace& ws,
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetPopulationForSpecies(Workspace& ws,
                                                   const String& option,
@@ -14218,6 +15204,7 @@ void abs_lines_per_speciesSetPopulationForSpecies(Workspace& ws,
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetQuantumNumberForMatch(
     Workspace& ws, const String& quantum_number, const Rational& value,
@@ -14235,6 +15222,7 @@ void abs_lines_per_speciesSetQuantumNumberForMatch(
 @param[in] value - Value of T0
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetT0(Workspace& ws, const Numeric& value) {
   abs_lines_per_speciesSetT0(Var::abs_lines_per_species(ws), value,
@@ -14252,6 +15240,7 @@ This function only acts on matches between the bands and input ID
 @param[in] ID - ID of one or more bands
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetT0ForMatch(Workspace& ws, const Numeric& value,
                                         const QuantumIdentifier& ID) {
@@ -14268,6 +15257,7 @@ void abs_lines_per_speciesSetT0ForMatch(Workspace& ws, const Numeric& value,
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesSetT0ForSpecies(Workspace& ws, const Numeric& value,
                                           const String& species_tag) {
@@ -14287,6 +15277,7 @@ generating identifiers for the order in *abs_species*
 @param[in] basename - Path to store the files at
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesWriteSpeciesSplitXML(Workspace& ws,
                                                const String& basename) {
@@ -14306,6 +15297,7 @@ generating identifiers for the order in *abs_species*
 @param[in] basename - Path to store the files at
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lines_per_speciesWriteSplitXML(Workspace& ws, const String& basename) {
   abs_lines_per_speciesWriteSplitXML(Var::output_file_format(ws),
@@ -14333,6 +15325,7 @@ always use this method to set it!
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lookupAdapt(Workspace& ws) {
   abs_lookupAdapt(Var::abs_lookup(ws), Var::abs_lookup_is_adapted(ws),
@@ -14359,6 +15352,7 @@ always H2O.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lookupCalc(Workspace& ws) {
   abs_lookupCalc(ws, Var::abs_lookup(ws), Var::abs_lookup_is_adapted(ws),
@@ -14378,6 +15372,7 @@ the empty table to an XML file, to see the file format.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lookupInit(Workspace& ws) {
   abs_lookupInit(Var::abs_lookup(ws), Var::verbosity(ws));
@@ -14416,6 +15411,7 @@ the atmospheric dimension). For a 1D atmosphere this parameter is not used.
 (default: 100)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lookupSetup(Workspace& ws, const Numeric& p_step = 0.05,
                      const Numeric& t_step = 100,
@@ -14484,6 +15480,7 @@ This is consistent with the behaviour of *ybatchCalc*. (default: 0)
 gridnames of every *atm_fields_compact* are checked. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lookupSetupBatch(Workspace& ws, const Numeric& p_step = 0.05,
                           const Numeric& t_step = 20,
@@ -14534,6 +15531,7 @@ min(H2O) / max(H2O) [VMR]: -5.52e-07 / 0.049
 @param[in] h2o_max - Humidity grid maximum [fractional]. (default: 0.05)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lookupSetupWide(Workspace& ws, const Numeric& p_min = 0.5,
                          const Numeric& p_max = 110000,
@@ -14567,6 +15565,7 @@ Produces no workspace output, only output to the output streams.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lookupTestAccMC(Workspace& ws) {
   abs_lookupTestAccMC(ws, Var::abs_lookup(ws), Var::abs_lookup_is_adapted(ws),
@@ -14590,6 +15589,7 @@ Produces no workspace output, only output to the output streams.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_lookupTestAccuracy(Workspace& ws) {
   abs_lookupTestAccuracy(
@@ -14609,6 +15609,7 @@ Touch
 @param[in] data - Vibrational data [nlevels, np]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_nlteFromRaw(Workspace& ws, const Matrix& data) {
   abs_nlteFromRaw(Var::abs_nlte(ws), Var::nlte_level_identifiers(ws),
@@ -14633,6 +15634,7 @@ add. Inside the String, separate the tags by commas
 
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_speciesAdd(Workspace& ws, const ArrayOfString& species) {
   abs_speciesAdd(Var::abs_species(ws), Var::propmat_clearsky_agenda_checked(ws),
@@ -14660,6 +15662,7 @@ method only handles a single tag group, in contrast to
 @param[in] unit - Retrieval unit. See above. (default: "vmr")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_speciesAdd2(Workspace& ws, const Vector& gin1, const Vector& gin2,
                      const Vector& gin3, const String& species,
@@ -14679,6 +15682,7 @@ void abs_speciesAdd2(Workspace& ws, const Vector& gin1, const Vector& gin2,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_speciesDefineAll(Workspace& ws) {
   abs_speciesDefineAll(Var::abs_species(ws),
@@ -14701,6 +15705,7 @@ this works the tag is included, otherwise it is skipped.
 For example: /pool/lookup2/arts-data/atmosphere/fascod/tropical
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_speciesDefineAllInScenario(Workspace& ws, const String& basename) {
   abs_speciesDefineAllInScenario(
@@ -14715,6 +15720,7 @@ void abs_speciesDefineAllInScenario(Workspace& ws, const String& basename) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_speciesInit(Workspace& ws) {
   abs_speciesInit(Var::abs_species(ws), Var::verbosity(ws));
@@ -14794,6 +15800,7 @@ create. Inside the String, separate the tags by commas
 
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_speciesSet(Workspace& ws, const ArrayOfString& species) {
   abs_speciesSet(Var::abs_species(ws), Var::abs_xsec_agenda_checked(ws),
@@ -14812,6 +15819,7 @@ absorption vector.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_vecAddGas(Workspace& ws) {
   abs_vecAddGas(Var::abs_vec(ws), Var::propmat_clearsky(ws),
@@ -14829,6 +15837,7 @@ is used, e.g. *abs_lookupCalc*, *ybatchCalc*, *yCalc*
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_xsec_agenda_checkedCalc(Workspace& ws) {
   abs_xsec_agenda_checkedCalc(ws, Var::abs_xsec_agenda_checked(ws),
@@ -14852,6 +15861,7 @@ spacing). (default: 0.5)
 instead). (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_xsec_per_speciesAddCIA(Workspace& ws,
                                 const Numeric& T_extrapolfac = 0.5,
@@ -14871,6 +15881,7 @@ void abs_xsec_per_speciesAddCIA(Workspace& ws,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_xsec_per_speciesAddConts(Workspace& ws) {
   abs_xsec_per_speciesAddConts(
@@ -14901,6 +15912,7 @@ This method depends on the FFTW-3 library.
 -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_xsec_per_speciesAddHitranXsec(Workspace& ws,
                                        const Index& apply_tfit = 1,
@@ -14922,6 +15934,7 @@ for each tag group and adds it to abs_xsec_per_species.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_xsec_per_speciesAddLines(Workspace& ws) {
   abs_xsec_per_speciesAddLines(
@@ -14950,6 +15963,7 @@ other untested derivatives are available for all model parameters except a2
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_xsec_per_speciesAddPredefinedO2MPM2020(Workspace& ws) {
   abs_xsec_per_speciesAddPredefinedO2MPM2020(
@@ -14970,6 +15984,7 @@ The size is determined from *abs_species*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void abs_xsec_per_speciesInit(Workspace& ws) {
   abs_xsec_per_speciesInit(
@@ -15011,6 +16026,7 @@ The antenna repsonse is not normalised.
 @param[in] do_2d - Set to 1 to create a 2D antenna pattern. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void antenna_responseGaussian(Workspace& ws, const Numeric& fwhm,
                               const Numeric& xwidth_si = 3,
@@ -15061,6 +16077,7 @@ The antenna repsonse is not normalised.
 @param[in] do_2d - Set to 1 to create a 2D antenna pattern. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void antenna_responseVaryingGaussian(Workspace& ws, const Numeric& leff,
                                      const Index& nf, const Numeric& fstart,
@@ -15101,6 +16118,7 @@ For Earth this should be set to ["abs_species-H2O"]
 added species. (default: {})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void atm_fields_compactAddConstant(Workspace& ws, const String& name,
                                    const Numeric& value,
@@ -15136,6 +16154,7 @@ tagging structure described for *atm_fields_compact*.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void atm_fields_compactAddSpecies(Workspace& ws, const String& name,
                                   const GriddedField3& value,
@@ -15163,6 +16182,7 @@ artefacts rather than physical values.)
 to zero.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void atm_fields_compactCleanup(Workspace& ws, const Numeric& threshold) {
   atm_fields_compactCleanup(Var::atm_fields_compact(ws), threshold,
@@ -15181,6 +16201,7 @@ but with one dimension as length 1.
 @param[in] field - The atmospheric field.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void atm_fields_compactCreateFromField(Workspace& ws, const String& name,
                                        const GriddedField3& field) {
@@ -15227,6 +16248,7 @@ Works only for *atmosphere_dim==1.*
 @param[in] field_names - Order/names of atmospheric fields.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void atm_fields_compactFromMatrix(Workspace& ws, const Matrix& gin1,
                                   const ArrayOfString& field_names) {
@@ -15243,6 +16265,7 @@ void atm_fields_compactFromMatrix(Workspace& ws, const Matrix& gin1,
 @param[in] no_negZ - Exclude negative altitudes. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void atm_gridsFromZRaw(Workspace& ws, const Index& no_negZ = 1) {
   atm_gridsFromZRaw(Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
@@ -15288,6 +16311,7 @@ important.
 functions not covering *t_field* range. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void atmfields_checkedCalc(Workspace& ws, const Index& negative_vmr_ok = 0,
                            const Index& bad_partition_functions_ok = 0) {
@@ -15327,6 +16351,7 @@ See further *atmgeom_checkedCalc*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void atmgeom_checkedCalc(Workspace& ws) {
   atmgeom_checkedCalc(Var::atmgeom_checked(ws), Var::atmosphere_dim(ws),
@@ -15346,6 +16371,7 @@ calculation in which the jacobian and the gain matrix dxdy have been calculated.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void avkCalc(Workspace& ws) {
   avkCalc(Var::avk(ws), Var::dxdy(ws), Var::jacobian(ws), Var::verbosity(ws));
@@ -15364,6 +16390,7 @@ The method assumes that all channels have the same response.
 @param[in] resolution - The spectrometer resolution.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void backend_channel_responseFlat(Workspace& ws, const Numeric& resolution) {
   backend_channel_responseFlat(Var::backend_channel_response(ws), resolution,
@@ -15399,6 +16426,7 @@ is max *dx_si*).
 @param[in] dx_si - Grid spacing, in terms of std. dev. (default: {0.1})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void backend_channel_responseGaussian(Workspace& ws, const Vector& fwhm,
                                       const Vector& xwidth_si = {3},
@@ -15423,6 +16451,7 @@ The format is equal to that WSM.
 added species. (default: {})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void batch_atm_fields_compactAddConstant(
     Workspace& ws, const String& name, const Numeric& value,
@@ -15447,6 +16476,7 @@ methane VMR
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void batch_atm_fields_compactAddSpecies(Workspace& ws, const String& name,
                                         const GriddedField3& value,
@@ -15474,6 +16504,7 @@ artefacts rather than physical values.)
 to zero.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void batch_atm_fields_compactCleanup(Workspace& ws, const Numeric& threshold) {
   batch_atm_fields_compactCleanup(Var::batch_atm_fields_compact(ws), threshold,
@@ -15505,6 +16536,7 @@ matrix
 @param[in] field_names - Order/names of atmospheric fields.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void batch_atm_fields_compactFromArrayOfMatrix(
     Workspace& ws, const ArrayOfMatrix& atmospheres_fields,
@@ -15528,6 +16560,7 @@ consitent with *jacobian_quantities*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudboxOff(Workspace& ws) {
   cloudboxOff(Var::cloudbox_on(ws), Var::ppath_inside_cloudbox_do(ws),
@@ -15589,6 +16622,7 @@ fixed to 0, i.e., corresponds to the lowest atmospheric level (or the surface).
 (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudboxSetAutomatically(Workspace& ws, const Tensor4& particle_field,
                               const ArrayOfIndex& cloudbox_limits_old = {-1},
@@ -15606,6 +16640,7 @@ void cloudboxSetAutomatically(Workspace& ws, const Tensor4& particle_field,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudboxSetFullAtm(Workspace& ws) {
   cloudboxSetFullAtm(Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
@@ -15646,6 +16681,7 @@ grid end points.
 @param[in] lon2 - Upper longitude point.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudboxSetManually(Workspace& ws, const Numeric& p1, const Numeric& p2,
                          const Numeric& lat1, const Numeric& lat2,
@@ -15673,6 +16709,7 @@ The altitude limit is then set to the end point of *p_grid*.
 @param[in] lon2 - Upper longitude point.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudboxSetManuallyAltitude(Workspace& ws, const Numeric& z1,
                                  const Numeric& z2, const Numeric& lat1,
@@ -15713,6 +16750,7 @@ is set to 1.
 @param[in] negative_pnd_ok - Flag whether to accept pnd_field < 0. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_checkedCalc(Workspace& ws, const Index& negative_pnd_ok = 0) {
   cloudbox_checkedCalc(
@@ -15752,6 +16790,7 @@ Indexes for dimensions not used are ignored.
 @param[in] new_limit5 - New value for cloudbox_limits[5]. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_fieldCrop(Workspace& ws, const Index& new_limit0 = 0,
                         const Index& new_limit1 = 0,
@@ -15784,6 +16823,7 @@ used.
 @param[in] all_frequencies - See above. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_fieldSetClearsky(Workspace& ws,
                                const Index& all_frequencies = 1) {
@@ -15807,6 +16847,7 @@ control file by *value*.
 the initial field for each Stokes dimension.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_fieldSetConst(Workspace& ws, const Vector& value) {
   cloudbox_fieldSetConst(Var::cloudbox_field(ws), Var::p_grid(ws),
@@ -15828,6 +16869,7 @@ dimension in the control file by *value*.
 with the value of the initial field for each frequency and Stokes dimension.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_fieldSetConstPerFreq(Workspace& ws, const Matrix& value) {
   cloudbox_fieldSetConstPerFreq(
@@ -15855,6 +16897,7 @@ clearsky incoming field as, e.g., calculated by *DoitGetIncoming*.
 *cloudbox_field*)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_fieldSetFromPrecalc(Workspace& ws,
                                   const Tensor7& cloudbox_field_precalc) {
@@ -15879,6 +16922,7 @@ It is recommended to use *cloudbox_fieldUpdateSeq1D*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_fieldUpdate1D(Workspace& ws) {
   cloudbox_fieldUpdate1D(
@@ -15910,6 +16954,7 @@ factor. (default: 1.0)
 to out0. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_fieldUpdateSeq1D(Workspace& ws, const Index& normalize = 1,
                                const Numeric& norm_error_threshold = 1.0,
@@ -15942,6 +16987,7 @@ be used for limb simulations.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_fieldUpdateSeq1DPP(Workspace& ws) {
   cloudbox_fieldUpdateSeq1DPP(
@@ -15968,6 +17014,7 @@ calculations.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_fieldUpdateSeq3D(Workspace& ws) {
   cloudbox_fieldUpdateSeq3D(
@@ -16002,6 +17049,7 @@ Note: The atmospheric dimensionality *atmosphere_dim* can be
 the whole Stokes Vector (4) (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_field_monoIterate(Workspace& ws, const Index& accelerated = 0) {
   cloudbox_field_monoIterate(
@@ -16018,6 +17066,7 @@ For detailed description, see *OptimizeDoitPressureGrid*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_field_monoOptimizeReverse(Workspace& ws) {
   cloudbox_field_monoOptimizeReverse(
@@ -16039,6 +17088,7 @@ control file by *value*.
 field for each Stokes dimension.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void cloudbox_field_monoSetConst(Workspace& ws, const Vector& value) {
   cloudbox_field_monoSetConst(Var::cloudbox_field_mono(ws), Var::p_grid(ws),
@@ -16058,6 +17108,7 @@ file ending with qid.xml
 @param[in] basename - path to files to read (default: "./")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void collision_coefficientsFromSplitFiles(Workspace& ws,
                                           const String& basename = "./") {
@@ -16078,6 +17129,7 @@ set to the value 0).
 @param[in] refr_index_imag - Imag part of refractive index
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void complex_refr_indexConstant(Workspace& ws, const Numeric& refr_index_real,
                                 const Numeric& refr_index_imag) {
@@ -16108,6 +17160,7 @@ J. Geophys. Res., 113, D14220, doi:10.1029/2007JD009744.
 @param[in] data_T_grid - Temperature grid for refractive index calculation
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void complex_refr_indexIceMatzler06(Workspace& ws, const Vector& data_f_grid,
                                     const Vector& data_T_grid) {
@@ -16149,6 +17202,7 @@ of Ice from 250 to 400 nm, Geophys. Res. Lett. 18, 1233-1235
 @param[in] data_T_grid - Temperature grid for refractive index calculation
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void complex_refr_indexIceWarren84(Workspace& ws, const Vector& data_f_grid,
                                    const Vector& data_T_grid) {
@@ -16175,6 +17229,7 @@ accuracy of the parametrization below 0 C is not known by us.
 @param[in] data_T_grid - Temperature grid for refractive index calculation
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void complex_refr_indexWaterLiebe93(Workspace& ws, const Vector& data_f_grid,
                                     const Vector& data_T_grid) {
@@ -16216,6 +17271,7 @@ empty taken as cls_1) (default: {})
 @param[in] fname - The name of the functional form to use.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void covmat1D(Workspace& ws, Any_0& out, const Vector& grid_1,
@@ -16251,6 +17307,7 @@ covariance matrix.
 (default: 0.0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void covmat1DMarkov(Workspace& ws, Any_0& out, Any_1& out_inverse,
@@ -16273,6 +17330,7 @@ covariance matrix.
 @param[in] vars - Variances to be used as diagonal elements of covmat_block.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void covmatDiagonal(Workspace& ws, Any_0& out, Any_1& out_inverse,
@@ -16300,6 +17358,7 @@ added at the first free spot on the diagonal.
 -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void covmat_seAddBlock(Workspace& ws, const Any_0& block, const Index& i = -1,
@@ -16333,6 +17392,7 @@ For the rest, the same requirements as for *covmat_seAddBlock* apply.
 -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void covmat_seAddInverseBlock(Workspace& ws, const Any_0& block,
@@ -16352,6 +17412,7 @@ matrix can be of type CovarianceMatrix, Matrix or Sparse.
 @param[in] covmat - The matrix to set as the covariance matrix.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void covmat_seSet(Workspace& ws, const Any_0& covmat) {
@@ -16371,6 +17432,7 @@ computation where also the gain matrix has been computed.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void covmat_soCalc(Workspace& ws) {
   covmat_soCalc(Var::covmat_so(ws), Var::dxdy(ws), Var::covmat_se(ws),
@@ -16386,6 +17448,7 @@ to be computed after a successful OEM calculation.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void covmat_ssCalc(Workspace& ws) {
   covmat_ssCalc(Var::covmat_ss(ws), Var::avk(ws), Var::covmat_sx(ws),
@@ -16416,6 +17479,7 @@ block must be consistent with the corresponding retrieval quantities.
 -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void covmat_sxAddBlock(Workspace& ws, const Any_0& block, const Index& i = -1,
@@ -16450,6 +17514,7 @@ For the rest, the same requirements as for *covmat_sxAddBlock* apply.
 -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void covmat_sxAddInverseBlock(Workspace& ws, const Any_0& block,
@@ -16470,6 +17535,7 @@ be used as *x_norm* argument for the OEM method to avoid scaling problems.
 elements of *covmat_sx*
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void covmat_sxExtractSqrtDiagonal(Workspace& ws, Vector& x_norm) {
   covmat_sxExtractSqrtDiagonal(x_norm, Var::covmat_sx(ws), Var::verbosity(ws));
@@ -16487,6 +17553,7 @@ matrix can be of type CovarianceMatrix, Matrix or Sparse.
 @param[in] covmat - The matrix to set as the covariance matrix.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void covmat_sxSet(Workspace& ws, const Any_0& covmat) {
@@ -16520,6 +17587,7 @@ particle, see above.
 @param[in] aspect_ratio - Particle aspect ratio.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void diameter_maxFromDiameter_volume_equ(Workspace& ws, Numeric& diameter_max,
                                          Numeric& diameter_area_equ,
@@ -16551,6 +17619,7 @@ Also the volume is provided. It is simply sqrt(pi*dveq^3/6).
 @param[in] aspect_ratio - Particle aspect ratio.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void diameter_volume_equFromDiameter_max(Workspace& ws,
                                          Numeric& diameter_volume_equ,
@@ -16587,6 +17656,7 @@ convergencelimit. (default: 100)
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void doit_conv_flagAbs(Workspace& ws, const Vector& epsilon,
                        const Index& max_iterations = 100,
@@ -16615,6 +17685,7 @@ convergencelimit. (default: 100)
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void doit_conv_flagAbsBT(Workspace& ws, const Vector& epsilon,
                          const Index& max_iterations = 100,
@@ -16647,6 +17718,7 @@ convergencelimit. (default: 100)
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void doit_conv_flagLsq(Workspace& ws, const Vector& epsilon,
                        const Index& max_iterations = 100,
@@ -16670,6 +17742,7 @@ angles. For more information please refer to AUG.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void doit_scat_fieldCalc(Workspace& ws) {
   doit_scat_fieldCalc(ws, Var::doit_scat_field(ws), Var::pha_mat_spt_agenda(ws),
@@ -16702,6 +17775,7 @@ For more information please refer to AUG.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void doit_scat_fieldCalcLimb(Workspace& ws) {
   doit_scat_fieldCalcLimb(
@@ -16733,6 +17807,7 @@ frequency.
 @param[in] acc - Accuracy to achieve [%].
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void doit_za_grid_optCalc(Workspace& ws, const Numeric& acc) {
   doit_za_grid_optCalc(Var::doit_za_grid_opt(ws), Var::cloudbox_field_mono(ws),
@@ -16752,6 +17827,7 @@ interpolations in the zenith angle dimension.
 (default: "linear")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void doit_za_interpSet(Workspace& ws, const String& interp_method = "linear") {
   doit_za_interpSet(Var::doit_za_interp(ws), Var::atmosphere_dim(ws),
@@ -16768,6 +17844,7 @@ different gas species and add the result to the extinction matrix.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ext_matAddGas(Workspace& ws) {
   ext_matAddGas(Var::ext_mat(ws), Var::propmat_clearsky(ws),
@@ -16793,6 +17870,7 @@ if used carelessly
 @param[in] num_freqs - Number of frequencies
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void f_gridFromAbsorptionLines(Workspace& ws, const Index& num_freqs,
                                const Numeric& delta_f_low = -5e6,
@@ -16812,6 +17890,7 @@ call of *abs_lookupAdapt*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void f_gridFromGasAbsLookup(Workspace& ws) {
   f_gridFromGasAbsLookup(Var::f_grid(ws), Var::abs_lookup(ws),
@@ -16848,6 +17927,7 @@ see *f_gridFromSensorHIRS*.
 @param[in] spacing - Desired grid spacing in Hz. (default: .1e9)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void f_gridFromSensorAMSU(Workspace& ws, const Numeric& spacing = .1e9) {
   f_gridFromSensorAMSU(
@@ -16877,6 +17957,7 @@ fine as requested.
 @param[in] verbosityVect - Bandwidth adjusted spacing (default: {})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void f_gridFromSensorAMSUgeneric(Workspace& ws, const Numeric& spacing = .1e9,
                                  const Vector& verbosityVect = {}) {
@@ -16911,6 +17992,7 @@ There is a similar method for AMSU-type instruments, see
 @param[in] spacing - Desired grid spacing in Hz. (default: 5e8)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void f_gridFromSensorHIRS(Workspace& ws, const Numeric& spacing = 5e8) {
   f_gridFromSensorHIRS(Var::f_grid(ws), Var::f_backend(ws),
@@ -16957,6 +18039,7 @@ supposed to be identical.
 value in Hz. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void f_gridMetMM(Workspace& ws, const Vector& freq_spacing = {.1e9},
                  const ArrayOfIndex& freq_number = {-1},
@@ -16976,6 +18059,7 @@ Sets *g0* for the given latitude using a standard parameterisation.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void g0Earth(Workspace& ws) {
   g0Earth(Var::g0(ws), Var::lat(ws), Var::verbosity(ws));
@@ -16990,6 +18074,7 @@ Numeric from Wikipedia.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void g0Io(Workspace& ws) { g0Io(Var::g0(ws), Var::verbosity(ws)); }
 
@@ -17003,6 +18088,7 @@ MPS under ESA-planetary study (TN1).
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void g0Jupiter(Workspace& ws) { g0Jupiter(Var::g0(ws), Var::verbosity(ws)); }
 
@@ -17016,6 +18102,7 @@ MPS under ESA-planetary study (TN1).
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void g0Mars(Workspace& ws) { g0Mars(Var::g0(ws), Var::verbosity(ws)); }
 
@@ -17029,6 +18116,7 @@ Sets *g0*  to mean equatorial gravity on Venus. Value from Ahrens
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void g0Venus(Workspace& ws) { g0Venus(Var::g0(ws), Var::verbosity(ws)); }
 
@@ -17044,6 +18132,7 @@ observation geometry and if the cloudbox is active.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void geo_posEndOfPpath(Workspace& ws) {
   geo_posEndOfPpath(Var::geo_pos(ws), Var::ppath(ws), Var::verbosity(ws));
@@ -17059,6 +18148,7 @@ of the present propagation path having the lowest altitude.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void geo_posLowestAltitudeOfPpath(Workspace& ws) {
   geo_posLowestAltitudeOfPpath(Var::geo_pos(ws), Var::ppath(ws),
@@ -17079,6 +18169,7 @@ set to NaN.
 @param[in] z_ref - Reference altitude.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void geo_posWherePpathPassesZref(Workspace& ws, const Numeric& z_ref) {
   geo_posWherePpathPassesZref(Var::geo_pos(ws), Var::ppath(ws), z_ref,
@@ -17095,6 +18186,7 @@ The net flux is the sum of the irradiance field in upward
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void heating_ratesFromIrradiance(Workspace& ws) {
   heating_ratesFromIrradiance(
@@ -17112,6 +18204,7 @@ aa_grid, and za_grid_weights*
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void irradiance_fieldFromRadiance(Workspace& ws) {
   irradiance_fieldFromRadiance(
@@ -17127,6 +18220,7 @@ species data.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void isotopologue_ratiosInitFromBuiltin(Workspace& ws) {
   isotopologue_ratiosInitFromBuiltin(Var::isotopologue_ratios(ws),
@@ -17206,6 +18300,7 @@ data (so far only applied in phase matrix, not in extinction and absorption.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyActiveSingleScat(Workspace& ws, const Index& trans_in_jacobian = 0,
                         const Numeric& pext_scaling = 1,
@@ -17245,6 +18340,7 @@ data (so far only applied in phase matrix, not in extinction and absorption.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyActiveSingleScat2(Workspace& ws, const Index& trans_in_jacobian = 0,
                          const Numeric& pext_scaling = 1,
@@ -17293,6 +18389,7 @@ Please note that *diy_dx* is not handled.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyApplyUnit(Workspace& ws) {
   iyApplyUnit(Var::iy(ws), Var::iy_aux(ws), Var::stokes_dim(ws),
@@ -17317,6 +18414,7 @@ incorporated by using *yCalc*
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyCalc(Workspace& ws) {
   iyCalc(ws, Var::iy(ws), Var::iy_aux(ws), Var::ppath(ws),
@@ -17370,6 +18468,7 @@ are filled with zeros.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyEmissionStandard(Workspace& ws) {
   iyEmissionStandard(
@@ -17403,6 +18502,7 @@ For documentation see *iyEmissionStandard*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyEmissionStandardSequential(Workspace& ws) {
   iyEmissionStandardSequential(
@@ -17439,6 +18539,7 @@ data (so far only applied in phase matrix, not in extinction and absorption.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyHybrid(Workspace& ws, const Index& Naa_grid = 19,
               const Index& t_interp_order = 1) {
@@ -17478,6 +18579,7 @@ data (so far only applied in phase matrix, not in extinction and absorption.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyHybrid2(Workspace& ws, const Index& Naa_grid = 19,
                const Index& t_interp_order = 1) {
@@ -17520,6 +18622,7 @@ Describe how *atm_fields_compact* is filled.
 *atm_fields_compact*.Conversion is done by *particle_masses*. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyIndependentBeamApproximation(Workspace& ws,
                                     const Index& return_atm1d = 0,
@@ -17579,6 +18682,7 @@ cosine space. (default: 0)
 @param[in] aa_interp_order - Azimuth angle interpolation order. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyInterpCloudboxField(Workspace& ws, const Index& za_interp_order = 1,
                            const Index& za_restrict = 1,
@@ -17611,6 +18715,7 @@ path for each individual frequency is calculated.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyLoopFrequencies(Workspace& ws) {
   iyLoopFrequencies(ws, Var::iy(ws), Var::iy_aux(ws), Var::ppath(ws),
@@ -17663,6 +18768,7 @@ data (so far only applied in phase matrix, not in extinction and absorption.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyMC(Workspace& ws, const Index& t_interp_order = 1) {
   iyMC(ws, Var::iy(ws), Var::iy_aux(ws), Var::diy_dx(ws),
@@ -17698,6 +18804,7 @@ Jacobian variables are not handled.
 @param[in] aux_var - Auxiliary variable to insert as *iy*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyReplaceFromAux(Workspace& ws, const String& aux_var) {
   iyReplaceFromAux(Var::iy(ws), Var::iy_aux(ws), Var::iy_aux_vars(ws),
@@ -17715,6 +18822,7 @@ with index *surface_type* (0-based) is called.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iySurfaceCallAgendaX(Workspace& ws) {
   iySurfaceCallAgendaX(ws, Var::iy(ws), Var::diy_dx(ws), Var::iy_unit(ws),
@@ -17756,6 +18864,7 @@ comments on variables and limitations.
 @param[in] fastem_version - The version of FASTEM to use. (default: 6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iySurfaceFastem(Workspace& ws, const Numeric& wind_speed,
                      const Numeric& salinity = 0.035,
@@ -17784,6 +18893,7 @@ in a straightforward fashion.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iySurfaceRtpropAgenda(Workspace& ws) {
   iySurfaceRtpropAgenda(
@@ -17811,6 +18921,7 @@ by calling *iy_main_agenda*. See further AUG.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iySurfaceRtpropCalc(Workspace& ws) {
   iySurfaceRtpropCalc(ws, Var::iy(ws), Var::diy_dx(ws), Var::surface_los(ws),
@@ -17864,6 +18975,7 @@ Valid choices for auxiliary data are:
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iyTransmissionStandard(Workspace& ws) {
   iyTransmissionStandard(
@@ -17897,6 +19009,7 @@ signal/pulses are set to be of unit magnitude, such as [1,1,0,0].
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iy_transmitterMultiplePol(Workspace& ws) {
   iy_transmitterMultiplePol(Var::iy(ws), Var::stokes_dim(ws), Var::f_grid(ws),
@@ -17917,6 +19030,7 @@ magnitude, such as [1,1,0,0].
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void iy_transmitterSinglePol(Workspace& ws) {
   iy_transmitterSinglePol(Var::iy(ws), Var::stokes_dim(ws), Var::f_grid(ws),
@@ -17963,6 +19077,7 @@ latitude and longitude as outermost loop.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddAbsSpecies(Workspace& ws, const Vector& g1, const Vector& g2,
                            const Vector& g3, const String& species,
@@ -18005,6 +19120,7 @@ catalog_identity="O2-66 TR UP J 1 LO J 0" may be used, but then the
 @param[in] catalog_parameter - The catalog parameter of the retrieval quantity.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddBasicCatalogParameter(Workspace& ws,
                                       const QuantumIdentifier& catalog_identity,
@@ -18027,6 +19143,7 @@ by looping calls to *jacobianAddBasicCatalogParameter* over these input
 @param[in] catalog_parameters - The catalog parameter of the retrieval quantity.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddBasicCatalogParameters(
     Workspace& ws, const ArrayOfQuantumIdentifier& catalog_identities,
@@ -18051,6 +19168,7 @@ This method adds one element to the state vector (*x*).
 @param[in] df - Size of perturbation to apply. (default: 100e3)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddFreqShift(Workspace& ws, const Numeric& df = 100e3) {
   jacobianAddFreqShift(ws, Var::jacobian_quantities(ws),
@@ -18073,6 +19191,7 @@ This method adds one element to the state vector (*x*).
 @param[in] df - Size of perturbation to apply. (default: 100e3)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddFreqStretch(Workspace& ws, const Numeric& df = 100e3) {
   jacobianAddFreqStretch(ws, Var::jacobian_quantities(ws),
@@ -18109,6 +19228,7 @@ The dB-parameter is only used for Faraday rotation
 @param[in] dB - Magnetic field perturbation (default: 1.0e-7)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddMagField(Workspace& ws, const Vector& g1, const Vector& g2,
                          const Vector& g3, const String& component = "v",
@@ -18149,6 +19269,7 @@ directly than to individually call this function
 @param[in] dx - Perturbation of value if required by method (default: 1.0e-3)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddNLTE(Workspace& ws, const Vector& g1, const Vector& g2,
                      const Vector& g3,
@@ -18179,6 +19300,7 @@ is conveniently almost always the same as *nlte_level_identifiers*
 @param[in] dx - Perturbation of value if required by method (default: 1.0e-3)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddNLTEs(Workspace& ws, const Vector& g1, const Vector& g2,
                       const Vector& g3,
@@ -18231,6 +19353,7 @@ pointing off-sets. (default: 0)
 0.01)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddPointingZa(Workspace& ws, const Index& poly_order = 0,
                            const String& calcmode = "recalc",
@@ -18277,6 +19400,7 @@ all line-of-sights (inside each measurement block). (default: 0)
 for all measurement blocks. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddPolyfit(Workspace& ws, const Index& poly_order,
                         const Index& no_pol_variation = 0,
@@ -18312,6 +19436,7 @@ latitude and longitude as outermost loop.
 @param[in] quantity - Retrieval quantity, e.g. "IWC".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddScatSpecies(Workspace& ws, const Vector& g1, const Vector& g2,
                             const Vector& g3, const String& species,
@@ -18366,6 +19491,7 @@ Also see said function for an example of how to set the QuantumIdentifier
 @param[in] coefficient - Coefficient of interest
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddShapeCatalogParameter(Workspace& ws,
                                       const QuantumIdentifier& line_identity,
@@ -18413,6 +19539,7 @@ or in words: lines first, then species, then variables, then coefficients
 @param[in] coefficients - List of coefficients of interest
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddShapeCatalogParameters(
     Workspace& ws, const ArrayOfQuantumIdentifier& line_identities,
@@ -18457,6 +19584,7 @@ all line-of-sights (inside each measurement block). (default: 0)
 for all measurement blocks. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddSinefit(Workspace& ws, const Vector& period_lengths,
                         const Index& no_pol_variation = 0,
@@ -18498,6 +19626,7 @@ latitude and longitude as outermost loop.
 @param[in] species - The species of the retrieval quantity.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddSpecialSpecies(Workspace& ws, const Vector& g1,
                                const Vector& g2, const Vector& g3,
@@ -18531,6 +19660,7 @@ as outermost loop.
 @param[in] quantity - Retrieval quantity, e.g. "Wind speed".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddSurfaceQuantity(Workspace& ws, const Vector& g1,
                                 const Vector& g2, const String& quantity) {
@@ -18576,6 +19706,7 @@ latitude and longitude as outermost loop.
 @param[in] hse - Flag to assume HSE or not ("on" or "off"). (default: "on")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddTemperature(Workspace& ws, const Vector& g1, const Vector& g2,
                             const Vector& g3, const String& hse = "on") {
@@ -18614,6 +19745,7 @@ latitude and longitude as outermost loop.
 @param[in] dfrequency - This is the frequency perturbation (default: 0.1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAddWind(Workspace& ws, const Vector& g1, const Vector& g2,
                      const Vector& g3, const String& component = "v",
@@ -18647,6 +19779,7 @@ The method accepts if *jacobian* is empty, and then does, nothing.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianAdjustAndTransform(Workspace& ws) {
   jacobianAdjustAndTransform(Var::jacobian(ws), Var::jacobian_quantities(ws),
@@ -18665,6 +19798,7 @@ the user.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianCalcDoNothing(Workspace& ws) {
   jacobianCalcDoNothing(Var::jacobian(ws), Var::mblock_index(ws), Var::iyb(ws),
@@ -18682,6 +19816,7 @@ and should normally not be called by the user.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianCalcFreqShift(Workspace& ws) {
   jacobianCalcFreqShift(Var::jacobian(ws), Var::mblock_index(ws), Var::iyb(ws),
@@ -18701,6 +19836,7 @@ and should normally not be called by the user.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianCalcFreqStretch(Workspace& ws) {
   jacobianCalcFreqStretch(
@@ -18723,6 +19859,7 @@ called by the user.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianCalcPointingZaInterp(Workspace& ws) {
   jacobianCalcPointingZaInterp(
@@ -18745,6 +19882,7 @@ called by the user.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianCalcPointingZaRecalc(Workspace& ws) {
   jacobianCalcPointingZaRecalc(
@@ -18768,6 +19906,7 @@ and should normally not be called by the user.
 @param[in] poly_coeff - Polynomial coefficient to handle.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianCalcPolyfit(Workspace& ws, const Index& poly_coeff) {
   jacobianCalcPolyfit(
@@ -18789,6 +19928,7 @@ and should normally not be called by the user.
 add-method.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianCalcSinefit(Workspace& ws, const Index& period_index) {
   jacobianCalcSinefit(
@@ -18812,6 +19952,7 @@ No calculations are performed here.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianClose(Workspace& ws) {
   jacobianClose(ws, Var::jacobian_do(ws), Var::jacobian_agenda(ws),
@@ -18835,6 +19976,7 @@ This gives a Jacobian wit a single column.
 @param[in] pert_size - Size of perturbation behind spectra in *ybatch*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianFromTwoY(Workspace& ws, const Vector& y_pert,
                       const Numeric& pert_size) {
@@ -18857,6 +19999,7 @@ Column i of *jacobian* equals: (ybatch[i]-y)/pert_size.
 @param[in] pert_size - Size of perturbation behind spectra in *ybatch*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianFromYbatch(Workspace& ws, const Numeric& pert_size) {
   jacobianFromYbatch(Var::jacobian(ws), Var::ybatch(ws), Var::y(ws), pert_size,
@@ -18877,6 +20020,7 @@ The Jacobian quantities are initialised to be empty.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianInit(Workspace& ws) {
   jacobianInit(Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
@@ -18897,6 +20041,7 @@ Sets *jacobian_do* to 0.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianOff(Workspace& ws) {
   jacobianOff(Var::jacobian_do(ws), Var::jacobian_agenda(ws),
@@ -18934,6 +20079,7 @@ Default is to make no such tranformation at all.
 @param[in] offset_vector - The offset vector b
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianSetAffineTransformation(Workspace& ws,
                                      const Matrix& transformation_matrix,
@@ -19008,6 +20154,7 @@ For more details on affine transformations, see
 @param[in] z_max - Upper limit of z. (default: -99e99)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void jacobianSetFuncTransformation(Workspace& ws,
                                    const String& transformation_func,
@@ -19028,6 +20175,7 @@ Similar to *p_gridFromZRaw*, but acting on a generic *GriddedField3*
 @param[in] field_raw - A raw atmospheric field.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void lat_gridFromRawField(Workspace& ws, const GriddedField3& field_raw) {
   lat_gridFromRawField(Var::lat_grid(ws), field_raw, Var::verbosity(ws));
@@ -19040,6 +20188,7 @@ void lat_gridFromRawField(Workspace& ws, const GriddedField3& field_raw) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void lat_gridFromZRaw(Workspace& ws) {
   lat_gridFromZRaw(Var::lat_grid(ws), Var::z_field_raw(ws), Var::verbosity(ws));
@@ -19058,6 +20207,7 @@ in later versions
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void lbl_checkedCalc(Workspace& ws) {
   lbl_checkedCalc(Var::lbl_checked(ws), Var::abs_lines_per_species(ws),
@@ -19078,6 +20228,7 @@ Presently only works for 1D atmospheres
 @param[in] r - Distance assumed when computing local (1-T) (default: 1.0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void line_irradianceCalcForSingleSpeciesNonOverlappingLinesPseudo2D(
     Workspace& ws, const Numeric& df, const Index& nz, const Index& nf,
@@ -19102,6 +20253,7 @@ Similar to *p_gridFromZRaw*, but acting on a generic *GriddedField3*
 @param[in] field_raw - A raw atmospheric field.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void lon_gridFromRawField(Workspace& ws, const GriddedField3& field_raw) {
   lon_gridFromRawField(Var::lon_grid(ws), field_raw, Var::verbosity(ws));
@@ -19114,6 +20266,7 @@ void lon_gridFromRawField(Workspace& ws, const GriddedField3& field_raw) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void lon_gridFromZRaw(Workspace& ws) {
   lon_gridFromZRaw(Var::lon_grid(ws), Var::z_field_raw(ws), Var::verbosity(ws));
@@ -19143,6 +20296,7 @@ If you want to have (0,0) as a point in *mblock_dlos_grid*, change
 @param[in] centre - Set to 1 to place a point at (0,0). (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void mblock_dlos_gridUniformCircular(Workspace& ws, const Numeric& spacing,
                                      const Numeric& width,
@@ -19171,6 +20325,7 @@ If you want to have (0,0) as a point in *mblock_dlos_grid*, change
 @param[in] centre - Set to 1 to place a point at (0,0). (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void mblock_dlos_gridUniformRectangular(Workspace& ws, const Numeric& spacing,
                                         const Numeric& za_width,
@@ -19194,6 +20349,7 @@ uncorrelated bivariate normal distribution.
 @param[in] aa_sigma - Width in the azimuth angle dimension as described above.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void mc_antennaSetGaussian(Workspace& ws, const Numeric& za_sigma,
                            const Numeric& aa_sigma) {
@@ -19214,6 +20370,7 @@ of the antenna response, in the zenith and azimuthal planes.
 @param[in] aa_fwhm - Width in the azimuth angle dimension as described above.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void mc_antennaSetGaussianByFWHM(Workspace& ws, const Numeric& za_fwhm,
                                  const Numeric& aa_fwhm) {
@@ -19231,6 +20388,7 @@ RT calculations.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void mc_antennaSetPencilBeam(Workspace& ws) {
   mc_antennaSetPencilBeam(Var::mc_antenna(ws), Var::verbosity(ws));
@@ -19245,6 +20403,7 @@ workspace variable *nbooks*
 @param[in] v - Variable to get the number of books from.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void nbooksGet(Workspace& ws, const Any_0& v) {
@@ -19260,6 +20419,7 @@ workspace variable *ncols*
 @param[in] v - Variable to get the number of columns from.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void ncolsGet(Workspace& ws, const Any_0& v) {
@@ -19275,6 +20435,7 @@ variable *nelem*.
 @param[in] v - Variable to get the number of elements from.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void nelemGet(Workspace& ws, const Any_0& v) {
@@ -19290,6 +20451,7 @@ workspace variable *nlibraries*
 @param[in] v - Variable to get the number of libraries from.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void nlibrariesGet(Workspace& ws, const Tensor7& v) {
   nlibrariesGet(Var::nlibraries(ws), v, Var::verbosity(ws));
@@ -19306,6 +20468,7 @@ The variables are set as follows:
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void nlteOff(Workspace& ws) {
   nlteOff(Var::nlte_do(ws), Var::nlte_field(ws),
@@ -19346,6 +20509,7 @@ temperatures ND:  Compute population by ratios found from NLTE number densities
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void nlteSetByQuantumIdentifiers(Workspace& ws) {
   nlteSetByQuantumIdentifiers(Var::nlte_do(ws), Var::abs_lines_per_species(ws),
@@ -19371,6 +20535,7 @@ iterations (default: 1e-6)
 iterations (default: 20)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void nlte_fieldForSingleSpeciesNonOverlappingLines(
     Workspace& ws, const Numeric& df, const Index& nz, const Index& nf,
@@ -19399,6 +20564,7 @@ Touch
 @param[in] data - Vibrational data [nlevels, np, nlat, nlon]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void nlte_fieldFromRaw(Workspace& ws, const Tensor4& data) {
   nlte_fieldFromRaw(Var::nlte_field(ws), Var::nlte_level_identifiers(ws),
@@ -19414,6 +20580,7 @@ void nlte_fieldFromRaw(Workspace& ws, const Tensor4& data) {
 @param[in] s - Scaling (e.g., 0.75 for only orth-water on Earth)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void nlte_fieldRescalePopulationLevels(Workspace& ws, const Numeric& s) {
   nlte_fieldRescalePopulationLevels(Var::nlte_field(ws), s, Var::verbosity(ws));
@@ -19429,6 +20596,7 @@ with a known partition function
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void nlte_fieldSetLteExternalPartitionFunction(Workspace& ws) {
   nlte_fieldSetLteExternalPartitionFunction(
@@ -19448,6 +20616,7 @@ states of a species
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void nlte_fieldSetLteInternalPartitionFunction(Workspace& ws) {
   nlte_fieldSetLteInternalPartitionFunction(
@@ -19463,6 +20632,7 @@ NLTE absorption per species with the LTE Planck source function.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void nlte_sourceFromTemperatureAndSrcCoefPerSpecies(Workspace& ws) {
   nlte_sourceFromTemperatureAndSrcCoefPerSpecies(
@@ -19481,6 +20651,7 @@ workspace variable *npages*
 @param[in] v - Variable to get the number of pages from.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void npagesGet(Workspace& ws, const Any_0& v) {
@@ -19496,6 +20667,7 @@ workspace variable *nrows*
 @param[in] v - Variable to get the number of rows from.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void nrowsGet(Workspace& ws, const Any_0& v) {
@@ -19511,6 +20683,7 @@ workspace variable *nshelves*
 @param[in] v - Variable to get the number of shelves from.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void nshelvesGet(Workspace& ws, const Any_0& v) {
@@ -19526,6 +20699,7 @@ workspace variable *nvitrines*
 @param[in] v - Variable to get the number of vitrines from.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0>
 void nvitrinesGet(Workspace& ws, const Any_0& v) {
@@ -19548,6 +20722,7 @@ The resulting  extinction matrix is added to the workspace variable
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void opt_prop_bulkCalc(Workspace& ws) {
   opt_prop_bulkCalc(Var::ext_mat(ws), Var::abs_vec(ws), Var::ext_mat_spt(ws),
@@ -19574,6 +20749,7 @@ for each scattering element.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void opt_prop_sptFromData(Workspace& ws) {
   opt_prop_sptFromData(
@@ -19595,6 +20771,7 @@ performed. The single scattering data is here obtained from
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void opt_prop_sptFromMonoData(Workspace& ws) {
   opt_prop_sptFromMonoData(
@@ -19616,6 +20793,7 @@ interpolation is done anymore.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void opt_prop_sptFromScat_data(Workspace& ws) {
   opt_prop_sptFromScat_data(
@@ -19633,6 +20811,7 @@ void opt_prop_sptFromScat_data(Workspace& ws) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void output_file_formatSetAscii(Workspace& ws) {
   output_file_formatSetAscii(Var::output_file_format(ws), Var::verbosity(ws));
@@ -19645,6 +20824,7 @@ void output_file_formatSetAscii(Workspace& ws) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void output_file_formatSetBinary(Workspace& ws) {
   output_file_formatSetBinary(Var::output_file_format(ws), Var::verbosity(ws));
@@ -19657,6 +20837,7 @@ void output_file_formatSetBinary(Workspace& ws) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void output_file_formatSetZippedAscii(Workspace& ws) {
   output_file_formatSetZippedAscii(Var::output_file_format(ws),
@@ -19687,6 +20868,7 @@ be the same variable as the output *p_grid*.
 default value (-1) results in an error. (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void p_gridDensify(Workspace& ws, const Vector& p_grid_old,
                    const Index& nfill = -1) {
@@ -19702,6 +20884,7 @@ void p_gridDensify(Workspace& ws, const Vector& p_grid_old,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void p_gridFromGasAbsLookup(Workspace& ws) {
   p_gridFromGasAbsLookup(Var::p_grid(ws), Var::abs_lookup(ws),
@@ -19719,6 +20902,7 @@ extracted. If negative altitudes shall also be selected, set no_neg=0.
 @param[in] no_negZ - Exclude negative altitudes. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void p_gridFromZRaw(Workspace& ws, const Index& no_negZ = 1) {
   p_gridFromZRaw(Var::p_grid(ws), Var::z_field_raw(ws), no_negZ,
@@ -19745,6 +20929,7 @@ coarser than this, additional points are added until each log step is smaller
 than this.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void p_gridRefine(Workspace& ws, const Vector& p_grid_old,
                   const Numeric& p_step) {
@@ -19775,6 +20960,7 @@ properties.
 std::numeric_limits<Numeric>::infinity())
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void particle_bulkprop_fieldClip(
     Workspace& ws, const String& bulkprop_name,
@@ -19803,6 +20989,7 @@ performed.
 "absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void particle_bulkprop_fieldPerturb(Workspace& ws, const String& particle_type,
                                     const Vector& p_ret_grid,
@@ -19833,6 +21020,7 @@ performed.
 "absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void particle_bulkprop_fieldPerturbAtmGrids(
     Workspace& ws, const String& particle_type, const Index& pert_index,
@@ -19875,6 +21063,7 @@ atmopheric fields.
 to zero.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void particle_fieldCleanup(Workspace& ws, Tensor4& particle_field_out,
                            const Tensor4& particle_field_in,
@@ -19901,6 +21090,7 @@ scattering species are present in *scat_meta*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void particle_massesFromMetaData(Workspace& ws) {
   particle_massesFromMetaData(Var::particle_masses(ws), Var::scat_meta(ws),
@@ -19929,6 +21119,7 @@ both ice and liquid phase.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void particle_massesFromMetaDataSingleCategory(Workspace& ws) {
   particle_massesFromMetaDataSingleCategory(
@@ -19943,6 +21134,7 @@ species data.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void partition_functionsInitFromBuiltin(Workspace& ws) {
   partition_functionsInitFromBuiltin(Var::partition_functions(ws),
@@ -19962,6 +21154,7 @@ within the cloudbox, given by *scat_p_index*, *scat_lat_index*, and
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pha_matCalc(Workspace& ws) {
   pha_matCalc(Var::pha_mat(ws), Var::pha_mat_spt(ws), Var::pnd_field(ws),
@@ -19998,6 +21191,7 @@ modification. The selection is as follows:
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pha_mat_sptFromData(Workspace& ws) {
   pha_mat_sptFromData(Var::pha_mat_spt(ws), Var::scat_data(ws),
@@ -20022,6 +21216,7 @@ Temperature is considered as described for *pha_mat_sptFromData*
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pha_mat_sptFromDataDOITOpt(Workspace& ws) {
   pha_mat_sptFromDataDOITOpt(
@@ -20041,6 +21236,7 @@ This function is the monochromatic version of *pha_mat_sptFromData*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pha_mat_sptFromMonoData(Workspace& ws) {
   pha_mat_sptFromMonoData(
@@ -20061,6 +21257,7 @@ interpolation is done anymore.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pha_mat_sptFromScat_data(Workspace& ws) {
   pha_mat_sptFromScat_data(
@@ -20119,6 +21316,7 @@ scattering species for which to apply size grid representation checks. (default:
 this scattering element over all pressure levels. (default: 0.02)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pndFromPsd(Workspace& ws, const Index& scat_index,
                 const Index& quad_order = 1,
@@ -20143,6 +21341,7 @@ checks.
 @param[in] quad_order - Order of bin quadrature. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pndFromPsdBasic(Workspace& ws, const Index& quad_order = 1) {
   pndFromPsdBasic(Var::pnd_data(ws), Var::dpnd_data_dx(ws),
@@ -20168,6 +21367,7 @@ just inside the cloudbox.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pnd_fieldCalcFromParticleBulkProps(Workspace& ws) {
   pnd_fieldCalcFromParticleBulkProps(
@@ -20200,6 +21400,7 @@ zeropadding=0, which throws an error if the calculation pressure grid
 @param[in] zeropadding - Allow zeropadding of pnd_field. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pnd_fieldCalcFrompnd_field_raw(Workspace& ws,
                                     const Index& zeropadding = 0) {
@@ -20233,6 +21434,7 @@ See further *AtmFieldsExpand1D*.
 @param[in] nzero - Number of zero values inside lat and lon limits. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pnd_fieldExpand1D(Workspace& ws, const Index& nzero = 1) {
   pnd_fieldExpand1D(Var::pnd_field(ws), Var::atmosphere_dim(ws),
@@ -20265,6 +21467,7 @@ a cloudbox with no particles.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void pnd_fieldZero(Workspace& ws) {
   pnd_fieldZero(Var::pnd_field(ws), Var::dpnd_field_dx(ws), Var::scat_data(ws),
@@ -20289,6 +21492,7 @@ of calling e.g.*ppathStepByStep directly.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppathCalc(Workspace& ws) {
   ppathCalc(ws, Var::ppath(ws), Var::ppath_agenda(ws), Var::ppath_lmax(ws),
@@ -20320,6 +21524,7 @@ Throws error if no altitude is in line of sight.
 @param[in] accuracy - Accuracy of altitude (default: 0.5)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppathCalcFromAltitude(Workspace& ws, const Numeric& altitude,
                            const Numeric& accuracy = 0.5) {
@@ -20360,6 +21565,7 @@ no solution is found. (default: 5)
 calculations are halted if this length is passed. (default: 0.5)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppathFromRtePos2(Workspace& ws, const Numeric& za_accuracy = 2e-5,
                       const Numeric& pplrt_factor = 5,
@@ -20393,6 +21599,7 @@ the standard path calculations.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppathPlaneParallel(Workspace& ws) {
   ppathPlaneParallel(Var::ppath(ws), Var::atmosphere_dim(ws), Var::z_field(ws),
@@ -20420,6 +21627,7 @@ if you want to extract propagation paths.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppathStepByStep(Workspace& ws) {
   ppathStepByStep(ws, Var::ppath(ws), Var::ppath_step_agenda(ws),
@@ -20452,6 +21660,7 @@ extension. Omitting filename works as for *WriteXML*.
 @param[in] file_index - Optional file index to append to filename. (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppathWriteXMLPartial(Workspace& ws, const String& filename = "",
                           const Index& file_index = -1) {
@@ -20468,6 +21677,7 @@ Uses *ppathCalc* internally.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppath_fieldCalc(Workspace& ws) {
   ppath_fieldCalc(ws, Var::ppath_field(ws), Var::ppath_agenda(ws),
@@ -20502,6 +21712,7 @@ Only works for *atmosphere_dim* 1, spherical planets, and *ppath_lmax*<0
 @param[in] nz - Number of zenith angles per position (default: 3)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppath_fieldFromDownUpLimbGeoms(Workspace& ws, const Index& nz = 3) {
   ppath_fieldFromDownUpLimbGeoms(
@@ -20532,6 +21743,7 @@ For further information, type see the on-line information for
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppath_stepGeometric(Workspace& ws) {
   ppath_stepGeometric(Var::ppath_step(ws), Var::atmosphere_dim(ws),
@@ -20564,6 +21776,7 @@ for *ppath_stepGeometric*, this including the functionality of
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppath_stepRefractionBasic(Workspace& ws) {
   ppath_stepRefractionBasic(
@@ -20584,6 +21797,7 @@ The values in ppvar_optical_depth are set to
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ppvar_optical_depthFromPpvar_trans_cumulat(Workspace& ws) {
   ppvar_optical_depthFromPpvar_trans_cumulat(Var::ppvar_optical_depth(ws),
@@ -20612,6 +21826,7 @@ but adds further contributions.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyAddFaraday(Workspace& ws) {
   propmat_clearskyAddFaraday(
@@ -20632,6 +21847,7 @@ other propmat_clearsky methods, this method does not overwrite prior content of
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyAddFromAbsCoefPerSpecies(Workspace& ws) {
   propmat_clearskyAddFromAbsCoefPerSpecies(
@@ -20681,6 +21897,7 @@ See also: *propmat_clearskyAddOnTheFly*.
 edges). (default: 0.5)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyAddFromLookup(Workspace& ws,
                                    const Numeric& extpolfac = 0.5) {
@@ -20708,6 +21925,7 @@ Please ensure you cite the original authors when you use this function:
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyAddHitranLineMixingLines(Workspace& ws) {
   propmat_clearskyAddHitranLineMixingLines(
@@ -20737,6 +21955,7 @@ of pressure, temperature, and VMR values.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyAddOnTheFly(Workspace& ws) {
   propmat_clearskyAddOnTheFly(
@@ -20802,6 +22021,7 @@ the scattering coefficient.
  (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyAddParticles(Workspace& ws,
                                   const Index& use_abs_as_ext = 1) {
@@ -20828,6 +22048,7 @@ Strength (default: 1.0)
 @param[in] manual_zeeman_eta - Manual eta given positive tag (default: 0.0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyAddZeeman(
     Workspace& ws, const Index& manual_zeeman_tag = 0,
@@ -20857,6 +22078,7 @@ Use this method just if you know what you are doing!
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyForceNegativeToZero(Workspace& ws) {
   propmat_clearskyForceNegativeToZero(Var::propmat_clearsky(ws),
@@ -20873,6 +22095,7 @@ be called first.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyInit(Workspace& ws) {
   propmat_clearskyInit(Var::propmat_clearsky(ws), Var::nlte_source(ws),
@@ -20897,6 +22120,7 @@ Ignore statements (don't include *propmat_clearskyInit*).
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearskyZero(Workspace& ws) {
   propmat_clearskyZero(Var::propmat_clearsky(ws), Var::f_grid(ws),
@@ -20914,6 +22138,7 @@ is used, e.g. *DoitGetIncoming*, *ybatchCalc*, *yCalc*
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearsky_agenda_checkedCalc(Workspace& ws) {
   propmat_clearsky_agenda_checkedCalc(
@@ -20945,6 +22170,7 @@ empty or have same dimension as p_grid. (default: {})
 @param[in] los - Line of sight (default: {})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void propmat_clearsky_fieldCalc(Workspace& ws, const Vector& doppler = {},
                                 const Vector& los = {}) {
@@ -20992,6 +22218,7 @@ picky=0, or an error is thrown if picky=1.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdAbelBoutle12(Workspace& ws, const Numeric& t_min = 273,
                      const Numeric& t_max = 373, const Index& picky = 0) {
@@ -21044,6 +22271,7 @@ std::numeric_limits<Numeric>::quiet_NaN())
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdDelanoeEtAl14(
     Workspace& ws, const Numeric& t_min, const Numeric& t_max,
@@ -21114,6 +22342,7 @@ temperature. (default: 273.15)
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdFieldEtAl07(Workspace& ws, const String& regime,
                     const Numeric& t_min = 0, const Numeric& t_max = 290.,
@@ -21160,6 +22389,7 @@ picky=0, or an error is thrown if picky=1.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdFieldEtAl19(Workspace& ws, const Numeric& t_min, const Numeric& t_max,
                     const Index& picky = 0) {
@@ -21217,6 +22447,7 @@ temperature. (default: 273.15)
 @param[in] noisy - Distribution parameter perturbance flag (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdMcFarquaharHeymsfield97(Workspace& ws, const Numeric& t_min = 0,
                                 const Numeric& t_max = 280.,
@@ -21282,6 +22513,7 @@ picky=0, or an error is thrown if picky=1.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdMilbrandtYau05(Workspace& ws, const String& hydrometeor_type,
                        const Numeric& t_min = 0, const Numeric& t_max = 999,
@@ -21349,6 +22581,7 @@ These requirements apply to the MGD parameters:
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdModifiedGamma(
     Workspace& ws, const Numeric& t_min, const Numeric& t_max,
@@ -21404,6 +22637,7 @@ These requirements apply to the MGD parameters:
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdModifiedGammaMass(
     Workspace& ws, const Numeric& t_min, const Numeric& t_max,
@@ -21451,6 +22685,7 @@ These requirements apply to the MGD parameters:
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdModifiedGammaMassMeanParticleMass(
     Workspace& ws, const Numeric& t_min, const Numeric& t_max,
@@ -21495,6 +22730,7 @@ These requirements apply:
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdModifiedGammaMassNtot(
     Workspace& ws, const Numeric& t_min, const Numeric& t_max,
@@ -21535,6 +22771,7 @@ mass content data. The dependent parameter is assumed to be lambda.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdModifiedGammaMassSingleMoment(Workspace& ws, const Numeric& n_alpha,
                                       const Numeric& n_b, const Numeric& mu,
@@ -21582,6 +22819,7 @@ These requirements apply to the MGD parameters:
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdModifiedGammaMassXmean(
     Workspace& ws, const Numeric& t_min, const Numeric& t_max,
@@ -21627,6 +22865,7 @@ These requirements apply to the MGD parameters:
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdModifiedGammaMassXmedian(
     Workspace& ws, const Numeric& t_min, const Numeric& t_max,
@@ -21670,6 +22909,7 @@ picky=0, or an error is thrown if picky=1.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdMonoDispersive(Workspace& ws, const Index& species_index,
                        const Numeric& t_min, const Numeric& t_max,
@@ -21709,6 +22949,7 @@ picky=0, or an error is thrown if picky=1.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdMonoMass(Workspace& ws, const Index& species_index,
                  const Numeric& t_min, const Numeric& t_max,
@@ -21770,6 +23011,7 @@ picky=0, or an error is thrown if picky=1.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdSeifertBeheng06(Workspace& ws, const String& hydrometeor_type,
                         const Numeric& t_min = 0, const Numeric& t_max = 999,
@@ -21816,6 +23058,7 @@ picky=0, or an error is thrown if picky=1.
 (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void psdWangEtAl16(Workspace& ws, const Numeric& t_min = 273,
                    const Numeric& t_max = 373, const Index& picky = 0) {
@@ -21845,6 +23088,7 @@ following different models. The options are:
 "Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidEarth(Workspace& ws, const String& model = "Sphere") {
   refellipsoidEarth(Var::refellipsoid(ws), model, Var::verbosity(ws));
@@ -21865,6 +23109,7 @@ folowing different models. The options are:
 "Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidEuropa(Workspace& ws, const String& model = "Sphere") {
   refellipsoidEuropa(Var::refellipsoid(ws), model, Var::verbosity(ws));
@@ -21888,6 +23133,7 @@ an approximation.
 @param[in] azimuth - Azimuth angle.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidForAzimuth(Workspace& ws, const Numeric& latitude,
                             const Numeric& azimuth) {
@@ -21906,6 +23152,7 @@ From Wikipedia
 "Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidGanymede(Workspace& ws, const String& model = "Sphere") {
   refellipsoidGanymede(Var::refellipsoid(ws), model, Var::verbosity(ws));
@@ -21926,6 +23173,7 @@ folowing different models. The options are:
 "Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidIo(Workspace& ws, const String& model = "Sphere") {
   refellipsoidIo(Var::refellipsoid(ws), model, Var::verbosity(ws));
@@ -21949,6 +23197,7 @@ folowing different models. The options are:
 "Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidJupiter(Workspace& ws, const String& model = "Sphere") {
   refellipsoidJupiter(Var::refellipsoid(ws), model, Var::verbosity(ws));
@@ -21972,6 +23221,7 @@ folowing different models. The options are:
 "Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidMars(Workspace& ws, const String& model = "Sphere") {
   refellipsoidMars(Var::refellipsoid(ws), model, Var::verbosity(ws));
@@ -21996,6 +23246,7 @@ folowing different models. The options are:
 "Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidMoon(Workspace& ws, const String& model = "Sphere") {
   refellipsoidMoon(Var::refellipsoid(ws), model, Var::verbosity(ws));
@@ -22016,6 +23267,7 @@ for polar sun-synchronous orbits.
 @param[in] orbitinc - Orbit inclination.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidOrbitPlane(Workspace& ws, const Numeric& orbitinc) {
   refellipsoidOrbitPlane(Var::refellipsoid(ws), orbitinc, Var::verbosity(ws));
@@ -22034,6 +23286,7 @@ arguments correspond directly to first and second element of
 @param[in] e - Eccentricity (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidSet(Workspace& ws, const Numeric& re, const Numeric& e = 0) {
   refellipsoidSet(Var::refellipsoid(ws), re, e, Var::verbosity(ws));
@@ -22057,6 +23310,7 @@ eccentricity and no further models should be required.
 "Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refellipsoidVenus(Workspace& ws, const String& model = "Sphere") {
   refellipsoidVenus(Var::refellipsoid(ws), model, Var::verbosity(ws));
@@ -22090,6 +23344,7 @@ with care.
 electrons are in *abs_species*. Default is that this is demanded. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refr_index_airFreeElectrons(Workspace& ws,
                                  const Index& demand_vmr_value = 1) {
@@ -22117,6 +23372,7 @@ The expression used is non-dispersive. Hence, *refr_index_air* and
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refr_index_airInfraredEarth(Workspace& ws) {
   refr_index_airInfraredEarth(
@@ -22159,6 +23415,7 @@ and k1, k2 and k3 must be adjusted accordingly.
 @param[in] k3 - Coefficient c, see above (default: 3.739e-3)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refr_index_airMicrowavesEarth(Workspace& ws, const Numeric& k1 = 77.6e-8,
                                    const Numeric& k2 = 70.4e-8,
@@ -22194,6 +23451,7 @@ can be taken into account.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void refr_index_airMicrowavesGeneral(Workspace& ws) {
   refr_index_airMicrowavesGeneral(
@@ -22229,6 +23487,7 @@ For number and order of elements added to *x*, see *jacobianAddAbsSpecies*.
 (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddAbsSpecies(Workspace& ws, const Vector& g1, const Vector& g2,
                             const Vector& g3, const String& species,
@@ -22256,6 +23515,7 @@ see *jacobianAddBasicCatalogParameter*.
 @param[in] var - The variance of the catalog parameter.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddCatalogParameter(Workspace& ws,
                                   const QuantumIdentifier& catalog_identity,
@@ -22285,6 +23545,7 @@ see *jacobianAddBasicCatalogParameters*.
 quantity.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddCatalogParameters(
     Workspace& ws, const ArrayOfQuantumIdentifier& catalog_identities,
@@ -22307,6 +23568,7 @@ For number and order of elements added to *x*, see *jacobianAddFreqShift*.
 @param[in] df - Size of perturbation to apply. (default: 100e3)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddFreqShift(Workspace& ws, const Numeric& df = 100e3) {
   retrievalAddFreqShift(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
@@ -22326,6 +23588,7 @@ For number and order of elements added to *x*, see *jacobianAddFreqStretch*.
 @param[in] df - Size of perturbation to apply. (default: 100e3)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddFreqStretch(Workspace& ws, const Numeric& df = 100e3) {
   retrievalAddFreqStretch(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
@@ -22352,6 +23615,7 @@ For number and order of elements added to *x*, see *jacobianAddMagField*.
 @param[in] dB - Magnetic field perturbation (default: 1.0e-7)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddMagField(Workspace& ws, const Vector& g1, const Vector& g2,
                           const Vector& g3, const String& component = "v",
@@ -22381,6 +23645,7 @@ pointing off-sets. (default: 0)
 0.01)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddPointingZa(Workspace& ws, const Index& poly_order = 0,
                             const String& calcmode = "recalc",
@@ -22412,6 +23677,7 @@ all line-of-sights (inside each measurement block). (default: 0)
 for all measurement blocks. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddPolyfit(Workspace& ws, const Index& poly_order,
                          const Index& no_pol_variation = 0,
@@ -22445,6 +23711,7 @@ For number and order of elements added to *x*, see *jacobianAddScatSpecies*.
 @param[in] quantity - Retrieval quantity, e.g. "IWC".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddScatSpecies(Workspace& ws, const Vector& g1, const Vector& g2,
                              const Vector& g3, const String& species,
@@ -22476,6 +23743,7 @@ all line-of-sights (inside each measurement block). (default: 0)
 for all measurement blocks. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddSinefit(Workspace& ws, const Vector& period_lengths,
                          const Index& no_pol_variation = 0,
@@ -22507,6 +23775,7 @@ For number and order of elements added to *x*, see *jacobianAddSpecialSpecies*.
 @param[in] species - The species of the retrieval quantity.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddSpecialSpecies(Workspace& ws, const Vector& g1,
                                 const Vector& g2, const Vector& g3,
@@ -22534,6 +23803,7 @@ For number and order of elements added to *x*, see *jacobianAddSurfaceQuantity*.
 @param[in] quantity - Retrieval quantity, e.g. "Wind speed".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddSurfaceQuantity(Workspace& ws, const Vector& g1,
                                  const Vector& g2, const String& quantity) {
@@ -22561,6 +23831,7 @@ For number and order of elements added to *x*, see *jacobianAddTemperature*.
 @param[in] hse - Flag to assume HSE or not ("on" or "off"). (default: "on")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddTemperature(Workspace& ws, const Vector& g1, const Vector& g2,
                              const Vector& g3, const String& hse = "on") {
@@ -22589,6 +23860,7 @@ For number and order of elements added to *x*, see *jacobianAddWind*.
 @param[in] dfrequency - This is the frequency perturbation (default: 0.1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalAddWind(Workspace& ws, const Vector& g1, const Vector& g2,
                       const Vector& g3, const String& component = "v",
@@ -22611,6 +23883,7 @@ are consistent with the Jacobian.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalDefClose(Workspace& ws) {
   retrievalDefClose(ws, Var::jacobian_do(ws), Var::jacobian_agenda(ws),
@@ -22635,6 +23908,7 @@ Jacobian-related quantities. Set to 0 if Jacobian is already defined. (default:
 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalDefInit(Workspace& ws, const Index& initialize_jacobian = 1) {
   retrievalDefInit(Var::covmat_se(ws), Var::covmat_sx(ws),
@@ -22659,6 +23933,7 @@ that this will also set the corresponding error vector to be empty.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void retrievalErrorsExtract(Workspace& ws) {
   retrievalErrorsExtract(Var::retrieval_eo(ws), Var::retrieval_ss(ws),
@@ -22680,6 +23955,7 @@ transmitter, and *rte_pos* to the receiver/sensor.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void rte_losGeometricFromRtePosToRtePos2(Workspace& ws) {
   rte_losGeometricFromRtePosToRtePos2(Var::rte_los(ws), Var::atmosphere_dim(ws),
@@ -22699,6 +23975,7 @@ The azimuth angle is ignored for 1D and 2D.
 @param[in] aa - Azimuth angle of sensor line-of-sight.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void rte_losSet(Workspace& ws, const Numeric& za, const Numeric& aa) {
   rte_losSet(Var::rte_los(ws), Var::atmosphere_dim(ws), za, aa,
@@ -22718,6 +23995,7 @@ ignored for 1D.
 @param[in] lon - Longitude of sensor position.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void rte_posSet(Workspace& ws, const Numeric& z, const Numeric& lat,
                 const Numeric& lon) {
@@ -22736,6 +24014,7 @@ surface.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void rte_pos_losMoveToStartOfPpath(Workspace& ws) {
   rte_pos_losMoveToStartOfPpath(Var::rte_pos(ws), Var::rte_los(ws),
@@ -22753,6 +24032,7 @@ Touch
 @param[in] data - Vibrational data [nlevels]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void rtp_nlteFromRaw(Workspace& ws, const Vector& data) {
   rtp_nlteFromRaw(Var::rtp_nlte(ws), Var::nlte_level_identifiers(ws),
@@ -22771,6 +24051,7 @@ the actual WSV *f_grid* or a single-element Vector.
 @param[in] interp_order - Interpolation order. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void scat_dataCalc(Workspace& ws, const Index& interp_order = 1) {
   scat_dataCalc(Var::scat_data(ws), Var::scat_data_raw(ws), Var::f_grid(ws),
@@ -22806,6 +24087,7 @@ The check is skipped if *check_type* is 'sane'.
 above). (default: 5e-2)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void scat_dataCheck(Workspace& ws, const String& check_type = "all",
                     const Numeric& sca_mat_threshold = 5e-2) {
@@ -22833,6 +24115,7 @@ matrix data only (1) or on all single scattering properties (0). (default: 1)
 5e-2)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void scat_dataReduceT(Workspace& ws, const Index& scat_index,
                       const Numeric& temperature, const Index& interp_order = 1,
@@ -22880,6 +24163,7 @@ of data before, e.g. in a separate ARTS run.
 (default: 5e-2)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void scat_data_checkedCalc(Workspace& ws, const Numeric& dfrel_threshold = 0.1,
                            const String& check_level = "all",
@@ -22896,6 +24180,7 @@ void scat_data_checkedCalc(Workspace& ws, const Numeric& dfrel_threshold = 0.1,
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void scat_data_monoCalc(Workspace& ws) {
   scat_data_monoCalc(Var::scat_data_mono(ws), Var::scat_data(ws),
@@ -22909,6 +24194,7 @@ void scat_data_monoCalc(Workspace& ws) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void scat_data_monoExtract(Workspace& ws) {
   scat_data_monoExtract(Var::scat_data_mono(ws), Var::scat_data(ws),
@@ -22984,6 +24270,7 @@ Respective scattering element data will be NAN. (default: 0)
 @param[in] quiet - Suppress print output from tmatrix fortran code. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void scat_data_singleTmatrix(
     Workspace& ws, const String& shape, const Numeric& diameter_volume_equ,
@@ -23011,6 +24298,7 @@ The variables are set as follows:
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensorOff(Workspace& ws) {
   sensorOff(Var::sensor_response(ws), Var::sensor_response_f(ws),
@@ -23042,6 +24330,7 @@ is set to 1.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_checkedCalc(Workspace& ws) {
   sensor_checkedCalc(Var::sensor_checked(ws), Var::atmosphere_dim(ws),
@@ -23070,6 +24359,7 @@ method for each pair of positions, where values in *sensor_pos* matches
 @param[in] target_pos - Target position, for each position in *sensor_pos*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_losGeometricFromSensorPosToOtherPositions(
     Workspace& ws, const Matrix& target_pos) {
@@ -23129,6 +24419,7 @@ the antenna response completely.
 details. (default: "-")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseAntenna(Workspace& ws, const String& option_2d = "-") {
   sensor_responseAntenna(
@@ -23154,6 +24445,7 @@ details on how to specify the backend response.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseBackend(Workspace& ws) {
   sensor_responseBackend(
@@ -23192,6 +24484,7 @@ The method has the same general functionality as, and can replace,
 @param[in] df2 - Frequency throw for cycle2.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseBackendFrequencySwitching(Workspace& ws, const Numeric& df1,
                                               const Numeric& df2) {
@@ -23224,6 +24517,7 @@ values of the second direction.
 @param[in] w2 - Weight for values from second viewing direction. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseBeamSwitching(Workspace& ws, const Numeric& w1 = -1,
                                   const Numeric& w2 = 1) {
@@ -23265,6 +24559,7 @@ Between each neighbouring points of *f_grid*, this method adds
 @param[in] nfill - Number of points to insert in each gap of f_grid (default: 2)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseFillFgrid(Workspace& ws, const Index& polyorder = 3,
                               const Index& nfill = 2) {
@@ -23295,6 +24590,7 @@ Output frequency grids are taken from the second spectrum.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseFrequencySwitching(Workspace& ws) {
   sensor_responseFrequencySwitching(
@@ -23329,6 +24625,7 @@ in sensor_description_amsu.
 @param[in] spacing - Desired grid spacing in Hz. (default: .1e9)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseGenericAMSU(Workspace& ws, const Numeric& spacing = .1e9) {
   sensor_responseGenericAMSU(
@@ -23357,6 +24654,7 @@ sorted in any way.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseIF2RF(Workspace& ws) {
   sensor_responseIF2RF(Var::sensor_response_f(ws),
@@ -23387,6 +24685,7 @@ The variables are set as follows:
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseInit(Workspace& ws) {
   sensor_responseInit(
@@ -23442,6 +24741,7 @@ cover both sides of the swath.
 above). (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseMetMM(Workspace& ws, const Index& use_antenna = 0,
                           const Index& mirror_dza = 0) {
@@ -23474,6 +24774,7 @@ mixer response
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseMixer(Workspace& ws) {
   sensor_responseMixer(
@@ -23505,6 +24806,7 @@ to be common for all viewing directions.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseMixerBackendPrecalcWeights(Workspace& ws) {
   sensor_responseMixerBackendPrecalcWeights(
@@ -23534,6 +24836,7 @@ will be in absolute frequency (RF).
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseMultiMixerBackend(Workspace& ws) {
   sensor_responseMultiMixerBackend(
@@ -23573,6 +24876,7 @@ method.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responsePolarisation(Workspace& ws) {
   sensor_responsePolarisation(
@@ -23603,6 +24907,7 @@ in sensor_description_amsu.
 @param[in] spacing - Desired grid spacing in Hz. (default: .1e9)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseSimpleAMSU(Workspace& ws, const Numeric& spacing = .1e9) {
   sensor_responseSimpleAMSU(
@@ -23631,6 +24936,7 @@ of the rotation can not be determibed with lower *stokes_dim*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseStokesRotation(Workspace& ws) {
   sensor_responseStokesRotation(
@@ -23650,6 +24956,7 @@ consists of a set of selected frequencies, and associated weights.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void sensor_responseWMRF(Workspace& ws) {
   sensor_responseWMRF(
@@ -23671,6 +24978,7 @@ See *AngularGridsSetFluxCalc to set
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void spectral_irradiance_fieldFromSpectralRadianceField(Workspace& ws) {
   spectral_irradiance_fieldFromSpectralRadianceField(
@@ -23707,6 +25015,7 @@ above.
 1: Use more memory intensiv iyEmissionStandardParallel* (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void spectral_radiance_fieldClearskyPlaneParallel(
     Workspace& ws, Tensor3& trans_field, const Index& use_parallel_iy = 0) {
@@ -23735,6 +25044,7 @@ cover the same atmospheric volume and a direct copying can be made.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void spectral_radiance_fieldCopyCloudboxField(Workspace& ws) {
   spectral_radiance_fieldCopyCloudboxField(
@@ -23766,6 +25076,7 @@ interpolation of the cloudbox field.
 1: Use more memory intensiv iyEmissionStandardParallel* (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void spectral_radiance_fieldExpandCloudboxField(
     Workspace& ws, const Index& use_parallel_iy = 0) {
@@ -23807,6 +25118,7 @@ the surface (i.e. no topography).
 or not. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void specular_losCalc(Workspace& ws, const Index& ignore_surface_slope = 0) {
   specular_losCalc(Var::specular_los(ws), Var::surface_normal(ws),
@@ -23830,6 +25142,7 @@ oceans).
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void specular_losCalcNoTopography(Workspace& ws) {
   specular_losCalcNoTopography(Var::specular_los(ws), Var::surface_normal(ws),
@@ -23849,6 +25162,7 @@ to hold blackbody radiation for a temperature of *surface_skin_t*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceBlackbody(Workspace& ws) {
   surfaceBlackbody(Var::surface_los(ws), Var::surface_rmatrix(ws),
@@ -23888,6 +25202,7 @@ vector with the same length as *f_grid*.
 @param[in] fastem_version - The version of FASTEM to use. (default: 6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceFastem(Workspace& ws, const Numeric& wind_speed,
                    const Vector& transmittance, const Numeric& salinity = 0.035,
@@ -23915,6 +25230,7 @@ the ARTS theory document (ATD) for details around how
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceFlatReflectivity(Workspace& ws) {
   surfaceFlatReflectivity(Var::surface_los(ws), Var::surface_rmatrix(ws),
@@ -23942,6 +25258,7 @@ that the reflection and emission coefficients add up to 1.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceFlatRefractiveIndex(Workspace& ws) {
   surfaceFlatRefractiveIndex(
@@ -23969,6 +25286,7 @@ U and V, and that all diagonal elementsof  *surface_rmatrix* are equal
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceFlatRvRh(Workspace& ws) {
   surfaceFlatRvRh(
@@ -23993,6 +25311,7 @@ all elements on the diagonal equal to the specified reflectivity).
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceFlatScalarReflectivity(Workspace& ws) {
   surfaceFlatScalarReflectivity(
@@ -24042,6 +25361,7 @@ but 90-abs(surface_normal[0]).
 angle grid. See above. (default: 0.5)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceLambertianSimple(Workspace& ws, const Index& lambertian_nza = 9,
                              const Numeric& za_pos = 0.5) {
@@ -24089,6 +25409,7 @@ as w above. A value between 1/3 and 1.
 0 and 45 degrees.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceSemiSpecularBy3beams(Workspace& ws, const Numeric& specular_factor,
                                  const Numeric& dza) {
@@ -24124,6 +25445,7 @@ as w above. A value between 1/3 and 1.
 0 and 45 degrees.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceSplitSpecularTo3beams(Workspace& ws, const Numeric& specular_factor,
                                   const Numeric& dza) {
@@ -24174,6 +25496,7 @@ interpolation in meters. Set to a negative value or zero  to disable
 interpolation. (default: -1.0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceTelsem(Workspace& ws, const TelsemAtlas& atlas,
                    const Numeric& r_min = 0, const Numeric& r_max = 1,
@@ -24208,6 +25531,7 @@ The model itself is represented by the neural networks in
 @param[in] wind_speed - Wind speed.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surfaceTessem(Workspace& ws, const Numeric& wind_speed,
                    const Numeric& salinity = 0.035) {
@@ -24247,6 +25571,7 @@ simply returned as *surface_complex_refr_index*.
 @param[in] complex_refr_index_field - A field of complex refractive index.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surface_complex_refr_indexFromGriddedField5(
     Workspace& ws, const GriddedField5& complex_refr_index_field) {
@@ -24295,6 +25620,7 @@ The interpolation is done in steps:
 @param[in] r_field - A field of surface reflectivities
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surface_reflectivityFromGriddedField6(Workspace& ws,
                                            const GriddedField6& r_field) {
@@ -24316,6 +25642,7 @@ with index *surface_type* (0-based) is called.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surface_rtpropCallAgendaX(Workspace& ws) {
   surface_rtpropCallAgendaX(
@@ -24358,6 +25685,7 @@ The interpolation is done in steps:
 @param[in] r_field - A field of scalar surface reflectivities
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surface_scalar_reflectivityFromGriddedField4(
     Workspace& ws, const GriddedField4& r_field) {
@@ -24378,6 +25706,7 @@ the sum of surface_rmatrix(joker,f,0,0).
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surface_scalar_reflectivityFromSurface_rmatrix(Workspace& ws) {
   surface_scalar_reflectivityFromSurface_rmatrix(
@@ -24402,6 +25731,7 @@ The altitude in *rtp_pos* is ignored.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void surface_typeInterpTypeMask(Workspace& ws) {
   surface_typeInterpTypeMask(
@@ -24428,6 +25758,7 @@ vector is returned.
 @param[in] atlas - The Telsem atlas to use.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void telsemAtlasLookup(Workspace& ws, Vector& emissivities, const Numeric& lat,
                        const Numeric& lon, const TelsemAtlas& atlas) {
@@ -24460,6 +25791,7 @@ exceeds the given *d_max* value.
 interpolation in meters. (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void telsemStandalone(Workspace& ws, Matrix& emissivities, const Numeric& lat,
                       const Numeric& lon, const Numeric& theta, const Vector& f,
@@ -24483,6 +25815,7 @@ properties.
 @param[in] atlas - The telsem atlas from which to lookup the surface type.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void telsemSurfaceTypeLandSea(Workspace& ws, const TelsemAtlas& atlas) {
   telsemSurfaceTypeLandSea(Var::surface_type(ws), Var::atmosphere_dim(ws),
@@ -24507,6 +25840,7 @@ month and stores the result in the provided output atlas.
 number) (default: "ssmi_mean_emis_climato_@MM@_cov_interpol_M2")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void telsem_atlasReadAscii(Workspace& ws, TelsemAtlas& atlas,
                            const String& directory, const Index& month,
@@ -24530,6 +25864,7 @@ The whole data is combined into the WSV *telsem_atlases*
 number) (default: "ssmi_mean_emis_climato_@MM@_cov_interpol_M2")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void telsem_atlasesReadAscii(
     Workspace& ws, const String& directory,
@@ -24546,6 +25881,7 @@ void telsem_atlasesReadAscii(
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void timeNow(Workspace& ws) { timeNow(Var::time(ws), Var::verbosity(ws)); }
 
@@ -24557,6 +25893,7 @@ void timeNow(Workspace& ws) { timeNow(Var::time(ws), Var::verbosity(ws)); }
 @param[in] offset - Time in seconds
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void timeOffset(Workspace& ws, const Numeric& offset) {
   timeOffset(Var::time(ws), offset, Var::verbosity(ws));
@@ -24569,6 +25906,7 @@ void timeOffset(Workspace& ws, const Numeric& offset) {
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void timeSleep(Workspace& ws) { timeSleep(Var::time(ws), Var::verbosity(ws)); }
 
@@ -24580,6 +25918,7 @@ void timeSleep(Workspace& ws) { timeSleep(Var::time(ws), Var::verbosity(ws)); }
 @param[in] dt - Time in seconds to add
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void time_gridOffset(Workspace& ws, const Numeric& dt) {
   time_gridOffset(Var::time_grid(ws), dt, Var::verbosity(ws));
@@ -24594,6 +25933,7 @@ void time_gridOffset(Workspace& ws, const Numeric& dt) {
 @param[in] in - Array to sort of same size as *time_stamps*
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 template <typename Any_0, typename Any_1>
 void time_stampsSort(Workspace& ws, Any_0& out, const Any_1& in) {
@@ -24614,6 +25954,7 @@ Usage example:
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void timerStart(Workspace& ws) {
   timerStart(Var::timer(ws), Var::verbosity(ws));
@@ -24627,6 +25968,7 @@ See *timerStart* for example usage.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void timerStop(Workspace& ws) { timerStop(Var::timer(ws), Var::verbosity(ws)); }
 
@@ -24644,6 +25986,7 @@ as input to some of the FASTEM methods.
 @param[out] transmittance - Created vector of transmittance values.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void transmittanceFromIy_aux(Workspace& ws, Vector& transmittance) {
   transmittanceFromIy_aux(transmittance, Var::iy_aux_vars(ws), Var::iy_aux(ws),
@@ -24659,6 +26002,7 @@ Sets verbosity to defaults or the levels specified by -r on the command line.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void verbosityInit(Workspace& ws) { verbosityInit(Var::verbosity(ws)); }
 
@@ -24677,6 +26021,7 @@ to both screen and file output.
 @param[in] file - Report file verbosity level
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void verbositySet(Workspace& ws, const Index& agenda, const Index& screen,
                   const Index& file) {
@@ -24693,6 +26038,7 @@ See *verbositySet*
 @param[in] level - Agenda verbosity level
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void verbositySetAgenda(Workspace& ws, const Index& level) {
   verbositySetAgenda(Var::verbosity(ws), level);
@@ -24708,6 +26054,7 @@ See *verbositySet*
 @param[in] level - Report file verbosity level
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void verbositySetFile(Workspace& ws, const Index& level) {
   verbositySetFile(Var::verbosity(ws), level);
@@ -24723,6 +26070,7 @@ See *verbositySet*
 @param[in] level - Screen verbosity level
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void verbositySetScreen(Workspace& ws, const Index& level) {
   verbositySetScreen(Var::verbosity(ws), level);
@@ -24749,6 +26097,7 @@ species.
 std::numeric_limits<Numeric>::infinity())
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void vmr_fieldClip(
     Workspace& ws, const String& species,
@@ -24776,6 +26125,7 @@ performed.
 "absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void vmr_fieldPerturb(Workspace& ws, const String& species,
                       const Vector& p_ret_grid, const Vector& lat_ret_grid,
@@ -24803,6 +26153,7 @@ performed.
 "absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void vmr_fieldPerturbAtmGrids(Workspace& ws, const String& species,
                               const Index& pert_index, const Numeric& pert_size,
@@ -24824,6 +26175,7 @@ The length of vmr_values and of abs_species must match.
 @param[in] vmr_values - VMR value to apply for each abs_species.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void vmr_fieldSetAllConstant(Workspace& ws, const Vector& vmr_values) {
   vmr_fieldSetAllConstant(Var::vmr_field(ws), Var::abs_species(ws), vmr_values,
@@ -24841,6 +26193,7 @@ The *vmr_field* WSM must have a correct size before calling this method.
 @param[in] vmr_value - VMR value to apply for the selected species.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void vmr_fieldSetConstant(Workspace& ws, const String& species,
                           const Numeric& vmr_value) {
@@ -24864,6 +26217,7 @@ Journal of the Royal Meteorological Society, 131(608), 1539-1565.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void water_p_eq_fieldMK05(Workspace& ws) {
   water_p_eq_fieldMK05(Var::water_p_eq_field(ws), Var::t_field(ws),
@@ -24885,6 +26239,7 @@ The rotation of the planet is not causing any Doppler shift for
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void wind_u_fieldIncludePlanetRotation(Workspace& ws) {
   wind_u_fieldIncludePlanetRotation(
@@ -24914,6 +26269,7 @@ Should only be used inside *inversion_iterate_agenda*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void x2artsAtmAndSurf(Workspace& ws) {
   x2artsAtmAndSurf(
@@ -24955,6 +26311,7 @@ correction.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void x2artsSensor(Workspace& ws) {
   x2artsSensor(
@@ -24976,6 +26333,7 @@ Don't call the method, it will just generate an error.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void x2artsSpectroscopy(Workspace& ws) {
   x2artsSpectroscopy(Var::verbosity(ws));
@@ -25005,6 +26363,7 @@ Notice that limits must be specified in the unit used in *x*.
 std::numeric_limits<Numeric>::infinity())
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void xClip(
     Workspace& ws, const Index& ijq,
@@ -25032,6 +26391,7 @@ are handled:
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void xaStandard(Workspace& ws) {
   xaStandard(ws, Var::xa(ws), Var::jacobian_quantities(ws),
@@ -25102,6 +26462,7 @@ clip value when Ze < 10^(dbze_min/10).
 @param[in] dbze_min - Clip value for dBZe. (default: -99)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void yActive(Workspace& ws, const Numeric& ze_tref = 273.15,
              const Numeric& k2 = -1, const Numeric& dbze_min = -99) {
@@ -25135,6 +26496,7 @@ set to the value matching the first Stokes element.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void yApplySensorPol(Workspace& ws) {
   yApplySensorPol(Var::y(ws), Var::y_f(ws), Var::y_pol(ws), Var::y_pos(ws),
@@ -25176,6 +26538,7 @@ Conversion of *y_aux* is not supported.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void yApplyUnit(Workspace& ws) {
   yApplyUnit(Var::y(ws), Var::jacobian(ws), Var::y_f(ws), Var::y_pol(ws),
@@ -25217,6 +26580,7 @@ included by calling *jacobianAdjustAndTransform*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void yCalc(Workspace& ws) {
   yCalc(ws, Var::y(ws), Var::y_f(ws), Var::y_pol(ws), Var::y_pos(ws),
@@ -25284,6 +26648,7 @@ functions are appended or treated as different retrieval quantities. (default:
 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void yCalcAppend(Workspace& ws,
                  const ArrayOfRetrievalQuantity& jacobian_quantities_copy,
@@ -25325,6 +26690,7 @@ If calib evaluates as false:
 is computed (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void yColdAtmHot(Workspace& ws, const Vector& cold, const Vector& atm,
                  const Vector& hot, const Numeric& cold_temp,
@@ -25351,6 +26717,7 @@ Auxiliary variables and *jacobian*s are not handled.
 @param[in] df - Selected frequency resolution.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ySimpleSpectrometer(Workspace& ws, const Numeric& df) {
   ySimpleSpectrometer(Var::y(ws), Var::y_f(ws), Var::iy(ws),
@@ -25408,6 +26775,7 @@ that case, a warning message is written to screen and file
 failed job in *ybatch* is left empty. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ybatchCalc(Workspace& ws, const Index& robust = 0) {
   ybatchCalc(ws, Var::ybatch(ws), Var::ybatch_aux(ws),
@@ -25445,6 +26813,7 @@ from the profiles inside the function
 @param[in] met_profile_pnd_path - FIXME DOC
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ybatchMetProfiles(Workspace& ws, const Index& nelem_p_grid,
                        const String& met_profile_path,
@@ -25487,6 +26856,7 @@ from the profiles inside the function
 @param[in] met_profile_path - FIXME DOC
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ybatchMetProfilesClear(Workspace& ws, const Index& nelem_p_grid,
                             const String& met_profile_path) {
@@ -25513,6 +26883,7 @@ incomplete step) (default: 0)
 incomplete step) (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ybatchTimeAveraging(Workspace& ws, const String& time_step,
                          const Index& disregard_first = 0,
@@ -25536,6 +26907,7 @@ empty all is used
 @param[in] targ_temp - Temperature target of the baseline (default: 2.73)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ybatchTroposphericCorrectionNaiveMedianForward(
     Workspace& ws, const ArrayOfIndex& range, const Vector& trop_temp,
@@ -25552,6 +26924,7 @@ void ybatchTroposphericCorrectionNaiveMedianForward(
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void ybatchTroposphericCorrectionNaiveMedianInverse(Workspace& ws) {
   ybatchTroposphericCorrectionNaiveMedianInverse(
@@ -25584,6 +26957,7 @@ and *lon_true*.
 @param[in,out] Workspace ws - An ARTS workspace
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void z_fieldFromHSE(Workspace& ws) {
   z_fieldFromHSE(ws, Var::z_field(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
@@ -25603,6 +26977,7 @@ void z_fieldFromHSE(Workspace& ws) {
 @param[in] altitude - The constant altitude. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void z_surfaceConstantAltitude(Workspace& ws, const Numeric& altitude = 0) {
   z_surfaceConstantAltitude(Var::z_surface(ws), Var::lat_grid(ws),
@@ -25620,6 +26995,7 @@ void z_surfaceConstantAltitude(Workspace& ws, const Numeric& altitude = 0) {
 0 to ignore sub-surface pressures/altitudes (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
+This interface function has been automatically generated
 */
 void z_surfaceFromFileAndGrid(Workspace& ws, const String& filename,
                               const Index& interp_order = 1,
@@ -25630,3 +27006,706 @@ void z_surfaceFromFileAndGrid(Workspace& ws, const String& filename,
 }
 
 }  // namespace ARTS::Method
+
+namespace ARTS::AgendaExecute {
+
+/*! Calculate scalar gas absorption cross sections.
+
+Basically, this agenda calculates absorption for all the tags defined
+in abs_species. It is used both in the calculation of an absorption
+lookup table, and in on-the-fly calculations. Typical effects to
+include here are:
+
+Explicit line-by-line calculation (*abs_xsec_per_speciesAddLines*),
+
+Continua and complete absorption models (*abs_xsec_per_speciesAddConts*), and
+
+HITRAN style CIA continua (*abs_xsec_per_speciesAddCIA*)
+
+The only kind of absorption tag not handled here are Zeeman tags
+and free electron density tags, because they need additional input
+and because they return an absorption matrix, rather than a scalar.
+
+The include file 'agendas.arts' predefines a number of agendas that
+should be useful for most users.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void abs_xsec_agenda(Workspace& ws) {
+  abs_xsec_agendaExecute(
+      ws, Var::abs_xsec_per_species(ws), Var::src_xsec_per_species(ws),
+      Var::dabs_xsec_per_species_dx(ws), Var::dsrc_xsec_per_species_dx(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws),
+      Var::abs_species_active(ws), Var::f_grid(ws), Var::abs_p(ws),
+      Var::abs_t(ws), Var::abs_nlte(ws), Var::abs_vmrs(ws),
+      Var::abs_xsec_agenda(ws));
+}
+
+/*! Calculations to perform for each batch case.
+
+See further *DOBatchCalc*.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void dobatch_calc_agenda(Workspace& ws) {
+  dobatch_calc_agendaExecute(
+      ws, Var::spectral_radiance_field(ws), Var::radiance_field(ws),
+      Var::irradiance_field(ws), Var::spectral_irradiance_field(ws),
+      Var::ybatch_index(ws), Var::dobatch_calc_agenda(ws));
+}
+
+/*! Compute the convergence test.
+
+The method *cloudbox_field_monoIterate* solves the VRTE iteratively.This method
+requires a convergence test. The user can choose different convergence tests
+which are to be defined in this agenda.
+
+Possible workspace methods are:
+*doit_conv_flagAbs*: Calculates the absolute differences
+  for each Stokes component separately.
+*doit_conv_flagAbsBT*: Same as above, but the convergence limit
+  can be specified in Kelvin BT (Rayleigh Jeans).
+*doit_conv_flagLsq*: Least square convergence test. Not recommended
+  because result can be inaccurate.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void doit_conv_test_agenda(Workspace& ws) {
+  doit_conv_test_agendaExecute(
+      ws, Var::doit_conv_flag(ws), Var::doit_iteration_counter(ws),
+      Var::cloudbox_field_mono(ws), Var::cloudbox_field_mono_old(ws),
+      Var::doit_conv_test_agenda(ws));
+}
+
+/*! Performs monochromatic DOIT calculation.
+This agenda includes for example the following methods:
+   1. *DoitScatteringDataPrepare*
+   2. *cloudbox_field_monoIterate*
+
+The result of the agenda is the radiation field inside the
+cloudbox and on the cloudbox boundary, which can be used
+as radiative background for a clearsky radiative transfer
+calculation.
+
+See the Arts online documentation
+for more information about the methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void doit_mono_agenda(Workspace& ws) {
+  doit_mono_agendaExecute(ws, Var::cloudbox_field_mono(ws), Var::f_grid(ws),
+                          Var::f_index(ws), Var::doit_mono_agenda(ws));
+}
+
+/*! Radiative transfer calculations in cloudbox.
+
+Agenda for radiative transfer step calculations with
+fixed scattering integral term shoul be specified here.
+Output is the updated radiation field in the cloudbox.
+This agenda is called repeatedly in each DOIT iteration.
+
+Normally one should use
+*cloudbox_fieldUpdateSeq1D* or *cloudbox_fieldUpdateSeq3D*:
+Seqential update of the radiation field.
+   This method is the fastest and most accurate method.
+
+A very similar method in plane parallel approximation is
+*cloudbox_fieldUpdateSeq1DPP*:
+   This method also includes the sequential update and is slightly
+   faster than the above one. The drawback is that it is less
+   accurate, especially for limb geometries and large off-nadir
+   viewing angles.
+
+The following method was used before the sequential update
+was invented. It is very slow and should therefore only
+be used for test cases.
+*cloudbox_fieldUpdate1D*: Old method.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void doit_rte_agenda(Workspace& ws) {
+  doit_rte_agendaExecute(ws, Var::cloudbox_field_mono(ws),
+                         Var::doit_scat_field(ws), Var::doit_rte_agenda(ws));
+}
+
+/*! Calculation of the scattering integral field (DOIT).
+
+This agenda is called repeatedly in each DOIT iteration.
+The following methods can be used for calculating the
+scattering integral field:
+
+*doit_scat_fieldCalc*: This method calculates the scattering
+  integral field by using the angular grids *za_grid*
+  and *aa_grid*, which are also used in the update of the
+  radiation field (*doit_rte_agenda*).
+
+*doit_scat_fieldCalcLimb*: This method calculates the scattering
+  integral field.  The difference to the previous method is that
+  the data is interpolated on equidistant angular grids.
+  Especially for limb, where a very fine zenith angle grid
+  resolution is required for the RT transfer part, this method
+  is much faster than *doit_scat_fieldCalc*.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void doit_scat_field_agenda(Workspace& ws) {
+  doit_scat_field_agendaExecute(ws, Var::doit_scat_field(ws),
+                                Var::cloudbox_field_mono(ws),
+                                Var::doit_scat_field_agenda(ws));
+}
+
+/*! The body for a for loop.
+
+This agenda contains the body of the for loop to be execute by the
+method *ForLoop*.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void forloop_agenda(Workspace& ws) {
+  forloop_agendaExecute(ws, Var::forloop_index(ws), Var::forloop_agenda(ws));
+}
+
+/*! Calculation of the gravity at zero altitude.
+
+Returns *g0* for given geographical position.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void g0_agenda(Workspace& ws) {
+  g0_agendaExecute(ws, Var::g0(ws), Var::lat(ws), Var::lon(ws),
+                   Var::g0_agenda(ws));
+}
+
+/*! Geo-positioning of a pencil beam calculation.
+
+The task of this agenda is to set *geo_pos*. The standard choices are
+to set that WSV to be empty or select a position along the propagation
+path (described by *ppath*).
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void geo_pos_agenda(Workspace& ws) {
+  geo_pos_agendaExecute(ws, Var::geo_pos(ws), Var::ppath(ws),
+                        Var::geo_pos_agenda(ws));
+}
+
+/*! Work in progress ...
+
+The WSV *jacobian* is both in- and output. As input variable, *jacobian*
+is assumed to be valid for the previous iteration. For the first iteration
+the input *jacobian* shall be set to have size zero, to flag that there
+is not yet any calculated Jacobian.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void inversion_iterate_agenda(Workspace& ws) {
+  inversion_iterate_agendaExecute(
+      ws, Var::yf(ws), Var::jacobian(ws), Var::x(ws), Var::jacobian_do(ws),
+      Var::inversion_iteration_counter(ws), Var::inversion_iterate_agenda(ws));
+}
+
+/*! Intensity at boundary or interior of the cloudbox.
+
+The task of the agenda is to determine the intensity at some point
+at the boundary of or inside the cloudbox. The actual calculations
+inside the agenda differ depending on scattering solution method.
+If DOIT is used, an interpolating of the intensity field should be
+performed. Another option is to start backward Monte Carlo
+calculations from this point.
+
+A function calling this agenda shall set *rte_pos* and *rte_los* to
+the position and line-of-sight for which the scattered radiation
+shall be determined.
+
+The include-file 'agendas.arts' pre-defines some agendas that can
+either be used directly, or serve as examples.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void iy_cloudbox_agenda(Workspace& ws) {
+  iy_cloudbox_agendaExecute(ws, Var::iy(ws), Var::f_grid(ws), Var::rtp_pos(ws),
+                            Var::rtp_los(ws), Var::iy_cloudbox_agenda(ws));
+}
+
+/*! Agenda dedicated to *iyIndependentBeamApproximation*.
+
+If *iyIndependentBeamApproximation* is used, this agenda basically
+replaces *iy_main_agenda*. Accordingly, this agenda has exactly the
+same output as *iy_main_agenda*.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void iy_independent_beam_approx_agenda(Workspace& ws) {
+  iy_independent_beam_approx_agendaExecute(
+      ws, Var::iy(ws), Var::iy_aux(ws), Var::ppath(ws), Var::diy_dx(ws),
+      Var::iy_agenda_call1(ws), Var::iy_unit(ws), Var::iy_transmission(ws),
+      Var::iy_aux_vars(ws), Var::iy_id(ws), Var::atmosphere_dim(ws),
+      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws), Var::lat_true(ws),
+      Var::lon_true(ws), Var::t_field(ws), Var::z_field(ws), Var::vmr_field(ws),
+      Var::z_surface(ws), Var::ppath_lmax(ws), Var::ppath_lraytrace(ws),
+      Var::cloudbox_on(ws), Var::cloudbox_limits(ws), Var::pnd_field(ws),
+      Var::jacobian_do(ws), Var::f_grid(ws), Var::rte_pos(ws), Var::rte_los(ws),
+      Var::rte_pos2(ws), Var::iy_independent_beam_approx_agenda(ws));
+}
+
+/*! Agenda dedicated to *iyLoopFrequencies*.
+
+If *iyLoopFrequencies* is used, this agenda basically replaces
+*iy_main_agenda*.Accordingly, this agenda has exactly the same
+output as *iy_main_agenda*.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void iy_loop_freqs_agenda(Workspace& ws) {
+  iy_loop_freqs_agendaExecute(
+      ws, Var::iy(ws), Var::iy_aux(ws), Var::ppath(ws), Var::diy_dx(ws),
+      Var::iy_agenda_call1(ws), Var::iy_transmission(ws), Var::iy_aux_vars(ws),
+      Var::iy_id(ws), Var::f_grid(ws), Var::rte_pos(ws), Var::rte_los(ws),
+      Var::rte_pos2(ws), Var::iy_loop_freqs_agenda(ws));
+}
+
+/*! Calculation of a single monochromatic pencil beam spectrum.
+
+The task of the agenda is to calculate the monochromatic pencil beam
+spectrum for the position specified by *rte_pos* and the viewing
+direction specified by *rte_los*.
+
+Methods for this agenda can either handle the complete calculation,
+make use of e.g. *iy_cloudbox_agenda* or be restricted to special
+cases. See the documentation for the different methods.
+
+The include-file 'agendas.arts' predefines some typical alternatives
+that can be used directly, or adapted for specific applications.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void iy_main_agenda(Workspace& ws) {
+  iy_main_agendaExecute(ws, Var::iy(ws), Var::iy_aux(ws), Var::ppath(ws),
+                        Var::diy_dx(ws), Var::iy_agenda_call1(ws),
+                        Var::iy_transmission(ws), Var::iy_aux_vars(ws),
+                        Var::iy_id(ws), Var::iy_unit(ws), Var::cloudbox_on(ws),
+                        Var::jacobian_do(ws), Var::f_grid(ws),
+                        Var::nlte_field(ws), Var::rte_pos(ws), Var::rte_los(ws),
+                        Var::rte_pos2(ws), Var::iy_main_agenda(ws));
+}
+
+/*! Downwelling radiation at the top of the atmosphere.
+
+Possible terms to include in this agenda include cosmic background
+radiation and solar radiation.
+
+A function calling this agenda shall set *rtp_pos* and *rtp_los* to
+the position and line-of-sight for which the entering radiation
+shall be determined. The position and line-of-sight must be known,
+for example, when radiation from the sun is considered.
+
+The include-file 'agendas.arts' predefines an agenda that can be
+applied directly for most users.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void iy_space_agenda(Workspace& ws) {
+  iy_space_agendaExecute(ws, Var::iy(ws), Var::f_grid(ws), Var::rtp_pos(ws),
+                         Var::rtp_los(ws), Var::iy_space_agenda(ws));
+}
+
+/*! Upwelling radiation from the surface.
+
+The task of the agenda is to determine the upwelling intensity from
+the surface, for given point and direction.
+
+The standard choice should be to make use of *surface_rtprop_agenda*
+through the WSM *iySurfaceRtpropAgenda*.
+
+A function calling this agenda shall set *rtp_pos* and *rtp_los* to
+the position and line-of-sight for which the upwelling radiation
+shall be determined.
+
+See also the include-file 'agendas.arts' for a predefined agenda
+suitable to be used in most applications.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void iy_surface_agenda(Workspace& ws) {
+  iy_surface_agendaExecute(
+      ws, Var::iy(ws), Var::diy_dx(ws), Var::dsurface_rmatrix_dx(ws),
+      Var::dsurface_emission_dx(ws), Var::iy_unit(ws), Var::iy_transmission(ws),
+      Var::iy_id(ws), Var::cloudbox_on(ws), Var::jacobian_do(ws),
+      Var::iy_main_agenda(ws), Var::f_grid(ws), Var::nlte_field(ws),
+      Var::rtp_pos(ws), Var::rtp_los(ws), Var::rte_pos2(ws),
+      Var::surface_props_data(ws), Var::dsurface_names(ws),
+      Var::iy_surface_agenda(ws));
+}
+
+/*! Upwelling radiation from the surface, divided into surface types.
+
+Each agenda element shall treat the radiative properties of a surface
+type. The task of these agendas match directly *iy_surface_agenda*.
+This with one exception, these agendas have one additional input:
+*surface_type_aux*.
+
+See *surface_type_mask* for comments on the surface type coding
+scheme.  Note the parallel agenda array: surface_rtprop_agenda_array.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void iy_surface_agenda_array(Workspace& ws) {
+  iy_surface_agenda_arrayExecute(
+      ws, Var::iy(ws), Var::diy_dx(ws), Var::agenda_array_index(ws),
+      Var::iy_unit(ws), Var::iy_transmission(ws), Var::iy_id(ws),
+      Var::cloudbox_on(ws), Var::jacobian_do(ws), Var::iy_main_agenda(ws),
+      Var::f_grid(ws), Var::rtp_pos(ws), Var::rtp_los(ws), Var::rte_pos2(ws),
+      Var::surface_type_aux(ws), Var::iy_surface_agenda_array(ws));
+}
+
+/*! Transmitter signal.
+
+This agenda describes the signal at the start of the propagation
+path for calculations of transmission type. That is, the agenda
+describes a transmitter, which either can be a natural source or
+an artificial device.
+
+The include-file 'agendas.arts' defines an example agenda that
+can be used for transmission calculations
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void iy_transmitter_agenda(Workspace& ws) {
+  iy_transmitter_agendaExecute(ws, Var::iy(ws), Var::f_grid(ws),
+                               Var::rtp_pos(ws), Var::rtp_los(ws),
+                               Var::iy_transmitter_agenda(ws));
+}
+
+/*! Pure numerical Jacobian calculations.
+
+Parts of the Jacobian matrix can be determined by (semi-)analytical
+expressions, while other parts are calculated in a pure numerical
+manner (by perturbations). This agenda describes the calculations to
+be performed in the later case.
+
+This agenda is normally not set directly by the user, but is created
+by calling the the jacobianAdd set of methods.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void jacobian_agenda(Workspace& ws) {
+  jacobian_agendaExecute(ws, Var::jacobian(ws), Var::mblock_index(ws),
+                         Var::iyb(ws), Var::yb(ws), Var::jacobian_agenda(ws));
+}
+
+/*! The agenda corresponding to the entire controlfile. This is
+executed when ARTS is run.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void main_agenda(Workspace& ws) {
+  main_agendaExecute(ws, Var::main_agenda(ws));
+}
+
+/*! This agenda is used for metoffice profile calculations.
+
+This agenda is called inside the method *ybatchMetProfiles* which is
+used to make a batch calculation for the metoffice profiles.
+See the documentation of *ybatchMetProfiles* for more information.
+
+This agenda can be, for example, set up like this:
+
+*AtmFieldsCalc*
+*abs_lookupAdapt*
+*DoitInit*
+*DoitGetIncoming*
+*cloudbox_fieldSetClearsky*
+*DoitCalc*
+*yCalc*
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void met_profile_calc_agenda(Workspace& ws) {
+  met_profile_calc_agendaExecute(
+      ws, Var::y(ws), Var::t_field_raw(ws), Var::vmr_field_raw(ws),
+      Var::z_field_raw(ws), Var::pnd_field_raw(ws), Var::p_grid(ws),
+      Var::sensor_los(ws), Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+      Var::z_surface(ws), Var::met_profile_calc_agenda(ws));
+}
+
+/*! Calculates the phase matrix for individual scattering elements.
+
+Different options are possible for the usage of this agenda:
+*pha_mat_sptFromData* or *pha_mat_sptFromDataDOITOpt*.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void pha_mat_spt_agenda(Workspace& ws) {
+  pha_mat_spt_agendaExecute(
+      ws, Var::pha_mat_spt(ws), Var::za_index(ws), Var::scat_lat_index(ws),
+      Var::scat_lon_index(ws), Var::scat_p_index(ws), Var::aa_index(ws),
+      Var::rtp_temperature(ws), Var::pha_mat_spt_agenda(ws));
+}
+
+/*! Returns particle number density data for each scattering species.
+
+This variable is used when mapping data in *particle_bulkprop_field*
+to *pnd_field*. The variable is also necessary when calculating
+scattering species weighting functions.
+
+Note that content of this agenda array, *scat_species* and
+*pnd_agenda_array_input_names* must be consistent.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void pnd_agenda_array(Workspace& ws) {
+  pnd_agenda_arrayExecute(
+      ws, Var::pnd_data(ws), Var::dpnd_data_dx(ws), Var::agenda_array_index(ws),
+      Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+      Var::pnd_agenda_input_names(ws), Var::dpnd_data_dx_names(ws),
+      Var::pnd_agenda_array(ws));
+}
+
+/*! Calculation of complete propagation paths.
+
+In contrast to *ppath_step_agenda* that controls the ray tracing
+inside each grid box, this agenda determines how complete paths are
+determined. The standard choice is to do this in a step-by-step
+manner using *ppath_step_agenda*, with this agenda set to call
+*ppathStepByStep*.
+
+The WSV *rte_los* is both input and output as in some cases it is
+determined as part of the propagation path calculations (such as
+radio link calculations).
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void ppath_agenda(Workspace& ws) {
+  ppath_agendaExecute(ws, Var::ppath(ws), Var::ppath_lmax(ws),
+                      Var::ppath_lraytrace(ws), Var::rte_pos(ws),
+                      Var::rte_los(ws), Var::rte_pos2(ws), Var::cloudbox_on(ws),
+                      Var::ppath_inside_cloudbox_do(ws), Var::f_grid(ws),
+                      Var::ppath_agenda(ws));
+}
+
+/*! Calculation of a propagation path step.
+
+A propagation path step is defined as the path between some point
+to a crossing with either the pressure, latitude or longitude grid,
+and this agenda performs the calculations to determine such a
+partial propagation path. The starting point is normally a grid
+crossing point, but can also be an arbitrary point inside the
+atmosphere, such as the sensor position. Only points inside the
+model atmosphere are handled.
+
+The communication between this agenda and the calling method is
+handled by *ppath_step*. That variable is used both as input and
+output to *ppath_step_agenda*. The agenda gets back *ppath_step*
+as returned to the calling method and the last path point hold by
+the structure is accordingly the starting point for the new
+calculations. If a total propagation path shall be determined, this
+agenda is called repeatedly until the starting point of the
+propagation path is found and *ppath_step* will hold all path
+steps that together make up *ppath*. The starting point is included
+in the returned structure.
+
+The path is determined by starting at the end point and moving
+backwards to the starting point. The calculations are initiated by
+filling *ppath_step* with the practical end point of the path.
+This is either the position of the sensor (true or hypothetical),
+or some point at the top of the atmosphere (determined by
+geometrical calculations starting at the sensor). This
+initialisation is not handled by *ppath_step_agenda* (but by
+the internal function ppath_start_stepping).
+
+The *ppath_step_agenda* put in points along the propagation path
+at all crossings with the grids, tangent points and points of
+surface reflection. It is also allowed to make agendas that put in
+additional points to fulfil some criterion, such as a maximum
+distance along the path between the points. Accordingly, the
+number of new points of each step can exceed one.
+
+The include file 'agendas.arts' defines some agendas that can be
+used here.
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void ppath_step_agenda(Workspace& ws) {
+  ppath_step_agendaExecute(ws, Var::ppath_step(ws), Var::ppath_lmax(ws),
+                           Var::ppath_lraytrace(ws), Var::f_grid(ws),
+                           Var::ppath_step_agenda(ws));
+}
+
+/*! Calculate the absorption coefficient matrix.
+
+This agenda calculates the absorption coefficient matrix for all
+absorption species as a function of the given atmospheric state for
+one point in the atmosphere. The result is returned in
+*propmat_clearsky*. The atmospheric state has to be specified by
+*rtp_pressure*, *rtp_temperature*, *rtp_mag*, and *rtp_vmr*.
+
+The methods inside this agenda may require a lot of additional
+input variables, such as *abs_species*, etc.
+
+The include file 'agendas.arts' predefines some possible agendas
+that can be used here.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void propmat_clearsky_agenda(Workspace& ws) {
+  propmat_clearsky_agendaExecute(
+      ws, Var::propmat_clearsky(ws), Var::nlte_source(ws),
+      Var::dpropmat_clearsky_dx(ws), Var::dnlte_dx_source(ws),
+      Var::nlte_dsource_dx(ws), Var::jacobian_quantities(ws), Var::f_grid(ws),
+      Var::rtp_mag(ws), Var::rtp_los(ws), Var::rtp_pressure(ws),
+      Var::rtp_temperature(ws), Var::rtp_nlte(ws), Var::rtp_vmr(ws),
+      Var::propmat_clearsky_agenda(ws));
+}
+
+/*! Calculation of the refractive index of air.
+
+This agenda should calculate the summed refractive index for all
+relevant atmospheric constituents, with respect to both phase and
+group velocity.
+
+The include file 'agendas.arts' predefines several agendas that
+may either be used directly, or serve as inspiration.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void refr_index_air_agenda(Workspace& ws) {
+  refr_index_air_agendaExecute(
+      ws, Var::refr_index_air(ws), Var::refr_index_air_group(ws),
+      Var::rtp_pressure(ws), Var::rtp_temperature(ws), Var::rtp_vmr(ws),
+      Var::f_grid(ws), Var::refr_index_air_agenda(ws));
+}
+
+/*! This agenda shall provide *sensor_response* and associated variables.
+
+So far only required when doing inversions involving some sensor variables.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void sensor_response_agenda(Workspace& ws) {
+  sensor_response_agendaExecute(
+      ws, Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol(ws),
+      Var::sensor_response_pol_grid(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_dlos_grid(ws), Var::mblock_dlos_grid(ws),
+      Var::f_backend(ws), Var::sensor_response_agenda(ws));
+}
+
+/*! Calculates single scattering properties for individual scattering
+elements from the amplitude matrix.
+
+This agenda sets up the methods, which should be used to calculate
+the single scattering properties, i.e. the extinction matrix and the
+absorbtion vector.
+
+Normally you  use:
+*opt_prop_sptFromMonoData*
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void spt_calc_agenda(Workspace& ws) {
+  spt_calc_agendaExecute(ws, Var::ext_mat_spt(ws), Var::abs_vec_spt(ws),
+                         Var::scat_p_index(ws), Var::scat_lat_index(ws),
+                         Var::scat_lon_index(ws), Var::rtp_temperature(ws),
+                         Var::za_index(ws), Var::aa_index(ws),
+                         Var::spt_calc_agenda(ws));
+}
+
+/*! Provides radiative properties of the surface.
+
+Provides surface emission and surface reflection coefficient matrix
+(see user guide for closer definitions of the respective variables
+*surface_emission*, *surface_los*, and *surface_rmatrix*) according
+to the characteristics of the surface specified by the methods called
+within the agenda. Typical meyhods include *surfaceBlackbody*,
+*surfaceFlatScalarReflectivity*, *surfaceFlatReflectivity*,
+*surfaceFlatRefractiveIndex*, and *surfaceLambertianSimple*.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void surface_rtprop_agenda(Workspace& ws) {
+  surface_rtprop_agendaExecute(
+      ws, Var::surface_skin_t(ws), Var::surface_emission(ws),
+      Var::surface_los(ws), Var::surface_rmatrix(ws), Var::f_grid(ws),
+      Var::rtp_pos(ws), Var::rtp_los(ws), Var::surface_rtprop_agenda(ws));
+}
+
+/*! Description of surface radiative properties, divided into surface types.
+
+Each of these agendas shall treat the radiative properties of a
+ surface type. The task of these agendas is equivalent to that of
+*surface_rtprop_agenda*. This with one exception, these agendas
+have one additional input: *surface_type_aux*.
+
+See *surface_type_mask* for comments on the surface type coding
+scheme. Note the parallel agenda series: iy_surface_sub_agendaX.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void surface_rtprop_agenda_array(Workspace& ws) {
+  surface_rtprop_agenda_arrayExecute(
+      ws, Var::surface_skin_t(ws), Var::surface_emission(ws),
+      Var::surface_los(ws), Var::surface_rmatrix(ws),
+      Var::agenda_array_index(ws), Var::f_grid(ws), Var::rtp_pos(ws),
+      Var::rtp_los(ws), Var::surface_type_aux(ws),
+      Var::surface_rtprop_agenda_array(ws));
+}
+
+/*! Has exact same functionality as *surface_rtprop_sub_agenda*.
+
+This agenda complements *surface_rtprop_sub_agenda*, to allow
+specifying the surface properties using two levels of agendas.
+For example, this agenda can describe the properties for pure specular
+reflections, and *surface_rtprop_agenda* can call this agenda for several
+angles to build up a more complex surface model.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void surface_rtprop_sub_agenda(Workspace& ws) {
+  surface_rtprop_sub_agendaExecute(
+      ws, Var::surface_skin_t(ws), Var::surface_emission(ws),
+      Var::surface_los(ws), Var::surface_rmatrix(ws), Var::f_grid(ws),
+      Var::rtp_pos(ws), Var::rtp_los(ws), Var::surface_rtprop_sub_agenda(ws));
+}
+
+/*! Dummy agenda for testing purposes.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void test_agenda(Workspace& ws) {
+  test_agendaExecute(ws, Var::test_agenda(ws));
+}
+
+/*! Agenda array for TestArrayOfAgenda test case.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void test_agenda_array(Workspace& ws) {
+  test_agenda_arrayExecute(ws, Var::agenda_array_index(ws), Var::iy_unit(ws),
+                           Var::test_agenda_array(ws));
+}
+
+/*! Calculation of the saturation pressure of water.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void water_p_eq_agenda(Workspace& ws) {
+  water_p_eq_agendaExecute(ws, Var::water_p_eq_field(ws), Var::t_field(ws),
+                           Var::water_p_eq_agenda(ws));
+}
+
+/*! Calculations to perform for each batch case.
+
+Must produce a new spectrum vector (*y*) and Jacobi matrix (*jacobian*).
+See further *ybatchCalc*.
+
+@param[in,out] Workspace ws - An ARTS workspace
+*/
+void ybatch_calc_agenda(Workspace& ws) {
+  ybatch_calc_agendaExecute(ws, Var::y(ws), Var::y_aux(ws), Var::jacobian(ws),
+                            Var::ybatch_index(ws), Var::ybatch_calc_agenda(ws));
+}
+
+}  // namespace ARTS::AgendaExecute
+
+namespace ARTS::AgendaDefine {}  // namespace ARTS::AgendaDefine
+
+#endif  // autoarts_h

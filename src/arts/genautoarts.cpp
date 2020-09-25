@@ -1,20 +1,5 @@
-#include <arts.h>
 #include <auto_md.h>
-#include <auto_workspace.h>
 #include <global_data.h>
-#include <m_append.h>
-#include <m_basic_types.h>
-#include <m_conversion.h>
-#include <m_copy.h>
-#include <m_delete.h>
-#include <m_extract.h>
-#include <m_general.h>
-#include <m_gridded_fields.h>
-#include <m_ignore.h>
-#include <m_nc.h>
-#include <m_reduce.h>
-#include <m_select.h>
-#include <m_xml.h>
 
 #include <algorithm>
 #include <iostream>
@@ -66,6 +51,13 @@ struct Method {
   Out out;
   Gout gout;
   std::vector<std::size_t> inoutvarpos;
+};
+
+struct AgendaData {
+  std::size_t pos;
+  std::string desc;
+  std::vector<std::string> ins;
+  std::vector<std::string> outs;
 };
 
 std::map<std::string, Group> groups() {
@@ -297,13 +289,58 @@ std::map<std::string, Method> methods() {
   return retval;
 }
 
+std::map<std::string, AgendaData> agendas() {
+  auto g = groups();
+
+  std::map<std::string, AgendaData> out;
+  for (auto& x : global_data::agenda_data) {
+    out[x.Name()].pos = global_data::AgendaMap.at(x.Name());
+    out[x.Name()].desc = x.Description();
+
+    for (std::size_t i : x.In()) {
+      bool found = false;
+      for (auto& y : g) {
+        if (y.second.artspos == i) {
+          out[x.Name()].ins.push_back(y.first);
+          found = true;
+          break;
+        }
+      }
+      if (not found) {
+        std::cerr << "Cannot find the variable\n";
+        std::terminate();
+      }
+    }
+
+    for (std::size_t i : x.Out()) {
+      bool found = false;
+      for (auto& y : g) {
+        if (y.second.artspos == i) {
+          out[x.Name()].outs.push_back(y.first);
+          found = true;
+          break;
+        }
+      }
+      if (not found) {
+        std::cerr << "Cannot find the variable\n";
+        std::terminate();
+      }
+    }
+  }
+  return out;
+}
+
 struct NameMaps {
+  std::map<std::string, AgendaData> agendaname_agenda;
   std::map<std::string, Method> methodname_method;
   std::map<std::string, Group> varname_group;
+  std::map<std::string, std::size_t> group;
 
   NameMaps() {
+    for (auto& x : global_data::WsvGroupMap) group[x.first] = x.second;
     varname_group = groups();
     methodname_method = methods();
+    agendaname_agenda = agendas();
   }
 };
 
@@ -319,7 +356,12 @@ int main() {
   define_species_data();
   define_species_map();
 
-  std::cout << "#include <auto_md.h>" << '\n'
+  const auto artsname = NameMaps();
+
+  std::cout << "#ifndef autoarts_h\n"
+            << "#define autoarts_h\n"
+            << '\n'
+            << "#include <auto_md.h>" << '\n'
             << "#include <auto_workspace.h>" << '\n'
             << "#include <arts.h>" << '\n'
             << "#include <global_data.h>" << '\n'
@@ -339,11 +381,11 @@ int main() {
             << '\n'
             << '\n';
 
-  const auto artsname = NameMaps();
-
   std::cout << "namespace ARTS::Var {\n";
   for (auto& x : artsname.varname_group) {
-    std::cout << "/*! " << x.second.varname_desc << "*/\n";
+    std::cout << "/*! " << x.second.varname_desc << '\n';
+    std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n*/\n";
+    std::cout << "[[nodiscard]] ";
     std::cout << x.second.varname_group << '&' << ' ' << x.first
               << "(Workspace& ws) "
                  "noexcept { "
@@ -352,13 +394,45 @@ int main() {
               << "]); "
                  "}\n\n";
   }
+  for (auto& x : artsname.group) {
+    std::cout << "/*! Creates in, and returns from, Workspace a/an " << x.first
+              << '\n'
+              << '\n';
+    std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n";
+    std::cout << "@param[in] String name - The name the variable will have in "
+                 "the workspace\n";
+    std::cout << "@param[in] String desc - The description the variable will "
+                 "have in the workspace (default: \"nodescription\")\n";
+    std::cout << "*/\n";
+    std::cout << "[[nodiscard]] ";
+    std::cout << x.first << '&' << ' ' << x.first
+              << "Create(Workspace& ws, const String& name, const String& "
+                 "desc=\"nodescription\") {\n";
+    std::cout << "return *static_cast<" << x.first
+              << "*>(ws[ws.add_wsv({name.c_str(), desc.c_str(), " << x.second
+              << "})]);\n"
+              << "}\n\n";
+  }
   std::cout << "}  // ARTS::Var \n\n";
 
   std::cout << "namespace ARTS::Method {\n";
 
   for (auto& x : artsname.methodname_method) {
+    if (x.second.agenda_method) std::cerr << "Agenda Method; ";
+    if (x.second.set_method) std::cerr << "Set Method; ";
+    if (x.second.pass_workspace) std::cerr << "Pass Workspace Method; ";
+    if (x.second.pass_wsv_names) std::cerr << "Pass Names Method; ";
+    std::cerr << x.first << '\n';
+
     // Skip methods using verbosity and Agenda methods (for now)
     if (x.second.agenda_method) continue;
+
+    // Also skip create methods since these are created in the groups above
+    if (std::any_of(artsname.group.cbegin(), artsname.group.cend(),
+                    [metname = x.first](auto& y) {
+                      return (y.first + String("Create")) == metname;
+                    }))
+      continue;
 
     // Describe the method
     std::cout << "/*! " << x.second.desc << '\n';
@@ -377,6 +451,7 @@ int main() {
     }
     std::cout << "\nUse the ARTS documentation to read more on how the "
                  "workspace is manipulated\n";
+    std::cout << "This interface function has been automatically generated\n";
     std::cout << "*/" << '\n';
 
     // Count how many anys we need
@@ -589,4 +664,28 @@ int main() {
   }
 
   std::cout << "}  // ARTS::Method \n\n";
+
+  std::cout << "namespace ARTS::AgendaExecute { \n\n";
+  for (auto& x : artsname.agendaname_agenda) {
+    std::cout << "/*! " << x.second.desc << '\n'
+              << "@param[in,out] Workspace ws - An ARTS workspace\n"
+              << "*/\n"
+              << "void " << x.first << "(Workspace& ws) {\n"
+              << x.first << "Execute(ws";
+    for (auto& name : x.second.outs) {
+      std::cout << ',' << ' ' << "Var::" << name << "(ws)";
+    }
+    for (auto& name : x.second.ins) {
+      if (not std::any_of(x.second.outs.cbegin(), x.second.outs.cend(),
+                          [name](auto& outname) { return name == outname; }))
+        std::cout << ',' << ' ' << "Var::" << name << "(ws)";
+    }
+    std::cout << ", Var::" << x.first << "(ws));}\n\n";
+  }
+  std::cout << "}  // ARTS::AgendaExecute \n\n";
+
+  std::cout << "namespace ARTS::AgendaDefine { \n\n";
+  std::cout << "}  // ARTS::AgendaDefine \n\n";
+
+  std::cout << "#endif  // autoarts_h\n\n";
 }

@@ -44,9 +44,16 @@ double test() {
   std::cout << Var::nelem(ws) << '\n';
   Method::Print(ws, Var::aa_grid(ws), 0);
   std::cout << "HEJ\n";
+  Var::output_file_format(ws) = "ascii";
+  Method::WriteXML(ws, std::make_pair(Var::aa_grid(ws), String("aa_grid")),
+                   std::make_pair(String("TEST.xml"), String("TEST.xml")));
 
   auto& iy_main_agenda = ARTS::Var::iy_main_agenda(ws);
-  iy_main_agenda.append("ppathCalc", "");
+  iy_main_agenda.append("ppathCalc", "ppath_agenda=\"iy_main_agenda\"");
+  iy_main_agenda.append("iyEmissionStandard", "");
+  Var::iy_main_agenda(ws).set_name("iy_main_agenda");
+  Var::iy_main_agenda(ws).check(ws, Var::verbosity(ws));
+  AgendaExecute::iy_main_agenda(ws);
   std::cout << iy_main_agenda.checked() << '\n';
   std::cout << "\n\n\n\n\n\n\n\n\n";
 
