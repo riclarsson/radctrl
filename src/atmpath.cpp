@@ -1,7 +1,7 @@
 #include "atmpath.h"
 
 namespace Path {
-  std::pair<std::vector<Point>, BackgroundType> calc_single_geometric_path(
+std::pair<std::vector<Point>, BackgroundType> calc_single_geometric_path(
     Geom::Nav nav, const Atmosphere::Atm& atm,
     const Distance<DistanceType::meter> dist,
     const Altitude<AltitudeType::meter> alt_of_atm) {
@@ -45,7 +45,7 @@ namespace Path {
 
   if (pos.h() > alt_of_atm)
     return {out, BackgroundType::Space};
-  else 
+  else
     return {out, BackgroundType::Surface};
 }
 

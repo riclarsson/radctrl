@@ -189,10 +189,11 @@ void test002() {
           Sensor::Polarization{Sensor::PolarizationType::I}},
       linspace(flow, fupp, nfreq)};
 
-      const Background::Background background(Background::Surface{atm});
-      
-  auto conv = RTE::Forward::compute_convolution(
-    atm, background, n, {band}, {Derivative::Atm::Temperature}, sensor_prop, 1e3);
+  const Background::Background background(Background::Surface{atm});
+
+  auto conv = RTE::Forward::compute_convolution(atm, background, n, {band},
+                                                {Derivative::Atm::Temperature},
+                                                sensor_prop, 1e3);
   std::cout << conv.rad.transpose() << '\n';
   //   std::cout << conv.jac << '\n';
 }

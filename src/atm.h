@@ -509,11 +509,17 @@ class Atm {
   size_t nalt() const noexcept { return alt.size(); }
   size_t nlat() const noexcept { return lat.size(); }
   size_t nlon() const noexcept { return lon.size(); }
-  
-  const std::vector<Time> & tidvec() const noexcept { return tid; }
-  const std::vector<Altitude<AltitudeType::meter>> & altvec() const noexcept { return alt; }
-  const std::vector<Coordinate<CoordinateType::lat>> & latvec() const noexcept { return lat; }
-  const std::vector<Coordinate<CoordinateType::lon>> & lonvec() const noexcept { return lon; }
+
+  const std::vector<Time> &tidvec() const noexcept { return tid; }
+  const std::vector<Altitude<AltitudeType::meter>> &altvec() const noexcept {
+    return alt;
+  }
+  const std::vector<Coordinate<CoordinateType::lat>> &latvec() const noexcept {
+    return lat;
+  }
+  const std::vector<Coordinate<CoordinateType::lon>> &lonvec() const noexcept {
+    return lon;
+  }
 
   friend std::ostream &operator<<(std::ostream &os, const Atm &a) {
     if (not a.ok()) throw std::runtime_error("Bad atmosphere");

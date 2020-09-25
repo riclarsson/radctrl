@@ -63,29 +63,29 @@ T max(const std::vector<T>& v) {
 double BesselJ1(double x) noexcept;
 
 namespace Interp {
-  template <size_t N>
-  constexpr double sum(const std::array<double, N> &vals) {
-    return std::accumulate(vals.cbegin(), vals.cend(), 0);
-  }
-  
-  constexpr double weight(double x, double x0, double x1) {
-    return x0 == x1 ? 1.0 : (x - x1) / (x0 - x1);
-  }
-  
-  template <typename... Xs>
-  constexpr std::array<double, sizeof...(Xs) - 1> weight(double x, Xs... xs) {
-    const std::array<double, sizeof...(Xs)> gx = {xs...};
-    std::array<double, sizeof...(Xs) - 1> w;
-    w.fill(0);
-    for (size_t i = 0; i < sizeof...(Xs) - 1; i++) {
-      for (size_t j = 0; j < sizeof...(Xs); j++) {
-        if (i not_eq j) {
-          w[i] += (x - gx[j]) / (gx[i] - gx[j]);
-        }
+template <size_t N>
+constexpr double sum(const std::array<double, N>& vals) {
+  return std::accumulate(vals.cbegin(), vals.cend(), 0);
+}
+
+constexpr double weight(double x, double x0, double x1) {
+  return x0 == x1 ? 1.0 : (x - x1) / (x0 - x1);
+}
+
+template <typename... Xs>
+constexpr std::array<double, sizeof...(Xs) - 1> weight(double x, Xs... xs) {
+  const std::array<double, sizeof...(Xs)> gx = {xs...};
+  std::array<double, sizeof...(Xs) - 1> w;
+  w.fill(0);
+  for (size_t i = 0; i < sizeof...(Xs) - 1; i++) {
+    for (size_t j = 0; j < sizeof...(Xs); j++) {
+      if (i not_eq j) {
+        w[i] += (x - gx[j]) / (gx[i] - gx[j]);
       }
     }
-    return w;
   }
+  return w;
+}
 }  // namespace Interp
 
 class LinearInterpPoint {

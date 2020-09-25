@@ -314,8 +314,8 @@ void set_input_from_x(Atmosphere::Atm& atm,
 #undef ATMVARSETTEREXEC
 #undef SHAPEVALSETTER
 
-Results compute(Atmosphere::Atm& atm, Background::Background& background, std::vector<Absorption::Band>& bands,
-                const Geom::Nav& pos_los,
+Results compute(Atmosphere::Atm& atm, Background::Background& background,
+                std::vector<Absorption::Band>& bands, const Geom::Nav& pos_los,
                 const std::vector<Derivative::Target>& derivs,
                 const Sensor::Properties& sensor_prop,
                 const Distance<DistanceType::meter> layer_thickness,

@@ -67,7 +67,8 @@ void test001() {
 
   std::cout << "Pathing:\n";
   auto nav = Path::calc_single_geometric_path(n, atm, 1e3, 90e3);
-  for (auto x : nav.first) std::cout << x << ' ' << x.nav.ellipsoidPos().h() << '\n';
+  for (auto x : nav.first)
+    std::cout << x << ' ' << x.nav.ellipsoidPos().h() << '\n';
 }
 
 void test002() {

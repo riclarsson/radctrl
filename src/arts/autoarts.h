@@ -1,38 +1,48 @@
+#include <arts.h>
 #include <auto_md.h>
 #include <auto_workspace.h>
-#include "../../3rdparty/arts/src/arts.h"
-#include "../../3rdparty/arts/src/global_data.h"
-#include "../../3rdparty/arts/src/agenda_record.h"
-#include "../../3rdparty/arts/src/interactive_workspace.h"
-
+#include <global_data.h>
+#include <m_append.h>
+#include <m_basic_types.h>
+#include <m_conversion.h>
+#include <m_copy.h>
+#include <m_delete.h>
+#include <m_extract.h>
+#include <m_general.h>
+#include <m_gridded_fields.h>
+#include <m_ignore.h>
+#include <m_nc.h>
+#include <m_reduce.h>
+#include <m_select.h>
+#include <m_xml.h>
 
 namespace ARTS::Var {
 /*! Azimuthal angle grid.
 
-The azimutal angle grid, on which the intensity field is stored. 
-This grid is used for RT calculations inside the cloudbox, 
-therefore one has to define it if the cloudbox is activated by 
+The azimutal angle grid, on which the intensity field is stored.
+This grid is used for RT calculations inside the cloudbox,
+therefore one has to define it if the cloudbox is activated by
 the flag *cloudbox_on*.
 The grid must be sorted in increasing order, with no repetitions.
 
 Usage:      Set by the user.
 
-Unit:       degrees 
+Unit:       degrees
 */
-Vector& aa_grid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[0]); }
+Vector& aa_grid(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[0]); }
 
 /*! Azimuth angle index for scattering calculations.
 
 This variable is used in methods used for computing scattering
-properties. 
-It holds the information about the azimuth angles for which the 
-scattering calculations are done.  The angles used for computing 
-scattering properties of particles can be different from that used 
-for radiative transfer calculation. 
+properties.
+It holds the information about the azimuth angles for which the
+scattering calculations are done.  The angles used for computing
+scattering properties of particles can be different from that used
+for radiative transfer calculation.
 
 Usage:    Method output.
 */
-Index& aa_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[1]); }
+Index& aa_index(Workspace& ws) noexcept { return *static_cast<Index*>(ws[1]); }
 
 /*! HITRAN Collision Induced Absorption (CIA) Data.
 
@@ -41,7 +51,7 @@ cross-sections). The data itself is described in: Richard, C. et al.
 (2012), New section of the HITRAN database: Collision-induced
 absorption (CIA), J. Quant. Spectrosc. Radiat. Transfer, 113,
 1276-1285, doi:10.1016/j.jqsrt.2011.11.004.
- 
+
 The binary absorption cross-sections have to be multiplied with the
 densities of both molecules to get absorption coefficients.
 
@@ -61,11 +71,13 @@ HITRAN CIA file. For the given pair of molecules A HITRAN CIA data
 file can hold several datasets (data for different temperatures but
 fixed frequency range).
 
-Units: 
+Units:
 Frequencies: Hz
 Binary absorption cross-sections: m^5*molecule^-2
 */
-ArrayOfCIARecord& abs_cia_data(Workspace& ws) noexcept { return *static_cast<ArrayOfCIARecord *>(ws[2]); }
+ArrayOfCIARecord& abs_cia_data(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfCIARecord*>(ws[2]);
+}
 
 /*! The matrix of total scalar absorption coefficients.
 
@@ -83,14 +95,18 @@ Dimensions: [f_grid, abs_p]
 
 Unit: 1/m
 */
-Matrix& abs_coef(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[3]); }
+Matrix& abs_coef(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[3]);
+}
 
 /*! Scalar absorption coefficients individually per tag group.
 
 The Array contains one matrix of absorption coefficients for each
 tag group, where the matrix format is the same as that of *abs_coef*
 */
-ArrayOfMatrix& abs_coef_per_species(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[4]); }
+ArrayOfMatrix& abs_coef_per_species(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[4]);
+}
 
 /*! Continuum / full model absorption model description parameter.
 
@@ -99,7 +115,9 @@ of the allowed continuum models. There should be one string here
 for each entry in `abs_cont_names'.See also the online
 documentation in arts/doc/doxygen/html/continua_cc.html.
 */
-ArrayOfString& abs_cont_models(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[5]); }
+ArrayOfString& abs_cont_models(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[5]);
+}
 
 /*! Continuum / full model absorption tag names.
 
@@ -114,7 +132,7 @@ the specified model is 'user'. See also the online documentation in
 arts/doc/doxygen/html/continua_cc.html.
 
 The following full water vapor models are implemented:
-'H2O-MPM87': absorption model (line and continuum) according to 
+'H2O-MPM87': absorption model (line and continuum) according to
    H. J. Liebe,
    A contribution to modeling atmospheric millimeter-wave properties,
    Frequenz,  41, 1987, 31-36
@@ -125,21 +143,21 @@ The following full water vapor models are implemented:
    U.S. Dept. of Commerce, National Telecommunications and Information
    Administration, Institute for Communication Sciences,
    325 Broadway, Boulder, CO 80303-3328, report 87224.
-'H2O-MPM89': absorption model (line and continuum) according to 
+'H2O-MPM89': absorption model (line and continuum) according to
    H. J. Liebe,
  Int. J. Infrared and Millimeter Waves, 10(6), 1989, 631
-'H2O-MPM93': absorption model (line and continuum) according to 
+'H2O-MPM93': absorption model (line and continuum) according to
    H. J. Liebe and G. A. Hufford and M. G. Cotton,
    Propagation modeling of moist air and suspended water/ice
    particles at frequencies below 1000 GHz,
    AGARD 52nd Specialists Meeting of the Electromagnetic Wave
    Propagation Panel,
- Palma de Mallorca, Spain, 1993, May 17-21 
+ Palma de Mallorca, Spain, 1993, May 17-21
    (ftp.its.bldrdoc.gov/pub/mpm93/)
-'H2O-CP98': absorption model (line and continuum) according to 
+'H2O-CP98': absorption model (line and continuum) according to
    S. L. Cruz-Pol et al.,
  Radio Science, 33(5), 1319, 1998   (ece.uprm.edu/~pol/Atmosphere.html)
-'H2O-PWR98': absorption model (line and continuum) according to 
+'H2O-PWR98': absorption model (line and continuum) according to
    P. W. Rosenkranz,
     Radio Science, 33(4),  919, 1998, Radio Science, 34(4), 1025, 1999
    (ftp: mesa.mit.edu/phil/lbl_rt).
@@ -153,22 +171,22 @@ The following full oxygen models are implemented:
    Propagation Panel,
  Palma de Mallorca, Spain, 1993, May 17-21
    (ftp.its.bldrdoc.gov/pub/mpm93/)
-'O2-PWR93': absorption model (line and continuum) according to 
+'O2-PWR93': absorption model (line and continuum) according to
    P. W. Rosenkranz,
- Chapter 2, in M. A. Janssen, 
+ Chapter 2, in M. A. Janssen,
    Atmospheric Remote Sensing by Microwave Radiometry
    John Wiley & Sons, Inc., 1993 (mesa.mit.edu/phil/lbl_rt)
 
 The following continuum parameterizations are implemented:
 H2O-H2O ('H2O-SelfContStandardType'):
-   P. W. Rosenkranz, 
-   Radio Science, Vol. 33, No 4, Pages 919-928, 1998 and 
+   P. W. Rosenkranz,
+   Radio Science, Vol. 33, No 4, Pages 919-928, 1998 and
    Radio Science, Vol. 34, No 4, Page 1025, 1999 (mesa.mit.edu/phil/lbl_rt)
-H2O-air ('H2O-ForeignContStandardType'): 
-   P. W. Rosenkranz, 
-   Radio Science, Vol. 33, No 4, Pages 919-928, 1998 and 
+H2O-air ('H2O-ForeignContStandardType'):
+   P. W. Rosenkranz,
+   Radio Science, Vol. 33, No 4, Pages 919-928, 1998 and
    Radio Science, Vol. 34, No 4, Page 1025, 1999 (mesa.mit.edu/phil/lbl_rt)
-H2O-air ('H2O-ContMPM93'): 
+H2O-air ('H2O-ContMPM93'):
    H. J. Liebe and G. A. Hufford and M. G. Cotton,
    Propagation modeling of moist air and suspended water/ice
    particles at frequencies below 1000 GHz,
@@ -182,7 +200,7 @@ O2-air ('O2-SelfContStandardType'):
    Atmospheric Remote Sensing by Microwave Radiometry,
    John Wiley & Sons, Inc., 1993
    (mesa.mit.edu/phil/lbl_rt)
-   and also described in 
+   and also described in
    H. J. Liebe and G. A. Hufford and M. G. Cotton,
    Propagation modeling of moist air and suspended water/ice
    particles at frequencies below 1000 GHz,
@@ -201,7 +219,7 @@ N2-N2 ('N2-SelfContMPM93'):
    Propagation modeling of moist air and suspended water/ice
    particles at frequencies below 1000 GHz,
    AGARD 52nd Specialists Meeting of the Electromagnetic Wave
-   Propagation Panel, Palma de Mallorca, Spain, 1993, May 17-21 
+   Propagation Panel, Palma de Mallorca, Spain, 1993, May 17-21
    (ftp.its.bldrdoc.gov/pub/mpm93/)
 CO2-CO2 ('CO2-SelfContPWR93'):
    P. W. Rosenkranz,
@@ -215,7 +233,7 @@ CO2-N2 ('CO2-ForeignContPWR93'):
    John Wiley & Sons, Inc., 1993 (mesa.mit.edu/phil/lbl_rt)
 
 The following cloud absorption models are implemented:
-Suspended water droplet ('liquidcloud-MPM93') 
+Suspended water droplet ('liquidcloud-MPM93')
    absorption parameterization from the MPM93 model:
    H. J. Liebe and G. A. Hufford and M. G. Cotton,
    Propagation modeling of moist air and suspended water/ice
@@ -224,7 +242,7 @@ Suspended water droplet ('liquidcloud-MPM93')
    Propagation Panel,
  Palma de Mallorca, Spain, 1993, May 17-21
    (ftp.its.bldrdoc.gov/pub/mpm93/)
-Ice water droplet absorption ('icecloud-MPM93') 
+Ice water droplet absorption ('icecloud-MPM93')
    parameterization from MPM93 model:
    H. J. Liebe and G. A. Hufford and M. G. Cotton,
    Propagation modeling of moist air and suspended water/ice
@@ -246,11 +264,13 @@ Rain extinction parameterization ('rain-MPM93') from the
    The aR^b relation in the calculation of rain attenuation,
    IEEE Trans. Antennas Propagat., vol. AP-26, pp. 318-329, 1978.
    IMPORTANT NOTE: rain-MPM93 parameterizes the EXTINCTION by rain,
-    not just the absorption. Therefore it is not suitable for 
+    not just the absorption. Therefore it is not suitable for
     calculating thermal emission by rain!
     Please use rain-MPM93 only for calculation of attenuation.
 */
-ArrayOfString& abs_cont_names(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[6]); }
+ArrayOfString& abs_cont_names(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[6]);
+}
 
 /*! Continuum model parameters. See the WSV *abs_cont_names*
 
@@ -259,7 +279,9 @@ should be one parameter vector here for each entry in
 *abs_cont_names*. See also the online documentation in
 arts/doc/doxygen/html/continua_cc.html.
 */
-ArrayOfVector& abs_cont_parameters(Workspace& ws) noexcept { return *static_cast<ArrayOfVector *>(ws[7]); }
+ArrayOfVector& abs_cont_parameters(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfVector*>(ws[7]);
+}
 
 /*! Frequency interpolation order for absorption lookup table.
 
@@ -274,43 +296,56 @@ interpolation. In that case f_grid must match exactly the grid inside
 the lookup table. This is the global default value, set in
 general.arts.
 */
-Index& abs_f_interp_order(Workspace& ws) noexcept { return *static_cast<Index *>(ws[8]); }
+Index& abs_f_interp_order(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[8]);
+}
 
 /*! HITRAN line mixing data to compute the relaxation matrix.
 
 This variable holds HITRAN line mixing data
 as per J. Lamouroux, L. Realia, X. Thomas, et al., J.Q.S.R.T. 151 (2015), 88-96
 */
-HitranRelaxationMatrixData& abs_hitran_relmat_data(Workspace& ws) noexcept { return *static_cast<HitranRelaxationMatrixData *>(ws[9]); }
+HitranRelaxationMatrixData& abs_hitran_relmat_data(Workspace& ws) noexcept {
+  return *static_cast<HitranRelaxationMatrixData*>(ws[9]);
+}
 
 /*! A list of spectral line data.
-*/
-ArrayOfAbsorptionLines& abs_lines(Workspace& ws) noexcept { return *static_cast<ArrayOfAbsorptionLines *>(ws[10]); }
+ */
+ArrayOfAbsorptionLines& abs_lines(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfAbsorptionLines*>(ws[10]);
+}
 
 /*! A list of spectral line data for each tag.
 
-Dimensions: [*abs_species*.nelem()][Depends on how many bands there are in *abs_lines*]
+Dimensions: [*abs_species*.nelem()][Depends on how many bands there are in
+*abs_lines*]
 */
-ArrayOfArrayOfAbsorptionLines& abs_lines_per_species(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfAbsorptionLines *>(ws[11]); }
+ArrayOfArrayOfAbsorptionLines& abs_lines_per_species(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfAbsorptionLines*>(ws[11]);
+}
 
 /*! An absorption lookup table.
 
 It holds an absorption lookup table, as well as all information that
 is necessary to use the table to extract absorption. Extraction
-routines are implemented as member functions. 
+routines are implemented as member functions.
 
 It has quite a complicated structure. For details see the Arts User
 Guide section "The gas absorption lookup table" or the source code
 documentation in gas_abs_lookup.h.
 */
-GasAbsLookup& abs_lookup(Workspace& ws) noexcept { return *static_cast<GasAbsLookup *>(ws[12]); }
+GasAbsLookup& abs_lookup(Workspace& ws) noexcept {
+  return *static_cast<GasAbsLookup*>(ws[12]);
+}
 
 /*! Flag to indicate whether *abs_lookupAdapt* has already been
 called.
 
 Values: 0=false, 1=true.
 */
-Index& abs_lookup_is_adapted(Workspace& ws) noexcept { return *static_cast<Index *>(ws[19]); }
+Index& abs_lookup_is_adapted(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[19]);
+}
 
 /*! Nonlinear species for absorption lookup table generation.
 
@@ -319,13 +354,15 @@ This means that the H2O VMR should be varied when calculating the
 lookup table for those species.
 
 A typical example is for this to containt the Rosenkranz full
-absorption model species for water vapor and oxygen 
+absorption model species for water vapor and oxygen
 (["H2O-PWR98", "O2-PWR93"]).
 
 See user guide and online documentation of *abs_lookupCalc*
 for more details and usage examples.
 */
-ArrayOfArrayOfSpeciesTag& abs_nls(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfSpeciesTag *>(ws[13]); }
+ArrayOfArrayOfSpeciesTag& abs_nls(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfSpeciesTag*>(ws[13]);
+}
 
 /*! The interpolation order to use when interpolating absorption between
 the H2O values given by *abs_nls_pert*.
@@ -338,7 +375,9 @@ default value, which is set in general.arts.
 Note that the number of points used in the interpolation scheme is
 interpolation order + 1 (e.g., two for first order interpolation).
 */
-Index& abs_nls_interp_order(Workspace& ws) noexcept { return *static_cast<Index *>(ws[15]); }
+Index& abs_nls_interp_order(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[15]);
+}
 
 /*! Fractional perturbations for the nonlinear species in the absorption
 lookup table.
@@ -349,7 +388,9 @@ messages from some absorption routines, so a possible content for this
 variable is: [1e-24, 1, 2].
 (This is similar to *abs_t_pert*, but multiplicative, not additive.)
 */
-Vector& abs_nls_pert(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[14]); }
+Vector& abs_nls_pert(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[14]);
+}
 
 /*! NLTE temperatures or ratios to be used for the calculation of
 absorption coefficients.
@@ -362,7 +403,9 @@ Dimension: [nltes, 1, 1, p_grid] or [ 0, 0, 0, 0 ]
 
 Unit: K
 */
-EnergyLevelMap& abs_nlte(Workspace& ws) noexcept { return *static_cast<EnergyLevelMap *>(ws[24]); }
+EnergyLevelMap& abs_nlte(Workspace& ws) noexcept {
+  return *static_cast<EnergyLevelMap*>(ws[24]);
+}
 
 /*! List of pressures to be used for the calculation of absorption
 coefficients.
@@ -377,7 +420,7 @@ Dimension: [p_grid]
 
 Unit: Pa
 */
-Vector& abs_p(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[20]); }
+Vector& abs_p(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[20]); }
 
 /*! The interpolation order to use when interpolating absorption
 between pressure levels.
@@ -390,7 +433,9 @@ default value, which is set in general.arts.
 Note that the number of points used in the interpolation scheme is
 interpolation order + 1 (e.g., two for first order interpolation).
 */
-Index& abs_p_interp_order(Workspace& ws) noexcept { return *static_cast<Index *>(ws[16]); }
+Index& abs_p_interp_order(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[16]);
+}
 
 /*! Tag groups for gas absorption.
 
@@ -399,7 +444,9 @@ available tag groups for the calculation of scalar gas absorption
 coefficients.  See online documentation of method *abs_speciesSet* for
 more detailed information how tag groups work and some examples.
 */
-ArrayOfArrayOfSpeciesTag& abs_species(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfSpeciesTag *>(ws[21]); }
+ArrayOfArrayOfSpeciesTag& abs_species(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfSpeciesTag*>(ws[21]);
+}
 
 /*! Indices of active absorption species.
 
@@ -409,7 +456,9 @@ This variable selects, which absorption species are active in
 Dimension: A vector with one element for every active species, at max
            same number of elements as abs_species.
 */
-ArrayOfIndex& abs_species_active(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[22]); }
+ArrayOfIndex& abs_species_active(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[22]);
+}
 
 /*! List of temperatures to be used for the calculation of absorption
 coefficients.
@@ -422,7 +471,7 @@ Dimension: [p_grid]
 
 Unit: K
 */
-Vector& abs_t(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[23]); }
+Vector& abs_t(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[23]); }
 
 /*! The interpolation order to use when interpolating absorption between
 the temperature values given by *abs_t_pert*.
@@ -435,7 +484,9 @@ default value, which is set in general.arts.
 Note that the number of points used in the interpolation scheme is
 interpolation order + 1 (e.g., two for first order interpolation).
 */
-Index& abs_t_interp_order(Workspace& ws) noexcept { return *static_cast<Index *>(ws[18]); }
+Index& abs_t_interp_order(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[18]);
+}
 
 /*! Temperature perturbations for the absorption lookup table.
 
@@ -445,7 +496,9 @@ should be added to the reference temperature profile. (Similar to
 contain 0, to include the reference profile itself. Example content:
 [-5, 0, 5].
 */
-Vector& abs_t_pert(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[17]); }
+Vector& abs_t_pert(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[17]);
+}
 
 /*! Total absorption vector.
 
@@ -460,18 +513,20 @@ See ARTS user guide (AUG) for further information. Use the index to find
 where this variable is discussed. The variable is listed as a subentry
 to "workspace variables".
 
-Usage:      Output of *opt_prop_bulkCalc* 
+Usage:      Output of *opt_prop_bulkCalc*
 
 Unit:       m^2
 
 Dimensions: [f_grid, stokes_dim]
 */
-StokesVector& abs_vec(Workspace& ws) noexcept { return *static_cast<StokesVector *>(ws[25]); }
+StokesVector& abs_vec(Workspace& ws) noexcept {
+  return *static_cast<StokesVector*>(ws[25]);
+}
 
 /*! Absorption vectors of the scattering elements.
 
 This variable contains the elements of the absorption vector of the
-individual scattering elements. It is calculated in the agenda 
+individual scattering elements. It is calculated in the agenda
 *spt_calc_agenda*.
 
 See ARTS user guide (AUG) for further information.
@@ -482,23 +537,31 @@ Unit:        m^2
 
 Dimensions: [number of scattering elements, stokes_dim]
 */
-ArrayOfStokesVector& abs_vec_spt(Workspace& ws) noexcept { return *static_cast<ArrayOfStokesVector *>(ws[26]); }
+ArrayOfStokesVector& abs_vec_spt(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfStokesVector*>(ws[26]);
+}
 
 /*! The VMRs (unit: absolute number) on the abs_p grid.
 
 Dimensions: [tag_groups.nelem(), abs_p.nelem()]
 */
-Matrix& abs_vmrs(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[27]); }
+Matrix& abs_vmrs(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[27]);
+}
 
 /*! Agenda to calculate scalar gas absorption cross sections.
-*/
-Agenda& abs_xsec_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[29]); }
+ */
+Agenda& abs_xsec_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[29]);
+}
 
 /*! OK-flag for *abs_xsec_agenda*.
 
 Set by *abs_xsec_agenda_checkedCalc*.
 */
-Index& abs_xsec_agenda_checked(Workspace& ws) noexcept { return *static_cast<Index *>(ws[28]); }
+Index& abs_xsec_agenda_checked(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[28]);
+}
 
 /*! Absorption cross sections for the attenuation.
 
@@ -511,7 +574,9 @@ Dimensions: [abs_species](f_grid, abs_p)
 Unit:       m^2 (alpha = xsec * n * VMR),
             where n is total density.
 */
-ArrayOfMatrix& abs_xsec_per_species(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[30]); }
+ArrayOfMatrix& abs_xsec_per_species(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[30]);
+}
 
 /*! Index of the current agenda in *ArrayOfAgenda*.
 
@@ -520,7 +585,9 @@ It indicates the index of the current agenda inside the array.
 
 Unit:  Integer value.
 */
-Index& agenda_array_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[31]); }
+Index& agenda_array_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[31]);
+}
 
 /*! The dimensionality of the antenna pattern (1-2).
 
@@ -533,7 +600,9 @@ Usage: Set by the user.
 
 Unit:  Integer value [1-2].
 */
-Index& antenna_dim(Workspace& ws) noexcept { return *static_cast<Index *>(ws[32]); }
+Index& antenna_dim(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[32]);
+}
 
 /*! The relative line-of-sight of each antenna pattern.
 
@@ -557,7 +626,9 @@ Unit:  [ degrees, degrees ]
 
 Size:  [ number of antennae, 1 or 2 ]
 */
-Matrix& antenna_dlos(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[33]); }
+Matrix& antenna_dlos(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[33]);
+}
 
 /*! The antenna pattern/response.
 
@@ -588,7 +659,7 @@ outside covered grid range is treated as zero.
 
 Usage: Set by the user.
 
-Dimensions: 
+Dimensions:
    GriddedField4:
       ArrayOfString field_names[N_pol]
       Vector f_grid[N_f]
@@ -596,7 +667,9 @@ Dimensions:
       Vector aa_grid[N_aa]
       Tensor4 data[N_pol][N_f][N_za][N_aa]
 */
-GriddedField4& antenna_response(Workspace& ws) noexcept { return *static_cast<GriddedField4 *>(ws[34]); }
+GriddedField4& antenna_response(Workspace& ws) noexcept {
+  return *static_cast<GriddedField4*>(ws[34]);
+}
 
 /*! A compact set of atmospheric fields on a common set of grids.
 
@@ -641,7 +714,7 @@ field name tag.
 Usage: Used inside batch calculations, to hold successive atmospheric
        states from an *ArrayOfGriddedField4*.
 
-Dimensions: 
+Dimensions:
    GriddedField4:
       ArrayOfString field_names[N_fields]
       Vector p_grid[N_p]
@@ -649,7 +722,9 @@ Dimensions:
       Vector lon_grid[N_lon]
       Tensor4 data[N_fields][N_p][N_lat][N_lon]
 */
-GriddedField4& atm_fields_compact(Workspace& ws) noexcept { return *static_cast<GriddedField4 *>(ws[38]); }
+GriddedField4& atm_fields_compact(Workspace& ws) noexcept {
+  return *static_cast<GriddedField4*>(ws[38]);
+}
 
 /*! OK-flag for atmospheric grids and (physical) fields.
 
@@ -667,7 +742,9 @@ is denoted as *atmgeom_checked*. The cloudbox is covered by
 Shall be set by *atmfields_checkedCalc*. See that WSMs for treated
 WSVs. Only the value 1 is taken as OK.
 */
-Index& atmfields_checked(Workspace& ws) noexcept { return *static_cast<Index *>(ws[36]); }
+Index& atmfields_checked(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[36]);
+}
 
 /*! OK-flag for the geometry of the model atmosphere.
 
@@ -680,7 +757,9 @@ See also *atmfields_checked*.
 Shall be set by *atmgeom_checkedCalc*. Only the value 1 is taken
 as OK.
 */
-Index& atmgeom_checked(Workspace& ws) noexcept { return *static_cast<Index *>(ws[37]); }
+Index& atmgeom_checked(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[37]);
+}
 
 /*! The atmospheric dimensionality (1-3).
 
@@ -688,7 +767,7 @@ This variable defines the complexity of the atmospheric structure.
 The dimensionality is given by an integer between 1 and 3, where 1
 means 1D etc. This is the master variable for the atmospheric
 dimensionality, variables which size changes with the dimensionality
-are checked to match this variable. 
+are checked to match this variable.
 
 Methods adapt automatically to this variable. That is, it should
 not be needed to change any methods if the dimensionality is
@@ -698,21 +777,23 @@ Usage: Set by the user.
 
 Unit: Integer value.
 */
-Index& atmosphere_dim(Workspace& ws) noexcept { return *static_cast<Index *>(ws[35]); }
+Index& atmosphere_dim(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[35]);
+}
 
 /*! Averaging kernel matrix.
 
 This matrix is the partial derivative of the retrieved state vector
 with respect to the measurement vector (*y*).
 
-Usage: Used and set by inversion methods. 
+Usage: Used and set by inversion methods.
 */
-Matrix& avk(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[39]); }
+Matrix& avk(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[39]); }
 
 /*! The response of each backend channel.
 
 The response is given as an *ArrayOfGriddedField1*. The grid consists of
-relative frequencies. These relative frequencies are added to 
+relative frequencies. These relative frequencies are added to
 *f_backend* to obtain the absolute frequency for each response value.
 The actual data are the response at each frequency grid point.
 
@@ -726,11 +807,13 @@ n is the length of *f_backend*
 Usage: Set by the user.
 
 Size:  Array[N_ch]
-       GriddedField1 
-        [N_f] 
-       [N_f] 
+       GriddedField1
+        [N_f]
+       [N_f]
 */
-ArrayOfGriddedField1& backend_channel_response(Workspace& ws) noexcept { return *static_cast<ArrayOfGriddedField1 *>(ws[40]); }
+ArrayOfGriddedField1& backend_channel_response(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfGriddedField1*>(ws[40]);
+}
 
 /*! As *backend_channel_response* but describes an instrument with
 muliple mixer/receiver chains.
@@ -740,35 +823,46 @@ constraints.
 
 Usage: Set by the user.
  */
-ArrayOfArrayOfGriddedField1& backend_channel_response_multi(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfGriddedField1 *>(ws[41]); }
+ArrayOfArrayOfGriddedField1& backend_channel_response_multi(
+    Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfGriddedField1*>(ws[41]);
+}
 
 /*! An array of identifiers for bands.
 
 Used by line mixing calculations to identify which bands to match to the
 line database.
 */
-ArrayOfQuantumIdentifier& band_identifiers(Workspace& ws) noexcept { return *static_cast<ArrayOfQuantumIdentifier *>(ws[43]); }
+ArrayOfQuantumIdentifier& band_identifiers(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfQuantumIdentifier*>(ws[43]);
+}
 
 /*! An array of compact atmospheric states.
 
 This is used to hold a set of *atm_fields_compact* for batch
 calculations. For further information see *atm_fields_compact*.
 */
-ArrayOfGriddedField4& batch_atm_fields_compact(Workspace& ws) noexcept { return *static_cast<ArrayOfGriddedField4 *>(ws[42]); }
+ArrayOfGriddedField4& batch_atm_fields_compact(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfGriddedField4*>(ws[42]);
+}
 
 /*! An array of *cloudbox_limits*.
 
 This is used to hold a set of *cloudbox_limits* for batch
-calculations. 
+calculations.
 */
-ArrayOfArrayOfIndex& batch_cloudbox_limits(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfIndex *>(ws[44]); }
+ArrayOfArrayOfIndex& batch_cloudbox_limits(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfIndex*>(ws[44]);
+}
 
 /*! An array of compact pnd states.
 
 This is used to hold a set of 1D *pnd_field* for batch
-calculations. 
+calculations.
 */
-ArrayOfTensor4& batch_pnd_fields(Workspace& ws) noexcept { return *static_cast<ArrayOfTensor4 *>(ws[45]); }
+ArrayOfTensor4& batch_pnd_fields(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTensor4*>(ws[45]);
+}
 
 /*! Definition of backend frequency response, link to *f_grid*.
 
@@ -784,7 +878,9 @@ with the channel of concern. For a pure double-sideband receiver, where
 there is one monochromatic frequency per passband, this argument could
 look like: [[0,5],[1,4],[2,3],[7,8],[7,8]].
 */
-ArrayOfArrayOfIndex& channel2fgrid_indexes(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfIndex *>(ws[46]); }
+ArrayOfArrayOfIndex& channel2fgrid_indexes(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfIndex*>(ws[46]);
+}
 
 /*! Definition of backend frequency response, weighting of *f_grid*.
 
@@ -793,9 +889,11 @@ together with the accompanying WSV *channel2fgrid_indexes*.
 
 This WSV shall have excatly the same sizes as *channel2fgrid_indexes*.
 Each element gives the weight to be assigned to the associated
-monochromatic frequency. 
+monochromatic frequency.
 */
-ArrayOfVector& channel2fgrid_weights(Workspace& ws) noexcept { return *static_cast<ArrayOfVector *>(ws[47]); }
+ArrayOfVector& channel2fgrid_weights(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfVector*>(ws[47]);
+}
 
 /*! OK-flag for variables associated with the cloudbox.
 
@@ -808,7 +906,9 @@ space between the cloudbox and edges of the model atmosphere (for
 Relevant checks are performed by *cloudbox_checkedCalc. Only the
 value 1 is taken as OK.
 */
-Index& cloudbox_checked(Workspace& ws) noexcept { return *static_cast<Index *>(ws[48]); }
+Index& cloudbox_checked(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[48]);
+}
 
 /*! The spectral radiance field inside the cloudbx.
 
@@ -821,9 +921,9 @@ a field that is restricted to the cloud box.
 Unit: W / (m^2 Hz sr) for each Stokes component.
 
  Size: [f_grid,
-       p_grid, 
-       lat_grid, 
-       lon_grid, 
+       p_grid,
+       lat_grid,
+       lon_grid,
        za_grid,
        aa_grid,
        stokes_dim ]
@@ -831,65 +931,71 @@ Unit: W / (m^2 Hz sr) for each Stokes component.
 Note: For 1D, the size of the latitude, longitude and azimuth
 dimension (N_aa) are all 1.
 */
-Tensor7& cloudbox_field(Workspace& ws) noexcept { return *static_cast<Tensor7 *>(ws[49]); }
+Tensor7& cloudbox_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor7*>(ws[49]);
+}
 
 /*! Monochromatic radiation field inside the cloudbox.
 
-This variable is used to store the monochromatic radiation field 
+This variable is used to store the monochromatic radiation field
 inside the cloudbox which is found by an iterative solution (DOIT).
 Refer to AUG for further information.
 
-Usage: Method output. 
+Usage: Method output.
 
 Unit: W / (m^2 Hz sr) for each Stokes component.
 
-Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1, 
-       (cloudbox_limits[3] - cloudbox_limits[2]) +1, 
-       (cloudbox_limits[5] - cloudbox_limits[4]) +1, 
+Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
+       (cloudbox_limits[3] - cloudbox_limits[2]) +1,
+       (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         N_za, N_aa, N_i ]
 
 Note: For 1D, the size of the azimuth angle dimension (N_aa) is
 always 1.
 */
-Tensor6& cloudbox_field_mono(Workspace& ws) noexcept { return *static_cast<Tensor6 *>(ws[50]); }
+Tensor6& cloudbox_field_mono(Workspace& ws) noexcept {
+  return *static_cast<Tensor6*>(ws[50]);
+}
 
 /*! As *cloudbox_field_mono* but from previous iteration.
 
 This variable is used to store the intensity field inside the
 cloudbox while performing the iteration. One has to store the
-intensity field of the previous iteration to be able to do the 
+intensity field of the previous iteration to be able to do the
 convergence test after each iteration.
 Refer to AUG for more information.
 
-Usage: Method output. 
+Usage: Method output.
 
 Unit: W / (m^2 Hz sr) for each Stokes component.
 
-Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1, 
-       (cloudbox_limits[3] - cloudbox_limits[2]) +1, 
-       (cloudbox_limits[5] - cloudbox_limits[4]) +1, 
+Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
+       (cloudbox_limits[3] - cloudbox_limits[2]) +1,
+       (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         N_za, N_aa, N_i ]
 */
-Tensor6& cloudbox_field_mono_old(Workspace& ws) noexcept { return *static_cast<Tensor6 *>(ws[51]); }
+Tensor6& cloudbox_field_mono_old(Workspace& ws) noexcept {
+  return *static_cast<Tensor6*>(ws[51]);
+}
 
 /*! The limits of the cloud box.
 
-This variable defines the extension of the cloud box. The cloud box 
-is defined to be rectangular in the used coordinate system, with 
-limits exactly at points of the involved grids. This means, for 
-example, that the vertical limits of the cloud box are two pressure 
-levels. For 2D, the angular extension of the cloud box is between 
-two points of the latitude grid, and likewise for 3D but then also 
+This variable defines the extension of the cloud box. The cloud box
+is defined to be rectangular in the used coordinate system, with
+limits exactly at points of the involved grids. This means, for
+example, that the vertical limits of the cloud box are two pressure
+levels. For 2D, the angular extension of the cloud box is between
+two points of the latitude grid, and likewise for 3D but then also
 with a longitude extension between two grid points. The latitude and
-longitude limits for the cloud box cannot be placed at the end 
+longitude limits for the cloud box cannot be placed at the end
 points of the corresponding grid as it must be possible to calculate
 the incoming intensity field.
 
 The variable *cloudbox_limits* is an array of index value with
-length twice *atmosphere_dim*. For each dimension there is a lower 
-limit and an upper limit. The order of the dimensions is as usual 
-pressure, latitude and longitude. The upper limit index must be 
-greater then the lower limit index. For example, 
+length twice *atmosphere_dim*. For each dimension there is a lower
+limit and an upper limit. The order of the dimensions is as usual
+pressure, latitude and longitude. The upper limit index must be
+greater then the lower limit index. For example,
 *cloudbox_limits* = [0 5 4 11 4 11] means that cloud box extends
 between pressure levels 0 and 5, and latitude and longitude points 4
 and 11.
@@ -908,14 +1014,16 @@ Unit:  Index values.
 
 Size:  [ 2 * atmosphere_dim ]
 */
-ArrayOfIndex& cloudbox_limits(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[52]); }
+ArrayOfIndex& cloudbox_limits(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[52]);
+}
 
 /*! Flag to activate the cloud box.
 
 Scattering calculations are confined to a part of the atmosphere
 denoted as the cloud box. The extension of the cloud box is given by
 *cloudbox_limits*. This variable tells methods if a cloud box is
-activated or not. 
+activated or not.
 
 See further the ARTS user guide (AUG). Use the index to find where
 this variable is discussed. The variable is listed as a subentry to
@@ -925,16 +1033,22 @@ Usage: Set by the user.
 
 Unit:  Boolean.
 */
-Index& cloudbox_on(Workspace& ws) noexcept { return *static_cast<Index *>(ws[53]); }
+Index& cloudbox_on(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[53]);
+}
 
 /*! An array of coefficients for effective collisions
-*/
-ArrayOfArrayOfGriddedField1& collision_coefficients(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfGriddedField1 *>(ws[182]); }
+ */
+ArrayOfArrayOfGriddedField1& collision_coefficients(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfGriddedField1*>(ws[182]);
+}
 
 /*! An array of quantum identifiers for finding collisional rates
 in *collision_coefficients*
 */
-ArrayOfQuantumIdentifier& collision_line_identifiers(Workspace& ws) noexcept { return *static_cast<ArrayOfQuantumIdentifier *>(ws[181]); }
+ArrayOfQuantumIdentifier& collision_line_identifiers(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfQuantumIdentifier*>(ws[181]);
+}
 
 /*! Complex refractive index (n) data.
 
@@ -957,17 +1071,21 @@ a bi-linear interpolation is applied.
 
 Unit:       -
 
-Dimensions: 
+Dimensions:
       Vector f_grid[N_f]
       Vector T_grid[N_T]
       ArrayOfString Complex[2]
       Tensor3 data[N_f][N_T][2]
 */
-GriddedField3& complex_refr_index(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[54]); }
+GriddedField3& complex_refr_index(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[54]);
+}
 
 /*! Holds a list of counts, any counts.
-*/
-ArrayOfIndex& counts(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[55]); }
+ */
+ArrayOfIndex& counts(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[55]);
+}
 
 /*! Holds matrices used to set blocks in *covmat_sx* and *covmat_se*.
 
@@ -976,16 +1094,21 @@ in *covmat_sx* and *covmat_se* by the corresponding WSMs. Its dimensions
 must agree with gridpoints of the correlated retrieval quantities.
 Usage:   Used by the retrievalAdd functions.
 */
-Sparse& covmat_block(Workspace& ws) noexcept { return *static_cast<Sparse *>(ws[56]); }
+Sparse& covmat_block(Workspace& ws) noexcept {
+  return *static_cast<Sparse*>(ws[56]);
+}
 
-/*! Holds matrices used to set the inverse blocks in *covmat_sx* and *covmat_se*.
+/*! Holds matrices used to set the inverse blocks in *covmat_sx* and
+*covmat_se*.
 
 The matrix contained in this block will be used as the inverse of the matrix
 contained in covmat_block.
 
 Usage:   Used by the retrievalAdd functions.
 */
-Sparse& covmat_inv_block(Workspace& ws) noexcept { return *static_cast<Sparse *>(ws[57]); }
+Sparse& covmat_inv_block(Workspace& ws) noexcept {
+  return *static_cast<Sparse*>(ws[57]);
+}
 
 /*! Covariance matrix for observation uncertainties.
 
@@ -998,17 +1121,21 @@ of the forwatrd model parameters.
 
 Usage:   Used by inversion methods.
 
-Dimensions: 
+Dimensions:
      [ y, y ]
 */
-CovarianceMatrix& covmat_se(Workspace& ws) noexcept { return *static_cast<CovarianceMatrix *>(ws[58]); }
+CovarianceMatrix& covmat_se(Workspace& ws) noexcept {
+  return *static_cast<CovarianceMatrix*>(ws[58]);
+}
 
 /*! Covariance matrix for measurement uncertainties
 
-Dimensions: 
+Dimensions:
      [*ybatch*.nelem()][ *ybatch*[i], *ybatch*[i] ]
 */
-ArrayOfMatrix& covmat_sepsbatch(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[59]); }
+ArrayOfMatrix& covmat_sepsbatch(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[59]);
+}
 
 /*! Covariance matrix describing the retrieval error due to uncertainties of
 the observation system.
@@ -1021,18 +1148,23 @@ of a successful OEM calculation.
 Dimensions:
     [x,x]
 */
-Matrix& covmat_so(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[61]); }
+Matrix& covmat_so(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[61]);
+}
 
 /*! Covariance matrix describing the retrieval error due to smoothing.
 
-That is: Ss = (A-I) * Sx * (A-I)', where A is the averaging kernel matrix (*avk*).
+That is: Ss = (A-I) * Sx * (A-I)', where A is the averaging kernel matrix
+(*avk*).
 
 Usage: Set by the covmat_ssCalc workspace method to characterize the.
 errors of a successful OEM calculation.
 Dimensions:
     [x,x]
 */
-Matrix& covmat_ss(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[62]); }
+Matrix& covmat_ss(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[62]);
+}
 
 /*! Covariance matrix of a priori distribution
 
@@ -1052,10 +1184,12 @@ for convenience as well.
 
 Usage:   Used by inversion methods.
 
-Dimensions: 
+Dimensions:
      [ x, x ]
 */
-CovarianceMatrix& covmat_sx(Workspace& ws) noexcept { return *static_cast<CovarianceMatrix *>(ws[60]); }
+CovarianceMatrix& covmat_sx(Workspace& ws) noexcept {
+  return *static_cast<CovarianceMatrix*>(ws[60]);
+}
 
 /*! The partial derivatives of the matrix of total scalar absorption
 coefficients.
@@ -1075,7 +1209,9 @@ Dimensions: [n_quantities][f_grid, abs_p]
 
 Unit: 1/m/quantity
 */
-ArrayOfMatrix& dabs_coef_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[63]); }
+ArrayOfMatrix& dabs_coef_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[63]);
+}
 
 /*! Derivative of *abs_xsec_per_species* with respect to retrieval
 quantities.
@@ -1087,10 +1223,12 @@ calculated at transmission level
 
 Usage:      Output of *abs_xsec_agenda*.
 
-Dimensions: 
+Dimensions:
      [*abs_species*][n_quantities][*f_grid*, *abs_p* ]
 */
-ArrayOfArrayOfMatrix& dabs_xsec_per_species_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfMatrix *>(ws[64]); }
+ArrayOfArrayOfMatrix& dabs_xsec_per_species_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfMatrix*>(ws[64]);
+}
 
 /*! Derivative of *iy* with respect to retrieval quantities.
 
@@ -1105,10 +1243,12 @@ The values in *diy_dx* considers the retrieval unit selected (such as
 
 Usage:      Output of *iy_main_agenda*.
 
-Dimensions: 
+Dimensions:
      [n_quantities][ n_retrieval_points, f_grid, stokes_dim ]
 */
-ArrayOfTensor3& diy_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfTensor3 *>(ws[72]); }
+ArrayOfTensor3& diy_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTensor3*>(ws[72]);
+}
 
 /*! NLTE partial derivatives output is two parts:  S*dB/dx+dS/dx*B.
 This should contain the latter term for one point in the atmosphere
@@ -1119,11 +1259,15 @@ Dimensions: [ quantities ] [nza, naa, nf, stokes_dim] or [0]
 
 Unit: 1/m/jacobian_quantity
 */
-ArrayOfStokesVector& dnlte_dx_source(Workspace& ws) noexcept { return *static_cast<ArrayOfStokesVector *>(ws[78]); }
+ArrayOfStokesVector& dnlte_dx_source(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfStokesVector*>(ws[78]);
+}
 
 /*! Agenda defining the calculations to perform for each batch case.
-*/
-Agenda& dobatch_calc_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[65]); }
+ */
+Agenda& dobatch_calc_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[65]);
+}
 
 /*! Batch of radiation fields.
 
@@ -1136,7 +1280,9 @@ Unit:  See *cloudbox_field*.
 
 Dimensions: Number of array elements equals number of batch cases.
 */
-ArrayOfTensor7& dobatch_cloudbox_field(Workspace& ws) noexcept { return *static_cast<ArrayOfTensor7 *>(ws[66]); }
+ArrayOfTensor7& dobatch_cloudbox_field(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTensor7*>(ws[66]);
+}
 
 /*! Batch of irradiance fields.
 
@@ -1149,7 +1295,9 @@ Unit:  See *irradiance_field*.
 
 Dimensions: Number of array elements equals number of batch cases.
 */
-ArrayOfTensor4& dobatch_irradiance_field(Workspace& ws) noexcept { return *static_cast<ArrayOfTensor4 *>(ws[68]); }
+ArrayOfTensor4& dobatch_irradiance_field(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTensor4*>(ws[68]);
+}
 
 /*! Batch of radiance fields.
 
@@ -1162,7 +1310,9 @@ Unit:  See *radiance_field*.
 
 Dimensions: Number of array elements equals number of batch cases.
 */
-ArrayOfTensor5& dobatch_radiance_field(Workspace& ws) noexcept { return *static_cast<ArrayOfTensor5 *>(ws[67]); }
+ArrayOfTensor5& dobatch_radiance_field(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTensor5*>(ws[67]);
+}
 
 /*! Batch of spectral irradiance fields.
 
@@ -1176,64 +1326,82 @@ Unit:  See *spectral_irradiance_field*.
 
 Dimensions: Number of array elements equals number of batch cases.
 */
-ArrayOfTensor5& dobatch_spectral_irradiance_field(Workspace& ws) noexcept { return *static_cast<ArrayOfTensor5 *>(ws[69]); }
+ArrayOfTensor5& dobatch_spectral_irradiance_field(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTensor5*>(ws[69]);
+}
 
 /*! Flag for the convergence test.
 
-This variable is initialized with 0 inside the method 
+This variable is initialized with 0 inside the method
 *cloudbox_field_monoIterate*.
-If after an iteration the convergence test is fulfilled, 1 is 
-assigned which means that the iteration is completed. 
+If after an iteration the convergence test is fulfilled, 1 is
+assigned which means that the iteration is completed.
 
-Usage: Method output. 
+Usage: Method output.
 */
-Index& doit_conv_flag(Workspace& ws) noexcept { return *static_cast<Index *>(ws[80]); }
+Index& doit_conv_flag(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[80]);
+}
 
 /*! Agenda executing the DOIT convergence test.
-*/
-Agenda& doit_conv_test_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[81]); }
+ */
+Agenda& doit_conv_test_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[81]);
+}
 
 /*! Flag to determine if *DoitInit* was called.
 
 This flag is checked by *DoitCalc* to make sure that
 *DoitInit* was called before.
 */
-Index& doit_is_initialized(Workspace& ws) noexcept { return *static_cast<Index *>(ws[82]); }
+Index& doit_is_initialized(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[82]);
+}
 
 /*! Counter for number of iterations.
 
-This variable holds the number of iterations 
-while solving the VRTE using the DOIT method. 
+This variable holds the number of iterations
+while solving the VRTE using the DOIT method.
 */
-Index& doit_iteration_counter(Workspace& ws) noexcept { return *static_cast<Index *>(ws[83]); }
+Index& doit_iteration_counter(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[83]);
+}
 
 /*! Agenda performing monochromatic DOIT calculation.
-*/
-Agenda& doit_mono_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[84]); }
+ */
+Agenda& doit_mono_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[84]);
+}
 
 /*! Agenda performing the DOIT cloudbox radiative transfer update.
-*/
-Agenda& doit_rte_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[85]); }
+ */
+Agenda& doit_rte_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[85]);
+}
 
 /*! Scattered field inside the cloudbox.
 
 This variable holds the value of the scattering integral for all
 points inside the cloudbox. For more information refer to AUG.
 
-Usage: Input to *cloudbox_fieldUpdate...*. 
+Usage: Input to *cloudbox_fieldUpdate...*.
 
 Unit: W / (m^2 Hz sr) for each Stokes component.
 
-Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1, 
-       (cloudbox_limits[3] - cloudbox_limits[2]) +1, 
-       (cloudbox_limits[5] - cloudbox_limits[4]) +1, 
+Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
+       (cloudbox_limits[3] - cloudbox_limits[2]) +1,
+       (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         N_za, N_aa, N_i ]
 */
-Tensor6& doit_scat_field(Workspace& ws) noexcept { return *static_cast<Tensor6 *>(ws[87]); }
+Tensor6& doit_scat_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor6*>(ws[87]);
+}
 
 /*! Agenda calculating the scattering integral field in DOIT.
-*/
-Agenda& doit_scat_field_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[86]); }
+ */
+Agenda& doit_scat_field_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[86]);
+}
 
 /*! Optimized zenith angle grid.
 
@@ -1241,9 +1409,11 @@ Output of the method *doit_za_grid_optCalc*.
 
 Usage:   Output of *doit_za_grid_optCalc*
 
-Unit:    degrees 
+Unit:    degrees
 */
-Vector& doit_za_grid_opt(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[88]); }
+Vector& doit_za_grid_opt(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[88]);
+}
 
 /*! Number of equidistant grid points of the zenith angle grid.
 
@@ -1252,16 +1422,20 @@ integral calculation.
 
 Usage: Output of *DOAngularGridsSet*.
 */
-Index& doit_za_grid_size(Workspace& ws) noexcept { return *static_cast<Index *>(ws[89]); }
+Index& doit_za_grid_size(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[89]);
+}
 
 /*! Flag for interplation method in zenith angle dimension.
 
-0 - linear interpolation 
-1 - cubic interpolation 
+0 - linear interpolation
+1 - cubic interpolation
 
-Usage: Set by user in *doit_za_interpSet*. 
+Usage: Set by user in *doit_za_interpSet*.
 */
-Index& doit_za_interp(Workspace& ws) noexcept { return *static_cast<Index *>(ws[90]); }
+Index& doit_za_interp(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[90]);
+}
 
 /*! Partial derivates of *pnd_data*.
 
@@ -1270,7 +1444,9 @@ to the quantities set in *dpnd_data_dx_names*.
 
 Dimensions: [ n_quantities, n_points, n_scattering_elements ]
 */
-Tensor3& dpnd_data_dx(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[73]); }
+Tensor3& dpnd_data_dx(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[73]);
+}
 
 /*! Selection of partial derivatives of *pnd_data*.
 
@@ -1279,7 +1455,9 @@ quantities partial derivatives shall be calculated.
 
 Dimensions: [ n_quantities ]
 */
-ArrayOfString& dpnd_data_dx_names(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[74]); }
+ArrayOfString& dpnd_data_dx_names(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[74]);
+}
 
 /*! Partial derivatives of *pnd_field*.
 
@@ -1292,13 +1470,15 @@ Tensor4 is of no relevance and must be set to be empty.
 
 Dimensions: [n_quantities][ n_scattering_elements, n_p, n_lat, n_lon ]
 */
-ArrayOfTensor4& dpnd_field_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfTensor4 *>(ws[75]); }
+ArrayOfTensor4& dpnd_field_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTensor4*>(ws[75]);
+}
 
 /*! Partial derivative of absorption coefficients.
 
 This contains the partial derivative of absorption coefficients for
-one point in the atmosphere (one set of pressure, temperature, znmagnetic field, and VMR values) with respect to one of the input
-parameters.
+one point in the atmosphere (one set of pressure, temperature, znmagnetic field,
+and VMR values) with respect to one of the input parameters.
 
 Dimension: [ n_quantities ] [naa, nza, nf, f(stokes_dim)]
 
@@ -1307,7 +1487,9 @@ partial derivation
 
 Unit: 1/m/jacobian_quantity
 */
-ArrayOfPropagationMatrix& dpropmat_clearsky_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfPropagationMatrix *>(ws[76]); }
+ArrayOfPropagationMatrix& dpropmat_clearsky_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfPropagationMatrix*>(ws[76]);
+}
 
 /*! Partial derivates of *psd_data*.
 
@@ -1316,7 +1498,9 @@ to the quantities set in *dpnd_data_dx_names*.
 
 Dimensions: [ n_quantities, n_points, n_scattering_elements ]
 */
-Tensor3& dpsd_data_dx(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[77]); }
+Tensor3& dpsd_data_dx(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[77]);
+}
 
 /*! The partial derivatives of the matrix of total scalar NLTE source term.
 
@@ -1335,7 +1519,9 @@ Dimensions: [n_quantities][f_grid, abs_p]
 
 Unit: 1/m/quantity
 */
-ArrayOfMatrix& dsrc_coef_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[70]); }
+ArrayOfMatrix& dsrc_coef_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[70]);
+}
 
 /*! Derivative of *src_xsec_per_species* with respect to retrieval
 quantities.
@@ -1347,10 +1533,12 @@ calculated at transmission level
 
 Usage:      Output of *abs_xsec_agenda*.
 
-Dimensions: 
+Dimensions:
      [*abs_species*][n_quantities][*f_grid*, *abs_p* ]
 */
-ArrayOfArrayOfMatrix& dsrc_xsec_per_species_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfMatrix *>(ws[71]); }
+ArrayOfArrayOfMatrix& dsrc_xsec_per_species_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfMatrix*>(ws[71]);
+}
 
 /*! The derivative of *surface_emission* with respect to quantities
 listed in *dsurface_names*.
@@ -1359,7 +1547,9 @@ Usage: Used internally of radiative transfer methods
 
 Dimensions: [dsurface_names][f_grid, stokes_dim]
 */
-ArrayOfMatrix& dsurface_emission_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[91]); }
+ArrayOfMatrix& dsurface_emission_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[91]);
+}
 
 /*! Name of surface retrieval quantities.
 
@@ -1367,7 +1557,9 @@ Usage: Used internally of radiative transfer methods
 
 Dimensions: [retrieval quantity]
 */
-ArrayOfString& dsurface_names(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[92]); }
+ArrayOfString& dsurface_names(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[92]);
+}
 
 /*! The derivative of *surface_rmatrix* with respect to quantities
 listed in *dsurface_names*.
@@ -1376,16 +1568,18 @@ Usage: Used internally of radiative transfer methods
 
 Dimensions: [dsurface_names][surface_los, f_grid, stokes_dim, stokes_dim]
 */
-ArrayOfTensor4& dsurface_rmatrix_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfTensor4 *>(ws[93]); }
+ArrayOfTensor4& dsurface_rmatrix_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTensor4*>(ws[93]);
+}
 
 /*! Contribution function (or gain) matrix.
 
 This matrix is the partial derivative of the retrieved state vector
 with respect to the measurement vector (*y*).
 
-Usage: Used and set by inversion methods. 
+Usage: Used and set by inversion methods.
 */
-Matrix& dxdy(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[94]); }
+Matrix& dxdy(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[94]); }
 
 /*! Total extinction matrix.
 
@@ -1398,13 +1592,15 @@ See the ARTS user guide (AUG) for further information. Use the index to
 find where this variable is discussed. The variable is listed as a
 subentry to "workspace variables".
 
-Usage:      Output of *opt_prop_bulkCalc* 
+Usage:      Output of *opt_prop_bulkCalc*
 
 Unit:       m^2
 
 Dimensions: [f_grid, stokes_dim, stokes_dim]
 */
-PropagationMatrix& ext_mat(Workspace& ws) noexcept { return *static_cast<PropagationMatrix *>(ws[95]); }
+PropagationMatrix& ext_mat(Workspace& ws) noexcept {
+  return *static_cast<PropagationMatrix*>(ws[95]);
+}
 
 /*! Extinction matrix for all individual scattering elements.
 
@@ -1412,46 +1608,54 @@ This variable contains the elements of the extinction matrix of all
 individual scattering elements for a given propagation direction. It is
 calculated input as well as the output of the agenda *spt_calc_agenda*.
 
-Usage:      Output of *spt_calc_agenda* 
+Usage:      Output of *spt_calc_agenda*
 
 Unit:       m^2
 
 Dimensions: [number of scattering elements, stokes_dim, stokes_dim]
 */
-ArrayOfPropagationMatrix& ext_mat_spt(Workspace& ws) noexcept { return *static_cast<ArrayOfPropagationMatrix *>(ws[96]); }
+ArrayOfPropagationMatrix& ext_mat_spt(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfPropagationMatrix*>(ws[96]);
+}
 
 /*! The frequency position of each backend (spectrometer) channel.
 
 Usage: Set by the user.
- 
+
 Unit:  Hz
 */
-Vector& f_backend(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[102]); }
+Vector& f_backend(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[102]);
+}
 
 /*! As *f_backend* but describes an instrument with muliple
 mixer/receiver chains.
 
 This variable is needed when e.g. the receiver has several mixers
 or the the receiver measures several polarisation and the channels
-differ in position or response function. 
+differ in position or response function.
 
 The array has one element for each "receiver chain". The array
 length must match *backend_channel_response_multi*, and possibly
 also *lo_multi*.
 
 Usage: Set by the user.
- 
+
 Unit:  Hz
 */
-ArrayOfVector& f_backend_multi(Workspace& ws) noexcept { return *static_cast<ArrayOfVector *>(ws[103]); }
+ArrayOfVector& f_backend_multi(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfVector*>(ws[103]);
+}
 
 /*! The frequency grid for monochromatic pencil beam calculations.
 
 Usage: Set by the user.
- 
+
 Unit:  Hz
 */
-Vector& f_grid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[104]); }
+Vector& f_grid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[104]);
+}
 
 /*! Frequency index.
 
@@ -1463,45 +1667,57 @@ In some contexts, a negative f_index means all frequencies.
 
 Usage: Method output.
 */
-Index& f_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[105]); }
+Index& f_index(Workspace& ws) noexcept { return *static_cast<Index*>(ws[105]); }
 
 /*! Index number for files.
 
 See *WriteXMLIndexed* for further information.
 
-Usage:   Input to *WriteXMLIndexed* and *ReadXMLIndexed*. 
+Usage:   Input to *WriteXMLIndexed* and *ReadXMLIndexed*.
 */
-Index& file_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[97]); }
+Index& file_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[97]);
+}
 
 /*! Agenda performing a for loop.
-*/
-Agenda& forloop_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[98]); }
+ */
+Agenda& forloop_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[98]);
+}
 
 /*! The index for for-loops.
 
 This is the index that is used by method *ForLoop* to loop over
-*forloop_agenda*. 
+*forloop_agenda*.
 */
-Index& forloop_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[99]); }
+Index& forloop_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[99]);
+}
 
 /*! So far just testing of FOS ...
-*/
-Vector& fos_iyin_za_angles(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[100]); }
+ */
+Vector& fos_iyin_za_angles(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[100]);
+}
 
 /*! So far just testing of FOS ...
-*/
-Matrix& fos_scatint_angles(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[101]); }
+ */
+Matrix& fos_scatint_angles(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[101]);
+}
 
 /*! Gravity at zero altitude.
 
 This variable is "little g" at the reference ellipsiod. That is,
 for Earth this is a value around 9.81 m/s2
 */
-Numeric& g0(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[107]); }
+Numeric& g0(Workspace& ws) noexcept { return *static_cast<Numeric*>(ws[107]); }
 
 /*! Agenda providing the gravity constant.
-*/
-Agenda& g0_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[108]); }
+ */
+Agenda& g0_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[108]);
+}
 
 /*! Geo-position of a measurement.
 
@@ -1519,29 +1735,37 @@ Dimensions: 0 or 5
 
 Unit:  [ m, deg, deg, deg, deg ]
 */
-Vector& geo_pos(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[106]); }
+Vector& geo_pos(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[106]);
+}
 
 /*! Agenda deriving the geo-position of a pencil beam calculation.
-*/
-Agenda& geo_pos_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[109]); }
+ */
+Agenda& geo_pos_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[109]);
+}
 
 /*! The heating rates of atmospheric layers.
 
-The heating rate is defined as the rate of temperature change of an 
+The heating rate is defined as the rate of temperature change of an
 atmospheric layer due the heating by absorption of radiation or if it
 is negative the loss of energy by emission of radiation.
 
 Units: K s^-1
 
-Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1, 
-       (cloudbox_limits[3] - cloudbox_limits[2]) +1, 
-       (cloudbox_limits[5] - cloudbox_limits[4]) +1, 
+Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
+       (cloudbox_limits[3] - cloudbox_limits[2]) +1,
+       (cloudbox_limits[5] - cloudbox_limits[4]) +1,
 */
-Tensor3& heating_rates(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[110]); }
+Tensor3& heating_rates(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[110]);
+}
 
 /*! Data for Hitran cross section species.
-*/
-ArrayOfXsecRecord& hitran_xsec_data(Workspace& ws) noexcept { return *static_cast<ArrayOfXsecRecord *>(ws[111]); }
+ */
+ArrayOfXsecRecord& hitran_xsec_data(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfXsecRecord*>(ws[111]);
+}
 
 /*! Definition of the polarisation of an instrument.
 
@@ -1579,7 +1803,9 @@ operation.
 
 Usage: Set by the user.
 */
-ArrayOfIndex& instrument_pol(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[112]); }
+ArrayOfIndex& instrument_pol(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[112]);
+}
 
 /*! Multiple definition of instrument polarisation.
 
@@ -1588,36 +1814,46 @@ are possible/required.
 
 Usage: Set by the user.
 */
-ArrayOfArrayOfIndex& instrument_pol_array(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfIndex *>(ws[113]); }
+ArrayOfArrayOfIndex& instrument_pol_array(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfIndex*>(ws[113]);
+}
 
 /*! Agenda recalculating spectra and Jacobian for iterative inversion methods.
-*/
-Agenda& inversion_iterate_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[115]); }
+ */
+Agenda& inversion_iterate_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[115]);
+}
 
 /*! Iteration counter variable for *inversion_iterate_agenda*.
-*/
-Index& inversion_iteration_counter(Workspace& ws) noexcept { return *static_cast<Index *>(ws[114]); }
+ */
+Index& inversion_iteration_counter(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[114]);
+}
 
 /*! Irradiance also known as flux density.
 
 Radiant flux received by a surface per unit area
 seperately for each hemisphere.
-The last dimension denotes the hemispheres. The first component is the downward irradiance
-and the second component is the upward irradianceUnits: W m^-2
+The last dimension denotes the hemispheres. The first component is the downward
+irradiance and the second component is the upward irradianceUnits: W m^-2
 
 Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
        (cloudbox_limits[3] - cloudbox_limits[2]) +1,
        (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         2 ]
 */
-Tensor4& irradiance_field(Workspace& ws) noexcept { return *static_cast<Tensor4 *>(ws[116]); }
+Tensor4& irradiance_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor4*>(ws[116]);
+}
 
 /*! Contains the isotopologue ratios.
 
 This variable can be set to default values by
 calling *isotopologue_ratiosInitFromBuiltin*
 */
-SpeciesAuxData& isotopologue_ratios(Workspace& ws) noexcept { return *static_cast<SpeciesAuxData *>(ws[117]); }
+SpeciesAuxData& isotopologue_ratios(Workspace& ws) noexcept {
+  return *static_cast<SpeciesAuxData*>(ws[117]);
+}
 
 /*! Monochromatic pencil beam radiance spectrum.
 
@@ -1635,7 +1871,7 @@ Unit:       For passive observations, as  selected by *iy_unit*.
 
 Dimensions: [ f_grid, stokes_dim ]
 */
-Matrix& iy(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[118]); }
+Matrix& iy(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[118]); }
 
 /*! Flag to handle recursive calls of *iy_main_agenda*
 
@@ -1646,7 +1882,9 @@ is used to tell the methods inside the agenda which is the primary
 variable to 1 if the agenda is called directly inside the control
 file (which should be a rare case).
 */
-Index& iy_agenda_call1(Workspace& ws) noexcept { return *static_cast<Index *>(ws[120]); }
+Index& iy_agenda_call1(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[120]);
+}
 
 /*! Data auxiliary to *iy*.
 
@@ -1658,7 +1896,9 @@ Usage:      Provided by some radiative transfer methods.
 
 Dimensions: [quantity][ f_grid, stokes_dim ]
 */
-ArrayOfMatrix& iy_aux(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[121]); }
+ArrayOfMatrix& iy_aux(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[121]);
+}
 
 /*! Selection of quantities for *iy_aux* and when applicable also *y_aux*.
 
@@ -1671,16 +1911,20 @@ for *iy_main_agenda* for the complete set of choices. Please not that
 if the calculations are done through *yCalc*, you can not select
 along-the-path variables.
 */
-ArrayOfString& iy_aux_vars(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[122]); }
+ArrayOfString& iy_aux_vars(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[122]);
+}
 
 /*! Agenda deriving the intensity at boundary or interior of the cloudbox.
-*/
-Agenda& iy_cloudbox_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[123]); }
+ */
+Agenda& iy_cloudbox_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[123]);
+}
 
 /*! Identification number of *iy*.
 
 This variable is intended to be an identification number for individual
-calculations of *iy*. This id-number can e.g. be used as input to 
+calculations of *iy*. This id-number can e.g. be used as input to
 *WriteXMLIndexed*, to link filenames to the different calculations.
 
 Some methods sets and updates *iy_id*. The general numbering scheme is:
@@ -1696,7 +1940,7 @@ has iy_id = 001001000.
 Accordingly, the primary propagation path has cba = 000. If the primary path
 intersects with the surface, and the downwelling radiation is calculated
 for three directions, these secondary paths get cba = 001, 002 and 003.
-If tertiary paths appear, they have numbers such as 011. 
+If tertiary paths appear, they have numbers such as 011.
 
 As the numbering scheme has nine positions, it is suitable to store
 files as: WriteXMLIndexed(output_file_format,iy_id,in,filename,9)
@@ -1705,29 +1949,41 @@ Setting of *iy_id* is not yet supported together with scattering
 calculations. The value of iy_id then differs, it is either set to 0
 or keeps its value set by *yCalc*.
 */
-Index& iy_id(Workspace& ws) noexcept { return *static_cast<Index *>(ws[125]); }
+Index& iy_id(Workspace& ws) noexcept { return *static_cast<Index*>(ws[125]); }
 
 /*! Agenda dedicated to *iyIndependentBeamApproximation*.*/
-Agenda& iy_independent_beam_approx_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[124]); }
+Agenda& iy_independent_beam_approx_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[124]);
+}
 
 /*! Agenda dedicated to *iyLoopFrequencies*.*/
-Agenda& iy_loop_freqs_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[126]); }
+Agenda& iy_loop_freqs_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[126]);
+}
 
 /*! Agenda calculating the single monochromatic pencil beam spectrum.
-*/
-Agenda& iy_main_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[127]); }
+ */
+Agenda& iy_main_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[127]);
+}
 
 /*! Agenda providing the downwelling radiation at the top of the atmosphere.
-*/
-Agenda& iy_space_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[128]); }
+ */
+Agenda& iy_space_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[128]);
+}
 
 /*! Agenda providing the upwelling radiation from the surface.
-*/
-Agenda& iy_surface_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[129]); }
+ */
+Agenda& iy_surface_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[129]);
+}
 
 /*! Upwelling radiation from the surface, divided into surface types.
-*/
-ArrayOfAgenda& iy_surface_agenda_array(Workspace& ws) noexcept { return *static_cast<ArrayOfAgenda *>(ws[130]); }
+ */
+ArrayOfAgenda& iy_surface_agenda_array(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfAgenda*>(ws[130]);
+}
 
 /*! Transmission to be included in *iy*.
 
@@ -1745,11 +2001,15 @@ Unit:       1
 
 Dimensions: [ f_grid, stokes_dim, stokes_dim ]
 */
-Tensor3& iy_transmission(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[131]); }
+Tensor3& iy_transmission(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[131]);
+}
 
 /*! Agenda providing a transmitter signal.
-*/
-Agenda& iy_transmitter_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[132]); }
+ */
+Agenda& iy_transmitter_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[132]);
+}
 
 /*! Selection of output unit for some radiative transfer methods.
 
@@ -1759,7 +2019,9 @@ methods, including not considering the variable at all.
 Accordingly, for details see the radiative method you have selected
 (e.g., *iyEmissionStandard*, *iyMC*, *iyActiveSingleScat* and the like).
 */
-String& iy_unit(Workspace& ws) noexcept { return *static_cast<String *>(ws[133]); }
+String& iy_unit(Workspace& ws) noexcept {
+  return *static_cast<String*>(ws[133]);
+}
 
 /*! Monochromatic pencil beam data for one measurement block.
 
@@ -1773,7 +2035,7 @@ Unit:       W / (m^2 Hz sr) or transmission.
 Dimensions: [ nlos * nf * stokes_dim ] where nlos is number of rows in
             mblock_dlos_grid, and nf is length of f_grid.
 */
-Vector& iyb(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[119]); }
+Vector& iyb(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[119]); }
 
 /*! The Jacobian matrix.
 
@@ -1789,11 +2051,15 @@ Units:   See the different retrieval quantities.
 
 Dimension: [ y, number of retrieval quantities and grids ]
 */
-Matrix& jacobian(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[134]); }
+Matrix& jacobian(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[134]);
+}
 
 /*! Pure numerical Jacobian calculation agenda.
-*/
-Agenda& jacobian_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[135]); }
+ */
+Agenda& jacobian_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[135]);
+}
 
 /*! Flag to activate (clear-sky) Jacobian calculations.
 
@@ -1803,7 +2069,9 @@ jacobianAddXxx methods).
 
 Needs to be 0 if cloudy-sky (Doit) Jacobians shall be calculated.
 */
-Index& jacobian_do(Workspace& ws) noexcept { return *static_cast<Index *>(ws[136]); }
+Index& jacobian_do(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[136]);
+}
 
 /*! The retrieval quantities in the Jacobian matrix.
 
@@ -1812,13 +2080,15 @@ calculated.
 
 Usage: Quantities are added by the jacobianAdd WSMs.
 */
-ArrayOfRetrievalQuantity& jacobian_quantities(Workspace& ws) noexcept { return *static_cast<ArrayOfRetrievalQuantity *>(ws[137]); }
+ArrayOfRetrievalQuantity& jacobian_quantities(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfRetrievalQuantity*>(ws[137]);
+}
 
 /*! A latitude.
 
 Unit:  degrees
 */
-Numeric& lat(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[138]); }
+Numeric& lat(Workspace& ws) noexcept { return *static_cast<Numeric*>(ws[138]); }
 
 /*! The latitude grid.
 
@@ -1844,7 +2114,9 @@ Usage: Set by the user.
 
 Unit:  degrees
 */
-Vector& lat_grid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[139]); }
+Vector& lat_grid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[139]);
+}
 
 /*! Latitudinal geolocation for 1D and 2D data.
 
@@ -1864,7 +2136,9 @@ Usage: Set by the user.
 
 Unit:  degrees
 */
-Vector& lat_true(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[140]); }
+Vector& lat_true(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[140]);
+}
 
 /*! Flag to check if the line-by-line calculations will work
 
@@ -1872,26 +2146,34 @@ Usage: Set manually on own risk, or use *lbl_checkedCalc*.
 
 Unit:  Boolean
 */
-Index& lbl_checked(Workspace& ws) noexcept { return *static_cast<Index *>(ws[141]); }
+Index& lbl_checked(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[141]);
+}
 
 /*! Irradiance as seen by a single absorption line.
 
 Used internally for, e.g., NLTE effects
 */
-Matrix& line_irradiance(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[142]); }
+Matrix& line_irradiance(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[142]);
+}
 
 /*! Transmission as seen by a single absorption line.
 
 Used internally for, e.g., NLTE effects
 */
-Tensor3& line_transmission(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[143]); }
+Tensor3& line_transmission(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[143]);
+}
 
 /*! The series of gamma values for a Marquardt-levenberg inversion.
 
 The values are stored following iteration order, i.e. the first
 is the gamma factor for the first iteration etc.
 */
-Vector& lm_ga_history(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[177]); }
+Vector& lm_ga_history(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[177]);
+}
 
 /*! The local oscillator frequency.
 
@@ -1903,7 +2185,7 @@ Unit:  Hz
 
 Usage: Set by the user.
 */
-Numeric& lo(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[144]); }
+Numeric& lo(Workspace& ws) noexcept { return *static_cast<Numeric*>(ws[144]); }
 
 /*! Local oscillator frequencies.
 
@@ -1916,13 +2198,15 @@ Unit:  Hz
 
 Usage: Set by the user.
 */
-Vector& lo_multi(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[145]); }
+Vector& lo_multi(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[145]);
+}
 
 /*! A longitude.
 
 Unit:  degrees
 */
-Numeric& lon(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[146]); }
+Numeric& lon(Workspace& ws) noexcept { return *static_cast<Numeric*>(ws[146]); }
 
 /*! The longitude grid.
 
@@ -1945,7 +2229,9 @@ Usage: Set by the user.
 
 Unit:  degrees
 */
-Vector& lon_grid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[147]); }
+Vector& lon_grid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[147]);
+}
 
 /*! Longitudinal geolocation for 1D and 2D data.
 
@@ -1965,7 +2251,9 @@ Usage: Set by the user.
 
 Unit:  degrees
 */
-Vector& lon_true(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[148]); }
+Vector& lon_true(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[148]);
+}
 
 /*! Zonal component of the magnetic field.
 
@@ -1979,7 +2267,9 @@ Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]  or [ 0 0 0 ].
 */
-Tensor3& mag_u_field(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[149]); }
+Tensor3& mag_u_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[149]);
+}
 
 /*! Raw zonal component of the magnetic field.
 
@@ -1993,7 +2283,9 @@ Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ].
 */
-GriddedField3& mag_u_field_raw(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[150]); }
+GriddedField3& mag_u_field_raw(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[150]);
+}
 
 /*! Meridional component of the magnetic field.
 
@@ -2007,7 +2299,9 @@ Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]  or [ 0 0 0 ].
 */
-Tensor3& mag_v_field(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[151]); }
+Tensor3& mag_v_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[151]);
+}
 
 /*! Raw meridional component of the magnetic field.
 
@@ -2021,7 +2315,9 @@ Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ].
 */
-GriddedField3& mag_v_field_raw(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[152]); }
+GriddedField3& mag_v_field_raw(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[152]);
+}
 
 /*! Vertical component of the magnetic field.
 
@@ -2034,7 +2330,9 @@ Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]  or [ 0 0 0 ].
 */
-Tensor3& mag_w_field(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[153]); }
+Tensor3& mag_w_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[153]);
+}
 
 /*! Raw vertical component of the magnetic field.
 
@@ -2047,11 +2345,15 @@ Unit:       T
 
 Dimensions: [ p_grid, lat_grid, lon_grid ].
 */
-GriddedField3& mag_w_field_raw(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[154]); }
+GriddedField3& mag_w_field_raw(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[154]);
+}
 
 /*! Agenda corresponding to the entire controlfile.
-*/
-Agenda& main_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[155]); }
+ */
+Agenda& main_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[155]);
+}
 
 /*! The set of angular pencil beam directions for each measurement block.
 
@@ -2075,53 +2377,67 @@ Usage: Set by the user or output of antenna WSMs.
 
 Unit:  degrees
 */
-Matrix& mblock_dlos_grid(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[156]); }
+Matrix& mblock_dlos_grid(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[156]);
+}
 
-/*! Measurement block index. 
+/*! Measurement block index.
 
 Used to tell agendas the index of present measurement block.
 
 Usage: Used internally.
 */
-Index& mblock_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[157]); }
+Index& mblock_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[157]);
+}
 
 /*! Antenna pattern description for dedicated MC calculaions.
 
 Usage: Input to MCGeneral. Set by *mc_antennaSetGaussian* and similar
        methods.
 */
-MCAntenna& mc_antenna(Workspace& ws) noexcept { return *static_cast<MCAntenna *>(ws[158]); }
+MCAntenna& mc_antenna(Workspace& ws) noexcept {
+  return *static_cast<MCAntenna*>(ws[158]);
+}
 
 /*! Error in simulated *y* when using a Monte Carlo approach.
 
-Usage: Output from Monte Carlo functions. 
+Usage: Output from Monte Carlo functions.
 
 Units: Depends on *iy_unit*.
 
 Size:  [ stokes_dim ]
 */
-Vector& mc_error(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[159]); }
+Vector& mc_error(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[159]);
+}
 
 /*! Counts the number of iterations (or photons) used in the MC
 scattering algorithm.
 
 Usage: Set by MCGeneral and other MC methods.
 */
-Index& mc_iteration_count(Workspace& ws) noexcept { return *static_cast<Index *>(ws[160]); }
+Index& mc_iteration_count(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[160]);
+}
 
 /*! The maximum number of iterations allowed for Monte Carlo
 calculations.
 
 Usage: Set by the user.
 */
-Index& mc_max_iter(Workspace& ws) noexcept { return *static_cast<Index *>(ws[161]); }
+Index& mc_max_iter(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[161]);
+}
 
 /*! The maximum scattering order allowed for Monte Carlo
 radar calculations.
 
 Usage: Set by the user.
 */
-Index& mc_max_scatorder(Workspace& ws) noexcept { return *static_cast<Index *>(ws[162]); }
+Index& mc_max_scatorder(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[162]);
+}
 
 /*! The maximum time allowed for Monte Carlo calculations.
 
@@ -2129,14 +2445,18 @@ Usage: Set by the user.
 
 Unit: s
 */
-Index& mc_max_time(Workspace& ws) noexcept { return *static_cast<Index *>(ws[163]); }
+Index& mc_max_time(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[163]);
+}
 
 /*! The minimum number of iterations allowed for Monte Carlo
 calculations.
 
 Usage: Set by the user.
 */
-Index& mc_min_iter(Workspace& ws) noexcept { return *static_cast<Index *>(ws[164]); }
+Index& mc_min_iter(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[164]);
+}
 
 /*! Source to emission, position.
 
@@ -2144,7 +2464,9 @@ Counts the number of MC endpoints in each grid cell.
 
 Usage: Set by MCGeneral and other MC methods.
 */
-Tensor3& mc_points(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[165]); }
+Tensor3& mc_points(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[165]);
+}
 
 /*! Number of atmospheric scattering events between emission point and sensor.
 
@@ -2157,14 +2479,16 @@ The number of such cases can be determined by comparing
 
 Usage: Set by MCGeneral and other MC methods.
 */
-ArrayOfIndex& mc_scat_order(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[166]); }
+ArrayOfIndex& mc_scat_order(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[166]);
+}
 
 /*! The integer seed for the random number generator used by
 Monte Carlo methods.
 
 Usage: Set by MCSetSeed.
 */
-Index& mc_seed(Workspace& ws) noexcept { return *static_cast<Index *>(ws[168]); }
+Index& mc_seed(Workspace& ws) noexcept { return *static_cast<Index*>(ws[168]); }
 
 /*! Rough classification of source to emission.
 
@@ -2178,43 +2502,54 @@ source was found to be inside each "domain".
 
 Usage: Set by MCGeneral and other MC methods.
 */
-ArrayOfIndex& mc_source_domain(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[167]); }
+ArrayOfIndex& mc_source_domain(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[167]);
+}
 
 /*! Target precision (1 std. dev.) for Monte Carlo calculations.
 
 Usage: Set by the user.
 */
-Numeric& mc_std_err(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[169]); }
+Numeric& mc_std_err(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[169]);
+}
 
-/*! Defines an upper step length in terms of optical thickness for Monte Carlo calculations.
+/*! Defines an upper step length in terms of optical thickness for Monte Carlo
+calculations.
 
 Usage: Set by the user.
 */
-Numeric& mc_taustep_limit(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[171]); }
+Numeric& mc_taustep_limit(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[171]);
+}
 
 /*! Normalized Stokes vector for transmission (e.g., radar).
 
 The first element (intensity) should have a value of 1.
-Usage: Set by user. 
+Usage: Set by user.
 
 Units: Unitless.
 
 Size:  [ stokes_dim ]
 */
-Vector& mc_y_tx(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[170]); }
+Vector& mc_y_tx(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[170]);
+}
 
 /*! The AMSU data set.
 
 This is intended as input for the method ybatchMetProfiles. It holds the
-latitude, longitude, satellite zenith angle and amsu-b corrected and 
-uncorrected brightness temperatures.  It also has information about 
-the particular pixel corresponds to a land or sea point.  This will be 
-read in the method ybatchMetProfiles and the profiles corresponding to 
+latitude, longitude, satellite zenith angle and amsu-b corrected and
+uncorrected brightness temperatures.  It also has information about
+the particular pixel corresponds to a land or sea point.  This will be
+read in the method ybatchMetProfiles and the profiles corresponding to
 each latitude and longitude will be read in.
 
 See documentation of WSM *ybatchMetProfiles* for more information.
 */
-Matrix& met_amsu_data(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[172]); }
+Matrix& met_amsu_data(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[172]);
+}
 
 /*! The antenna beam width for meteorological millimeter instruments.
 
@@ -2227,7 +2562,9 @@ Unit:  [ Hz ]
 
 Size:  [ number of channels ]
 */
-Vector& met_mm_antenna(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[173]); }
+Vector& met_mm_antenna(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[173]);
+}
 
 /*! Backend description for meteorological millimeter sensors with passbands.
 
@@ -2261,7 +2598,9 @@ Unit: All entries in Hz.
 
 Size: [number of channels, 4]
 */
-Matrix& met_mm_backend(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[174]); }
+Matrix& met_mm_backend(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[174]);
+}
 
 /*! The polarisation for meteorological millimeter instruments.
 
@@ -2284,11 +2623,15 @@ Unit:  [ String ]
 
 Size:  [ number of channels ]
 */
-ArrayOfString& met_mm_polarisation(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[175]); }
+ArrayOfString& met_mm_polarisation(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[175]);
+}
 
 /*! Agenda for metoffice profile calculations.
-*/
-Agenda& met_profile_calc_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[176]); }
+ */
+Agenda& met_profile_calc_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[176]);
+}
 
 /*! The average molar mass of dry air.
 
@@ -2297,27 +2640,31 @@ dry air. The definition of "dry air" can differ between planets and
 methods using the WSV. For Earth, this should be a value around
 28.97.
 */
-Numeric& molarmass_dry_air(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[178]); }
+Numeric& molarmass_dry_air(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[178]);
+}
 
 /*! Number of elements in 4th lowest dimension of a Tensor.
-*/
-Index& nbooks(Workspace& ws) noexcept { return *static_cast<Index *>(ws[187]); }
+ */
+Index& nbooks(Workspace& ws) noexcept { return *static_cast<Index*>(ws[187]); }
 
 /*! Number of columns (elements in lowest dimension) of a Matrix or Tensor.
-*/
-Index& ncols(Workspace& ws) noexcept { return *static_cast<Index *>(ws[184]); }
+ */
+Index& ncols(Workspace& ws) noexcept { return *static_cast<Index*>(ws[184]); }
 
 /*! Number of elements of a Vector or Array.
-*/
-Index& nelem(Workspace& ws) noexcept { return *static_cast<Index *>(ws[183]); }
+ */
+Index& nelem(Workspace& ws) noexcept { return *static_cast<Index*>(ws[183]); }
 
 /*! Number of elements in 7th lowest dimension of a Tensor.
-*/
-Index& nlibraries(Workspace& ws) noexcept { return *static_cast<Index *>(ws[190]); }
+ */
+Index& nlibraries(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[190]);
+}
 
 /*! Flag to perform Non-LTE calculations.
-*/
-Index& nlte_do(Workspace& ws) noexcept { return *static_cast<Index *>(ws[191]); }
+ */
+Index& nlte_do(Workspace& ws) noexcept { return *static_cast<Index*>(ws[191]); }
 
 /*! NLTE partial derivatives output is two parts:  S*dB/dx+dS/dx*B.
 This should contain the first term for one point in the atmosphere
@@ -2328,7 +2675,9 @@ Dimensions: [ quantities ] [nza, naa, nf, stokes_dim] or [0]
 
 Unit: 1/m/jacobian_quantity
 */
-ArrayOfStokesVector& nlte_dsource_dx(Workspace& ws) noexcept { return *static_cast<ArrayOfStokesVector *>(ws[79]); }
+ArrayOfStokesVector& nlte_dsource_dx(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfStokesVector*>(ws[79]);
+}
 
 /*! The field of NLTE temperatures and/or ratios.
 
@@ -2336,7 +2685,7 @@ This variable gives the NLTE temperature/ratio at each crossing of
 the pressure, latitude and longitude grids.  The size of the
 array is the number of NLTE levels in all molecules.
 
-The temperature/ratio for a point between the grid crossings is obtained 
+The temperature/ratio for a point between the grid crossings is obtained
 by (multi-)linear interpolation of the *nlte_field*.
 
 There are two types of NLTE computations available in ARTS.  One from
@@ -2348,11 +2697,13 @@ Units:       [ K or % ]]
 
 Dimensions: [ NLTE levels, p_grid, lat_grid, lon_grid ] or [ 0, 0, 0, 0 ]
 */
-EnergyLevelMap& nlte_field(Workspace& ws) noexcept { return *static_cast<EnergyLevelMap *>(ws[339]); }
+EnergyLevelMap& nlte_field(Workspace& ws) noexcept {
+  return *static_cast<EnergyLevelMap*>(ws[339]);
+}
 
 /*! Raw data for NLTE temperatures and/or ratios.
 
-This variable gives the NLTE temperature/ratio as stored in the 
+This variable gives the NLTE temperature/ratio as stored in the
 database for the atmospheric scenarios.
 
 See further the ARTS user guide (AUG). Use the index to find where
@@ -2363,27 +2714,33 @@ Usage: Set by the user by choosing a climatology.
 
 Unit:  K
 
-Size   ArrayOfGriddedField3 
+Size   ArrayOfGriddedField3
  array:
        [NLTE levels] or [ 0 ]
 fields:
-       [N_p] 
-       [N_lat] 
-       [N_lon] 
-       [N_p, N_lat, N_lon] 
+       [N_p]
+       [N_lat]
+       [N_lon]
+       [N_p, N_lat, N_lon]
 */
-ArrayOfGriddedField3& nlte_field_raw(Workspace& ws) noexcept { return *static_cast<ArrayOfGriddedField3 *>(ws[341]); }
+ArrayOfGriddedField3& nlte_field_raw(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfGriddedField3*>(ws[341]);
+}
 
 /*! An array of non-lte quantum identifiers for levels matching
-*nlte_field_raw* and on request *nlte_vibrational_energies*.
-*/
-ArrayOfQuantumIdentifier& nlte_level_identifiers(Workspace& ws) noexcept { return *static_cast<ArrayOfQuantumIdentifier *>(ws[179]); }
+ *nlte_field_raw* and on request *nlte_vibrational_energies*.
+ */
+ArrayOfQuantumIdentifier& nlte_level_identifiers(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfQuantumIdentifier*>(ws[179]);
+}
 
 /*! Variable to contain the additional source function due to NLTE effects.
 
 Dimensions: [ nspecies ] [nza, naa, nf, stokes_dim] or [0]
 */
-ArrayOfStokesVector& nlte_source(Workspace& ws) noexcept { return *static_cast<ArrayOfStokesVector *>(ws[192]); }
+ArrayOfStokesVector& nlte_source(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfStokesVector*>(ws[192]);
+}
 
 /*! Analog to *propmat_clearsky_field* for *propmat_clearsky*, but for.
 the *nlte_source* variable.
@@ -2392,28 +2749,36 @@ Unit:       1/m
 
 Dimensions: [species, f_grid, *stokes_dim*, p_grid, lat_grid, lon_grid]
 */
-Tensor6& nlte_source_field(Workspace& ws) noexcept { return *static_cast<Tensor6 *>(ws[193]); }
+Tensor6& nlte_source_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor6*>(ws[193]);
+}
 
 /*! An list of vibrational energies matching
-*nlte_level_identifiers* and *nlte_field_raw* or being 0.
-*/
-Vector& nlte_vibrational_energies(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[180]); }
+ *nlte_level_identifiers* and *nlte_field_raw* or being 0.
+ */
+Vector& nlte_vibrational_energies(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[180]);
+}
 
 /*! Number of elements in 3rd lowest dimension of a Tensor.
-*/
-Index& npages(Workspace& ws) noexcept { return *static_cast<Index *>(ws[186]); }
+ */
+Index& npages(Workspace& ws) noexcept { return *static_cast<Index*>(ws[186]); }
 
 /*! Number of rows (elements in 2nd lowest dimension) of a Matrix or Tensor.
-*/
-Index& nrows(Workspace& ws) noexcept { return *static_cast<Index *>(ws[185]); }
+ */
+Index& nrows(Workspace& ws) noexcept { return *static_cast<Index*>(ws[185]); }
 
 /*! Number of elements in 5th lowest dimension of a Tensor.
-*/
-Index& nshelves(Workspace& ws) noexcept { return *static_cast<Index *>(ws[188]); }
+ */
+Index& nshelves(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[188]);
+}
 
 /*! Number of elements in 6th lowest dimension of a Tensor.
-*/
-Index& nvitrines(Workspace& ws) noexcept { return *static_cast<Index *>(ws[189]); }
+ */
+Index& nvitrines(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[189]);
+}
 
 /*! Basic diagnostics of an OEM type inversion.
 
@@ -2432,11 +2797,15 @@ This is a vector of length 5, having the elements (0-based index):
 See WSM *OEM* for a definition of "cost". Values not calculated
 are set to NaN.
 */
-Vector& oem_diagnostics(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[194]); }
+Vector& oem_diagnostics(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[194]);
+}
 
 /*! Errors encountered during OEM execution.
-*/
-ArrayOfString& oem_errors(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[195]); }
+ */
+ArrayOfString& oem_errors(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[195]);
+}
 
 /*! Output file format.
 
@@ -2448,7 +2817,9 @@ To change the value of this variable use the workspace methods
 *output_file_formatSetAscii*, *output_file_formatSetZippedAscii*, and
 *output_file_formatSetBinary*
 */
-String& output_file_format(Workspace& ws) noexcept { return *static_cast<String *>(ws[196]); }
+String& output_file_format(Workspace& ws) noexcept {
+  return *static_cast<String*>(ws[196]);
+}
 
 /*! The pressure grid.
 
@@ -2456,7 +2827,7 @@ The pressure levels on which the atmospheric fields are defined.
 This variable must always be defined. The grid must be sorted in
 decreasing order, with no repetitions.
 
-No gap between the lowermost pressure level and the surface is 
+No gap between the lowermost pressure level and the surface is
 allowed. The uppermost pressure level defines the practical upper
 limit of the atmosphere as vacuum is assumed above.
 
@@ -2468,7 +2839,9 @@ Usage: Set by the user.
 
 Unit:  Pa
 */
-Vector& p_grid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[242]); }
+Vector& p_grid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[242]);
+}
 
 /*! The original pressure grid before optimization.
 
@@ -2481,7 +2854,9 @@ Usage: Set by the user.
 
 Unit:  Pa
 */
-Vector& p_grid_orig(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[243]); }
+Vector& p_grid_orig(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[243]);
+}
 
 /*! Reference pressure calculation of hydrostatic equilibrium.
 
@@ -2493,12 +2868,14 @@ Usage: Set by the user.
 
 Unit:  Pa
 */
-Numeric& p_hse(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[244]); }
+Numeric& p_hse(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[244]);
+}
 
 /*! Container for various data that describes scattering bulk properties.
 
 The number and order of bulk properties is free, as long as the data are
-consistent with the content of *particle_bulkprop_names*. 
+consistent with the content of *particle_bulkprop_names*.
 
 The data shall be given on the standard atmospheric grids. When actually
 used, this variable must have zeros at all positions outside and at the
@@ -2506,7 +2883,9 @@ border of the cloudbox.
 
 Dimensions: [ particle_bulkprop_names, p_grid, lat_grid, lon_grid ]
 */
-Tensor4& particle_bulkprop_field(Workspace& ws) noexcept { return *static_cast<Tensor4 *>(ws[197]); }
+Tensor4& particle_bulkprop_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor4*>(ws[197]);
+}
 
 /*! Identification of the data in *particle_bulkprop_field*.
 
@@ -2516,7 +2895,9 @@ first one will be selected.
 
 Dimensions: length should match book-dimension of *particle_bulkprop_field*
 */
-ArrayOfString& particle_bulkprop_names(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[198]); }
+ArrayOfString& particle_bulkprop_names(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[198]);
+}
 
 /*! The mass of individual particles (or bulks).
 
@@ -2540,14 +2921,18 @@ Unit:       kg
 
 Dimensions: [number of scattering elements, number of mass categories]
 */
-Matrix& particle_masses(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[199]); }
+Matrix& particle_masses(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[199]);
+}
 
 /*! Partition functions.
 
 This variable can be set to default values by
 calling *partition_functionsInitFromBuiltin*
 */
-SpeciesAuxData& partition_functions(Workspace& ws) noexcept { return *static_cast<SpeciesAuxData *>(ws[200]); }
+SpeciesAuxData& partition_functions(Workspace& ws) noexcept {
+  return *static_cast<SpeciesAuxData*>(ws[200]);
+}
 
 /*! Ensemble averaged phase matrix.
 
@@ -2565,23 +2950,28 @@ Unit:        m^2
 
 Dimensions: [za_grid, aa_grid, stokes_dim, stokes_dim]
 */
-Tensor4& pha_mat(Workspace& ws) noexcept { return *static_cast<Tensor4 *>(ws[201]); }
+Tensor4& pha_mat(Workspace& ws) noexcept {
+  return *static_cast<Tensor4*>(ws[201]);
+}
 
 /*! Ensemble averaged phase matrix for DOIT calculation.
 
 This workspace variable represents the actual physical phase
-matrix (averaged over all scattering elements) for given incident and 
-propagation directions. It is calculated in the method *DoitScatteringDataPrepare*.
+matrix (averaged over all scattering elements) for given incident and
+propagation directions. It is calculated in the method
+*DoitScatteringDataPrepare*.
 
 See ARTS user guide (AUG) for further information.
 Usage:      Output of the method *pha_matCalc*
 
 Unit:        m^2
 
-Dimensions: [T,za_grid, aa_grid, za_grid, aa_grid, 
+Dimensions: [T,za_grid, aa_grid, za_grid, aa_grid,
  stokes_dim, stokes_dim]
 */
-Tensor7& pha_mat_doit(Workspace& ws) noexcept { return *static_cast<Tensor7 *>(ws[202]); }
+Tensor7& pha_mat_doit(Workspace& ws) noexcept {
+  return *static_cast<Tensor7*>(ws[202]);
+}
 
 /*! Phase matrix for all individual scattering elements.
 
@@ -2599,30 +2989,36 @@ Unit:       m^2
 Dimensions: [number of scattering elements, za_grid, aa_grid,
              stokes_dim, stokes_dim]
 */
-Tensor5& pha_mat_spt(Workspace& ws) noexcept { return *static_cast<Tensor5 *>(ws[203]); }
+Tensor5& pha_mat_spt(Workspace& ws) noexcept {
+  return *static_cast<Tensor5*>(ws[203]);
+}
 
 /*! Interpolated phase matrix.
 
-This variable contains the data of the phase matrix in the 
+This variable contains the data of the phase matrix in the
 scattering frame interpolated on the actual frequency (the variable
-is used inside *doit_mono_agenda*) and also interpolated on all 
-possible scattering angles following from all combinations of 
-*za_grid* and *aa_grid*. 
+is used inside *doit_mono_agenda*) and also interpolated on all
+possible scattering angles following from all combinations of
+*za_grid* and *aa_grid*.
 
 Usage:      Input of the method *pha_mat_sptFromDataDOITOpt*
 
 Unit:        m^2
 
-Dimensions: 
+Dimensions:
 [number of scattering elements]
 [T, za_grid, aa_grid, za_grid, aa_grid,
  stokes_dim, stokes_dim]
 */
-ArrayOfTensor7& pha_mat_sptDOITOpt(Workspace& ws) noexcept { return *static_cast<ArrayOfTensor7 *>(ws[205]); }
+ArrayOfTensor7& pha_mat_sptDOITOpt(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTensor7*>(ws[205]);
+}
 
 /*! Agenda calculates the phase matrix for individual scattering elements.
-*/
-Agenda& pha_mat_spt_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[204]); }
+ */
+Agenda& pha_mat_spt_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[204]);
+}
 
 /*! The sidereal rotation period of the planet.
 
@@ -2634,7 +3030,9 @@ A negative value signifies a retrograde rotation, i.e. opposite to
 the rotation of Earth.
 Unit:   s
 */
-Numeric& planet_rotation_period(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[206]); }
+Numeric& planet_rotation_period(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[206]);
+}
 
 /*! Mapping of particle bulk properties to number density data.
 
@@ -2645,7 +3043,9 @@ In short, each agenda takes some bulk property data as input, and returns
 particle number densities for all scattering elements of the species.
 See further *pnd_agenda_input* and associated variables.
 */
-ArrayOfAgenda& pnd_agenda_array(Workspace& ws) noexcept { return *static_cast<ArrayOfAgenda *>(ws[207]); }
+ArrayOfAgenda& pnd_agenda_array(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfAgenda*>(ws[207]);
+}
 
 /*! Naming of all input expected by *pnd_agenda_array*.
 
@@ -2654,7 +3054,9 @@ element in *pnd_agenda_array*.
 
 Dimension: [ n_scattering_species ][ n_input_variables ]
 */
-ArrayOfArrayOfString& pnd_agenda_array_input_names(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfString *>(ws[210]); }
+ArrayOfArrayOfString& pnd_agenda_array_input_names(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfString*>(ws[210]);
+}
 
 /*! The variable input to one element of *pnd_agenda_array*.
 
@@ -2671,7 +3073,9 @@ pnd-agendas are expected to process multiple points in one call.
 
 Dimensions: [ n_points, n_input_variables ]
 */
-Matrix& pnd_agenda_input(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[208]); }
+Matrix& pnd_agenda_input(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[208]);
+}
 
 /*! Naming of (existing or expected) data in *pnd_agenda_input*.
 
@@ -2680,7 +3084,9 @@ The strings of this variable refer to the corresponding column in
 
 Dimension: [ n_input_variables ]
 */
-ArrayOfString& pnd_agenda_input_names(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[211]); }
+ArrayOfString& pnd_agenda_input_names(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[211]);
+}
 
 /*! Temperature input to one element of *pnd_agenda_array*.
 
@@ -2692,7 +3098,9 @@ pnd-agendas are expected to process multiple points in one call.
 
 Dimensions: [ n_points ]
 */
-Vector& pnd_agenda_input_t(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[209]); }
+Vector& pnd_agenda_input_t(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[209]);
+}
 
 /*! Particle number density values for a set of points.
 
@@ -2702,7 +3110,9 @@ same way as *pnd_agenda_input* is defined.
 
 Dimensions: [ n_points, n_scattering_elements ]
 */
-Matrix& pnd_data(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[212]); }
+Matrix& pnd_data(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[212]);
+}
 
 /*! Particle number density field.
 
@@ -2724,12 +3134,14 @@ Usage:      Set by user or output of *pnd_fieldCalcFromParticleBulkProps*
 
 Unit:        m^-3
 
-Size: [number of scattering elements, 
-       (*cloudbox_limits*[1] - *cloudbox_limits*[0]) +1, 
-       (*cloudbox_limits*[3] - *cloudbox_limits*[2]) +1, 
-       (*cloudbox_limits*[5] - *cloudbox_limits*[4]) +1 ] 
+Size: [number of scattering elements,
+       (*cloudbox_limits*[1] - *cloudbox_limits*[0]) +1,
+       (*cloudbox_limits*[3] - *cloudbox_limits*[2]) +1,
+       (*cloudbox_limits*[5] - *cloudbox_limits*[4]) +1 ]
 */
-Tensor4& pnd_field(Workspace& ws) noexcept { return *static_cast<Tensor4 *>(ws[213]); }
+Tensor4& pnd_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor4*>(ws[213]);
+}
 
 /*! The particle number density field raw data.
 
@@ -2738,19 +3150,21 @@ considered scattering elements. *pnd_field_raw* is an Array of
 GriddedField3. It includes one GriddedField3 for each scattering
 element, which contains both the data and the corresponding grids.
 
-Usage: Set by the user. Input to methods *ScatElementsPndAndScatAdd* and 
+Usage: Set by the user. Input to methods *ScatElementsPndAndScatAdd* and
        *ScatSpeciesPndAndScatAdd*
 
 Unit:  m^-3
 
 Size:  Array[number of scattering elementst]
-       GriddedField3 
-        [number of pressure levels] 
-       [number of latitudes] 
-       [number of longitudes] 
+       GriddedField3
+        [number of pressure levels]
+       [number of latitudes]
+       [number of longitudes]
        [number of pressure levels, number of latitudes, number of longitudes]
 */
-ArrayOfGriddedField3& pnd_field_raw(Workspace& ws) noexcept { return *static_cast<ArrayOfGriddedField3 *>(ws[215]); }
+ArrayOfGriddedField3& pnd_field_raw(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfGriddedField3*>(ws[215]);
+}
 
 /*! The particle sizes associated with *pnd_data*.
 
@@ -2761,7 +3175,9 @@ and mass.
 
 Dimension: [ n_sizes ]
 */
-Vector& pnd_size_grid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[214]); }
+Vector& pnd_size_grid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[214]);
+}
 
 /*! The propagation path for one line-of-sight.
 
@@ -2773,16 +3189,18 @@ interpolation of the atmospheric fields.
 
 The data struture is too extensive to be described here, but it is
 described carefully in the ARTS user guide (AUG). Use the index to
-find where the data structure, Ppath, for propagation paths is 
+find where the data structure, Ppath, for propagation paths is
 discussed. It is listed as a subentry to "data structures".
 
 Usage: Output from *ppath_agenda*.
 */
-Ppath& ppath(Workspace& ws) noexcept { return *static_cast<Ppath *>(ws[216]); }
+Ppath& ppath(Workspace& ws) noexcept { return *static_cast<Ppath*>(ws[216]); }
 
 /*! Agenda calculating complete propagation paths.
-*/
-Agenda& ppath_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[217]); }
+ */
+Agenda& ppath_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[217]);
+}
 
 /*! An array meant to build up the necessary geometries for radiative
 field calculations.
@@ -2791,7 +3209,9 @@ Can be ordered or not
 
 Size: user-defined
 */
-ArrayOfPpath& ppath_field(Workspace& ws) noexcept { return *static_cast<ArrayOfPpath *>(ws[218]); }
+ArrayOfPpath& ppath_field(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfPpath*>(ws[218]);
+}
 
 /*! Flag to perform ray tracing inside the cloudbox.
 
@@ -2802,7 +3222,9 @@ cloudbox. Hence, this variable is for internal usage primarily.
 
 Usage: For communication between modules of arts.
 */
-Index& ppath_inside_cloudbox_do(Workspace& ws) noexcept { return *static_cast<Index *>(ws[219]); }
+Index& ppath_inside_cloudbox_do(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[219]);
+}
 
 /*! Maximum length between points describing propagation paths.
 
@@ -2810,7 +3232,9 @@ See *ppath_stepGeometric* for a description of this variable.
 
 Usage: Ppath methods such as *ppath_stepGeometric*.
 */
-Numeric& ppath_lmax(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[220]); }
+Numeric& ppath_lmax(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[220]);
+}
 
 /*! Maximum length of ray tracing steps when determining propagation
 paths.
@@ -2819,7 +3243,9 @@ See *ppath_stepRefractionBasic* for a description of this variable.
 
 Usage: Refraction ppath methods such as *ppath_stepRefractionBasic*.
 */
-Numeric& ppath_lraytrace(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[221]); }
+Numeric& ppath_lraytrace(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[221]);
+}
 
 /*! A propagation path step.
 
@@ -2834,11 +3260,15 @@ Usage:   In/output to/from *ppath_step_agenda*.
 
 Members: See AUG.
 */
-Ppath& ppath_step(Workspace& ws) noexcept { return *static_cast<Ppath *>(ws[222]); }
+Ppath& ppath_step(Workspace& ws) noexcept {
+  return *static_cast<Ppath*>(ws[222]);
+}
 
 /*! Agenda calculating a propagation path step.
-*/
-Agenda& ppath_step_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[223]); }
+ */
+Agenda& ppath_step_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[223]);
+}
 
 /*! Doppler adjusted frequencies along the propagation path.
 
@@ -2848,7 +3278,9 @@ Dimension: [ number of frequencies, ppath.np ]
 
 Usage: Output of radiative transfer methods.
 */
-Matrix& ppvar_f(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[224]); }
+Matrix& ppvar_f(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[224]);
+}
 
 /*! iy-values along the propagation path.
 
@@ -2858,7 +3290,9 @@ Dimension: [ number of frequencies, stokes_dim, ppath.np ]
 
 Usage: Output of radiative transfer methods.
 */
-Tensor3& ppvar_iy(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[225]); }
+Tensor3& ppvar_iy(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[225]);
+}
 
 /*! Magnetic field along the propagation path.
 
@@ -2868,7 +3302,9 @@ Dimension: [ 3, ppath.np ]
 
 Usage: Output of radiative transfer methods.
 */
-Matrix& ppvar_mag(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[226]); }
+Matrix& ppvar_mag(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[226]);
+}
 
 /*! Non-LTE temperatures/ratios along the propagation path.
 
@@ -2878,7 +3314,9 @@ Dimension: [ number of non-lte temperatures, 1, 1, ppath.np ]
 
 Usage: Output of radiative transfer methods.
 */
-EnergyLevelMap& ppvar_nlte(Workspace& ws) noexcept { return *static_cast<EnergyLevelMap *>(ws[227]); }
+EnergyLevelMap& ppvar_nlte(Workspace& ws) noexcept {
+  return *static_cast<EnergyLevelMap*>(ws[227]);
+}
 
 /*! The optical depth between the sensor and each point of the propagation path.
 
@@ -2892,7 +3330,9 @@ Dimension: [ ppath.np, f_grid]
 
 Usage: Output of radiative transfer methods.
 */
-Matrix& ppvar_optical_depth(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[230]); }
+Matrix& ppvar_optical_depth(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[230]);
+}
 
 /*! Pressure along the propagation path.
 
@@ -2904,7 +3344,9 @@ Dimension: [ ppath.np ]
 
 Usage: Output of radiative transfer methods.
 */
-Vector& ppvar_p(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[228]); }
+Vector& ppvar_p(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[228]);
+}
 
 /*! PND values along the propagation path.
 
@@ -2914,7 +3356,9 @@ Dimension: [ number of scattering elements, ppath.np ]
 
 Usage: Output of radiative transfer methods.
 */
-Matrix& ppvar_pnd(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[229]); }
+Matrix& ppvar_pnd(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[229]);
+}
 
 /*! Temperature along the propagation path.
 
@@ -2924,7 +3368,9 @@ Dimension: [ ppath.np ]
 
 Usage: Output of radiative transfer methods.
 */
-Vector& ppvar_t(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[231]); }
+Vector& ppvar_t(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[231]);
+}
 
 /*! The transmission between the sensor and each point of the propagation path.
 
@@ -2937,7 +3383,9 @@ Dimension: [ ppath.np, f_grid, stokes_dim, stokes_dim ]
 
 Usage: Output of radiative transfer methods.
 */
-Tensor4& ppvar_trans_cumulat(Workspace& ws) noexcept { return *static_cast<Tensor4 *>(ws[232]); }
+Tensor4& ppvar_trans_cumulat(Workspace& ws) noexcept {
+  return *static_cast<Tensor4*>(ws[232]);
+}
 
 /*! The transmission between each point along the propagation path.
 
@@ -2947,7 +3395,9 @@ Dimension: [ ppath.np, f_grid, stokes_dim, stokes_dim ]
 
 Usage: Output of radiative transfer methods.
 */
-Tensor4& ppvar_trans_partial(Workspace& ws) noexcept { return *static_cast<Tensor4 *>(ws[233]); }
+Tensor4& ppvar_trans_partial(Workspace& ws) noexcept {
+  return *static_cast<Tensor4*>(ws[233]);
+}
 
 /*! VMR values along the propagation path.
 
@@ -2957,7 +3407,9 @@ Dimension: [ number of abs. species, ppath.np ]
 
 Usage: Output of radiative transfer methods.
 */
-Matrix& ppvar_vmr(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[234]); }
+Matrix& ppvar_vmr(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[234]);
+}
 
 /*! Winds along the propagation path.
 
@@ -2967,7 +3419,9 @@ Dimension: [ 3, ppath.np ]
 
 Usage: Output of radiative transfer methods.
 */
-Matrix& ppvar_wind(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[235]); }
+Matrix& ppvar_wind(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[235]);
+}
 
 /*! This contains the absorption coefficients for one point in the
 atmosphere (one set of pressure, temperature, magnetic field, and
@@ -2977,22 +3431,28 @@ Dimensions: [ abs_species ] [naa, nza, nf, f(stokes_dim)]
 
 Unit: 1/m
 */
-ArrayOfPropagationMatrix& propmat_clearsky(Workspace& ws) noexcept { return *static_cast<ArrayOfPropagationMatrix *>(ws[236]); }
+ArrayOfPropagationMatrix& propmat_clearsky(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfPropagationMatrix*>(ws[236]);
+}
 
 /*! Agenda calculating the absorption coefficient matrices.
-*/
-Agenda& propmat_clearsky_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[238]); }
+ */
+Agenda& propmat_clearsky_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[238]);
+}
 
 /*! OK-flag for *propmat_clearsky_agenda*.
 
 Set by *propmat_clearsky_agenda_checkedCalc*.
 */
-Index& propmat_clearsky_agenda_checked(Workspace& ws) noexcept { return *static_cast<Index *>(ws[237]); }
+Index& propmat_clearsky_agenda_checked(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[237]);
+}
 
 /*! Gas absorption field.
 
 Contains the (polarized) gas absorption coefficients for all species
-as a function of *f_grid*, *p_grid*, *lat_grid*, and *lon_grid*. 
+as a function of *f_grid*, *p_grid*, *lat_grid*, and *lon_grid*.
 
 This is mainly for testing and plotting gas absorption. For RT
 calculations, gas absorption is calculated or extracted locally,
@@ -3001,9 +3461,12 @@ is handy for easy plotting of absorption vs. pressure, for example.
 
 Unit:       1/m
 
-Dimensions: [species, f_grid, *stokes_dim*, stokes_dim, p_grid, lat_grid, lon_grid]
+Dimensions: [species, f_grid, *stokes_dim*, stokes_dim, p_grid, lat_grid,
+lon_grid]
 */
-Tensor7& propmat_clearsky_field(Workspace& ws) noexcept { return *static_cast<Tensor7 *>(ws[239]); }
+Tensor7& propmat_clearsky_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor7*>(ws[239]);
+}
 
 /*! Particle size distribution values for a set of points.
 
@@ -3013,7 +3476,9 @@ same way as *pnd_agenda_input* is defined.
 
 Dimensions: [ n_points, n_scattering_elements ]
 */
-Matrix& psd_data(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[240]); }
+Matrix& psd_data(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[240]);
+}
 
 /*! The particle sizes associated with *psd_data*.
 
@@ -3024,20 +3489,24 @@ and mass.
 
 Dimension: [ n_sizes ]
 */
-Vector& psd_size_grid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[241]); }
+Vector& psd_size_grid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[241]);
+}
 
 /*! Radiant flux per unit solid angle per unit projected area
-seperately for each hemisphere. 
+seperately for each hemisphere.
 
-The last dimension denotes the hemispheres. The first component is the downward radiance
-and the second component is the upward radianceUnits: W / (m^2 sr)
+The last dimension denotes the hemispheres. The first component is the downward
+radiance and the second component is the upward radianceUnits: W / (m^2 sr)
 
-Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1, 
-       (cloudbox_limits[3] - cloudbox_limits[2]) +1, 
-       (cloudbox_limits[5] - cloudbox_limits[4]) +1, 
+Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
+       (cloudbox_limits[3] - cloudbox_limits[2]) +1,
+       (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         N_za, N_aa
 */
-Tensor5& radiance_field(Workspace& ws) noexcept { return *static_cast<Tensor5 *>(ws[245]); }
+Tensor5& radiance_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor5*>(ws[245]);
+}
 
 /*! The range bins of an active instrument.
 
@@ -3051,7 +3520,9 @@ altitude (or maybe both options are treated).
 
 Unit: m or s
 */
-Vector& range_bins(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[246]); }
+Vector& range_bins(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[246]);
+}
 
 /*! Reference ellipsoid.
 
@@ -3074,7 +3545,9 @@ Usage:  Set by the user.
 
 Size:   [ 2 ]
 */
-Vector& refellipsoid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[250]); }
+Vector& refellipsoid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[250]);
+}
 
 /*! Real part of the refractive index of air.
 
@@ -3084,11 +3557,15 @@ is related to the phase velocity. See also *refr_index_air_group*.
 
 Unit: 1
 */
-Numeric& refr_index_air(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[247]); }
+Numeric& refr_index_air(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[247]);
+}
 
 /*! Agenda calculating the refractive index of air.
-*/
-Agenda& refr_index_air_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[248]); }
+ */
+Agenda& refr_index_air_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[248]);
+}
 
 /*! Group index of refractivity.
 
@@ -3099,14 +3576,18 @@ phase velocity. See also *refr_index_air*.
 
 Unit: 1
 */
-Numeric& refr_index_air_group(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[249]); }
+Numeric& refr_index_air_group(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[249]);
+}
 
 /*! Relaxation matrix per band per pressure level.
 
 Dimensions: [pressures][band][n_linex, nlines]
 Units: Hz/Pa in HWHM
 */
-ArrayOfArrayOfMatrix& relmat_per_band(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfMatrix *>(ws[251]); }
+ArrayOfArrayOfMatrix& relmat_per_band(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfMatrix*>(ws[251]);
+}
 
 /*! Used to set the type of line mixing relaxation matrix
 that will be calculated.
@@ -3117,13 +3598,17 @@ Supported types by index:
 
 Dimensions: [number of bands]
 */
-ArrayOfIndex& relmat_type_per_band(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[252]); }
+ArrayOfIndex& relmat_type_per_band(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[252]);
+}
 
 /*! Flag indicating completeness and consistency of retrieval setup.
 
 Unit: Boolean
 */
-Index& retrieval_checked(Workspace& ws) noexcept { return *static_cast<Index *>(ws[253]); }
+Index& retrieval_checked(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[253]);
+}
 
 /*! The estimated error in the retrieval due to uncertainty in the observations.
 
@@ -3131,7 +3616,9 @@ The vector contains the square roots  of the diagonal elements of  the
 covariance matrix of the error due to measurement noise, S_m in Rodgers'
  book.
 */
-Vector& retrieval_eo(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[254]); }
+Vector& retrieval_eo(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[254]);
+}
 
 /*! The estimated error in the retrieval due to limited resolution of the
 observation system.
@@ -3140,7 +3627,9 @@ The vector contains the square roots of the diagonal
 elements of the covariance matrix of the smoothing error, S_s in Rodgers'
 book.
 */
-Vector& retrieval_ss(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[255]); }
+Vector& retrieval_ss(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[255]);
+}
 
 /*! Velocity along the line-of-sight to consider for a RT calculation.
 
@@ -3156,7 +3645,9 @@ system used that is fixed to the planets centre point.
 
 Unit: [ m/s ]
 */
-Numeric& rte_alonglos_v(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[256]); }
+Numeric& rte_alonglos_v(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[256]);
+}
 
 /*! A line-of-sight for (complete) radiative transfer calculations.
 
@@ -3164,7 +3655,7 @@ This variable gives the observation direction for monochromatic
 pencil beam calculations. Hence, it is the line-of-sight at the end
 point of the propagation path.
 
-For 1D and 2D cases, *rte_los* is a vector of length 1 holding the 
+For 1D and 2D cases, *rte_los* is a vector of length 1 holding the
 zenith angle. For 3D, the length of the vector is 2, where the
 additional element is the azimuthal angle. These angles are defined
 in the ARTS user guide (AUG). Look in the index for "zenith angle"
@@ -3176,7 +3667,9 @@ Units: [ degree, degree ]
 
 Size:  [ 1 or 2 ]
 */
-Vector& rte_los(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[257]); }
+Vector& rte_los(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[257]);
+}
 
 /*! A geographical position for starting radiative transfer calculations.
 
@@ -3188,13 +3681,15 @@ This variable is a vector with a length equalling the atmospheric
 dimensionality. The first element is the geometrical altitude.
 Element 2 is the latitude and element 3 is the longitude.
 
-Usage: See above. 
+Usage: See above.
 
 Units: [ m, degree, degree ]
 
 Size:  [ atmosphere_dim ]
 */
-Vector& rte_pos(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[258]); }
+Vector& rte_pos(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[258]);
+}
 
 /*! A second geographical position to define the geometry for
 radiative transfer calculations.
@@ -3209,13 +3704,15 @@ As *rte_pos* with the exception that a "latitude" must also be
 specified for 1D. This is the angular distance to *rte_pos*, where
 this distance is defined as the 2D-"latitude".
 
-Usage: See above. 
+Usage: See above.
 
 Units: [ m, degree, degree ]
 
 Size:  [ atmosphere_dim ]
 */
-Vector& rte_pos2(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[259]); }
+Vector& rte_pos2(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[259]);
+}
 
 /*! Line-of-sight at a radiative transfer point.
 
@@ -3231,7 +3728,9 @@ Units: [ degree, degree ]
 
 Size:  [ 1 or 2 ]
 */
-Vector& rtp_los(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[261]); }
+Vector& rtp_los(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[261]);
+}
 
 /*! Magnetic field at a radiative transfer point.
 
@@ -3249,7 +3748,9 @@ Units: T
 
 Size:  [ u-component, v-component, w-component ]
 */
-Vector& rtp_mag(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[260]); }
+Vector& rtp_mag(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[260]);
+}
 
 /*! NLTE temperature/ratio at a radiative transfer point.
 
@@ -3264,7 +3765,9 @@ Usage: Communication variable.
 Units: [ K/# ]
 Size:  [ NLTE levels, 1, 1, 1 ] or [ 0, 0, 0, 0 ]
 */
-EnergyLevelMap& rtp_nlte(Workspace& ws) noexcept { return *static_cast<EnergyLevelMap *>(ws[265]); }
+EnergyLevelMap& rtp_nlte(Workspace& ws) noexcept {
+  return *static_cast<EnergyLevelMap*>(ws[265]);
+}
 
 /*! Position of a radiative transfer point.
 
@@ -3281,7 +3784,9 @@ Units: [ m, degree, degree ]
 
 Size:  [ atmosphere_dim ]
 */
-Vector& rtp_pos(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[262]); }
+Vector& rtp_pos(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[262]);
+}
 
 /*! Pressure at a radiative transfer point.
 
@@ -3294,7 +3799,9 @@ Usage: Communication variable.
 
 Units: [ Pa ]
 */
-Numeric& rtp_pressure(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[263]); }
+Numeric& rtp_pressure(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[263]);
+}
 
 /*! Temperature at a radiative transfer point.
 
@@ -3308,7 +3815,9 @@ Usage: Communication variable.
 
 Units: [ K ]
 */
-Numeric& rtp_temperature(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[264]); }
+Numeric& rtp_temperature(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[264]);
+}
 
 /*! Absorption species abundances for radiative transfer calculations.
 
@@ -3324,7 +3833,9 @@ Units: [ Differ between the elements, can be VMR, kg/m3 or #/m3. ]
 
 Size:  Should match abs_species.nelem()
 */
-Vector& rtp_vmr(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[266]); }
+Vector& rtp_vmr(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[266]);
+}
 
 /*! Array of single scattering data.
 
@@ -3335,14 +3846,18 @@ temperature interpolation is done for the respective data.
 
 Standard approach to derive scat_data is to use *scat_dataCalc* to
 derive it from *scat_data_raw*.*/
-ArrayOfArrayOfSingleScatteringData& scat_data(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfSingleScatteringData *>(ws[267]); }
+ArrayOfArrayOfSingleScatteringData& scat_data(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfSingleScatteringData*>(ws[267]);
+}
 
 /*! OK-flag for *scat_data*.
 
 Relevant checks are performed by *scat_data_checkedCalc. Only the
 value 1 is taken as OK.
 */
-Index& scat_data_checked(Workspace& ws) noexcept { return *static_cast<Index *>(ws[268]); }
+Index& scat_data_checked(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[268]);
+}
 
 /*! Monochromatic single scattering data.
 
@@ -3351,11 +3866,13 @@ scattering species and scattering elements for a specified frequency.
 It can be calculated from *scat_data* using *scat_data_monoCalc*,
 which interpolates *scat_data* to the required frequency.
 */
-ArrayOfArrayOfSingleScatteringData& scat_data_mono(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfSingleScatteringData *>(ws[270]); }
+ArrayOfArrayOfSingleScatteringData& scat_data_mono(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfSingleScatteringData*>(ws[270]);
+}
 
 /*! Array of raw single scattering data.
 
-This variable holds the single scattering properties for all 
+This variable holds the single scattering properties for all
 scattering elements, organized according to their assignment to a
 scattering species. *scat_data_raw* entries can be derived from
 precalculated data files using the methods *ScatElementsPndAndScatAdd*,
@@ -3368,7 +3885,7 @@ Usage: Method ouput.
 
 Members: SingleScatteringData:
   Enum[ptype attribute]
-  String[description] 
+  String[description]
   Vector[f_grid]
   Vector[T_grid]
   Vector[za_grid]
@@ -3382,9 +3899,11 @@ Members: SingleScatteringData:
   Tensor5[abs_vec_data]
       [f_grid, T_grid, za_grid, aa_grid, matrix_element]
 
-Dimensions: [number of scattering species][number of scattering elements] 
+Dimensions: [number of scattering species][number of scattering elements]
 */
-ArrayOfArrayOfSingleScatteringData& scat_data_raw(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfSingleScatteringData *>(ws[269]); }
+ArrayOfArrayOfSingleScatteringData& scat_data_raw(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfSingleScatteringData*>(ws[269]);
+}
 
 /*! Structure for the single scattering data.
 
@@ -3393,9 +3912,9 @@ See ARTS user guide for further information.
 
 Usage: Set by the user.
 
-Dimensions:  SingleScatteringData 
+Dimensions:  SingleScatteringData
   Enum[ptype attribute]
-  String[description] 
+  String[description]
   Vector[f_grid]
   Vector[T_grid]
   Vector[za_grid]
@@ -3409,7 +3928,9 @@ Dimensions:  SingleScatteringData
   Tensor5[abs_vec_data]
       [f_grid, T_grid, za_grid, aa_grid, matrix_element]
 */
-SingleScatteringData& scat_data_single(Workspace& ws) noexcept { return *static_cast<SingleScatteringData *>(ws[271]); }
+SingleScatteringData& scat_data_single(Workspace& ws) noexcept {
+  return *static_cast<SingleScatteringData*>(ws[271]);
+}
 
 /*! Latitude index for scattering calculations.
 
@@ -3421,7 +3942,9 @@ scattering calculations are done.
 Usage:    Input to the methods *spt_calc_agenda*,
                                *pha_mat_spt_agenda*
 */
-Index& scat_lat_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[272]); }
+Index& scat_lat_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[272]);
+}
 
 /*! Longitude index for scattering calculations.
 
@@ -3433,7 +3956,9 @@ scattering calculations are done.
 Usage:    Input to the methods *spt_calc_agenda*,
                                *pha_mat_spt_agenda*
 */
-Index& scat_lon_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[273]); }
+Index& scat_lon_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[273]);
+}
 
 /*! An Array of scattering meta data (*scat_meta_single*).
 
@@ -3457,7 +3982,9 @@ Usage: Set by the user.
 Dimensions: [scattering species][scattering elements]
 For more details, see also *scat_meta_single*.
 */
-ArrayOfArrayOfScatteringMetaData& scat_meta(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfScatteringMetaData *>(ws[275]); }
+ArrayOfArrayOfScatteringMetaData& scat_meta(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfScatteringMetaData*>(ws[275]);
+}
 
 /*! Structure for the scattering meta data.
 
@@ -3519,7 +4046,9 @@ Members:
     particles, area refers to the area covered by the substance
     mixture of the particle.
 */
-ScatteringMetaData& scat_meta_single(Workspace& ws) noexcept { return *static_cast<ScatteringMetaData *>(ws[274]); }
+ScatteringMetaData& scat_meta_single(Workspace& ws) noexcept {
+  return *static_cast<ScatteringMetaData*>(ws[274]);
+}
 
 /*! Pressure index for scattering calculations.
 
@@ -3531,7 +4060,9 @@ scattering calculations are done.
 Usage:    Input to the methods *spt_calc_agenda*,
                                *pha_mat_spt_agenda*
 */
-Index& scat_p_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[276]); }
+Index& scat_p_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[276]);
+}
 
 /*! Array of Strings defining the scattering species to consider.
 
@@ -3551,7 +4082,9 @@ the following structure with individual elements separated by dashes:
 
 Example: [''IWC-MH97'', ''LWC-H98_STCO'', ...]
 */
-ArrayOfString& scat_species(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[277]); }
+ArrayOfString& scat_species(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[277]);
+}
 
 /*! Mass-size relationship parameter, for one scattering species.
 
@@ -3565,13 +4098,17 @@ This WSV is a in the expression above.
 The WSV matching b is *scat_species_b*.
 The WSV matching x is *scat_species_x*.
 */
-Numeric& scat_species_a(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[278]); }
+Numeric& scat_species_a(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[278]);
+}
 
 /*! Mass-size relationship parameter, for one scattering species.
 
 See *scat_species_a* for details.
 */
-Numeric& scat_species_b(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[279]); }
+Numeric& scat_species_b(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[279]);
+}
 
 /*! The size grid of one scattering species.
 
@@ -3586,7 +4123,9 @@ See also *scat_species_a*, for example usage of this WSV.
 
 Dimension:  [number of scattering elements]
 */
-Vector& scat_species_x(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[280]); }
+Vector& scat_species_x(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[280]);
+}
 
 /*! OK-flag for sensor related variables.
 
@@ -3597,7 +4136,9 @@ dimensions of *sensor_pos* and *sensor_los*.
 Shall be set by *sensor_checkedCalc*. See that WSM for treated WSVs.
 Only the value 1 is taken as OK.
 */
-Index& sensor_checked(Workspace& ws) noexcept { return *static_cast<Index *>(ws[281]); }
+Index& sensor_checked(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[281]);
+}
 
 /*! Sensor description for simple AMSU setup.
 
@@ -3612,12 +4153,14 @@ Unit: All entries in Hz.
 
 Size: [number of channels, 3]
 */
-Matrix& sensor_description_amsu(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[282]); }
+Matrix& sensor_description_amsu(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[282]);
+}
 
 /*! The sensor line-of-sight (LOS) for each measurement block.
 
 Line-of-sights are specified by giving the zenith and azimuth angles.
-Column 1 holds the zenith angle. This angle is simply the angle 
+Column 1 holds the zenith angle. This angle is simply the angle
 between the zenith and LOS directions. For 1D and 3D the valid
 range is [0 180], while for 2D angles down to -180 degrees are
 allowed. Negative angles signifies for 2D observations towards
@@ -3625,7 +4168,7 @@ lower latitudes, while positive angles means observations towards
 higher latitudes. Nadir corresponds throughout to 180 degrees.
 
 The azimuth angle is given with respect to the meridian plane. That
-is, the plane going through the north and south poles. The valid 
+is, the plane going through the north and south poles. The valid
 range is [-180,180] where angles are counted clockwise; 0 means
 that the viewing or propagation direction is north-wise and +90 means
 that the direction of concern goes eastward.
@@ -3634,7 +4177,7 @@ No azimuth angle shall be specified for 1D and 2D. This angle is in
 general of no concern for these atmospheric dimensionalities, but
 matter in some cases, such as with respect to the Doppler shift due
 to winds. For 1D the azimuth angle is then assumed to be 0 deg, i.e.
-the sensor is treated to be directed towards North. For 2D, the 
+the sensor is treated to be directed towards North. For 2D, the
 implied azimuth is 0 or 180, depending of the zenith angle is positive
 or negative.
 
@@ -3648,7 +4191,9 @@ Unit:  [ degrees, degrees ]
 
 Size:  [ number of measurement blocks, 1 or 2 ]
 */
-Matrix& sensor_los(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[283]); }
+Matrix& sensor_los(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[283]);
+}
 
 /*! Flag if sensor response should be normalised or not (0 or 1).
 
@@ -3661,7 +4206,9 @@ this variable is discussed. The variable is listed as a sub-entry to
 
 Usage: Set by the user.
 */
-Index& sensor_norm(Workspace& ws) noexcept { return *static_cast<Index *>(ws[284]); }
+Index& sensor_norm(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[284]);
+}
 
 /*! A set of polarisation response angles.
 
@@ -3676,7 +4223,7 @@ polarisation angle.
 When applying the polarisation response by *yApplySensorPol*, this
 variable complements *sensor_pos* and *sensor_los*. This WSV matrix
 is also a matrix, that shall have the same number of rows as the other
-two matrices. 
+two matrices.
 
 The columns of *sensor_pol* corresponds to the channels/frequencies
 of the receiver. Each element gives the polarisation angle. A pure
@@ -3694,13 +4241,15 @@ Unit:  [ degrees ]
 
 Size:  [ number of measurement blocks, number of channels/frequencies ]
 */
-Matrix& sensor_pol(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[285]); }
+Matrix& sensor_pol(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[285]);
+}
 
 /*! The sensor position for each measurement block.
 
 The sensor positions are specified as a matrix, where the number of
 columns shall be equal to *atmosphere_dim*. Column 1 shall contain
-the altitude of the sensor platform, column 2 the latitude and the 
+the altitude of the sensor platform, column 2 the latitude and the
 last column the longitude. The number of rows corresponds to the
 number of measurement blocks.
 
@@ -3717,7 +4266,9 @@ Unit:  [ m, degrees, degrees ]
 
 Size:  [ number of measurement blocks, atmosphere_dim ]
 */
-Matrix& sensor_pos(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[286]); }
+Matrix& sensor_pos(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[286]);
+}
 
 /*! The matrix modelling the total sensor response.
 
@@ -3726,16 +4277,18 @@ The response is assumed to be identical for each such block.
 
 The matrix is the product of all the individual sensor response
 matrices. Therefore its dimensions are depending on the total sensor
-configuration. The *sensor_response* has to initialised by the 
+configuration. The *sensor_response* has to initialised by the
 *sensor_responseInit* method.
 
 Usage: Output/input to the *sensor_response...* methods.
 
 Units: -
 
-Dimension: See the individual *sensor_response...* method. 
+Dimension: See the individual *sensor_response...* method.
 */
-Sparse& sensor_response(Workspace& ws) noexcept { return *static_cast<Sparse *>(ws[287]); }
+Sparse& sensor_response(Workspace& ws) noexcept {
+  return *static_cast<Sparse*>(ws[287]);
+}
 
 /*! The relative azimuth angles associated with the output of
 *sensor_response*.
@@ -3747,11 +4300,15 @@ Usage: Set by sensor response methods.
 
 Unit:  [ degrees ]
 */
-Vector& sensor_response_aa(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[288]); }
+Vector& sensor_response_aa(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[288]);
+}
 
 /*! Agenda providing the sensor response data for a measurement block.
-*/
-Agenda& sensor_response_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[289]); }
+ */
+Agenda& sensor_response_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[289]);
+}
 
 /*! The relative zenith and azimuth angles associated with the output of
 *sensor_response*.
@@ -3766,7 +4323,9 @@ Usage: Set by sensor response methods.
 
 Unit:  [ degrees ]
 */
-Matrix& sensor_response_dlos(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[290]); }
+Matrix& sensor_response_dlos(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[290]);
+}
 
 /*! The zenith and azimuth angles associated with *sensor_response*.
 
@@ -3779,7 +4338,9 @@ Usage: Set by sensor response methods.
 
 Unit:  [ degrees ]
 */
-Matrix& sensor_response_dlos_grid(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[291]); }
+Matrix& sensor_response_dlos_grid(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[291]);
+}
 
 /*! The frequencies associated with the output of *sensor_response*.
 
@@ -3796,7 +4357,9 @@ Usage: Set by sensor response methods.
 
 Unit:  [ Hz ]
 */
-Vector& sensor_response_f(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[292]); }
+Vector& sensor_response_f(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[292]);
+}
 
 /*! The frequency grid associated with *sensor_response*.
 
@@ -3809,7 +4372,9 @@ Usage: Set by sensor response methods.
 
 Unit:  [ Hz ]
 */
-Vector& sensor_response_f_grid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[293]); }
+Vector& sensor_response_f_grid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[293]);
+}
 
 /*! The polarisation states associated with the output of
 *sensor_response*.
@@ -3825,13 +4390,15 @@ Usage: Set by sensor response methods.
 
 Unit:  [ - ]
 */
-ArrayOfIndex& sensor_response_pol(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[294]); }
+ArrayOfIndex& sensor_response_pol(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[294]);
+}
 
 /*! The "polarisation grid" associated with *sensor_response*.
 
 A variable for communication between sensor response WSMs. It is
-initially 1:stokes_dim, but can later adjusted according to the 
-sensor specifications. Only defined when a common grid exists. 
+initially 1:stokes_dim, but can later adjusted according to the
+sensor specifications. Only defined when a common grid exists.
 
 See *instrument_pol* for coding of polarisation states.
 
@@ -3839,7 +4406,9 @@ Usage: Set by sensor response methods.
 
 Unit:  [ - ]
 */
-ArrayOfIndex& sensor_response_pol_grid(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[295]); }
+ArrayOfIndex& sensor_response_pol_grid(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[295]);
+}
 
 /*! The time for each measurement block.
 
@@ -3852,7 +4421,9 @@ Unit:  [ arbitrary ]
 
 Size:  [ number of measurement blocks ]
 */
-Vector& sensor_time(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[296]); }
+Vector& sensor_time(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[296]);
+}
 
 /*! Description of target sideband.
 
@@ -3863,7 +4434,9 @@ instrument) that can be seen as "main" band. Possible choices are:
 
 Usage: Set by the user.
 */
-String& sideband_mode(Workspace& ws) noexcept { return *static_cast<String *>(ws[297]); }
+String& sideband_mode(Workspace& ws) noexcept {
+  return *static_cast<String*>(ws[297]);
+}
 
 /*! Description of target sideband for a multiple LO receiver.
 
@@ -3873,7 +4446,9 @@ this array must match the size of those WSVs.
 
 Usage: Set by the user.
 */
-ArrayOfString& sideband_mode_multi(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[298]); }
+ArrayOfString& sideband_mode_multi(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[298]);
+}
 
 /*! Description of (mixer) sideband response.
 
@@ -3885,18 +4460,20 @@ response for other frequencies.
 
 The frequency grid should be given in terms of IF, with end points
 symmetrically placed around zero. That is, the grid must contain
-both negative and positive values. The sideband response (after 
+both negative and positive values. The sideband response (after
 summation with *lo*) is not allowed to extend outside the range
 for which spectral data exist (normally determined by *f_grid*).
 
 Usage: Set by the user.
 
-Dimensions: 
+Dimensions:
    GriddedField1:
       Vector f_grid[N_f]
       Vector data[N_f]
 */
-GriddedField1& sideband_response(Workspace& ws) noexcept { return *static_cast<GriddedField1 *>(ws[299]); }
+GriddedField1& sideband_response(Workspace& ws) noexcept {
+  return *static_cast<GriddedField1*>(ws[299]);
+}
 
 /*! Description of multiple (mixer) sideband responses.
 
@@ -3908,19 +4485,23 @@ Unit: Hz
 
 Usage: Set by the user.
 */
-ArrayOfGriddedField1& sideband_response_multi(Workspace& ws) noexcept { return *static_cast<ArrayOfGriddedField1 *>(ws[300]); }
+ArrayOfGriddedField1& sideband_response_multi(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfGriddedField1*>(ws[300]);
+}
 
 /*! Specific heat capacity.
 
-It is the heat capacity per unit 
+It is the heat capacity per unit
 mass of a material.
 Units: K J^-1 kg^-1
 
-Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1, 
-       (cloudbox_limits[3] - cloudbox_limits[2]) +1, 
-       (cloudbox_limits[5] - cloudbox_limits[4]) +1, 
+Size: [(cloudbox_limits[1] - cloudbox_limits[0]) +1,
+       (cloudbox_limits[3] - cloudbox_limits[2]) +1,
+       (cloudbox_limits[5] - cloudbox_limits[4]) +1,
 */
-Tensor3& specific_heat_capacity(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[303]); }
+Tensor3& specific_heat_capacity(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[303]);
+}
 
 /*! Spectral irradiance field.
 
@@ -3932,12 +4513,14 @@ component denotes the upward direction
 Units: W m^-2 Hz^-1
 
  Size: [Nf,
-       (cloudbox_limits[1] - cloudbox_limits[0]) +1, 
-       (cloudbox_limits[3] - cloudbox_limits[2]) +1, 
-       (cloudbox_limits[5] - cloudbox_limits[4]) +1, 
+       (cloudbox_limits[1] - cloudbox_limits[0]) +1,
+       (cloudbox_limits[3] - cloudbox_limits[2]) +1,
+       (cloudbox_limits[5] - cloudbox_limits[4]) +1,
         2]
 */
-Tensor5& spectral_irradiance_field(Workspace& ws) noexcept { return *static_cast<Tensor5 *>(ws[301]); }
+Tensor5& spectral_irradiance_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor5*>(ws[301]);
+}
 
 /*! Spectral radiance field.
 
@@ -3950,9 +4533,9 @@ holds a field of spectral radiances, but is restricted to the cloud box.
 Units: W / (m^2 Hz sr)
 
  Size: [f_grid,
-       p_grid, 
-       lat_grid, 
-       lon_grid, 
+       p_grid,
+       lat_grid,
+       lon_grid,
        za_grid,
        aa_grid,
        stokes_dim ]
@@ -3960,7 +4543,9 @@ Units: W / (m^2 Hz sr)
 Note: For 1D, the size of the latitude, longitude and azimuth
 dimension (N_aa) are all 1.
 */
-Tensor7& spectral_radiance_field(Workspace& ws) noexcept { return *static_cast<Tensor7 *>(ws[302]); }
+Tensor7& spectral_radiance_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor7*>(ws[302]);
+}
 
 /*! The specular direction (for reflection by a flat surface).
 
@@ -3971,11 +4556,15 @@ Units: degrees
 
 Size:  [ 1 or 2 ]
 */
-Vector& specular_los(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[304]); }
+Vector& specular_los(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[304]);
+}
 
 /*! Agenda calculating single scattering properties from the amplitude matrix.
-*/
-Agenda& spt_calc_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[305]); }
+ */
+Agenda& spt_calc_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[305]);
+}
 
 /*! The matrix of total scalar absorption coefficients for source.
 
@@ -3993,14 +4582,18 @@ Dimensions: [f_grid, abs_p]
 
 Unit: 1/m
 */
-Matrix& src_coef(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[308]); }
+Matrix& src_coef(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[308]);
+}
 
 /*! Scalar absorption coefficients individually per tag group.
 
 The Array contains one matrix of absorption coefficients for each
 tag group, where the matrix format is the same as that of *src_coef*
 */
-ArrayOfMatrix& src_coef_per_species(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[309]); }
+ArrayOfMatrix& src_coef_per_species(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[309]);
+}
 
 /*! Absorption cross sections for the source function for NLTE calculations.
 
@@ -4013,13 +4606,17 @@ Dimensions: [abs_species](f_grid, abs_p), or
 Unit:       m^2 (alpha = xsec * n * VMR),
             where n is total density.
 */
-ArrayOfMatrix& src_xsec_per_species(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[307]); }
+ArrayOfMatrix& src_xsec_per_species(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[307]);
+}
 
 /*! The dimensionality of the Stokes vector (1-4).
 
 Usage:      Set by the user.
 */
-Index& stokes_dim(Workspace& ws) noexcept { return *static_cast<Index *>(ws[306]); }
+Index& stokes_dim(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[306]);
+}
 
 /*! Rotation of the Stokes H and V directions.
 
@@ -4031,7 +4628,7 @@ applied by the *sensor_responseStokesRotation* WSM.
 The rotation is given as an angle for each direction. In general, the
 number of rotations to be specified follows *sensor_response_dlos_grid*.
 In more detail, if no antenna is included or a 1D antenna is used, and
-the rotation is applied before the antenna is included in 
+the rotation is applied before the antenna is included in
 *sensor_response*, there should be one angle for each row of
 *mblock_dlos_grid*. After inclusion of an antenna response, the relevant
 number of angles is determined by the rows of *antenna_dlos*.
@@ -4044,14 +4641,18 @@ Size:  [ number of directions ]
 
 Usage: Set by the user.
 */
-Vector& stokes_rotation(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[310]); }
+Vector& stokes_rotation(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[310]);
+}
 
 /*! Complex refractive index of the surface, at a single point.
 
 See *complex_refr_index* for the expected format and how the data
 are treated.
 */
-GriddedField3& surface_complex_refr_index(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[311]); }
+GriddedField3& surface_complex_refr_index(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[311]);
+}
 
 /*! The emission from the surface.
 
@@ -4060,7 +4661,9 @@ guide for more information.
 
 Dimensions: [ f_grid, stokes_dim ]
 */
-Matrix& surface_emission(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[312]); }
+Matrix& surface_emission(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[312]);
+}
 
 /*! Downwelling radiation directions to consider in surface reflection.
 
@@ -4071,7 +4674,9 @@ Units: degrees
 
 Size:  [ any number, 1 or 2 ]
 */
-Matrix& surface_los(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[313]); }
+Matrix& surface_los(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[313]);
+}
 
 /*! The normal vector for a point at the surface.
 
@@ -4084,7 +4689,9 @@ Units: degrees
 
 Size:  [ 1 or 2 ]
 */
-Vector& surface_normal(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[314]); }
+Vector& surface_normal(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[314]);
+}
 
 /*! Various surface properties.
 
@@ -4096,7 +4703,9 @@ The properties are identified by the accompanying variable
 
 Size:  [ number of props., lat_grid, lon_grid ]
 */
-Tensor3& surface_props_data(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[315]); }
+Tensor3& surface_props_data(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[315]);
+}
 
 /*! Name on surface properties found in *surface_props_data*.
 
@@ -4107,7 +4716,9 @@ the documentation of each method for recognised choices.
 
 Size:  [ number of props. ]
 */
-ArrayOfString& surface_props_names(Workspace& ws) noexcept { return *static_cast<ArrayOfString *>(ws[316]); }
+ArrayOfString& surface_props_names(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfString*>(ws[316]);
+}
 
 /*! Surface reflectivity, for a given position and angle.
 
@@ -4123,7 +4734,9 @@ Usage:   Input to some surface properties methods.
 
 Dimensions: [ f_grid or 1, stokes_dim, stokes_dim]
 */
-Tensor3& surface_reflectivity(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[322]); }
+Tensor3& surface_reflectivity(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[322]);
+}
 
 /*! The reflection coefficients for the directions given by
 *surface_los* to the direction of interest.
@@ -4142,19 +4755,27 @@ Units:      -
 
 Dimensions: [ surface_los, f_grid, stokes_dim, stokes_dim ]
 */
-Tensor4& surface_rmatrix(Workspace& ws) noexcept { return *static_cast<Tensor4 *>(ws[317]); }
+Tensor4& surface_rmatrix(Workspace& ws) noexcept {
+  return *static_cast<Tensor4*>(ws[317]);
+}
 
 /*! Agenda providing radiative properties of the surface.
-*/
-Agenda& surface_rtprop_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[318]); }
+ */
+Agenda& surface_rtprop_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[318]);
+}
 
 /*! Description of surface radiative properties, divided into surface types.
-*/
-ArrayOfAgenda& surface_rtprop_agenda_array(Workspace& ws) noexcept { return *static_cast<ArrayOfAgenda *>(ws[319]); }
+ */
+ArrayOfAgenda& surface_rtprop_agenda_array(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfAgenda*>(ws[319]);
+}
 
 /*! Sub-agenda to *surface_rtprop_agenda*.
-*/
-Agenda& surface_rtprop_sub_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[320]); }
+ */
+Agenda& surface_rtprop_sub_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[320]);
+}
 
 /*! Surface reflectivity, described by rv and rh (power) reflectivities.
 
@@ -4175,7 +4796,9 @@ Usage:   Input to some surface properties methods.
 
 Dimensions: [ f_grid or 1, 2]
 */
-Matrix& surface_rv_rh(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[323]); }
+Matrix& surface_rv_rh(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[323]);
+}
 
 /*! Surface reflectivity, assuming it can be described as a scalar value.
 
@@ -4183,7 +4806,7 @@ This variable describes the surface reflectivity at one position
 and one incidence angle. For this position and angle, one or multiple
 scalar reflectivities are specified.
 
-The length of the vector shall either match *f_grid* or be 1. The 
+The length of the vector shall either match *f_grid* or be 1. The
 later case is interpreted as the reflectivity is the same for all
 frequencies (ie. matches a constant vector).
 
@@ -4191,7 +4814,9 @@ Usage:   Input to some surface properties methods.
 
 Dimensions: [ f_grid or 1]
 */
-Vector& surface_scalar_reflectivity(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[324]); }
+Vector& surface_scalar_reflectivity(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[324]);
+}
 
 /*! Surface skin temperature.
 
@@ -4201,19 +4826,25 @@ temperature.
 
 Usage:   Input to methods for *surface_rtprop_agenda*.
 */
-Numeric& surface_skin_t(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[321]); }
+Numeric& surface_skin_t(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[321]);
+}
 
 /*! Local surface type value.
 
 See *surface_type_mask* for details.
 */
-Index& surface_type(Workspace& ws) noexcept { return *static_cast<Index *>(ws[325]); }
+Index& surface_type(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[325]);
+}
 
 /*! Auxiliary variable to *surface_type*.
 
 See *surface_type_mask* for details.
 */
-Numeric& surface_type_aux(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[326]); }
+Numeric& surface_type_aux(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[326]);
+}
 
 /*! Classification of the surface using a type coding.
 
@@ -4233,20 +4864,22 @@ where X is the *surface_type* index.
 The surface type can be any integer (>=0) for which a corresponding
 agenda exists.
 
-Dimensions: 
+Dimensions:
    GriddedField2:
       Vector Latitude [N_lat]
       Vector Longitude [N_lon]
       Matrix data [N_lat][N_lon]
 */
-GriddedField2& surface_type_mask(Workspace& ws) noexcept { return *static_cast<GriddedField2 *>(ws[327]); }
+GriddedField2& surface_type_mask(Workspace& ws) noexcept {
+  return *static_cast<GriddedField2*>(ws[327]);
+}
 
 /*! The field of atmospheric temperatures.
 
 This variable gives the atmospheric temperature at each crossing of
 the pressure, latitude and longitude grids.
 
-The temperature for a point between the grid crossings is obtained 
+The temperature for a point between the grid crossings is obtained
 by (multi-)linear interpolation of the *t_field*.
 
 See further the ARTS user guide (AUG). Use the index to find where
@@ -4259,11 +4892,13 @@ Unit:       K
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
 */
-Tensor3& t_field(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[338]); }
+Tensor3& t_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[338]);
+}
 
 /*! Raw data for atmospheric temperatures.
 
-This variable gives the atmospheric temperature as stored in the 
+This variable gives the atmospheric temperature as stored in the
 database for the atmospheric scenarios.
 
 See further the ARTS user guide (AUG). Use the index to find where
@@ -4274,18 +4909,20 @@ Usage: Set by the user by choosing a climatology.
 
 Unit:  K
 
-Size   GriddedField3 
-        [N_p] 
-       [N_lat] 
-       [N_lon] 
-       [N_p, N_lat, N_lon] 
+Size   GriddedField3
+        [N_p]
+       [N_lat]
+       [N_lon]
+       [N_p, N_lat, N_lon]
 */
-GriddedField3& t_field_raw(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[340]); }
+GriddedField3& t_field_raw(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[340]);
+}
 
 /*! The surface temperature.
 
 This variable holds the temperature of the surface at each latitude
-and longitude grid crossing. The normal case should be that this 
+and longitude grid crossing. The normal case should be that this
 temperature field is interpolated to obtain *surface_skin_t*.
 Accordingly, for 1D cases it could be a better idea to specify
 *surface_skin_t* directly.
@@ -4300,50 +4937,66 @@ Unit:       K
 
 Dimensions: [ lat_grid, lon_grid ]
 */
-Matrix& t_surface(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[342]); }
+Matrix& t_surface(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[342]);
+}
 
 /*! TELSEM 2 emissivity atlases.
 
 Array should be filled with 12
 atlases, one for each month. Index 0 is January, index 11 December.
 */
-ArrayOfTelsemAtlas& telsem_atlases(Workspace& ws) noexcept { return *static_cast<ArrayOfTelsemAtlas *>(ws[328]); }
+ArrayOfTelsemAtlas& telsem_atlases(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTelsemAtlas*>(ws[328]);
+}
 
 /*! TESSEM2 neural network parameters for horizontal polarization.
-*/
-TessemNN& tessem_neth(Workspace& ws) noexcept { return *static_cast<TessemNN *>(ws[329]); }
+ */
+TessemNN& tessem_neth(Workspace& ws) noexcept {
+  return *static_cast<TessemNN*>(ws[329]);
+}
 
 /*! TESSEM2 neural network parameters for vertical polarization.
-*/
-TessemNN& tessem_netv(Workspace& ws) noexcept { return *static_cast<TessemNN *>(ws[330]); }
+ */
+TessemNN& tessem_netv(Workspace& ws) noexcept {
+  return *static_cast<TessemNN*>(ws[330]);
+}
 
 /*! A dummy agenda for testing purposes.
 
 Only used for testing by developers.
 */
-Agenda& test_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[331]); }
+Agenda& test_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[331]);
+}
 
 /*! Array of agenda for TestArrayOfAgenda case.
 
 Only used for testing by developers.
 */
-ArrayOfAgenda& test_agenda_array(Workspace& ws) noexcept { return *static_cast<ArrayOfAgenda *>(ws[332]); }
+ArrayOfAgenda& test_agenda_array(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfAgenda*>(ws[332]);
+}
 
 /*! A time point.
-*/
-Time& time(Workspace& ws) noexcept { return *static_cast<Time *>(ws[333]); }
+ */
+Time& time(Workspace& ws) noexcept { return *static_cast<Time*>(ws[333]); }
 
 /*! A grid of times.  Should be increasing
-*/
-ArrayOfTime& time_grid(Workspace& ws) noexcept { return *static_cast<ArrayOfTime *>(ws[335]); }
+ */
+ArrayOfTime& time_grid(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTime*>(ws[335]);
+}
 
 /*! A set of times.  Can be in random order
-*/
-ArrayOfTime& time_stamps(Workspace& ws) noexcept { return *static_cast<ArrayOfTime *>(ws[336]); }
+ */
+ArrayOfTime& time_stamps(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfTime*>(ws[336]);
+}
 
 /*! Stores the starting time for time measurements.
-*/
-Timer& timer(Workspace& ws) noexcept { return *static_cast<Timer *>(ws[334]); }
+ */
+Timer& timer(Workspace& ws) noexcept { return *static_cast<Timer*>(ws[334]); }
 
 /*! Transmitter positions.
 
@@ -4369,7 +5022,9 @@ Usage: Set by the user.
 
 Unit:  [ m, degrees, degrees ]
 */
-Matrix& transmitter_pos(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[337]); }
+Matrix& transmitter_pos(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[337]);
+}
 
 /*! ARTS verbosity.
 
@@ -4385,12 +5040,14 @@ See also: *verbosityInit*
           *verbositySetScreen*
           *verbositySetFile*
 */
-Verbosity& verbosity(Workspace& ws) noexcept { return *static_cast<Verbosity *>(ws[343]); }
+Verbosity& verbosity(Workspace& ws) noexcept {
+  return *static_cast<Verbosity*>(ws[343]);
+}
 
 /*! VMR field.
 
-This variable gives the volume mixing ratio of the chosen gaseous 
-species as a function of p_grid, lat_grid, lon_grid. 
+This variable gives the volume mixing ratio of the chosen gaseous
+species as a function of p_grid, lat_grid, lon_grid.
 
 See further the ARTS user guide (AUG). Use the index to find where
 this variable is discussed. The variable is listed as a subentry to
@@ -4400,17 +5057,19 @@ Units: [ Differ between the elements, can be VMR, kg/m3 or #/m3. ]
 
 Dimensions: [species, p_grid, lat_grid, lon_grid]
 */
-Tensor4& vmr_field(Workspace& ws) noexcept { return *static_cast<Tensor4 *>(ws[344]); }
+Tensor4& vmr_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor4*>(ws[344]);
+}
 
 /*! VMR data for the chosen gaseous species.
 
-This variable contains the volume mixing ratios (VMR) for all 
-chosen gaseous species. It includes the grids corresponding to the 
-grids in the database. 
-*vmr_field_raw* is an Array of Array of Tensor3. It contains one 
-gridded field for each species which contains the data and 
+This variable contains the volume mixing ratios (VMR) for all
+chosen gaseous species. It includes the grids corresponding to the
+grids in the database.
+*vmr_field_raw* is an Array of Array of Tensor3. It contains one
+gridded field for each species which contains the data and
 also the grids.
-For the calculation the data is 
+For the calculation the data is
 interpolated on *p_grid*, *lat_grid* and *lon_grid*
 
 Usage: Output of *AtmRawRead*
@@ -4419,17 +5078,21 @@ Usage: Output of *AtmRawRead*
 Unit:  absolute number
 
 Size:  Array[number of absorption species]
-       GriddedField3 
-        [N_p] 
-       [N_lat] 
-       [N_lon] 
-       [N_p, N_lat, N_lon] 
+       GriddedField3
+        [N_p]
+       [N_lat]
+       [N_lon]
+       [N_p, N_lat, N_lon]
 */
-ArrayOfGriddedField3& vmr_field_raw(Workspace& ws) noexcept { return *static_cast<ArrayOfGriddedField3 *>(ws[345]); }
+ArrayOfGriddedField3& vmr_field_raw(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfGriddedField3*>(ws[345]);
+}
 
 /*! Agenda to calculate the saturation pressure of water.
-*/
-Agenda& water_p_eq_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[346]); }
+ */
+Agenda& water_p_eq_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[346]);
+}
 
 /*! The field of water saturation pressure.
 
@@ -4440,7 +5103,9 @@ Unit:       Pa
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
 */
-Tensor3& water_p_eq_field(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[347]); }
+Tensor3& water_p_eq_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[347]);
+}
 
 /*! Indicates if the wigner tables are initialized.
 If they are not, computations will be aborted.
@@ -4451,7 +5116,9 @@ The developer should always test this variable in functions
 that might require computing wigner symbols because the error
 handling is otherwise offloaded to third party software...
 */
-Index& wigner_initialized(Workspace& ws) noexcept { return *static_cast<Index *>(ws[348]); }
+Index& wigner_initialized(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[348]);
+}
 
 /*! Zonal component of the wind field.
 
@@ -4466,7 +5133,9 @@ Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]  or [ 0 0 0 ].
 */
-Tensor3& wind_u_field(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[349]); }
+Tensor3& wind_u_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[349]);
+}
 
 /*! Raw zonal component of the wind field.
 
@@ -4481,7 +5150,9 @@ Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ].
 */
-GriddedField3& wind_u_field_raw(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[350]); }
+GriddedField3& wind_u_field_raw(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[350]);
+}
 
 /*! Meridional component of the magnetic field.
 
@@ -4495,7 +5166,9 @@ Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ] or [ 0 0 0 ]
 */
-Tensor3& wind_v_field(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[351]); }
+Tensor3& wind_v_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[351]);
+}
 
 /*! Raw meridional component of the magnetic field.
 
@@ -4509,7 +5182,9 @@ Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
 */
-GriddedField3& wind_v_field_raw(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[352]); }
+GriddedField3& wind_v_field_raw(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[352]);
+}
 
 /*! Vertical wind component field.
 
@@ -4522,7 +5197,9 @@ Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ] or [ 0 0 0 ]
 */
-Tensor3& wind_w_field(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[353]); }
+Tensor3& wind_w_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[353]);
+}
 
 /*! Raw vertical wind component field.
 
@@ -4535,7 +5212,9 @@ Unit:       m/s
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
 */
-GriddedField3& wind_w_field_raw(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[354]); }
+GriddedField3& wind_w_field_raw(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[354]);
+}
 
 /*! Channel selection for WMRF fast calculation.
 
@@ -4543,7 +5222,9 @@ This variable can be used to select one or several instrument channels
 from the list of all possible channels. Zero-based indexing is used, so
 Channel 0 is the first instrument channel!
 */
-ArrayOfIndex& wmrf_channels(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[355]); }
+ArrayOfIndex& wmrf_channels(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[355]);
+}
 
 /*! The weights for a WMRF fast calculation.
 
@@ -4554,7 +5235,9 @@ The dimension of the matrix is (nchan, nfreq), where nchan
 is the number of instrument channels and nfreq is the number
 of monochromatic frequencies.
 */
-Sparse& wmrf_weights(Workspace& ws) noexcept { return *static_cast<Sparse *>(ws[356]); }
+Sparse& wmrf_weights(Workspace& ws) noexcept {
+  return *static_cast<Sparse*>(ws[356]);
+}
 
 /*! The state vector.
 
@@ -4577,7 +5260,7 @@ Usage: Used by inversion methods.
 
 Unit:  Varies, follows unit of selected retrieval quantities.
 */
-Vector& x(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[358]); }
+Vector& x(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[358]); }
 
 /*! The a priori state vector.
 
@@ -4587,7 +5270,7 @@ Usage: Used by inversion methods.
 
 Unit:  Varies, follows unit of selected retrieval quantities.
 */
-Vector& xa(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[359]); }
+Vector& xa(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[359]); }
 
 /*! Flag to determine whether XML output shall be binary or ascii.
 
@@ -4598,7 +5281,9 @@ output file.
 
 Usage: Set by user.
 */
-Index& xml_output_type(Workspace& ws) noexcept { return *static_cast<Index *>(ws[357]); }
+Index& xml_output_type(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[357]);
+}
 
 /*! The measurement vector.
 
@@ -4623,7 +5308,7 @@ Usage: Output from radiative transfer calculations considering
 Unit:  Undefined. Possibilities include: K, W/(m^2 Hz sr) and
         optical thickness.
 */
-Vector& y(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[360]); }
+Vector& y(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[360]); }
 
 /*! Data auxilary to *y*.
 
@@ -4642,7 +5327,9 @@ Usage:      Output of *yCalc*.
 
 Dimensions: [quantity][ element of y ]
 */
-ArrayOfVector& y_aux(Workspace& ws) noexcept { return *static_cast<ArrayOfVector *>(ws[361]); }
+ArrayOfVector& y_aux(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfVector*>(ws[361]);
+}
 
 /*! The baseline of *y*.
 
@@ -4653,7 +5340,7 @@ a baseline off-set.
 
 So far there is no module in ARTS that actually tries to physically model
 any baseline effect. *y_baseline* is just used as a pure fitting parameter
-in retrievals. One example on method to include a baseline fit is 
+in retrievals. One example on method to include a baseline fit is
 *jacobianAddPolyfit*.
 
 If the baseline is totally constant, it is allowed to set *y_baseline*
@@ -4663,7 +5350,9 @@ Usage: Output of retrievals.
 
 Unit:  Same as applied for *y*.
 */
-Vector& y_baseline(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[362]); }
+Vector& y_baseline(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[362]);
+}
 
 /*! The frequencies associated with *y*.
 
@@ -4679,7 +5368,7 @@ Usage: Output from radiative transfer calculations considering
 
 Unit:  [ Hz ]
 */
-Vector& y_f(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[363]); }
+Vector& y_f(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[363]); }
 
 /*! The geo-positioning associated with *y*.
 
@@ -4690,7 +5379,7 @@ to be empty), all elements of *y_geo* is set to NaN.
 
 Unit:  [ m, deg, deg, deg, deg ]
 */
-Matrix& y_geo(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[364]); }
+Matrix& y_geo(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[364]); }
 
 /*! The line-of-sights associated with *y*.
 
@@ -4705,7 +5394,7 @@ Usage: Output from radiative transfer calculations considering
 
 Unit:  [ degrees, degrees ]
 */
-Matrix& y_los(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[365]); }
+Matrix& y_los(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[365]); }
 
 /*! The polarisation states associated with *y*.
 
@@ -4719,7 +5408,9 @@ Usage: Output from radiative transfer calculations considering
 
 Unit:  [ - ]
 */
-ArrayOfIndex& y_pol(Workspace& ws) noexcept { return *static_cast<ArrayOfIndex *>(ws[366]); }
+ArrayOfIndex& y_pol(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfIndex*>(ws[366]);
+}
 
 /*! The sensor positions associated with *y*.
 
@@ -4732,7 +5423,7 @@ Usage: Output from radiative transfer calculations considering
 
 Unit:  [ m, deg, deg ]
 */
-Matrix& y_pos(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[367]); }
+Matrix& y_pos(Workspace& ws) noexcept { return *static_cast<Matrix*>(ws[367]); }
 
 /*! The measurement vector for a single measurement block.
 
@@ -4740,11 +5431,11 @@ Exactly as *y*, but holds data only for a single measurement block.
 
 Usage: Used internally.
 */
-Vector& yb(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[368]); }
+Vector& yb(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[368]); }
 
 /*! Batch of spectra.
 
-Each element of *ybatch* corresponds to a spectrum vector *y*. 
+Each element of *ybatch* corresponds to a spectrum vector *y*.
 See further *ybatchCalc*.
 
 Usage: Most commonly produced by *ybatchCalc*.
@@ -4755,29 +5446,37 @@ Unit:  Undefined. Possibilities include: K, W/(m^2 Hz sr) and
 Dimensions: Number of array elements equals number of batch cases,
             Vectors have length(y)
 */
-ArrayOfVector& ybatch(Workspace& ws) noexcept { return *static_cast<ArrayOfVector *>(ws[369]); }
+ArrayOfVector& ybatch(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfVector*>(ws[369]);
+}
 
 /*! Data auxilary to *ybatch*.
 
-Each element of *ybatch_aux* corresponds to a auxiliary data *y_aux*. 
+Each element of *ybatch_aux* corresponds to a auxiliary data *y_aux*.
 See further *y_aux* and *ybatchCalc*.
 
 Usage: Most commonly produced by *ybatchCalc*.
 
 Dimensions: Number of array elements equals number of batch cases,
 */
-ArrayOfArrayOfVector& ybatch_aux(Workspace& ws) noexcept { return *static_cast<ArrayOfArrayOfVector *>(ws[370]); }
+ArrayOfArrayOfVector& ybatch_aux(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfArrayOfVector*>(ws[370]);
+}
 
 /*! Agenda defining the calculations to perform for each batch case.
-*/
-Agenda& ybatch_calc_agenda(Workspace& ws) noexcept { return *static_cast<Agenda *>(ws[371]); }
+ */
+Agenda& ybatch_calc_agenda(Workspace& ws) noexcept {
+  return *static_cast<Agenda*>(ws[371]);
+}
 
 /*! Correction terms for *ybatch*.
 
 Dimensions: Number of array elements equals number of batch cases,
             Vectors have length depending on correction method
 */
-ArrayOfVector& ybatch_corr(Workspace& ws) noexcept { return *static_cast<ArrayOfVector *>(ws[373]); }
+ArrayOfVector& ybatch_corr(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfVector*>(ws[373]);
+}
 
 /*! Index of batch case.
 
@@ -4786,7 +5485,9 @@ See further *ybatchCalc*.
 Usage: Set by *ybatchCalc*, for communication with
        *ybatch_calc_agenda*.
 */
-Index& ybatch_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[372]); }
+Index& ybatch_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[372]);
+}
 
 /*! All the Jacobians associated with ybatch.
 
@@ -4796,11 +5497,13 @@ Usage: Most commonly produced by *ybatch*.
 
 Unit:  Depends on unit of y and on Jacobian type.
 
-Dimensions: [number of batch cases] 
-             (length(y), 
+Dimensions: [number of batch cases]
+             (length(y),
              number of retrieval quantities and grids)
 */
-ArrayOfMatrix& ybatch_jacobians(Workspace& ws) noexcept { return *static_cast<ArrayOfMatrix *>(ws[374]); }
+ArrayOfMatrix& ybatch_jacobians(Workspace& ws) noexcept {
+  return *static_cast<ArrayOfMatrix*>(ws[374]);
+}
 
 /*! Number of batch cases for *ybatchCalc*.
 
@@ -4808,7 +5511,9 @@ See further *ybatchCalc*.
 
 Usage: Input to *ybatchCalc*.
 */
-Index& ybatch_n(Workspace& ws) noexcept { return *static_cast<Index *>(ws[375]); }
+Index& ybatch_n(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[375]);
+}
 
 /*! Start index for *ybatchCalc*.
 
@@ -4818,7 +5523,9 @@ See further *ybatchCalc*.
 
 Usage: Input to *ybatchCalc*.
 */
-Index& ybatch_start(Workspace& ws) noexcept { return *static_cast<Index *>(ws[376]); }
+Index& ybatch_start(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[376]);
+}
 
 /*! A fitted measurement vector.
 
@@ -4829,7 +5536,7 @@ Don't confuse this variable with *y_f*.
 
 Usage: Output from inversion methods.
 */
-Vector& yf(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[377]); }
+Vector& yf(Workspace& ws) noexcept { return *static_cast<Vector*>(ws[377]); }
 
 /*! The field of geometrical altitudes.
 
@@ -4858,11 +5565,13 @@ Unit:       m
 
 Dimensions: [ p_grid, lat_grid, lon_grid ]
 */
-Tensor3& z_field(Workspace& ws) noexcept { return *static_cast<Tensor3 *>(ws[381]); }
+Tensor3& z_field(Workspace& ws) noexcept {
+  return *static_cast<Tensor3*>(ws[381]);
+}
 
 /*! Raw data for geometrical altitudes.
 
-This variable gives the geometrical altitudes as stored in the 
+This variable gives the geometrical altitudes as stored in the
 database for atmospheric scenarios.
 
 See further the ARTS user guide (AUG). Use the index to find where
@@ -4873,13 +5582,15 @@ Usage: Set by the user by choosing a climatology.
 
 Unit:  K
 
-Size   GriddedField3 
-        [N_p] 
-       [N_lat] 
-       [N_lon] 
-       [N_p, N_lat, N_lon] 
+Size   GriddedField3
+        [N_p]
+       [N_lat]
+       [N_lon]
+       [N_p, N_lat, N_lon]
 */
-GriddedField3& z_field_raw(Workspace& ws) noexcept { return *static_cast<GriddedField3 *>(ws[382]); }
+GriddedField3& z_field_raw(Workspace& ws) noexcept {
+  return *static_cast<GriddedField3*>(ws[382]);
+}
 
 /*! Minimum accuracy for calculation of hydrostatic equilibrium.
 
@@ -4887,20 +5598,22 @@ Usage: Set by the user.
 
 Unit:  m
 */
-Numeric& z_hse_accuracy(Workspace& ws) noexcept { return *static_cast<Numeric *>(ws[383]); }
+Numeric& z_hse_accuracy(Workspace& ws) noexcept {
+  return *static_cast<Numeric*>(ws[383]);
+}
 
 /*! The surface altitude.
 
 This variable defines the shape of the surface, by giving the
-geometrical altitude above the geiod for each crossing of the 
+geometrical altitude above the geiod for each crossing of the
 latitude and longitude grids. Any shape of the surface is accepted.
-No gap between the surface and the lowermost pressure level is 
+No gap between the surface and the lowermost pressure level is
 allowed.
 
 The radius (from the coordinate centre) for a point between the grid
-crossings is obtained by a linear (1D) or bi-linear (2D) 
+crossings is obtained by a linear (1D) or bi-linear (2D)
 interpolation of the sum of the ellipsoid radius and *z_surface*.
-That is, the radius for the surface is assumed to vary linear along 
+That is, the radius for the surface is assumed to vary linear along
 the latitudes and longitudes in *lat_grid* and *lon_grid*.
 
 See further the ARTS user guide (AUG). Use the index to find where
@@ -4913,11 +5626,13 @@ Unit:       m
 
 Dimensions: [ lat_grid, lon_grid ]
 */
-Matrix& z_surface(Workspace& ws) noexcept { return *static_cast<Matrix *>(ws[384]); }
+Matrix& z_surface(Workspace& ws) noexcept {
+  return *static_cast<Matrix*>(ws[384]);
+}
 
 /*! Zenith angle grid.
 
-The zenith angle grid, on which the intensity field is stored. 
+The zenith angle grid, on which the intensity field is stored.
 This grid is used for RT calculations inside the cloudbox, therefore
 the grid has to be defined
 if the cloudbox is activated by the flag *cloudbox_on*.
@@ -4925,27 +5640,33 @@ The grid must be sorted in increasing order, with no repetitions.
 
 Usage:      Set by the user.
 
-Unit:       degrees 
+Unit:       degrees
 */
-Vector& za_grid(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[378]); }
+Vector& za_grid(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[378]);
+}
 
 /*! TBD.
 
 Unit:  unitless
 */
-Vector& za_grid_weights(Workspace& ws) noexcept { return *static_cast<Vector *>(ws[379]); }
+Vector& za_grid_weights(Workspace& ws) noexcept {
+  return *static_cast<Vector*>(ws[379]);
+}
 
 /*! Zenith angle index for scattering calculations.
- 
-This variable is used internally in WSMs for computing scattering 
-properties. 
 
-Usage:    Input to the agendas *spt_calc_agenda*, 
+This variable is used internally in WSMs for computing scattering
+properties.
+
+Usage:    Input to the agendas *spt_calc_agenda*,
                                 *pha_mat_spt_agenda*.
 */
-Index& za_index(Workspace& ws) noexcept { return *static_cast<Index *>(ws[380]); }
+Index& za_index(Workspace& ws) noexcept {
+  return *static_cast<Index*>(ws[380]);
+}
 
-}  // ARTS::Var 
+}  // namespace ARTS::Var
 
 namespace ARTS::Method {
 /*! Initialises the WSVs *abs_p*, *abs_t* and *abs_vmrs* from
@@ -4960,16 +5681,11 @@ This only works for a 1D atmosphere!
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void AbsInputFromAtmFields(Workspace& ws) {
-AbsInputFromAtmFields(Var::abs_p(ws),
-Var::abs_t(ws),
-Var::abs_vmrs(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::verbosity(ws));
+  AbsInputFromAtmFields(Var::abs_p(ws), Var::abs_t(ws), Var::abs_vmrs(ws),
+                        Var::atmosphere_dim(ws), Var::p_grid(ws),
+                        Var::t_field(ws), Var::vmr_field(ws),
+                        Var::verbosity(ws));
 }
-
 
 /*! Initialize absorption input WSVs from local atmospheric conditions.
 
@@ -4986,15 +5702,10 @@ parameters to *propmat_clearsky_agenda*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void AbsInputFromRteScalars(Workspace& ws) {
-AbsInputFromRteScalars(Var::abs_p(ws),
-Var::abs_t(ws),
-Var::abs_vmrs(ws),
-Var::rtp_pressure(ws),
-Var::rtp_temperature(ws),
-Var::rtp_vmr(ws),
-Var::verbosity(ws));
+  AbsInputFromRteScalars(Var::abs_p(ws), Var::abs_t(ws), Var::abs_vmrs(ws),
+                         Var::rtp_pressure(ws), Var::rtp_temperature(ws),
+                         Var::rtp_vmr(ws), Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group AbsorptionLines.
 
@@ -5007,12 +5718,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AbsorptionLinesCreate(Workspace& ws,
-AbsorptionLines& out) {
-AbsorptionLinesCreate(out,
-Var::verbosity(ws));
+void AbsorptionLinesCreate(Workspace& ws, AbsorptionLines& out) {
+  AbsorptionLinesCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Adds zenith and azimuth angles.
 
@@ -5029,16 +5737,10 @@ dlos=(0,0).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AddZaAa(Workspace& ws,
-Matrix& new_los,
-const Vector& ref_los,
-const Matrix& dlos) {
-AddZaAa(new_los,
-ref_los,
-dlos,
-Var::verbosity(ws));
+void AddZaAa(Workspace& ws, Matrix& new_los, const Vector& ref_los,
+             const Matrix& dlos) {
+  AddZaAa(new_los, ref_los, dlos, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Agenda.
 
@@ -5051,12 +5753,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AgendaCreate(Workspace& ws,
-Agenda& out) {
-AgendaCreate(out,
-Var::verbosity(ws));
+void AgendaCreate(Workspace& ws, Agenda& out) {
+  AgendaCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Execute an agenda.
 
@@ -5067,13 +5766,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AgendaExecute(Workspace& ws,
-const Agenda& a) {
-AgendaExecute(ws,
-a,
-Var::verbosity(ws));
+void AgendaExecute(Workspace& ws, const Agenda& a) {
+  AgendaExecute(ws, a, Var::verbosity(ws));
 }
-
 
 /*! Execute an agenda exclusively.
 
@@ -5088,13 +5783,9 @@ finishes. WARNING: Can cause deadlocks! Use with care.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AgendaExecuteExclusive(Workspace& ws,
-const Agenda& a) {
-AgendaExecuteExclusive(ws,
-a,
-Var::verbosity(ws));
+void AgendaExecuteExclusive(Workspace& ws, const Agenda& a) {
+  AgendaExecuteExclusive(ws, a, Var::verbosity(ws));
 }
-
 
 /*! Sets the angular grids for the calculation of radiation fluxes
 (irradiance) per hemispheres and heating rates
@@ -5107,15 +5798,15 @@ geometries it suffices to define *N_za_grid* and
 created and stored in the WSV*aa_grid*.
 Depending on the desired *za_grid_type* *za_grid* will be
 equally spaced ('linear') or unequally ('linear_mu','double_gauss')
-Important, *N_za_grid* must be an even number because for the 
+Important, *N_za_grid* must be an even number because for the
 integration over each hemisphere *N_za_grid* / 2 zenith angles are needed.
 
 Possible zenith angle grid types are:
 double_gauss:     The zenith grid and the integration weights are set according
                   to a gauss-legendre integration for each hemispheres.
-linear:           Equally space grid between 0 deg and 180 deg including the poles
-linear_mu:        Similar to 'linear' but equally spaced for cos(180 deg) to cos(0 deg),
-                  which results a unequally spaced angular grid
+linear:           Equally space grid between 0 deg and 180 deg including the
+poles linear_mu:        Similar to 'linear' but equally spaced for cos(180 deg)
+to cos(0 deg), which results a unequally spaced angular grid
 
 @author Manfred Brath
 
@@ -5126,19 +5817,13 @@ linear_mu:        Similar to 'linear' but equally spaced for cos(180 deg) to cos
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AngularGridsSetFluxCalc(Workspace& ws,
-const Index& N_za_grid=2,
-const Index& N_aa_grid=1,
-const String& za_grid_type="linear_mu") {
-AngularGridsSetFluxCalc(Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::za_grid_weights(ws),
-N_za_grid,
-N_aa_grid,
-za_grid_type,
-Var::verbosity(ws));
+void AngularGridsSetFluxCalc(Workspace& ws, const Index& N_za_grid = 2,
+                             const Index& N_aa_grid = 1,
+                             const String& za_grid_type = "linear_mu") {
+  AngularGridsSetFluxCalc(Var::za_grid(ws), Var::aa_grid(ws),
+                          Var::za_grid_weights(ws), N_za_grid, N_aa_grid,
+                          za_grid_type, Var::verbosity(ws));
 }
-
 
 /*! Sets up a 1D gaussian antenna response and a matching
 *mblock_dlos_grid*.
@@ -5164,27 +5849,21 @@ The antenna repsonse is not normalised.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] n_za_grid - Number of points to include in *mblock_dlos_grid*.
 @param[in] fwhm - Full width at half-maximum of antenna beam [deg].
-@param[in] xwidth_si - Half-width of response, in terms of std. dev. (default: 3)
+@param[in] xwidth_si - Half-width of response, in terms of std. dev. (default:
+3)
 @param[in] dx_si - Grid spacing, in terms of std. dev. (default: 0.1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AntennaConstantGaussian1D(Workspace& ws,
-const Index& n_za_grid,
-const Numeric& fwhm,
-const Numeric& xwidth_si=3,
-const Numeric& dx_si=0.1) {
-AntennaConstantGaussian1D(Var::antenna_dim(ws),
-Var::mblock_dlos_grid(ws),
-Var::antenna_response(ws),
-Var::antenna_dlos(ws),
-n_za_grid,
-fwhm,
-xwidth_si,
-dx_si,
-Var::verbosity(ws));
+void AntennaConstantGaussian1D(Workspace& ws, const Index& n_za_grid,
+                               const Numeric& fwhm,
+                               const Numeric& xwidth_si = 3,
+                               const Numeric& dx_si = 0.1) {
+  AntennaConstantGaussian1D(Var::antenna_dim(ws), Var::mblock_dlos_grid(ws),
+                            Var::antenna_response(ws), Var::antenna_dlos(ws),
+                            n_za_grid, fwhm, xwidth_si, dx_si,
+                            Var::verbosity(ws));
 }
-
 
 /*! Maps a multi-beam case to a matching pencil beam case.
 
@@ -5206,15 +5885,11 @@ spectra.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void AntennaMultiBeamsToPencilBeams(Workspace& ws) {
-AntennaMultiBeamsToPencilBeams(Var::sensor_pos(ws),
-Var::sensor_los(ws),
-Var::antenna_dlos(ws),
-Var::antenna_dim(ws),
-Var::mblock_dlos_grid(ws),
-Var::atmosphere_dim(ws),
-Var::verbosity(ws));
+  AntennaMultiBeamsToPencilBeams(Var::sensor_pos(ws), Var::sensor_los(ws),
+                                 Var::antenna_dlos(ws), Var::antenna_dim(ws),
+                                 Var::mblock_dlos_grid(ws),
+                                 Var::atmosphere_dim(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets some antenna related variables
 
@@ -5229,11 +5904,49 @@ sensor is included, but the antenna pattern is neglected.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void AntennaOff(Workspace& ws) {
-AntennaOff(Var::antenna_dim(ws),
-Var::mblock_dlos_grid(ws),
-Var::verbosity(ws));
+  AntennaOff(Var::antenna_dim(ws), Var::mblock_dlos_grid(ws),
+             Var::verbosity(ws));
 }
 
+/*! Append one workspace variable to another.
+
+This method can append an array to another array of the same type,
+e.g. ArrayOfIndex to ArrayOfIndex. Or a single element to an array
+such as a Tensor3 to an ArrayOfTensor3.
+
+Appending two vectors or a numeric to a vector works as for array
+variables.
+
+Both another matrix or a vector can be appended to a matrix. In
+addition, for matrices, the 'append dimension' can be selected.
+The third argument, *dimension*, indicates how to append, where
+"leading" means to append row-wise, and "trailing" means
+column-wise.
+
+Other types (TensorX) are currently only implemented for
+appending to the leading dimension.
+
+This method is not implemented for all types, just for those that
+were thought or found to be useful. (See variable list below.).
+
+@author Stefan Buehler, Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] out - The variable to append to.
+@param[in] in - The variable to append.
+@param[in] dimension - Where to append. Could be either the "leading" or
+"trailing" dimension. (default: "leading")
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0, typename Any_1>
+void Append(Workspace& ws, std::pair<Any_0, String>& out,
+            const std::pair<Any_1, String>& in,
+            const std::pair<String, String>& dimension = {"leading",
+                                                          "dimension"}) {
+  Append(out.first, out.second, in.first, dimension.first, in.second,
+         dimension.second, Var::verbosity(ws));
+}
 
 /*! Creates a variable of group ArrayOfAbsorptionLines.
 
@@ -5246,12 +5959,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfAbsorptionLinesCreate(Workspace& ws,
-ArrayOfAbsorptionLines& out) {
-ArrayOfAbsorptionLinesCreate(out,
-Var::verbosity(ws));
+void ArrayOfAbsorptionLinesCreate(Workspace& ws, ArrayOfAbsorptionLines& out) {
+  ArrayOfAbsorptionLinesCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfAgenda.
 
@@ -5264,12 +5974,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfAgendaCreate(Workspace& ws,
-ArrayOfAgenda& out) {
-ArrayOfAgendaCreate(out,
-Var::verbosity(ws));
+void ArrayOfAgendaCreate(Workspace& ws, ArrayOfAgenda& out) {
+  ArrayOfAgendaCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Execute an agenda from an ArrayOfAgenda.
 
@@ -5280,14 +5987,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfAgendaExecute(Workspace& ws,
-const ArrayOfAgenda& agendas) {
-ArrayOfAgendaExecute(ws,
-Var::agenda_array_index(ws),
-agendas,
-Var::verbosity(ws));
+void ArrayOfAgendaExecute(Workspace& ws, const ArrayOfAgenda& agendas) {
+  ArrayOfAgendaExecute(ws, Var::agenda_array_index(ws), agendas,
+                       Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfAbsorptionLines.
 
@@ -5301,11 +6004,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfArrayOfAbsorptionLinesCreate(Workspace& ws,
-ArrayOfArrayOfAbsorptionLines& out) {
-ArrayOfArrayOfAbsorptionLinesCreate(out,
-Var::verbosity(ws));
+                                         ArrayOfArrayOfAbsorptionLines& out) {
+  ArrayOfArrayOfAbsorptionLinesCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfGriddedField1.
 
@@ -5319,11 +6020,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfArrayOfGriddedField1Create(Workspace& ws,
-ArrayOfArrayOfGriddedField1& out) {
-ArrayOfArrayOfGriddedField1Create(out,
-Var::verbosity(ws));
+                                       ArrayOfArrayOfGriddedField1& out) {
+  ArrayOfArrayOfGriddedField1Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfGriddedField2.
 
@@ -5337,11 +6036,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfArrayOfGriddedField2Create(Workspace& ws,
-ArrayOfArrayOfGriddedField2& out) {
-ArrayOfArrayOfGriddedField2Create(out,
-Var::verbosity(ws));
+                                       ArrayOfArrayOfGriddedField2& out) {
+  ArrayOfArrayOfGriddedField2Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfGriddedField3.
 
@@ -5355,11 +6052,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfArrayOfGriddedField3Create(Workspace& ws,
-ArrayOfArrayOfGriddedField3& out) {
-ArrayOfArrayOfGriddedField3Create(out,
-Var::verbosity(ws));
+                                       ArrayOfArrayOfGriddedField3& out) {
+  ArrayOfArrayOfGriddedField3Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfIndex.
 
@@ -5372,12 +6067,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfIndexCreate(Workspace& ws,
-ArrayOfArrayOfIndex& out) {
-ArrayOfArrayOfIndexCreate(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfIndexCreate(Workspace& ws, ArrayOfArrayOfIndex& out) {
+  ArrayOfArrayOfIndexCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfMatrix.
 
@@ -5390,12 +6082,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfMatrixCreate(Workspace& ws,
-ArrayOfArrayOfMatrix& out) {
-ArrayOfArrayOfMatrixCreate(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfMatrixCreate(Workspace& ws, ArrayOfArrayOfMatrix& out) {
+  ArrayOfArrayOfMatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfPropagationMatrix.
 
@@ -5408,12 +6097,10 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfPropagationMatrixCreate(Workspace& ws,
-ArrayOfArrayOfPropagationMatrix& out) {
-ArrayOfArrayOfPropagationMatrixCreate(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfPropagationMatrixCreate(
+    Workspace& ws, ArrayOfArrayOfPropagationMatrix& out) {
+  ArrayOfArrayOfPropagationMatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfRadiationVector.
 
@@ -5427,11 +6114,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfArrayOfRadiationVectorCreate(Workspace& ws,
-ArrayOfArrayOfRadiationVector& out) {
-ArrayOfArrayOfRadiationVectorCreate(out,
-Var::verbosity(ws));
+                                         ArrayOfArrayOfRadiationVector& out) {
+  ArrayOfArrayOfRadiationVectorCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfScatteringMetaData.
 
@@ -5444,12 +6129,10 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfScatteringMetaDataCreate(Workspace& ws,
-ArrayOfArrayOfScatteringMetaData& out) {
-ArrayOfArrayOfScatteringMetaDataCreate(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfScatteringMetaDataCreate(
+    Workspace& ws, ArrayOfArrayOfScatteringMetaData& out) {
+  ArrayOfArrayOfScatteringMetaDataCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfSingleScatteringData.
 
@@ -5462,12 +6145,10 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfSingleScatteringDataCreate(Workspace& ws,
-ArrayOfArrayOfSingleScatteringData& out) {
-ArrayOfArrayOfSingleScatteringDataCreate(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfSingleScatteringDataCreate(
+    Workspace& ws, ArrayOfArrayOfSingleScatteringData& out) {
+  ArrayOfArrayOfSingleScatteringDataCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfSpeciesTag.
 
@@ -5481,11 +6162,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfArrayOfSpeciesTagCreate(Workspace& ws,
-ArrayOfArrayOfSpeciesTag& out) {
-ArrayOfArrayOfSpeciesTagCreate(out,
-Var::verbosity(ws));
+                                    ArrayOfArrayOfSpeciesTag& out) {
+  ArrayOfArrayOfSpeciesTagCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfStokesVector.
 
@@ -5499,11 +6178,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfArrayOfStokesVectorCreate(Workspace& ws,
-ArrayOfArrayOfStokesVector& out) {
-ArrayOfArrayOfStokesVectorCreate(out,
-Var::verbosity(ws));
+                                      ArrayOfArrayOfStokesVector& out) {
+  ArrayOfArrayOfStokesVectorCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfString.
 
@@ -5516,12 +6193,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfStringCreate(Workspace& ws,
-ArrayOfArrayOfString& out) {
-ArrayOfArrayOfStringCreate(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfStringCreate(Workspace& ws, ArrayOfArrayOfString& out) {
+  ArrayOfArrayOfStringCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfTensor3.
 
@@ -5534,12 +6208,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfTensor3Create(Workspace& ws,
-ArrayOfArrayOfTensor3& out) {
-ArrayOfArrayOfTensor3Create(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfTensor3Create(Workspace& ws, ArrayOfArrayOfTensor3& out) {
+  ArrayOfArrayOfTensor3Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfTensor6.
 
@@ -5552,12 +6223,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfTensor6Create(Workspace& ws,
-ArrayOfArrayOfTensor6& out) {
-ArrayOfArrayOfTensor6Create(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfTensor6Create(Workspace& ws, ArrayOfArrayOfTensor6& out) {
+  ArrayOfArrayOfTensor6Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfTime.
 
@@ -5570,12 +6238,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfTimeCreate(Workspace& ws,
-ArrayOfArrayOfTime& out) {
-ArrayOfArrayOfTimeCreate(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfTimeCreate(Workspace& ws, ArrayOfArrayOfTime& out) {
+  ArrayOfArrayOfTimeCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfTransmissionMatrix.
 
@@ -5588,12 +6253,10 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfTransmissionMatrixCreate(Workspace& ws,
-ArrayOfArrayOfTransmissionMatrix& out) {
-ArrayOfArrayOfTransmissionMatrixCreate(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfTransmissionMatrixCreate(
+    Workspace& ws, ArrayOfArrayOfTransmissionMatrix& out) {
+  ArrayOfArrayOfTransmissionMatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfArrayOfVector.
 
@@ -5606,12 +6269,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfArrayOfVectorCreate(Workspace& ws,
-ArrayOfArrayOfVector& out) {
-ArrayOfArrayOfVectorCreate(out,
-Var::verbosity(ws));
+void ArrayOfArrayOfVectorCreate(Workspace& ws, ArrayOfArrayOfVector& out) {
+  ArrayOfArrayOfVectorCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfCIARecord.
 
@@ -5624,12 +6284,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfCIARecordCreate(Workspace& ws,
-ArrayOfCIARecord& out) {
-ArrayOfCIARecordCreate(out,
-Var::verbosity(ws));
+void ArrayOfCIARecordCreate(Workspace& ws, ArrayOfCIARecord& out) {
+  ArrayOfCIARecordCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfGriddedField1.
 
@@ -5642,12 +6299,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfGriddedField1Create(Workspace& ws,
-ArrayOfGriddedField1& out) {
-ArrayOfGriddedField1Create(out,
-Var::verbosity(ws));
+void ArrayOfGriddedField1Create(Workspace& ws, ArrayOfGriddedField1& out) {
+  ArrayOfGriddedField1Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfGriddedField2.
 
@@ -5660,12 +6314,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfGriddedField2Create(Workspace& ws,
-ArrayOfGriddedField2& out) {
-ArrayOfGriddedField2Create(out,
-Var::verbosity(ws));
+void ArrayOfGriddedField2Create(Workspace& ws, ArrayOfGriddedField2& out) {
+  ArrayOfGriddedField2Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfGriddedField3.
 
@@ -5678,12 +6329,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfGriddedField3Create(Workspace& ws,
-ArrayOfGriddedField3& out) {
-ArrayOfGriddedField3Create(out,
-Var::verbosity(ws));
+void ArrayOfGriddedField3Create(Workspace& ws, ArrayOfGriddedField3& out) {
+  ArrayOfGriddedField3Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfGriddedField4.
 
@@ -5696,12 +6344,27 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfGriddedField4Create(Workspace& ws,
-ArrayOfGriddedField4& out) {
-ArrayOfGriddedField4Create(out,
-Var::verbosity(ws));
+void ArrayOfGriddedField4Create(Workspace& ws, ArrayOfGriddedField4& out) {
+  ArrayOfGriddedField4Create(out, Var::verbosity(ws));
 }
 
+/*! Get the names of all GriddedFields stored in an Array.
+
+See *GriddedFieldGetName*.
+
+@author Lukas Kluft
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] names - Names of the GriddedFields in the ArrayOfGriddedField.
+@param[in] griddedfields - Array of GriddedFields.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void ArrayOfGriddedFieldGetNames(Workspace& ws, ArrayOfString& names,
+                                 const Any_0& griddedfields) {
+  ArrayOfGriddedFieldGetNames(names, griddedfields, Var::verbosity(ws));
+}
 
 /*! Creates a variable of group ArrayOfIndex.
 
@@ -5714,12 +6377,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfIndexCreate(Workspace& ws,
-ArrayOfIndex& out) {
-ArrayOfIndexCreate(out,
-Var::verbosity(ws));
+void ArrayOfIndexCreate(Workspace& ws, ArrayOfIndex& out) {
+  ArrayOfIndexCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Initializes an ArrayOfIndex with linear spacing.
 
@@ -5728,7 +6388,7 @@ equals always the step value, but the last value can deviate from
 the stop value. *step* can be both positive and negative.
 
 The created array is [start, start+step, start+2*step, ...]
- 
+
 @author Oliver Lemke
 
 @param[in,out] Workspace ws - An ARTS workspace
@@ -5739,18 +6399,10 @@ The created array is [start, start+step, start+2*step, ...]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfIndexLinSpace(Workspace& ws,
-ArrayOfIndex& out,
-const Index& start,
-const Index& stop,
-const Index& step) {
-ArrayOfIndexLinSpace(out,
-start,
-stop,
-step,
-Var::verbosity(ws));
+void ArrayOfIndexLinSpace(Workspace& ws, ArrayOfIndex& out, const Index& start,
+                          const Index& stop, const Index& step) {
+  ArrayOfIndexLinSpace(out, start, stop, step, Var::verbosity(ws));
 }
-
 
 /*! Creates an ArrayOfIndex from the given list of numbers.
 
@@ -5762,14 +6414,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfIndexSet(Workspace& ws,
-ArrayOfIndex& out,
-const ArrayOfIndex& value) {
-ArrayOfIndexSet(out,
-value,
-Var::verbosity(ws));
+void ArrayOfIndexSet(Workspace& ws, ArrayOfIndex& out,
+                     const ArrayOfIndex& value) {
+  ArrayOfIndexSet(out, value, Var::verbosity(ws));
 }
-
 
 /*! Creates an ArrayOfIndex of length *nelem*, with all values
 identical.
@@ -5782,15 +6430,10 @@ identical.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfIndexSetConstant(Workspace& ws,
-ArrayOfIndex& out,
-const Index& value) {
-ArrayOfIndexSetConstant(out,
-Var::nelem(ws),
-value,
-Var::verbosity(ws));
+void ArrayOfIndexSetConstant(Workspace& ws, ArrayOfIndex& out,
+                             const Index& value) {
+  ArrayOfIndexSetConstant(out, Var::nelem(ws), value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfMatrix.
 
@@ -5803,12 +6446,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfMatrixCreate(Workspace& ws,
-ArrayOfMatrix& out) {
-ArrayOfMatrixCreate(out,
-Var::verbosity(ws));
+void ArrayOfMatrixCreate(Workspace& ws, ArrayOfMatrix& out) {
+  ArrayOfMatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfPpath.
 
@@ -5821,12 +6461,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfPpathCreate(Workspace& ws,
-ArrayOfPpath& out) {
-ArrayOfPpathCreate(out,
-Var::verbosity(ws));
+void ArrayOfPpathCreate(Workspace& ws, ArrayOfPpath& out) {
+  ArrayOfPpathCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfPropagationMatrix.
 
@@ -5840,11 +6477,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfPropagationMatrixCreate(Workspace& ws,
-ArrayOfPropagationMatrix& out) {
-ArrayOfPropagationMatrixCreate(out,
-Var::verbosity(ws));
+                                    ArrayOfPropagationMatrix& out) {
+  ArrayOfPropagationMatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfQuantumIdentifier.
 
@@ -5858,11 +6493,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfQuantumIdentifierCreate(Workspace& ws,
-ArrayOfQuantumIdentifier& out) {
-ArrayOfQuantumIdentifierCreate(out,
-Var::verbosity(ws));
+                                    ArrayOfQuantumIdentifier& out) {
+  ArrayOfQuantumIdentifierCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Sets an ArrayOfQuantumIdentifier to all levels in *abs_lines_per_species*
 with defined quantum numbers
@@ -5878,14 +6511,11 @@ Lines without defined quantum numbers are ignored
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfQuantumIdentifierFromLines(Workspace& ws,
-ArrayOfQuantumIdentifier& out,
-const Index& global=1) {
-ArrayOfQuantumIdentifierFromLines(out,
-Var::abs_lines_per_species(ws),
-global,
-Var::verbosity(ws));
+                                       ArrayOfQuantumIdentifier& out,
+                                       const Index& global = 1) {
+  ArrayOfQuantumIdentifierFromLines(out, Var::abs_lines_per_species(ws), global,
+                                    Var::verbosity(ws));
 }
-
 
 /*! Sets an ArrayOfQuantumIdentifier workspace variable to the given value
 by converting the input ArrayOfString
@@ -5894,18 +6524,15 @@ by converting the input ArrayOfString
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[out] out - Variables to initialize.
-@param[in] string_initializers - The array of string representing the values of the array.
+@param[in] string_initializers - The array of string representing the values of
+the array.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfQuantumIdentifierSet(Workspace& ws,
-ArrayOfQuantumIdentifier& out,
-const ArrayOfString& string_initializers) {
-ArrayOfQuantumIdentifierSet(out,
-string_initializers,
-Var::verbosity(ws));
+void ArrayOfQuantumIdentifierSet(Workspace& ws, ArrayOfQuantumIdentifier& out,
+                                 const ArrayOfString& string_initializers) {
+  ArrayOfQuantumIdentifierSet(out, string_initializers, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfRadiationVector.
 
@@ -5918,12 +6545,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfRadiationVectorCreate(Workspace& ws,
-ArrayOfRadiationVector& out) {
-ArrayOfRadiationVectorCreate(out,
-Var::verbosity(ws));
+void ArrayOfRadiationVectorCreate(Workspace& ws, ArrayOfRadiationVector& out) {
+  ArrayOfRadiationVectorCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfRetrievalQuantity.
 
@@ -5937,11 +6561,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfRetrievalQuantityCreate(Workspace& ws,
-ArrayOfRetrievalQuantity& out) {
-ArrayOfRetrievalQuantityCreate(out,
-Var::verbosity(ws));
+                                    ArrayOfRetrievalQuantity& out) {
+  ArrayOfRetrievalQuantityCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfScatteringMetaData.
 
@@ -5955,11 +6577,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfScatteringMetaDataCreate(Workspace& ws,
-ArrayOfScatteringMetaData& out) {
-ArrayOfScatteringMetaDataCreate(out,
-Var::verbosity(ws));
+                                     ArrayOfScatteringMetaData& out) {
+  ArrayOfScatteringMetaDataCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfSingleScatteringData.
 
@@ -5973,11 +6593,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfSingleScatteringDataCreate(Workspace& ws,
-ArrayOfSingleScatteringData& out) {
-ArrayOfSingleScatteringDataCreate(out,
-Var::verbosity(ws));
+                                       ArrayOfSingleScatteringData& out) {
+  ArrayOfSingleScatteringDataCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfSparse.
 
@@ -5990,12 +6608,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfSparseCreate(Workspace& ws,
-ArrayOfSparse& out) {
-ArrayOfSparseCreate(out,
-Var::verbosity(ws));
+void ArrayOfSparseCreate(Workspace& ws, ArrayOfSparse& out) {
+  ArrayOfSparseCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfStokesVector.
 
@@ -6008,12 +6623,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfStokesVectorCreate(Workspace& ws,
-ArrayOfStokesVector& out) {
-ArrayOfStokesVectorCreate(out,
-Var::verbosity(ws));
+void ArrayOfStokesVectorCreate(Workspace& ws, ArrayOfStokesVector& out) {
+  ArrayOfStokesVectorCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfString.
 
@@ -6026,12 +6638,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfStringCreate(Workspace& ws,
-ArrayOfString& out) {
-ArrayOfStringCreate(out,
-Var::verbosity(ws));
+void ArrayOfStringCreate(Workspace& ws, ArrayOfString& out) {
+  ArrayOfStringCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Sets a String array according the given text.
 The format is text = ["String1","String2",...]
@@ -6044,14 +6653,10 @@ The format is text = ["String1","String2",...]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfStringSet(Workspace& ws,
-ArrayOfString& out,
-const ArrayOfString& value) {
-ArrayOfStringSet(out,
-value,
-Var::verbosity(ws));
+void ArrayOfStringSet(Workspace& ws, ArrayOfString& out,
+                      const ArrayOfString& value) {
+  ArrayOfStringSet(out, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfTelsemAtlas.
 
@@ -6064,12 +6669,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfTelsemAtlasCreate(Workspace& ws,
-ArrayOfTelsemAtlas& out) {
-ArrayOfTelsemAtlasCreate(out,
-Var::verbosity(ws));
+void ArrayOfTelsemAtlasCreate(Workspace& ws, ArrayOfTelsemAtlas& out) {
+  ArrayOfTelsemAtlasCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfTensor3.
 
@@ -6082,12 +6684,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfTensor3Create(Workspace& ws,
-ArrayOfTensor3& out) {
-ArrayOfTensor3Create(out,
-Var::verbosity(ws));
+void ArrayOfTensor3Create(Workspace& ws, ArrayOfTensor3& out) {
+  ArrayOfTensor3Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfTensor4.
 
@@ -6100,12 +6699,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfTensor4Create(Workspace& ws,
-ArrayOfTensor4& out) {
-ArrayOfTensor4Create(out,
-Var::verbosity(ws));
+void ArrayOfTensor4Create(Workspace& ws, ArrayOfTensor4& out) {
+  ArrayOfTensor4Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfTensor5.
 
@@ -6118,12 +6714,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfTensor5Create(Workspace& ws,
-ArrayOfTensor5& out) {
-ArrayOfTensor5Create(out,
-Var::verbosity(ws));
+void ArrayOfTensor5Create(Workspace& ws, ArrayOfTensor5& out) {
+  ArrayOfTensor5Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfTensor6.
 
@@ -6136,12 +6729,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfTensor6Create(Workspace& ws,
-ArrayOfTensor6& out) {
-ArrayOfTensor6Create(out,
-Var::verbosity(ws));
+void ArrayOfTensor6Create(Workspace& ws, ArrayOfTensor6& out) {
+  ArrayOfTensor6Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfTensor7.
 
@@ -6154,12 +6744,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfTensor7Create(Workspace& ws,
-ArrayOfTensor7& out) {
-ArrayOfTensor7Create(out,
-Var::verbosity(ws));
+void ArrayOfTensor7Create(Workspace& ws, ArrayOfTensor7& out) {
+  ArrayOfTensor7Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfTime.
 
@@ -6172,12 +6759,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfTimeCreate(Workspace& ws,
-ArrayOfTime& out) {
-ArrayOfTimeCreate(out,
-Var::verbosity(ws));
+void ArrayOfTimeCreate(Workspace& ws, ArrayOfTime& out) {
+  ArrayOfTimeCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfTransmissionMatrix.
 
@@ -6191,11 +6775,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ArrayOfTransmissionMatrixCreate(Workspace& ws,
-ArrayOfTransmissionMatrix& out) {
-ArrayOfTransmissionMatrixCreate(out,
-Var::verbosity(ws));
+                                     ArrayOfTransmissionMatrix& out) {
+  ArrayOfTransmissionMatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfVector.
 
@@ -6208,12 +6790,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfVectorCreate(Workspace& ws,
-ArrayOfVector& out) {
-ArrayOfVectorCreate(out,
-Var::verbosity(ws));
+void ArrayOfVectorCreate(Workspace& ws, ArrayOfVector& out) {
+  ArrayOfVectorCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ArrayOfXsecRecord.
 
@@ -6226,12 +6805,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ArrayOfXsecRecordCreate(Workspace& ws,
-ArrayOfXsecRecord& out) {
-ArrayOfXsecRecordCreate(out,
-Var::verbosity(ws));
+void ArrayOfXsecRecordCreate(Workspace& ws, ArrayOfXsecRecord& out) {
+  ArrayOfXsecRecordCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Interpolates the input field along the pressure dimension from
 *p_grid_old* to to *p_grid_new*.
@@ -6251,25 +6827,17 @@ in and out fields can be the same variable.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void AtmFieldPRegrid(Workspace& ws,
-Any_0& out,
-const Any_1& in,
-const Vector& p_grid_new,
-const Vector& p_grid_old,
-const Index& interp_order=1) {
-AtmFieldPRegrid(out,
-in,
-p_grid_new,
-p_grid_old,
-interp_order,
-Var::verbosity(ws));
+void AtmFieldPRegrid(Workspace& ws, Any_0& out, const Any_1& in,
+                     const Vector& p_grid_new, const Vector& p_grid_old,
+                     const Index& interp_order = 1) {
+  AtmFieldPRegrid(out, in, p_grid_new, p_grid_old, interp_order,
+                  Var::verbosity(ws));
 }
-
 
 /*! Adds a perturbation to an atmospheric field.
 
 The shape and position of the perturbation follow the retrieval grids.
-That is, the shape of the perturbation has a traingular shape, 
+That is, the shape of the perturbation has a traingular shape,
 with breake points at the retrieval grid points. The position is
 given as an index. This index matches the column in the Jacobian
 for the selected grid position.
@@ -6286,36 +6854,24 @@ that method can help to understand this method.
 @param[in] p_ret_grid - Pressure retrieval grid.
 @param[in] lat_ret_grid - Latitude retrieval grid.
 @param[in] lon_ret_grid - Longitude retrieval grid.
-@param[in] pert_index - Index of position where the perturbation shall be performed.
+@param[in] pert_index - Index of position where the perturbation shall be
+performed.
 @param[in] pert_size - Size of perturbation.
-@param[in] pert_mode - Type of perturbation, absolute or relative. (default: "absolute")
+@param[in] pert_mode - Type of perturbation, absolute or relative. (default:
+"absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmFieldPerturb(Workspace& ws,
-Tensor3& perturbed_field,
-const Tensor3& original_field,
-const Vector& p_ret_grid,
-const Vector& lat_ret_grid,
-const Vector& lon_ret_grid,
-const Index& pert_index,
-const Numeric& pert_size,
-const String& pert_mode="absolute") {
-AtmFieldPerturb(perturbed_field,
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-original_field,
-p_ret_grid,
-lat_ret_grid,
-lon_ret_grid,
-pert_index,
-pert_size,
-pert_mode,
-Var::verbosity(ws));
+void AtmFieldPerturb(Workspace& ws, Tensor3& perturbed_field,
+                     const Tensor3& original_field, const Vector& p_ret_grid,
+                     const Vector& lat_ret_grid, const Vector& lon_ret_grid,
+                     const Index& pert_index, const Numeric& pert_size,
+                     const String& pert_mode = "absolute") {
+  AtmFieldPerturb(perturbed_field, Var::atmosphere_dim(ws), Var::p_grid(ws),
+                  Var::lat_grid(ws), Var::lon_grid(ws), original_field,
+                  p_ret_grid, lat_ret_grid, lon_ret_grid, pert_index, pert_size,
+                  pert_mode, Var::verbosity(ws));
 }
-
 
 /*! As *AtmFieldPerturb*, but perturbation follows the atmospheric grids.
 
@@ -6332,30 +6888,23 @@ where p_index etc. are derived from *pert_index*.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[out] perturbed_field - Perturbed/modified field.
 @param[in] original_field - Original field, e.g. *t_field*.
-@param[in] pert_index - Index of position where the perturbation shall be performed.
+@param[in] pert_index - Index of position where the perturbation shall be
+performed.
 @param[in] pert_size - Size of perturbation.
-@param[in] pert_mode - Type of perturbation, ansolute or relative. (default: "absolute")
+@param[in] pert_mode - Type of perturbation, ansolute or relative. (default:
+"absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmFieldPerturbAtmGrids(Workspace& ws,
-Tensor3& perturbed_field,
-const Tensor3& original_field,
-const Index& pert_index,
-const Numeric& pert_size,
-const String& pert_mode="absolute") {
-AtmFieldPerturbAtmGrids(perturbed_field,
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-original_field,
-pert_index,
-pert_size,
-pert_mode,
-Var::verbosity(ws));
+void AtmFieldPerturbAtmGrids(Workspace& ws, Tensor3& perturbed_field,
+                             const Tensor3& original_field,
+                             const Index& pert_index, const Numeric& pert_size,
+                             const String& pert_mode = "absolute") {
+  AtmFieldPerturbAtmGrids(perturbed_field, Var::atmosphere_dim(ws),
+                          Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                          original_field, pert_index, pert_size, pert_mode,
+                          Var::verbosity(ws));
 }
-
 
 /*! Extract pressure grid and atmospheric fields from
 *atm_fields_compact*.
@@ -6389,32 +6938,21 @@ onto given grids, instead of using and returning the original grids.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] delim - Delimiter string of *scat_species* elements. (default: "-")
 @param[in] p_min - Minimum-pressure level to consider (for TOA). (default: 0)
-@param[in] check_gridnames - A flag with value 1 or 0. If set to one, the gridnames of 
- the *atm_fields_compact* are checked. (default: 0)
+@param[in] check_gridnames - A flag with value 1 or 0. If set to one, the
+gridnames of the *atm_fields_compact* are checked. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmFieldsAndParticleBulkPropFieldFromCompact(Workspace& ws,
-const String& delim="-",
-const Numeric& p_min=0,
-const Index& check_gridnames=0) {
-AtmFieldsAndParticleBulkPropFieldFromCompact(Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::particle_bulkprop_field(ws),
-Var::particle_bulkprop_names(ws),
-Var::abs_species(ws),
-Var::atm_fields_compact(ws),
-Var::atmosphere_dim(ws),
-delim,
-p_min,
-check_gridnames,
-Var::verbosity(ws));
+void AtmFieldsAndParticleBulkPropFieldFromCompact(
+    Workspace& ws, const String& delim = "-", const Numeric& p_min = 0,
+    const Index& check_gridnames = 0) {
+  AtmFieldsAndParticleBulkPropFieldFromCompact(
+      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws), Var::t_field(ws),
+      Var::z_field(ws), Var::vmr_field(ws), Var::particle_bulkprop_field(ws),
+      Var::particle_bulkprop_names(ws), Var::abs_species(ws),
+      Var::atm_fields_compact(ws), Var::atmosphere_dim(ws), delim, p_min,
+      check_gridnames, Var::verbosity(ws));
 }
-
 
 /*! Interpolation of raw atmospheric T, z, VMR, and NLTE T/r fields to
 calculation grids.
@@ -6446,39 +6984,30 @@ above 1.
 @author Stefan Buehler
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] interp_order - Interpolation order (1=linear interpolation). (default: 1)
-@param[in] vmr_zeropadding - Pad VMRs with zeroes to fit the pressure grid if necessary. (default: 0)
-@param[in] vmr_nonegative - If set to 1, negative VMRs are set to 0. (default: 0)
-@param[in] nlte_when_negative - -1: Skip step. 0: Negative is 0. Else: Negative is t. (default: 0)
+@param[in] interp_order - Interpolation order (1=linear interpolation).
+(default: 1)
+@param[in] vmr_zeropadding - Pad VMRs with zeroes to fit the pressure grid if
+necessary. (default: 0)
+@param[in] vmr_nonegative - If set to 1, negative VMRs are set to 0. (default:
+0)
+@param[in] nlte_when_negative - -1: Skip step. 0: Negative is 0. Else: Negative
+is t. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmFieldsCalc(Workspace& ws,
-const Index& interp_order=1,
-const Index& vmr_zeropadding=0,
-const Index& vmr_nonegative=0,
-const Index& nlte_when_negative=0) {
-AtmFieldsCalc(Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::nlte_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::t_field_raw(ws),
-Var::z_field_raw(ws),
-Var::vmr_field_raw(ws),
-Var::nlte_field_raw(ws),
-Var::nlte_level_identifiers(ws),
-Var::nlte_vibrational_energies(ws),
-Var::atmosphere_dim(ws),
-interp_order,
-vmr_zeropadding,
-vmr_nonegative,
-nlte_when_negative,
-Var::verbosity(ws));
+void AtmFieldsCalc(Workspace& ws, const Index& interp_order = 1,
+                   const Index& vmr_zeropadding = 0,
+                   const Index& vmr_nonegative = 0,
+                   const Index& nlte_when_negative = 0) {
+  AtmFieldsCalc(Var::t_field(ws), Var::z_field(ws), Var::vmr_field(ws),
+                Var::nlte_field(ws), Var::p_grid(ws), Var::lat_grid(ws),
+                Var::lon_grid(ws), Var::t_field_raw(ws), Var::z_field_raw(ws),
+                Var::vmr_field_raw(ws), Var::nlte_field_raw(ws),
+                Var::nlte_level_identifiers(ws),
+                Var::nlte_vibrational_energies(ws), Var::atmosphere_dim(ws),
+                interp_order, vmr_zeropadding, vmr_nonegative,
+                nlte_when_negative, Var::verbosity(ws));
 }
-
 
 /*! Interpolation of 1D raw atmospheric fields to create 2D or 3D
 homogeneous atmospheric fields.
@@ -6497,39 +7026,30 @@ ellipsoid is set to be a sphere.
 @author Stefan Buehler
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] interp_order - Interpolation order (1=linear interpolation). (default: 1)
-@param[in] vmr_zeropadding - Pad VMRs with zeroes to fit the pressure grid if necessary. (default: 0)
-@param[in] vmr_nonegative - If set to 1, negative VMRs are set to 0. (default: 0)
-@param[in] nlte_when_negative - -1: Skip step. 0: Negative is 0. Else: Negative is t. (default: 0)
+@param[in] interp_order - Interpolation order (1=linear interpolation).
+(default: 1)
+@param[in] vmr_zeropadding - Pad VMRs with zeroes to fit the pressure grid if
+necessary. (default: 0)
+@param[in] vmr_nonegative - If set to 1, negative VMRs are set to 0. (default:
+0)
+@param[in] nlte_when_negative - -1: Skip step. 0: Negative is 0. Else: Negative
+is t. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmFieldsCalcExpand1D(Workspace& ws,
-const Index& interp_order=1,
-const Index& vmr_zeropadding=0,
-const Index& vmr_nonegative=0,
-const Index& nlte_when_negative=0) {
-AtmFieldsCalcExpand1D(Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::nlte_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::t_field_raw(ws),
-Var::z_field_raw(ws),
-Var::vmr_field_raw(ws),
-Var::nlte_field_raw(ws),
-Var::nlte_level_identifiers(ws),
-Var::nlte_vibrational_energies(ws),
-Var::atmosphere_dim(ws),
-interp_order,
-vmr_zeropadding,
-vmr_nonegative,
-nlte_when_negative,
-Var::verbosity(ws));
+void AtmFieldsCalcExpand1D(Workspace& ws, const Index& interp_order = 1,
+                           const Index& vmr_zeropadding = 0,
+                           const Index& vmr_nonegative = 0,
+                           const Index& nlte_when_negative = 0) {
+  AtmFieldsCalcExpand1D(
+      Var::t_field(ws), Var::z_field(ws), Var::vmr_field(ws),
+      Var::nlte_field(ws), Var::p_grid(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), Var::t_field_raw(ws), Var::z_field_raw(ws),
+      Var::vmr_field_raw(ws), Var::nlte_field_raw(ws),
+      Var::nlte_level_identifiers(ws), Var::nlte_vibrational_energies(ws),
+      Var::atmosphere_dim(ws), interp_order, vmr_zeropadding, vmr_nonegative,
+      nlte_when_negative, Var::verbosity(ws));
 }
-
 
 /*! Maps a 1D case to 2D or 3D homogeneous atmospheric fields.
 
@@ -6547,23 +7067,16 @@ ellipsoid is set to be a sphere.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] chk_vmr_nan - Flag to determine if a search for NaN shall be performed or not. (default: 1)
+@param[in] chk_vmr_nan - Flag to determine if a search for NaN shall be
+performed or not. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmFieldsExpand1D(Workspace& ws,
-const Index& chk_vmr_nan=1) {
-AtmFieldsExpand1D(Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::atmosphere_dim(ws),
-chk_vmr_nan,
-Var::verbosity(ws));
+void AtmFieldsExpand1D(Workspace& ws, const Index& chk_vmr_nan = 1) {
+  AtmFieldsExpand1D(Var::t_field(ws), Var::z_field(ws), Var::vmr_field(ws),
+                    Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                    Var::atmosphere_dim(ws), chk_vmr_nan, Var::verbosity(ws));
 }
-
 
 /*! Converts 2D or 3D homogeneous atmospheric fields to a 1D case.
 
@@ -6580,20 +7093,12 @@ Nothing is done if *atmosphere_dim* alöready is 1.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmFieldsExtract1D(Workspace& ws,
-const Index& ilat=0,
-const Index& ilon=0) {
-AtmFieldsExtract1D(Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-ilat,
-ilon,
-Var::verbosity(ws));
+void AtmFieldsExtract1D(Workspace& ws, const Index& ilat = 0,
+                        const Index& ilon = 0) {
+  AtmFieldsExtract1D(Var::atmosphere_dim(ws), Var::lat_grid(ws),
+                     Var::lon_grid(ws), Var::t_field(ws), Var::z_field(ws),
+                     Var::vmr_field(ws), ilat, ilon, Var::verbosity(ws));
 }
-
 
 /*! Refines the pressure grid and regrids the clearsky atmospheric
 fields accordingly.
@@ -6621,32 +7126,22 @@ i.e., the corresponding checkedCalc methods have to be performed
 @author Stefan Buehler
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] p_step - Maximum step in log(p[Pa]) (natural logarithm, as always). If
-the pressure grid is coarser than this, additional points
-are added until each log step is smaller than this.
+@param[in] p_step - Maximum step in log(p[Pa]) (natural logarithm, as always).
+If the pressure grid is coarser than this, additional points are added until
+each log step is smaller than this.
 
 @param[in] interp_order - Interpolation order. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmFieldsRefinePgrid(Workspace& ws,
-const Numeric& p_step,
-const Index& interp_order=1) {
-AtmFieldsRefinePgrid(Var::p_grid(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::cloudbox_checked(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::atmosphere_dim(ws),
-p_step,
-interp_order,
-Var::verbosity(ws));
+void AtmFieldsRefinePgrid(Workspace& ws, const Numeric& p_step,
+                          const Index& interp_order = 1) {
+  AtmFieldsRefinePgrid(
+      Var::p_grid(ws), Var::t_field(ws), Var::z_field(ws), Var::vmr_field(ws),
+      Var::atmfields_checked(ws), Var::atmgeom_checked(ws),
+      Var::cloudbox_checked(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+      Var::atmosphere_dim(ws), p_step, interp_order, Var::verbosity(ws));
 }
-
 
 /*! Reads atmospheric data from a scenario.
 
@@ -6678,23 +7173,17 @@ species, the same profile will be used.
 @author Claudia Emde
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] basename - Name of scenario, probably including the full path. For example: "/smiles_local/arts-data/atmosphere/fascod/tropical"
+@param[in] basename - Name of scenario, probably including the full path. For
+example: "/smiles_local/arts-data/atmosphere/fascod/tropical"
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmRawRead(Workspace& ws,
-const String& basename) {
-AtmRawRead(Var::t_field_raw(ws),
-Var::z_field_raw(ws),
-Var::vmr_field_raw(ws),
-Var::nlte_field_raw(ws),
-Var::nlte_level_identifiers(ws),
-Var::nlte_vibrational_energies(ws),
-Var::abs_species(ws),
-basename,
-Var::verbosity(ws));
+void AtmRawRead(Workspace& ws, const String& basename) {
+  AtmRawRead(Var::t_field_raw(ws), Var::z_field_raw(ws), Var::vmr_field_raw(ws),
+             Var::nlte_field_raw(ws), Var::nlte_level_identifiers(ws),
+             Var::nlte_vibrational_energies(ws), Var::abs_species(ws), basename,
+             Var::verbosity(ws));
 }
-
 
 /*! Reads atmospheric data from a scenario.
 
@@ -6720,26 +7209,20 @@ species, the same profile will be used.
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] basename - Name of scenario, probably including the full path. For example: "/smiles_local/arts-data/atmosphere/fascod/tropical"
+@param[in] basename - Name of scenario, probably including the full path. For
+example: "/smiles_local/arts-data/atmosphere/fascod/tropical"
 @param[in] expect_vibrational_energies - Should ev.xml be read? (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void AtmWithNLTERawRead(Workspace& ws,
-const String& basename,
-const Index& expect_vibrational_energies=0) {
-AtmWithNLTERawRead(Var::t_field_raw(ws),
-Var::z_field_raw(ws),
-Var::vmr_field_raw(ws),
-Var::nlte_field_raw(ws),
-Var::nlte_level_identifiers(ws),
-Var::nlte_vibrational_energies(ws),
-Var::abs_species(ws),
-basename,
-expect_vibrational_energies,
-Var::verbosity(ws));
+void AtmWithNLTERawRead(Workspace& ws, const String& basename,
+                        const Index& expect_vibrational_energies = 0) {
+  AtmWithNLTERawRead(Var::t_field_raw(ws), Var::z_field_raw(ws),
+                     Var::vmr_field_raw(ws), Var::nlte_field_raw(ws),
+                     Var::nlte_level_identifiers(ws),
+                     Var::nlte_vibrational_energies(ws), Var::abs_species(ws),
+                     basename, expect_vibrational_energies, Var::verbosity(ws));
 }
-
 
 /*! Sets the atmospheric dimension to 1D.
 
@@ -6753,12 +7236,9 @@ are set to be empty.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void AtmosphereSet1D(Workspace& ws) {
-AtmosphereSet1D(Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::verbosity(ws));
+  AtmosphereSet1D(Var::atmosphere_dim(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                  Var::verbosity(ws));
 }
-
 
 /*! Sets the atmospheric dimension to be 2D.
 
@@ -6771,11 +7251,9 @@ Sets *atmosphere_dim* to 2 and the longitude grid to be empty.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void AtmosphereSet2D(Workspace& ws) {
-AtmosphereSet2D(Var::atmosphere_dim(ws),
-Var::lon_grid(ws),
-Var::verbosity(ws));
+  AtmosphereSet2D(Var::atmosphere_dim(ws), Var::lon_grid(ws),
+                  Var::verbosity(ws));
 }
-
 
 /*! Sets the atmospheric dimension to 3D.
 
@@ -6789,12 +7267,9 @@ set to be empty.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void AtmosphereSet3D(Workspace& ws) {
-AtmosphereSet3D(Var::atmosphere_dim(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::verbosity(ws));
+  AtmosphereSet3D(Var::atmosphere_dim(ws), Var::lat_true(ws), Var::lon_true(ws),
+                  Var::verbosity(ws));
 }
-
 
 /*! Display information about the given CIA tags.
 The CIA tags shown are in the same format as needed by *abs_speciesSet*.
@@ -6807,14 +7282,10 @@ The CIA tags shown are in the same format as needed by *abs_speciesSet*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void CIAInfo(Workspace& ws,
-const String& catalogpath,
-const ArrayOfString& cia_tags) {
-CIAInfo(catalogpath,
-cia_tags,
-Var::verbosity(ws));
+void CIAInfo(Workspace& ws, const String& catalogpath,
+             const ArrayOfString& cia_tags) {
+  CIAInfo(catalogpath, cia_tags, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group CIARecord.
 
@@ -6827,12 +7298,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void CIARecordCreate(Workspace& ws,
-CIARecord& out) {
-CIARecordCreate(out,
-Var::verbosity(ws));
+void CIARecordCreate(Workspace& ws, CIARecord& out) {
+  CIARecordCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Reads CIARecord from Hitran-style file.
 
@@ -6840,21 +7308,16 @@ Var::verbosity(ws));
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[out] cia_record - CIARecord type variable for input and output.
-@param[in] species_tag - SpeciesTag string to associate with this CIARecord. See *abs_speciesSet* for correct format.
+@param[in] species_tag - SpeciesTag string to associate with this CIARecord. See
+*abs_speciesSet* for correct format.
 @param[in] filename - Filename of HITRAN CIA data file.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void CIARecordReadFromFile(Workspace& ws,
-CIARecord& cia_record,
-const String& species_tag,
-const String& filename) {
-CIARecordReadFromFile(cia_record,
-species_tag,
-filename,
-Var::verbosity(ws));
+void CIARecordReadFromFile(Workspace& ws, CIARecord& cia_record,
+                           const String& species_tag, const String& filename) {
+  CIARecordReadFromFile(cia_record, species_tag, filename, Var::verbosity(ws));
 }
-
 
 /*! Checks the consistency between two variables.
 
@@ -6876,18 +7339,15 @@ is consistent with an old, reference, value.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void Compare(Workspace& ws,
-const Any_0& var1,
-const Any_1& var2,
-const Numeric& maxabsdiff={},
-const String& error_message="") {
-Compare(var1,
-var2,
-maxabsdiff,
-error_message,
-Var::verbosity(ws));
+void Compare(Workspace& ws, const std::pair<Any_0, String>& var1,
+             const std::pair<Any_1, String>& var2,
+             const std::pair<Numeric, String>& maxabsdiff = {{}, "maxabsdiff"},
+             const std::pair<String, String>& error_message = {
+                 "", "error_message"}) {
+  Compare(var1.first, var2.first, maxabsdiff.first, error_message.first,
+          var1.second, var2.second, maxabsdiff.second, error_message.second,
+          Var::verbosity(ws));
 }
-
 
 /*! Checks the consistency between two variables by their relative values.
 
@@ -6919,18 +7379,46 @@ That is, *var2* is taken as the reference value.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void CompareRelative(Workspace& ws,
-const Any_0& var1,
-const Any_1& var2,
-const Numeric& maxabsreldiff,
-const String& error_message="") {
-CompareRelative(var1,
-var2,
-maxabsreldiff,
-error_message,
-Var::verbosity(ws));
+void CompareRelative(Workspace& ws, const std::pair<Any_0, String>& var1,
+                     const std::pair<Any_1, String>& var2,
+                     const std::pair<Numeric, String>& maxabsreldiff,
+                     const std::pair<String, String>& error_message = {
+                         "", "error_message"}) {
+  CompareRelative(var1.first, var2.first, maxabsreldiff.first,
+                  error_message.first, var1.second, var2.second,
+                  maxabsreldiff.second, error_message.second,
+                  Var::verbosity(ws));
 }
 
+/*! Copy a workspace variable.
+
+This method can copy any workspace variable
+to another workspace variable of the same group. (E.g., a Matrix to
+another Matrix.)
+
+As always, output comes first in the argument list!
+
+Usage example:
+
+Copy(f_grid, p_grid)
+
+Will copy the content of *p_grid* to *f_grid*. The size of *f_grid*
+is adjusted automatically (the normal behaviour for workspace
+methods).
+
+@author Stefan Buehler
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] out - Destination variable.
+@param[in] in - Source variable.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0, typename Any_1>
+void Copy(Workspace& ws, std::pair<Any_0, String>& out,
+          const std::pair<Any_1, String>& in) {
+  Copy(out.first, out.second, in.first, in.second, Var::verbosity(ws));
+}
 
 /*! Creates a variable of group CovarianceMatrix.
 
@@ -6943,12 +7431,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void CovarianceMatrixCreate(Workspace& ws,
-CovarianceMatrix& out) {
-CovarianceMatrixCreate(out,
-Var::verbosity(ws));
+void CovarianceMatrixCreate(Workspace& ws, CovarianceMatrix& out) {
+  CovarianceMatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Sets the angular grids for Discrete Ordinate type scattering
 calculations.
@@ -6975,25 +7460,21 @@ and speeds up the calculations.
 @author Claudia Emde
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] N_za_grid - Number of grid points in zenith angle grid. Recommended value is 19.
-@param[in] N_aa_grid - Number of grid points in azimuth angle grid. Recommended value is 37. (default: 1)
+@param[in] N_za_grid - Number of grid points in zenith angle grid. Recommended
+value is 19.
+@param[in] N_aa_grid - Number of grid points in azimuth angle grid. Recommended
+value is 37. (default: 1)
 @param[in] za_grid_opt_file - Name of special grid for RT part. (default: "")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void DOAngularGridsSet(Workspace& ws,
-const Index& N_za_grid,
-const Index& N_aa_grid=1,
-const String& za_grid_opt_file="") {
-DOAngularGridsSet(Var::doit_za_grid_size(ws),
-Var::aa_grid(ws),
-Var::za_grid(ws),
-N_za_grid,
-N_aa_grid,
-za_grid_opt_file,
-Var::verbosity(ws));
+void DOAngularGridsSet(Workspace& ws, const Index& N_za_grid,
+                       const Index& N_aa_grid = 1,
+                       const String& za_grid_opt_file = "") {
+  DOAngularGridsSet(Var::doit_za_grid_size(ws), Var::aa_grid(ws),
+                    Var::za_grid(ws), N_za_grid, N_aa_grid, za_grid_opt_file,
+                    Var::verbosity(ws));
 }
-
 
 /*! Performs batch calculations for radiation fields.
 
@@ -7037,24 +7518,36 @@ failed job in the output fields is left empty. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void DOBatchCalc(Workspace& ws,
-const Index& robust=0) {
-DOBatchCalc(ws,
-Var::dobatch_cloudbox_field(ws),
-Var::dobatch_radiance_field(ws),
-Var::dobatch_irradiance_field(ws),
-Var::dobatch_spectral_irradiance_field(ws),
-Var::ybatch_start(ws),
-Var::ybatch_n(ws),
-Var::dobatch_calc_agenda(ws),
-robust,
-Var::verbosity(ws));
+void DOBatchCalc(Workspace& ws, const Index& robust = 0) {
+  DOBatchCalc(ws, Var::dobatch_cloudbox_field(ws),
+              Var::dobatch_radiance_field(ws),
+              Var::dobatch_irradiance_field(ws),
+              Var::dobatch_spectral_irradiance_field(ws), Var::ybatch_start(ws),
+              Var::ybatch_n(ws), Var::dobatch_calc_agenda(ws), robust,
+              Var::verbosity(ws));
 }
 
+/*! Deletes a workspace variable.
+
+The variable is marked as uninitialized and its memory freed.
+It is not removed from the workspace though, therefore you
+don't need to/can't call Create for this variable again.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - Variable to be deleted.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void Delete(Workspace& ws, const std::pair<Any_0, String>& v) {
+  Delete(ws, v.first, v.second, Var::verbosity(ws));
+}
 
 /*! Create a diagonal matrix from a vector.
-This creates a dense or sparse diagonal matrix with the elements of the given vector
- on the diagonal.
+This creates a dense or sparse diagonal matrix with the elements of the given
+vector on the diagonal.
 
 @author Simon Pfreundschuh
 
@@ -7065,14 +7558,9 @@ This creates a dense or sparse diagonal matrix with the elements of the given ve
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0>
-void DiagonalMatrix(Workspace& ws,
-Any_0& out,
-const Vector& v) {
-DiagonalMatrix(out,
-v,
-Var::verbosity(ws));
+void DiagonalMatrix(Workspace& ws, Any_0& out, const Vector& v) {
+  DiagonalMatrix(out, v, Var::verbosity(ws));
 }
-
 
 /*! Derives the difference betwenn zenith and azimuth angles.
 
@@ -7089,16 +7577,10 @@ addition made by *AddZaAa*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void DiffZaAa(Workspace& ws,
-Matrix& dlos,
-const Vector& ref_los,
-const Matrix& other_los) {
-DiffZaAa(dlos,
-ref_los,
-other_los,
-Var::verbosity(ws));
+void DiffZaAa(Workspace& ws, Matrix& dlos, const Vector& ref_los,
+              const Matrix& other_los) {
+  DiffZaAa(dlos, ref_los, other_los, Var::verbosity(ws));
 }
-
 
 /*! Interface to the DISORT scattering solver (by Stamnes et al.).
 
@@ -7164,47 +7646,31 @@ interpolated to the actual temperature.
 @author Claudia Emde, Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] nstreams - Number of polar angle directions (streams) in DISORT solution (must be an even number). (default: 8)
-@param[in] pfct_method - Flag which method to apply to derive phase function. (default: "median")
-@param[in] Npfct - Number of angular grid points to calculate bulk phase function on (and derive Legendre polnomials from). If <0, the finest za_grid from scat_data will be used. (default: 181)
+@param[in] nstreams - Number of polar angle directions (streams) in DISORT
+solution (must be an even number). (default: 8)
+@param[in] pfct_method - Flag which method to apply to derive phase function.
+(default: "median")
+@param[in] Npfct - Number of angular grid points to calculate bulk phase
+function on (and derive Legendre polnomials from). If <0, the finest za_grid
+from scat_data will be used. (default: 181)
 @param[in] quiet - Silence C Disort warnings. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void DisortCalc(Workspace& ws,
-const Index& nstreams=8,
-const String& pfct_method="median",
-const Index& Npfct=181,
-const Index& quiet=0) {
-DisortCalc(ws,
-Var::cloudbox_field(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::scat_data_checked(ws),
-Var::cloudbox_checked(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::pnd_field(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::p_grid(ws),
-Var::scat_data(ws),
-Var::f_grid(ws),
-Var::za_grid(ws),
-Var::stokes_dim(ws),
-Var::z_surface(ws),
-Var::surface_skin_t(ws),
-Var::surface_scalar_reflectivity(ws),
-nstreams,
-pfct_method,
-Npfct,
-quiet,
-Var::verbosity(ws));
+void DisortCalc(Workspace& ws, const Index& nstreams = 8,
+                const String& pfct_method = "median", const Index& Npfct = 181,
+                const Index& quiet = 0) {
+  DisortCalc(ws, Var::cloudbox_field(ws), Var::atmfields_checked(ws),
+             Var::atmgeom_checked(ws), Var::scat_data_checked(ws),
+             Var::cloudbox_checked(ws), Var::cloudbox_on(ws),
+             Var::cloudbox_limits(ws), Var::propmat_clearsky_agenda(ws),
+             Var::atmosphere_dim(ws), Var::pnd_field(ws), Var::t_field(ws),
+             Var::z_field(ws), Var::vmr_field(ws), Var::p_grid(ws),
+             Var::scat_data(ws), Var::f_grid(ws), Var::za_grid(ws),
+             Var::stokes_dim(ws), Var::z_surface(ws), Var::surface_skin_t(ws),
+             Var::surface_scalar_reflectivity(ws), nstreams, pfct_method, Npfct,
+             quiet, Var::verbosity(ws));
 }
-
 
 /*! Interface to DISORT for running clear-sky cases.
 
@@ -7217,80 +7683,54 @@ only returns the field inside the cloudbox.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] nstreams - Number of polar angle directions (streams) in DISORT solution (must be an even number). (default: 8)
+@param[in] nstreams - Number of polar angle directions (streams) in DISORT
+solution (must be an even number). (default: 8)
 @param[in] quiet - Silence C Disort warnings. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void DisortCalcClearsky(Workspace& ws,
-const Index& nstreams=8,
-const Index& quiet=0) {
-DisortCalcClearsky(ws,
-Var::spectral_radiance_field(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::p_grid(ws),
-Var::f_grid(ws),
-Var::za_grid(ws),
-Var::stokes_dim(ws),
-Var::z_surface(ws),
-Var::surface_skin_t(ws),
-Var::surface_scalar_reflectivity(ws),
-nstreams,
-quiet,
-Var::verbosity(ws));
+void DisortCalcClearsky(Workspace& ws, const Index& nstreams = 8,
+                        const Index& quiet = 0) {
+  DisortCalcClearsky(
+      ws, Var::spectral_radiance_field(ws), Var::atmfields_checked(ws),
+      Var::atmgeom_checked(ws), Var::propmat_clearsky_agenda(ws),
+      Var::atmosphere_dim(ws), Var::t_field(ws), Var::z_field(ws),
+      Var::vmr_field(ws), Var::p_grid(ws), Var::f_grid(ws), Var::za_grid(ws),
+      Var::stokes_dim(ws), Var::z_surface(ws), Var::surface_skin_t(ws),
+      Var::surface_scalar_reflectivity(ws), nstreams, quiet,
+      Var::verbosity(ws));
 }
-
 
 /*! DISORT with surface.
 
 @author Claudia Emde, Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] nstreams - Number of polar angle directions (streams) in DISORT solution (must be an even number). (default: 8)
-@param[in] pfct_method - Flag which method to apply to derive phase function. (default: "median")
-@param[in] Npfct - Number of angular grid points to calculate bulk phase function on (and derive Legendre polnomials from). If <0, the finest za_grid from scat_data will be used. (default: 181)
+@param[in] nstreams - Number of polar angle directions (streams) in DISORT
+solution (must be an even number). (default: 8)
+@param[in] pfct_method - Flag which method to apply to derive phase function.
+(default: "median")
+@param[in] Npfct - Number of angular grid points to calculate bulk phase
+function on (and derive Legendre polnomials from). If <0, the finest za_grid
+from scat_data will be used. (default: 181)
 @param[in] quiet - Silence C Disort warnings. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void DisortCalcWithARTSSurface(Workspace& ws,
-const Index& nstreams=8,
-const String& pfct_method="median",
-const Index& Npfct=181,
-const Index& quiet=0) {
-DisortCalcWithARTSSurface(ws,
-Var::cloudbox_field(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::scat_data_checked(ws),
-Var::cloudbox_checked(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::surface_rtprop_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::pnd_field(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::p_grid(ws),
-Var::scat_data(ws),
-Var::f_grid(ws),
-Var::za_grid(ws),
-Var::stokes_dim(ws),
-nstreams,
-pfct_method,
-Npfct,
-quiet,
-Var::verbosity(ws));
+void DisortCalcWithARTSSurface(Workspace& ws, const Index& nstreams = 8,
+                               const String& pfct_method = "median",
+                               const Index& Npfct = 181,
+                               const Index& quiet = 0) {
+  DisortCalcWithARTSSurface(
+      ws, Var::cloudbox_field(ws), Var::atmfields_checked(ws),
+      Var::atmgeom_checked(ws), Var::scat_data_checked(ws),
+      Var::cloudbox_checked(ws), Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+      Var::propmat_clearsky_agenda(ws), Var::surface_rtprop_agenda(ws),
+      Var::atmosphere_dim(ws), Var::pnd_field(ws), Var::t_field(ws),
+      Var::z_field(ws), Var::vmr_field(ws), Var::p_grid(ws), Var::scat_data(ws),
+      Var::f_grid(ws), Var::za_grid(ws), Var::stokes_dim(ws), nstreams,
+      pfct_method, Npfct, quiet, Var::verbosity(ws));
 }
-
 
 /*! Main DOIT method.
 
@@ -7305,19 +7745,12 @@ in *f_grid*. The output is the radiation field inside the cloudbox
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void DoitCalc(Workspace& ws) {
-DoitCalc(ws,
-Var::cloudbox_field(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::cloudbox_checked(ws),
-Var::scat_data_checked(ws),
-Var::cloudbox_on(ws),
-Var::f_grid(ws),
-Var::doit_mono_agenda(ws),
-Var::doit_is_initialized(ws),
-Var::verbosity(ws));
+  DoitCalc(ws, Var::cloudbox_field(ws), Var::atmfields_checked(ws),
+           Var::atmgeom_checked(ws), Var::cloudbox_checked(ws),
+           Var::scat_data_checked(ws), Var::cloudbox_on(ws), Var::f_grid(ws),
+           Var::doit_mono_agenda(ws), Var::doit_is_initialized(ws),
+           Var::verbosity(ws));
 }
-
 
 /*! Calculates incoming radiation field of the cloudbox by repeated
 radiative transfer calculations.
@@ -7339,37 +7772,24 @@ the user necessary.).
 @author Claudia Emde
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] rigorous - Fail if incoming field is not safely interpolable. (default: 1)
-@param[in] maxratio - Maximum allowed ratio of two radiances regarded as interpolable. (default: 100)
+@param[in] rigorous - Fail if incoming field is not safely interpolable.
+(default: 1)
+@param[in] maxratio - Maximum allowed ratio of two radiances regarded as
+interpolable. (default: 100)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void DoitGetIncoming(Workspace& ws,
-const Index& rigorous=1,
-const Numeric& maxratio=100) {
-DoitGetIncoming(ws,
-Var::cloudbox_field(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::cloudbox_checked(ws),
-Var::doit_is_initialized(ws),
-Var::iy_main_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::nlte_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-rigorous,
-maxratio,
-Var::verbosity(ws));
+void DoitGetIncoming(Workspace& ws, const Index& rigorous = 1,
+                     const Numeric& maxratio = 100) {
+  DoitGetIncoming(ws, Var::cloudbox_field(ws), Var::atmfields_checked(ws),
+                  Var::atmgeom_checked(ws), Var::cloudbox_checked(ws),
+                  Var::doit_is_initialized(ws), Var::iy_main_agenda(ws),
+                  Var::atmosphere_dim(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                  Var::z_field(ws), Var::nlte_field(ws), Var::cloudbox_on(ws),
+                  Var::cloudbox_limits(ws), Var::f_grid(ws),
+                  Var::stokes_dim(ws), Var::za_grid(ws), Var::aa_grid(ws),
+                  rigorous, maxratio, Var::verbosity(ws));
 }
-
 
 /*! As *DoitGetIncoming* but assumes clear sky part to be 1D.
 The incoming field is calculated only for one position and azimuth
@@ -7387,27 +7807,15 @@ This method can only be used for 3D cases.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void DoitGetIncoming1DAtm(Workspace& ws) {
-DoitGetIncoming1DAtm(ws,
-Var::cloudbox_field(ws),
-Var::cloudbox_on(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::cloudbox_checked(ws),
-Var::doit_is_initialized(ws),
-Var::iy_main_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::nlte_field(ws),
-Var::cloudbox_limits(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::verbosity(ws));
+  DoitGetIncoming1DAtm(ws, Var::cloudbox_field(ws), Var::cloudbox_on(ws),
+                       Var::atmfields_checked(ws), Var::atmgeom_checked(ws),
+                       Var::cloudbox_checked(ws), Var::doit_is_initialized(ws),
+                       Var::iy_main_agenda(ws), Var::atmosphere_dim(ws),
+                       Var::lat_grid(ws), Var::lon_grid(ws), Var::z_field(ws),
+                       Var::nlte_field(ws), Var::cloudbox_limits(ws),
+                       Var::f_grid(ws), Var::stokes_dim(ws), Var::za_grid(ws),
+                       Var::aa_grid(ws), Var::verbosity(ws));
 }
-
 
 /*! Initialises variables for DOIT scattering calculations.
 
@@ -7423,20 +7831,12 @@ BEFORE other WSMs that provide input to *DoitCalc*, e.g. before
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void DoitInit(Workspace& ws) {
-DoitInit(Var::doit_scat_field(ws),
-Var::cloudbox_field(ws),
-Var::doit_is_initialized(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::f_grid(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::doit_za_grid_size(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::verbosity(ws));
+  DoitInit(Var::doit_scat_field(ws), Var::cloudbox_field(ws),
+           Var::doit_is_initialized(ws), Var::stokes_dim(ws),
+           Var::atmosphere_dim(ws), Var::f_grid(ws), Var::za_grid(ws),
+           Var::aa_grid(ws), Var::doit_za_grid_size(ws), Var::cloudbox_on(ws),
+           Var::cloudbox_limits(ws), Var::verbosity(ws));
 }
-
 
 /*! Prepares single scattering data for a DOIT scattering calculation.
 
@@ -7454,24 +7854,14 @@ matrices are stored in *pha_mat_sptDOITOpt*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void DoitScatteringDataPrepare(Workspace& ws) {
-DoitScatteringDataPrepare(ws,
-Var::pha_mat_sptDOITOpt(ws),
-Var::scat_data_mono(ws),
-Var::pha_mat_doit(ws),
-Var::aa_grid(ws),
-Var::doit_za_grid_size(ws),
-Var::scat_data(ws),
-Var::scat_data_checked(ws),
-Var::f_index(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::t_field(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::pha_mat_spt_agenda(ws),
-Var::verbosity(ws));
+  DoitScatteringDataPrepare(
+      ws, Var::pha_mat_sptDOITOpt(ws), Var::scat_data_mono(ws),
+      Var::pha_mat_doit(ws), Var::aa_grid(ws), Var::doit_za_grid_size(ws),
+      Var::scat_data(ws), Var::scat_data_checked(ws), Var::f_index(ws),
+      Var::atmosphere_dim(ws), Var::stokes_dim(ws), Var::t_field(ws),
+      Var::cloudbox_limits(ws), Var::pnd_field(ws), Var::pha_mat_spt_agenda(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Writes DOIT iteration fields.
 
@@ -7501,16 +7891,12 @@ frequency index and iY the iteration counter.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void DoitWriteIterationFields(Workspace& ws,
-const ArrayOfIndex& iterations={-1},
-const ArrayOfIndex& frequencies={-1}) {
-DoitWriteIterationFields(Var::doit_iteration_counter(ws),
-Var::cloudbox_field_mono(ws),
-Var::f_index(ws),
-iterations,
-frequencies,
-Var::verbosity(ws));
+                              const ArrayOfIndex& iterations = {-1},
+                              const ArrayOfIndex& frequencies = {-1}) {
+  DoitWriteIterationFields(Var::doit_iteration_counter(ws),
+                           Var::cloudbox_field_mono(ws), Var::f_index(ws),
+                           iterations, frequencies, Var::verbosity(ws));
 }
-
 
 /*! Sets the seconds between two times.
 
@@ -7523,16 +7909,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Duration(Workspace& ws,
-Numeric& duration,
-const Time& start,
-const Time& end) {
-Duration(duration,
-start,
-end,
-Var::verbosity(ws));
+void Duration(Workspace& ws, Numeric& duration, const Time& start,
+              const Time& end) {
+  Duration(duration, start, end, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group EnergyLevelMap.
 
@@ -7545,12 +7925,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void EnergyLevelMapCreate(Workspace& ws,
-EnergyLevelMap& out) {
-EnergyLevelMapCreate(out,
-Var::verbosity(ws));
+void EnergyLevelMapCreate(Workspace& ws, EnergyLevelMap& out) {
+  EnergyLevelMapCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Sets an EnergyLevelMap
 
@@ -7562,14 +7939,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void EnergyLevelMapSet(Workspace& ws,
-EnergyLevelMap& x,
-const EnergyLevelMap& y) {
-EnergyLevelMapSet(x,
-y,
-Var::verbosity(ws));
+void EnergyLevelMapSet(Workspace& ws, EnergyLevelMap& x,
+                       const EnergyLevelMap& y) {
+  EnergyLevelMapSet(x, y, Var::verbosity(ws));
 }
-
 
 /*! Issues an error and exits ARTS.
 
@@ -7587,12 +7960,7 @@ Ignore and other dummy method calls must still be included.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Error(Workspace& ws,
-const String& msg) {
-Error(msg,
-Var::verbosity(ws));
-}
-
+void Error(Workspace& ws, const String& msg) { Error(msg, Var::verbosity(ws)); }
 
 /*! Stops the execution and exits ARTS.
 
@@ -7606,10 +7974,32 @@ it is reached, it will terminate the program.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Exit(Workspace& ws) {
-Exit(Var::verbosity(ws));
-}
+void Exit(Workspace& ws) { Exit(Var::verbosity(ws)); }
 
+/*! Extracts an element from an array.
+
+Copies the element with the given Index from the input
+variable to the output variable.
+
+For a Tensor3 as an input, it copies the page with the given
+Index from the input Tensor3 variable to the output Matrix.
+
+In other words, the selection is always done on the first dimension.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] needle - Extracted element.
+@param[in] haystack - Variable to extract from.
+@param[in] index - Position of the element which should be extracted.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0, typename Any_1>
+void Extract(Workspace& ws, Any_0& needle, const Any_1& haystack,
+             const Index& index) {
+  Extract(needle, haystack, index, Var::verbosity(ws));
+}
 
 /*! Extract (numeric) parameters from scat_meta of a single scattering
 species.
@@ -7621,21 +8011,17 @@ species.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[out] meta_param - The extracted meta parameter values.
 @param[in] meta_name - Name of the meta parameter to extract.
-@param[in] scat_species_index - Array index of scattering species from which to extract.
+@param[in] scat_species_index - Array index of scattering species from which to
+extract.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ExtractFromMetaSingleScatSpecies(Workspace& ws,
-Vector& meta_param,
-const String& meta_name,
-const Index& scat_species_index) {
-ExtractFromMetaSingleScatSpecies(meta_param,
-Var::scat_meta(ws),
-meta_name,
-scat_species_index,
-Var::verbosity(ws));
+void ExtractFromMetaSingleScatSpecies(Workspace& ws, Vector& meta_param,
+                                      const String& meta_name,
+                                      const Index& scat_species_index) {
+  ExtractFromMetaSingleScatSpecies(meta_param, Var::scat_meta(ws), meta_name,
+                                   scat_species_index, Var::verbosity(ws));
 }
-
 
 /*! Stand-alone usage of FASTEM.
 
@@ -7665,38 +8051,29 @@ is enforced. These problems start about 15 degrees from the horizon.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[out] emissivity - Emission values. One row for each frequency. See above.
-@param[out] reflectivity - Reflectivity values. One row for each frequency. See above.
+@param[out] reflectivity - Reflectivity values. One row for each frequency. See
+above.
 @param[in] za - Zenith angle of line-of-sigh, 90 to 180 deg.
-@param[in] salinity - Salinity, 0-1. That is, 3% is given as 0.03. (default: 0.035)
+@param[in] salinity - Salinity, 0-1. That is, 3% is given as 0.03. (default:
+0.035)
 @param[in] wind_speed - Wind speed.
-@param[in] rel_aa - Azimuth angle between wind direction and line-of-sight. This angle is measured clockwise from north, i.e. E=90deg.
-@param[in] transmittance - The transmission of the atmosphere, along the propagation path of the downwelling radiation. One value per frequency.
+@param[in] rel_aa - Azimuth angle between wind direction and line-of-sight. This
+angle is measured clockwise from north, i.e. E=90deg.
+@param[in] transmittance - The transmission of the atmosphere, along the
+propagation path of the downwelling radiation. One value per frequency.
 @param[in] fastem_version - The version of FASTEM to use. (default: 6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void FastemStandAlone(Workspace& ws,
-Matrix& emissivity,
-Matrix& reflectivity,
-const Numeric& za,
-const Numeric& wind_speed,
-const Numeric& rel_aa,
-const Vector& transmittance,
-const Numeric& salinity=0.035,
-const Index& fastem_version=6) {
-FastemStandAlone(emissivity,
-reflectivity,
-Var::f_grid(ws),
-Var::surface_skin_t(ws),
-za,
-salinity,
-wind_speed,
-rel_aa,
-transmittance,
-fastem_version,
-Var::verbosity(ws));
+void FastemStandAlone(Workspace& ws, Matrix& emissivity, Matrix& reflectivity,
+                      const Numeric& za, const Numeric& wind_speed,
+                      const Numeric& rel_aa, const Vector& transmittance,
+                      const Numeric& salinity = 0.035,
+                      const Index& fastem_version = 6) {
+  FastemStandAlone(emissivity, reflectivity, Var::f_grid(ws),
+                   Var::surface_skin_t(ws), za, salinity, wind_speed, rel_aa,
+                   transmittance, fastem_version, Var::verbosity(ws));
 }
-
 
 /*! Extract the data from a GriddedField.
 
@@ -7712,17 +8089,10 @@ GriddedField match *p_grid*, *lat_grid* and *lon_grid*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void FieldFromGriddedField(Workspace& ws,
-Any_0& out,
-const Any_1& in) {
-FieldFromGriddedField(out,
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-in,
-Var::verbosity(ws));
+void FieldFromGriddedField(Workspace& ws, Any_0& out, const Any_1& in) {
+  FieldFromGriddedField(out, Var::p_grid(ws), Var::lat_grid(ws),
+                        Var::lon_grid(ws), in, Var::verbosity(ws));
 }
-
 
 /*! Sets an index variable that acts as an on/off flag to 0.
 
@@ -7733,12 +8103,7 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void FlagOff(Workspace& ws,
-Index& flag) {
-FlagOff(flag,
-Var::verbosity(ws));
-}
-
+void FlagOff(Workspace& ws, Index& flag) { FlagOff(flag, Var::verbosity(ws)); }
 
 /*! Sets an index variable that acts as an on/off flag to 1.
 
@@ -7749,12 +8114,7 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void FlagOn(Workspace& ws,
-Index& flag) {
-FlagOn(flag,
-Var::verbosity(ws));
-}
-
+void FlagOn(Workspace& ws, Index& flag) { FlagOn(flag, Var::verbosity(ws)); }
 
 /*! Flattens an ArrayOfArray<T> to Array<T> or an Array
 of matpack-types to a larger dimension matpack (if dimensions agree)
@@ -7762,7 +8122,8 @@ of matpack-types to a larger dimension matpack (if dimensions agree)
 The intended transformation for arrays is (sub-arrays can have different sizes):
     {{a, b, c}, {d, e}} -> {a, b, c, d, e}
 
-The intended transformation for arrays to matpack types is (sub-types must have same size):
+The intended transformation for arrays to matpack types is (sub-types must have
+same size):
     {{a, b, c}, {d, e, f}} -> {a, b, c, d, e, f}
 
 @author Richard Larsson
@@ -7774,14 +8135,9 @@ The intended transformation for arrays to matpack types is (sub-types must have 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void Flatten(Workspace& ws,
-Any_0& out,
-const Any_1& in) {
-Flatten(out,
-in,
-Var::verbosity(ws));
+void Flatten(Workspace& ws, Any_0& out, const Any_1& in) {
+  Flatten(out, in, Var::verbosity(ws));
 }
-
 
 /*! A simple for-loop.
 
@@ -7813,18 +8169,10 @@ that *ybatchCalc* may occur inside *forloop_agenda*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ForLoop(Workspace& ws,
-const Index& start,
-const Index& stop,
-const Index& step) {
-ForLoop(ws,
-Var::forloop_agenda(ws),
-start,
-stop,
-step,
-Var::verbosity(ws));
+void ForLoop(Workspace& ws, const Index& start, const Index& stop,
+             const Index& step) {
+  ForLoop(ws, Var::forloop_agenda(ws), start, stop, step, Var::verbosity(ws));
 }
-
 
 /*! Convert from angular wavenumber [cm^-1] to frequency [Hz].
 
@@ -7839,14 +8187,11 @@ This converts angular wavenumber (2*PI/wavelength) into frequency.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void FrequencyFromCGSAngularWavenumber(Workspace& ws,
-Any_0& frequency,
-const Any_1& angular_wavenumber) {
-FrequencyFromCGSAngularWavenumber(frequency,
-angular_wavenumber,
-Var::verbosity(ws));
+void FrequencyFromCGSAngularWavenumber(Workspace& ws, Any_0& frequency,
+                                       const Any_1& angular_wavenumber) {
+  FrequencyFromCGSAngularWavenumber(frequency, angular_wavenumber,
+                                    Var::verbosity(ws));
 }
-
 
 /*! Convert from Kayser wavenumber [cm^-1] to frequency [Hz].
 
@@ -7861,18 +8206,16 @@ This converts Kayser wavenumber (1/wavelength) into frequency.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void FrequencyFromCGSKayserWavenumber(Workspace& ws,
-Any_0& frequency,
-const Any_1& kayser_wavenumber) {
-FrequencyFromCGSKayserWavenumber(frequency,
-kayser_wavenumber,
-Var::verbosity(ws));
+void FrequencyFromCGSKayserWavenumber(Workspace& ws, Any_0& frequency,
+                                      const Any_1& kayser_wavenumber) {
+  FrequencyFromCGSKayserWavenumber(frequency, kayser_wavenumber,
+                                   Var::verbosity(ws));
 }
-
 
 /*! Convert from wavelength [m] to frequency [Hz].
 
-This is a generic method. It can take a single wavelength value or a wavelength vector as input.
+This is a generic method. It can take a single wavelength value or a wavelength
+vector as input.
 
 @author Claudia Emde
 
@@ -7883,14 +8226,10 @@ This is a generic method. It can take a single wavelength value or a wavelength 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void FrequencyFromWavelength(Workspace& ws,
-Any_0& frequency,
-const Any_1& wavelength) {
-FrequencyFromWavelength(frequency,
-wavelength,
-Var::verbosity(ws));
+void FrequencyFromWavelength(Workspace& ws, Any_0& frequency,
+                             const Any_1& wavelength) {
+  FrequencyFromWavelength(frequency, wavelength, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group GasAbsLookup.
 
@@ -7903,12 +8242,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GasAbsLookupCreate(Workspace& ws,
-GasAbsLookup& out) {
-GasAbsLookupCreate(out,
-Var::verbosity(ws));
+void GasAbsLookupCreate(Workspace& ws, GasAbsLookup& out) {
+  GasAbsLookupCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Copy the contents of an environment variable to an ARTS String or Index.
 
@@ -7921,14 +8257,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0>
-void GetEnvironmentVariable(Workspace& ws,
-Any_0& out,
-const String& in) {
-GetEnvironmentVariable(out,
-in,
-Var::verbosity(ws));
+void GetEnvironmentVariable(Workspace& ws, Any_0& out, const String& in) {
+  GetEnvironmentVariable(out, in, Var::verbosity(ws));
 }
-
 
 /*! Returns the number of threads used by ARTS.
 
@@ -7939,12 +8270,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GetNumberOfThreads(Workspace& ws,
-Index& nthreads) {
-GetNumberOfThreads(nthreads,
-Var::verbosity(ws));
+void GetNumberOfThreads(Workspace& ws, Index& nthreads) {
+  GetNumberOfThreads(nthreads, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group GridPos.
 
@@ -7957,12 +8285,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GridPosCreate(Workspace& ws,
-GridPos& out) {
-GridPosCreate(out,
-Var::verbosity(ws));
+void GridPosCreate(Workspace& ws, GridPos& out) {
+  GridPosCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group GriddedField1.
 
@@ -7975,12 +8300,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GriddedField1Create(Workspace& ws,
-GriddedField1& out) {
-GriddedField1Create(out,
-Var::verbosity(ws));
+void GriddedField1Create(Workspace& ws, GriddedField1& out) {
+  GriddedField1Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group GriddedField2.
 
@@ -7993,12 +8315,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GriddedField2Create(Workspace& ws,
-GriddedField2& out) {
-GriddedField2Create(out,
-Var::verbosity(ws));
+void GriddedField2Create(Workspace& ws, GriddedField2& out) {
+  GriddedField2Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group GriddedField3.
 
@@ -8011,12 +8330,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GriddedField3Create(Workspace& ws,
-GriddedField3& out) {
-GriddedField3Create(out,
-Var::verbosity(ws));
+void GriddedField3Create(Workspace& ws, GriddedField3& out) {
+  GriddedField3Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group GriddedField4.
 
@@ -8029,12 +8345,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GriddedField4Create(Workspace& ws,
-GriddedField4& out) {
-GriddedField4Create(out,
-Var::verbosity(ws));
+void GriddedField4Create(Workspace& ws, GriddedField4& out) {
+  GriddedField4Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group GriddedField5.
 
@@ -8047,12 +8360,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GriddedField5Create(Workspace& ws,
-GriddedField5& out) {
-GriddedField5Create(out,
-Var::verbosity(ws));
+void GriddedField5Create(Workspace& ws, GriddedField5& out) {
+  GriddedField5Create(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group GriddedField6.
 
@@ -8065,12 +8375,27 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GriddedField6Create(Workspace& ws,
-GriddedField6& out) {
-GriddedField6Create(out,
-Var::verbosity(ws));
+void GriddedField6Create(Workspace& ws, GriddedField6& out) {
+  GriddedField6Create(out, Var::verbosity(ws));
 }
 
+/*! Get the name of a GriddedField.
+
+See *ArrayOfGriddedFieldGetNames*.
+
+@author Lukas Kluft
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] name - Name of the GriddedField.
+@param[in] griddedfield - GriddedField.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void GriddedFieldGetName(Workspace& ws, String& name,
+                         const Any_0& griddedfield) {
+  GriddedFieldGetName(name, griddedfield, Var::verbosity(ws));
+}
 
 /*! Expands the latitude and longitude grid of the GriddedField to
 [-90, 90] and [0,360], respectively. Expansion is only done in
@@ -8088,14 +8413,9 @@ gfield_raw_out and gfield_raw_in can be the same variable.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void GriddedFieldLatLonExpand(Workspace& ws,
-Any_0& out,
-const Any_1& in) {
-GriddedFieldLatLonExpand(out,
-in,
-Var::verbosity(ws));
+void GriddedFieldLatLonExpand(Workspace& ws, Any_0& out, const Any_1& in) {
+  GriddedFieldLatLonExpand(out, in, Var::verbosity(ws));
 }
-
 
 /*! Interpolates the input field along the latitude and longitude dimensions
 to *lat_true* and *lon_true*.
@@ -8115,18 +8435,11 @@ in and out fields can be the same variable.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void GriddedFieldLatLonRegrid(Workspace& ws,
-Any_0& out,
-const Any_1& in,
-const Index& interp_order=1) {
-GriddedFieldLatLonRegrid(out,
-Var::lat_true(ws),
-Var::lon_true(ws),
-in,
-interp_order,
-Var::verbosity(ws));
+void GriddedFieldLatLonRegrid(Workspace& ws, Any_0& out, const Any_1& in,
+                              const Index& interp_order = 1) {
+  GriddedFieldLatLonRegrid(out, Var::lat_true(ws), Var::lon_true(ws), in,
+                           interp_order, Var::verbosity(ws));
 }
-
 
 /*! Interpolates the input field along the pressure dimension to *p_grid*.
 
@@ -8152,23 +8465,16 @@ in and out fields can be the same variable.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void GriddedFieldPRegrid(Workspace& ws,
-Any_0& out,
-const Any_1& in,
-const Index& interp_order=1,
-const Index& zeropadding=0) {
-GriddedFieldPRegrid(out,
-Var::p_grid(ws),
-in,
-interp_order,
-zeropadding,
-Var::verbosity(ws));
+void GriddedFieldPRegrid(Workspace& ws, Any_0& out, const Any_1& in,
+                         const Index& interp_order = 1,
+                         const Index& zeropadding = 0) {
+  GriddedFieldPRegrid(out, Var::p_grid(ws), in, interp_order, zeropadding,
+                      Var::verbosity(ws));
 }
-
 
 /*! Interpolates the input field along the vertical dimension to *p_grid*.
 
-This is done from z_field, and thus requires the atmosphere to be set 
+This is done from z_field, and thus requires the atmosphere to be set
 beforehand.
 
 The latitude and longitude grid of the input field must match *lat_grid*
@@ -8186,22 +8492,14 @@ BETA mode.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void GriddedFieldZToPRegrid(Workspace& ws,
-GriddedField3& out,
-const GriddedField3& in,
-const Index& interp_order=1,
-const Index& zeropadding=0) {
-GriddedFieldZToPRegrid(out,
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-in,
-interp_order,
-zeropadding,
-Var::verbosity(ws));
+void GriddedFieldZToPRegrid(Workspace& ws, GriddedField3& out,
+                            const GriddedField3& in,
+                            const Index& interp_order = 1,
+                            const Index& zeropadding = 0) {
+  GriddedFieldZToPRegrid(out, Var::p_grid(ws), Var::lat_grid(ws),
+                         Var::lon_grid(ws), Var::z_field(ws), in, interp_order,
+                         zeropadding, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group HitranRelaxationMatrixData.
 
@@ -8215,11 +8513,9 @@ After being created, the variable is uninitialized.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void HitranRelaxationMatrixDataCreate(Workspace& ws,
-HitranRelaxationMatrixData& out) {
-HitranRelaxationMatrixDataCreate(out,
-Var::verbosity(ws));
+                                      HitranRelaxationMatrixData& out) {
+  HitranRelaxationMatrixDataCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Includes the contents of another controlfile.
 
@@ -8256,10 +8552,38 @@ controlfiles.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void INCLUDE(Workspace& ws) {
-INCLUDE(Var::verbosity(ws));
+void INCLUDE(Workspace& ws) { INCLUDE(Var::verbosity(ws)); }
+
+/*! Ignore a workspace variable.
+
+This method is handy for use in agendas in order to suppress warnings
+about unused input workspace variables. What it does is: Nothing!
+In other words, it just ignores the variable it is called on.
+
+This method can ignore any workspace variable you want.
+
+Usage example:
+
+AgendaSet(els_agenda){
+  Ignore(ls_sigma)
+  elsLorentz
 }
 
+Without Ignore you would get an error message, because 'els_agenda' is
+supposed to use the Doppler width 'ls_sigma', but the Lorentz lineshape
+'elsLorentz' does not need it.
+
+@author Stefan Buehler
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] in - Variable to be ignored.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void Ignore(Workspace& ws, const Any_0& in) {
+  Ignore(in, Var::verbosity(ws));
+}
 
 /*! Adds a index and a value (out = in+value).
 
@@ -8275,16 +8599,9 @@ The result can either be stored in the same or another index.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void IndexAdd(Workspace& ws,
-Index& out,
-const Index& in,
-const Index& value) {
-IndexAdd(out,
-in,
-value,
-Var::verbosity(ws));
+void IndexAdd(Workspace& ws, Index& out, const Index& in, const Index& value) {
+  IndexAdd(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Index.
 
@@ -8297,12 +8614,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void IndexCreate(Workspace& ws,
-Index& out) {
-IndexCreate(out,
-Var::verbosity(ws));
+void IndexCreate(Workspace& ws, Index& out) {
+  IndexCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Counts number of points in the atmosphere.
 
@@ -8318,16 +8632,11 @@ not active.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void IndexNumberOfAtmosphericPoints(Workspace& ws,
-Index& n) {
-IndexNumberOfAtmosphericPoints(n,
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::verbosity(ws));
+void IndexNumberOfAtmosphericPoints(Workspace& ws, Index& n) {
+  IndexNumberOfAtmosphericPoints(n, Var::atmosphere_dim(ws), Var::p_grid(ws),
+                                 Var::lat_grid(ws), Var::lon_grid(ws),
+                                 Var::verbosity(ws));
 }
-
 
 /*! Sets an index workspace variable to the given value.
 
@@ -8339,14 +8648,27 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void IndexSet(Workspace& ws,
-Index& out,
-const Index& value) {
-IndexSet(out,
-value,
-Var::verbosity(ws));
+void IndexSet(Workspace& ws, Index& out, const Index& value) {
+  IndexSet(out, value, Var::verbosity(ws));
 }
 
+/*! Set an Index to point towards last position of array-type variables.
+
+This method works as nelemGet, but gives the index number of the last
+element (which equals nelem-1).
+
+@author Patrick Eriksson
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - The method is defined for these groups.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void IndexSetToLast(Workspace& ws, const Any_0& v) {
+  IndexSetToLast(Var::nelem(ws), v, Var::verbosity(ws));
+}
 
 /*! Performas: out = in - 1
 
@@ -8360,14 +8682,9 @@ Input and output can be same variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void IndexStepDown(Workspace& ws,
-Index& out,
-const Index& in) {
-IndexStepDown(out,
-in,
-Var::verbosity(ws));
+void IndexStepDown(Workspace& ws, Index& out, const Index& in) {
+  IndexStepDown(out, in, Var::verbosity(ws));
 }
-
 
 /*! Performas: out = in + 1
 
@@ -8381,14 +8698,9 @@ Input and output can be same variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void IndexStepUp(Workspace& ws,
-Index& out,
-const Index& in) {
-IndexStepUp(out,
-in,
-Var::verbosity(ws));
+void IndexStepUp(Workspace& ws, Index& out, const Index& in) {
+  IndexStepUp(out, in, Var::verbosity(ws));
 }
-
 
 /*! Point interpolation of atmospheric fields.
 
@@ -8404,20 +8716,13 @@ Linear interpolation is applied.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void InterpAtmFieldToPosition(Workspace& ws,
-Numeric& out,
-const Tensor3& field) {
-InterpAtmFieldToPosition(out,
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::rtp_pos(ws),
-field,
-Var::verbosity(ws));
+void InterpAtmFieldToPosition(Workspace& ws, Numeric& out,
+                              const Tensor3& field) {
+  InterpAtmFieldToPosition(out, Var::atmosphere_dim(ws), Var::p_grid(ws),
+                           Var::lat_grid(ws), Var::lon_grid(ws),
+                           Var::z_field(ws), Var::rtp_pos(ws), field,
+                           Var::verbosity(ws));
 }
-
 
 /*! Latitude and longitude interpolation of a GriddedField2.
 
@@ -8438,19 +8743,12 @@ longitude as first and second dimension.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void InterpGriddedField2ToPosition(Workspace& ws,
-Numeric& out,
-const GriddedField2& gfield2) {
-InterpGriddedField2ToPosition(out,
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::rtp_pos(ws),
-gfield2,
-Var::verbosity(ws));
+void InterpGriddedField2ToPosition(Workspace& ws, Numeric& out,
+                                   const GriddedField2& gfield2) {
+  InterpGriddedField2ToPosition(out, Var::atmosphere_dim(ws), Var::lat_grid(ws),
+                                Var::lat_true(ws), Var::lon_true(ws),
+                                Var::rtp_pos(ws), gfield2, Var::verbosity(ws));
 }
-
 
 /*! Point interpolation of surface fields.
 
@@ -8473,19 +8771,12 @@ the surface altitudes.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void InterpSurfaceFieldToPosition(Workspace& ws,
-Numeric& out,
-const Matrix& field) {
-InterpSurfaceFieldToPosition(out,
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::rtp_pos(ws),
-Var::z_surface(ws),
-field,
-Var::verbosity(ws));
+void InterpSurfaceFieldToPosition(Workspace& ws, Numeric& out,
+                                  const Matrix& field) {
+  InterpSurfaceFieldToPosition(out, Var::atmosphere_dim(ws), Var::lat_grid(ws),
+                               Var::lon_grid(ws), Var::rtp_pos(ws),
+                               Var::z_surface(ws), field, Var::verbosity(ws));
 }
-
 
 /*! Sets the seconds between localtime and gmtime representation of now().
 
@@ -8496,12 +8787,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void LocalTimeOffset(Workspace& ws,
-Numeric& dt) {
-LocalTimeOffset(dt,
-Var::verbosity(ws));
+void LocalTimeOffset(Workspace& ws, Numeric& dt) {
+  LocalTimeOffset(dt, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group MCAntenna.
 
@@ -8514,12 +8802,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MCAntennaCreate(Workspace& ws,
-MCAntenna& out) {
-MCAntennaCreate(out,
-Var::verbosity(ws));
+void MCAntennaCreate(Workspace& ws, MCAntenna& out) {
+  MCAntennaCreate(out, Var::verbosity(ws));
 }
-
 
 /*! A generalised 3D reversed Monte Carlo radiative algorithm, that
 allows for 2D antenna patterns, surface reflection and arbitrary
@@ -8548,64 +8833,37 @@ output.
 @author Cory Davis
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] l_mc_scat_order - The length to be given to *mc_scat_order*. Note that scattering orders equal and above this value will not be counted. (default: 11)
-@param[in] t_interp_order - Interpolation order of temperature for scattering data (so far only applied in phase matrix, not in extinction and absorption. (default: 1)
+@param[in] l_mc_scat_order - The length to be given to *mc_scat_order*. Note
+that scattering orders equal and above this value will not be counted. (default:
+11)
+@param[in] t_interp_order - Interpolation order of temperature for scattering
+data (so far only applied in phase matrix, not in extinction and absorption.
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MCGeneral(Workspace& ws,
-const Index& l_mc_scat_order=11,
-const Index& t_interp_order=1) {
-MCGeneral(ws,
-Var::y(ws),
-Var::mc_iteration_count(ws),
-Var::mc_error(ws),
-Var::mc_points(ws),
-Var::mc_source_domain(ws),
-Var::mc_scat_order(ws),
-Var::mc_antenna(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-Var::sensor_pos(ws),
-Var::sensor_los(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::ppath_step_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::iy_space_agenda(ws),
-Var::surface_rtprop_agenda(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::scat_data(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::scat_data_checked(ws),
-Var::cloudbox_checked(ws),
-Var::iy_unit(ws),
-Var::mc_seed(ws),
-Var::mc_std_err(ws),
-Var::mc_max_time(ws),
-Var::mc_max_iter(ws),
-Var::mc_min_iter(ws),
-Var::mc_taustep_limit(ws),
-l_mc_scat_order,
-t_interp_order,
-Var::verbosity(ws));
+void MCGeneral(Workspace& ws, const Index& l_mc_scat_order = 11,
+               const Index& t_interp_order = 1) {
+  MCGeneral(
+      ws, Var::y(ws), Var::mc_iteration_count(ws), Var::mc_error(ws),
+      Var::mc_points(ws), Var::mc_source_domain(ws), Var::mc_scat_order(ws),
+      Var::mc_antenna(ws), Var::f_grid(ws), Var::f_index(ws),
+      Var::sensor_pos(ws), Var::sensor_los(ws), Var::stokes_dim(ws),
+      Var::atmosphere_dim(ws), Var::ppath_step_agenda(ws), Var::ppath_lmax(ws),
+      Var::ppath_lraytrace(ws), Var::iy_space_agenda(ws),
+      Var::surface_rtprop_agenda(ws), Var::propmat_clearsky_agenda(ws),
+      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws), Var::z_field(ws),
+      Var::refellipsoid(ws), Var::z_surface(ws), Var::t_field(ws),
+      Var::vmr_field(ws), Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+      Var::pnd_field(ws), Var::scat_data(ws), Var::atmfields_checked(ws),
+      Var::atmgeom_checked(ws), Var::scat_data_checked(ws),
+      Var::cloudbox_checked(ws), Var::iy_unit(ws), Var::mc_seed(ws),
+      Var::mc_std_err(ws), Var::mc_max_time(ws), Var::mc_max_iter(ws),
+      Var::mc_min_iter(ws), Var::mc_taustep_limit(ws), l_mc_scat_order,
+      t_interp_order, Var::verbosity(ws));
 }
 
-
-/*! A radar 3D foward Monte Carlo radiative algorithm, that allows 
+/*! A radar 3D foward Monte Carlo radiative algorithm, that allows
 for 2D antenna patterns and arbitrary sensor positions.
 Surface reflections are currently ignored.
 
@@ -8613,13 +8871,13 @@ The main output variable *y* and *mc_error* represent the
 radar reflectivity integrated over the antenna function, and the
 estimated error in this vector, respectively.
 
-Unlike with yActive, the range bins gives the boundaries of 
+Unlike with yActive, the range bins gives the boundaries of
 the range bins as either round-trip time or distance from radar.
 
-The WSV *mc_y_tx* gives the polarization state of the 
+The WSV *mc_y_tx* gives the polarization state of the
 transmitter.
 
-The WSV *mc_max_scatorder* prescribes the maximum scattering 
+The WSV *mc_max_scatorder* prescribes the maximum scattering
 order to consider, after which `photon'-tracing will be
 terminated. A value of one calculates only single scattering.
 
@@ -8636,58 +8894,32 @@ output.
 @author Ian S. Adams
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] ze_tref - Reference temperature for conversion to Ze. (default: 273.15)
+@param[in] ze_tref - Reference temperature for conversion to Ze. (default:
+273.15)
 @param[in] k2 - Reference dielectric factor. (default: -1)
-@param[in] t_interp_order - Interpolation order of temperature for scattering data (so far only applied in phase matrix, not in extinction and absorption. (default: 1)
+@param[in] t_interp_order - Interpolation order of temperature for scattering
+data (so far only applied in phase matrix, not in extinction and absorption.
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MCRadar(Workspace& ws,
-const Numeric& ze_tref=273.15,
-const Numeric& k2=-1,
-const Index& t_interp_order=1) {
-MCRadar(ws,
-Var::y(ws),
-Var::mc_error(ws),
-Var::mc_antenna(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-Var::sensor_pos(ws),
-Var::sensor_los(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::ppath_lmax(ws),
-Var::ppath_step_agenda(ws),
-Var::ppath_lraytrace(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::scat_data(ws),
-Var::mc_y_tx(ws),
-Var::range_bins(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::scat_data_checked(ws),
-Var::cloudbox_checked(ws),
-Var::iy_unit(ws),
-Var::mc_max_scatorder(ws),
-Var::mc_seed(ws),
-Var::mc_max_iter(ws),
-ze_tref,
-k2,
-t_interp_order,
-Var::verbosity(ws));
+void MCRadar(Workspace& ws, const Numeric& ze_tref = 273.15,
+             const Numeric& k2 = -1, const Index& t_interp_order = 1) {
+  MCRadar(ws, Var::y(ws), Var::mc_error(ws), Var::mc_antenna(ws),
+          Var::f_grid(ws), Var::f_index(ws), Var::sensor_pos(ws),
+          Var::sensor_los(ws), Var::stokes_dim(ws), Var::atmosphere_dim(ws),
+          Var::ppath_lmax(ws), Var::ppath_step_agenda(ws),
+          Var::ppath_lraytrace(ws), Var::propmat_clearsky_agenda(ws),
+          Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+          Var::z_field(ws), Var::refellipsoid(ws), Var::z_surface(ws),
+          Var::t_field(ws), Var::vmr_field(ws), Var::cloudbox_on(ws),
+          Var::cloudbox_limits(ws), Var::pnd_field(ws), Var::scat_data(ws),
+          Var::mc_y_tx(ws), Var::range_bins(ws), Var::atmfields_checked(ws),
+          Var::atmgeom_checked(ws), Var::scat_data_checked(ws),
+          Var::cloudbox_checked(ws), Var::iy_unit(ws),
+          Var::mc_max_scatorder(ws), Var::mc_seed(ws), Var::mc_max_iter(ws),
+          ze_tref, k2, t_interp_order, Var::verbosity(ws));
 }
-
 
 /*! Sets the value of mc_seed from system time
 
@@ -8698,10 +8930,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void MCSetSeedFromTime(Workspace& ws) {
-MCSetSeedFromTime(Var::mc_seed(ws),
-Var::verbosity(ws));
+  MCSetSeedFromTime(Var::mc_seed(ws), Var::verbosity(ws));
 }
-
 
 /*! Interpolation of raw magnetic fields to calculation grids.
 Heritage from *AtmFieldsCalc*
@@ -8713,26 +8943,18 @@ is allowed and applied.
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] interp_order - Interpolation order (1=linear interpolation). (default: 1)
+@param[in] interp_order - Interpolation order (1=linear interpolation).
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MagFieldsCalc(Workspace& ws,
-const Index& interp_order=1) {
-MagFieldsCalc(Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::mag_u_field_raw(ws),
-Var::mag_v_field_raw(ws),
-Var::mag_w_field_raw(ws),
-Var::atmosphere_dim(ws),
-interp_order,
-Var::verbosity(ws));
+void MagFieldsCalc(Workspace& ws, const Index& interp_order = 1) {
+  MagFieldsCalc(Var::mag_u_field(ws), Var::mag_v_field(ws),
+                Var::mag_w_field(ws), Var::p_grid(ws), Var::lat_grid(ws),
+                Var::lon_grid(ws), Var::mag_u_field_raw(ws),
+                Var::mag_v_field_raw(ws), Var::mag_w_field_raw(ws),
+                Var::atmosphere_dim(ws), interp_order, Var::verbosity(ws));
 }
-
 
 /*! Interpolation of 1D raw atmospheric fields to create 2D or 3D
 homogeneous magnetic fields.  Derived from *AtmFieldsCalcExpand1D*
@@ -8745,54 +8967,41 @@ longitudes for 3D, to create a homogeneous atmosphere.
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] interp_order - Interpolation order (1=linear interpolation). (default: 1)
+@param[in] interp_order - Interpolation order (1=linear interpolation).
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MagFieldsCalcExpand1D(Workspace& ws,
-const Index& interp_order=1) {
-MagFieldsCalcExpand1D(Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::mag_u_field_raw(ws),
-Var::mag_v_field_raw(ws),
-Var::mag_w_field_raw(ws),
-Var::atmosphere_dim(ws),
-interp_order,
-Var::verbosity(ws));
+void MagFieldsCalcExpand1D(Workspace& ws, const Index& interp_order = 1) {
+  MagFieldsCalcExpand1D(Var::mag_u_field(ws), Var::mag_v_field(ws),
+                        Var::mag_w_field(ws), Var::p_grid(ws),
+                        Var::lat_grid(ws), Var::lon_grid(ws),
+                        Var::mag_u_field_raw(ws), Var::mag_v_field_raw(ws),
+                        Var::mag_w_field_raw(ws), Var::atmosphere_dim(ws),
+                        interp_order, Var::verbosity(ws));
 }
-
 
 /*! Regrids the rawfield by lat-lon and interpolates to z_field.
 
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] interp_order - Interpolation order (1=linear interpolation). (default: 1)
-@param[in] extrapolating - Extrapolation allowed in interpolation of altitude. (default: 1e99)
+@param[in] interp_order - Interpolation order (1=linear interpolation).
+(default: 1)
+@param[in] extrapolating - Extrapolation allowed in interpolation of altitude.
+(default: 1e99)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MagFieldsFromAltitudeRawCalc(Workspace& ws,
-const Index& interp_order=1,
-const Numeric& extrapolating=1e99) {
-MagFieldsFromAltitudeRawCalc(Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::mag_u_field_raw(ws),
-Var::mag_v_field_raw(ws),
-Var::mag_w_field_raw(ws),
-interp_order,
-extrapolating,
-Var::verbosity(ws));
+void MagFieldsFromAltitudeRawCalc(Workspace& ws, const Index& interp_order = 1,
+                                  const Numeric& extrapolating = 1e99) {
+  MagFieldsFromAltitudeRawCalc(
+      Var::mag_u_field(ws), Var::mag_v_field(ws), Var::mag_w_field(ws),
+      Var::lat_grid(ws), Var::lon_grid(ws), Var::z_field(ws),
+      Var::mag_u_field_raw(ws), Var::mag_v_field_raw(ws),
+      Var::mag_w_field_raw(ws), interp_order, extrapolating,
+      Var::verbosity(ws));
 }
-
 
 /*! Reads magnetic field data from a scenario.
 
@@ -8806,19 +9015,15 @@ accordingly.
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] basename - Name of scenario, probably including the full path. For example: "/data/magnetic_field"
+@param[in] basename - Name of scenario, probably including the full path. For
+example: "/data/magnetic_field"
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MagRawRead(Workspace& ws,
-const String& basename) {
-MagRawRead(Var::mag_u_field_raw(ws),
-Var::mag_v_field_raw(ws),
-Var::mag_w_field_raw(ws),
-basename,
-Var::verbosity(ws));
+void MagRawRead(Workspace& ws, const String& basename) {
+  MagRawRead(Var::mag_u_field_raw(ws), Var::mag_v_field_raw(ws),
+             Var::mag_w_field_raw(ws), basename, Var::verbosity(ws));
 }
-
 
 /*! Forms a matrix containing one column from a vector.
 
@@ -8830,14 +9035,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Matrix1ColFromVector(Workspace& ws,
-Matrix& out,
-const Vector& v) {
-Matrix1ColFromVector(out,
-v,
-Var::verbosity(ws));
+void Matrix1ColFromVector(Workspace& ws, Matrix& out, const Vector& v) {
+  Matrix1ColFromVector(out, v, Var::verbosity(ws));
 }
-
 
 /*! Forms a matrix containing one row from a vector.
 
@@ -8849,14 +9049,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Matrix1RowFromVector(Workspace& ws,
-Matrix& out,
-const Vector& v) {
-Matrix1RowFromVector(out,
-v,
-Var::verbosity(ws));
+void Matrix1RowFromVector(Workspace& ws, Matrix& out, const Vector& v) {
+  Matrix1RowFromVector(out, v, Var::verbosity(ws));
 }
-
 
 /*! Forms a matrix containing two columns from two vectors.
 
@@ -8872,16 +9067,10 @@ as they are given.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Matrix2ColFromVectors(Workspace& ws,
-Matrix& out,
-const Vector& v1,
-const Vector& v2) {
-Matrix2ColFromVectors(out,
-v1,
-v2,
-Var::verbosity(ws));
+void Matrix2ColFromVectors(Workspace& ws, Matrix& out, const Vector& v1,
+                           const Vector& v2) {
+  Matrix2ColFromVectors(out, v1, v2, Var::verbosity(ws));
 }
-
 
 /*! Forms a matrix containing two rows from two vectors.
 
@@ -8897,16 +9086,10 @@ as they are given.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Matrix2RowFromVectors(Workspace& ws,
-Matrix& out,
-const Vector& v1,
-const Vector& v2) {
-Matrix2RowFromVectors(out,
-v1,
-v2,
-Var::verbosity(ws));
+void Matrix2RowFromVectors(Workspace& ws, Matrix& out, const Vector& v1,
+                           const Vector& v2) {
+  Matrix2RowFromVectors(out, v1, v2, Var::verbosity(ws));
 }
-
 
 /*! Forms a matrix containing three columns from three vectors.
 
@@ -8923,18 +9106,10 @@ as they are given.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Matrix3ColFromVectors(Workspace& ws,
-Matrix& out,
-const Vector& v1,
-const Vector& v2,
-const Vector& v3) {
-Matrix3ColFromVectors(out,
-v1,
-v2,
-v3,
-Var::verbosity(ws));
+void Matrix3ColFromVectors(Workspace& ws, Matrix& out, const Vector& v1,
+                           const Vector& v2, const Vector& v3) {
+  Matrix3ColFromVectors(out, v1, v2, v3, Var::verbosity(ws));
 }
-
 
 /*! Forms a matrix containing three rows from three vectors.
 
@@ -8951,18 +9126,10 @@ as they are given.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Matrix3RowFromVectors(Workspace& ws,
-Matrix& out,
-const Vector& v1,
-const Vector& v2,
-const Vector& v3) {
-Matrix3RowFromVectors(out,
-v1,
-v2,
-v3,
-Var::verbosity(ws));
+void Matrix3RowFromVectors(Workspace& ws, Matrix& out, const Vector& v1,
+                           const Vector& v2, const Vector& v3) {
+  Matrix3RowFromVectors(out, v1, v2, v3, Var::verbosity(ws));
 }
-
 
 /*! Adds a scalar to all elements of a matrix.
 
@@ -8977,16 +9144,10 @@ The result can either be stored in the same or another matrix.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixAddScalar(Workspace& ws,
-Matrix& out,
-const Matrix& in,
-const Numeric& value) {
-MatrixAddScalar(out,
-in,
-value,
-Var::verbosity(ws));
+void MatrixAddScalar(Workspace& ws, Matrix& out, const Matrix& in,
+                     const Numeric& value) {
+  MatrixAddScalar(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Sets a matrix to hold cosmic background radiation (CBR).
 
@@ -9012,15 +9173,9 @@ followed and the unit of the returned data is W/(m3 * Hz * sr).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixCBR(Workspace& ws,
-Matrix& out,
-const Vector& f) {
-MatrixCBR(out,
-Var::stokes_dim(ws),
-f,
-Var::verbosity(ws));
+void MatrixCBR(Workspace& ws, Matrix& out, const Vector& f) {
+  MatrixCBR(out, Var::stokes_dim(ws), f, Var::verbosity(ws));
 }
-
 
 /*! Creates a matrix by copying a variable of type Sparse.
 
@@ -9032,14 +9187,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixCopySparse(Workspace& ws,
-Matrix& out,
-const Sparse& in) {
-MatrixCopySparse(out,
-in,
-Var::verbosity(ws));
+void MatrixCopySparse(Workspace& ws, Matrix& out, const Sparse& in) {
+  MatrixCopySparse(out, in, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Matrix.
 
@@ -9052,12 +9202,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixCreate(Workspace& ws,
-Matrix& out) {
-MatrixCreate(out,
-Var::verbosity(ws));
+void MatrixCreate(Workspace& ws, Matrix& out) {
+  MatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Extracts a Matrix from a Tensor3.
 
@@ -9075,18 +9222,10 @@ Higher order equivalent of *VectorExtractFromMatrix*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixExtractFromTensor3(Workspace& ws,
-Matrix& out,
-const Tensor3& in,
-const Index& i,
-const String& direction) {
-MatrixExtractFromTensor3(out,
-in,
-i,
-direction,
-Var::verbosity(ws));
+void MatrixExtractFromTensor3(Workspace& ws, Matrix& out, const Tensor3& in,
+                              const Index& i, const String& direction) {
+  MatrixExtractFromTensor3(out, in, i, direction, Var::verbosity(ws));
 }
-
 
 /*! Turns a covariance matrix into a Matrix.
 
@@ -9098,14 +9237,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixFromCovarianceMatrix(Workspace& ws,
-Matrix& out,
-const CovarianceMatrix& in) {
-MatrixFromCovarianceMatrix(out,
-in,
-Var::verbosity(ws));
+void MatrixFromCovarianceMatrix(Workspace& ws, Matrix& out,
+                                const CovarianceMatrix& in) {
+  MatrixFromCovarianceMatrix(out, in, Var::verbosity(ws));
 }
-
 
 /*! Returns an identity matrix.
 
@@ -9123,16 +9258,10 @@ value*I.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixIdentity(Workspace& ws,
-Matrix& out,
-const Index& n,
-const Numeric& value=1) {
-MatrixIdentity(out,
-n,
-value,
-Var::verbosity(ws));
+void MatrixIdentity(Workspace& ws, Matrix& out, const Index& n,
+                    const Numeric& value = 1) {
+  MatrixIdentity(out, n, value, Var::verbosity(ws));
 }
-
 
 /*! Multiply a Matrix with another Matrix and store the result in the result
 Matrix.
@@ -9149,16 +9278,10 @@ if Y and X are the same Matrix.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixMatrixMultiply(Workspace& ws,
-Matrix& out,
-const Matrix& m,
-const Matrix& x) {
-MatrixMatrixMultiply(out,
-m,
-x,
-Var::verbosity(ws));
+void MatrixMatrixMultiply(Workspace& ws, Matrix& out, const Matrix& m,
+                          const Matrix& x) {
+  MatrixMatrixMultiply(out, m, x, Var::verbosity(ws));
 }
-
 
 /*! Sets a matrix to hold blackbody radiation.
 
@@ -9180,17 +9303,10 @@ followed and the unit of the returned data is W/(m3 * Hz * sr).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixPlanck(Workspace& ws,
-Matrix& out,
-const Vector& f,
-const Numeric& t) {
-MatrixPlanck(out,
-Var::stokes_dim(ws),
-f,
-t,
-Var::verbosity(ws));
+void MatrixPlanck(Workspace& ws, Matrix& out, const Vector& f,
+                  const Numeric& t) {
+  MatrixPlanck(out, Var::stokes_dim(ws), f, t, Var::verbosity(ws));
 }
-
 
 /*! Scales all elements of a matrix with the specified value.
 
@@ -9206,16 +9322,10 @@ variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixScale(Workspace& ws,
-Matrix& out,
-const Matrix& in,
-const Numeric& value) {
-MatrixScale(out,
-in,
-value,
-Var::verbosity(ws));
+void MatrixScale(Workspace& ws, Matrix& out, const Matrix& in,
+                 const Numeric& value) {
+  MatrixScale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Initialize a Matrix from the given list of numbers.
 
@@ -9226,18 +9336,14 @@ Usage:
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[out] out - The newly created matrix
-@param[in] value - The values of the newly created matrix. Elements are separated by commas, rows by semicolons.
+@param[in] value - The values of the newly created matrix. Elements are
+separated by commas, rows by semicolons.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixSet(Workspace& ws,
-Matrix& out,
-const Matrix& value) {
-MatrixSet(out,
-value,
-Var::verbosity(ws));
+void MatrixSet(Workspace& ws, Matrix& out, const Matrix& value) {
+  MatrixSet(out, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a matrix and sets all elements to the specified value.
 
@@ -9251,16 +9357,10 @@ The size is determined by *ncols* and *nrows*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixSetConstant(Workspace& ws,
-Matrix& out,
-const Numeric& value) {
-MatrixSetConstant(out,
-Var::nrows(ws),
-Var::ncols(ws),
-value,
-Var::verbosity(ws));
+void MatrixSetConstant(Workspace& ws, Matrix& out, const Numeric& value) {
+  MatrixSetConstant(out, Var::nrows(ws), Var::ncols(ws), value,
+                    Var::verbosity(ws));
 }
-
 
 /*! Sets a matrix to hold unpolarised radiation with unit intensity.
 
@@ -9274,15 +9374,9 @@ Works as MatrixPlanck where the radiation is set to 1.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixUnitIntensity(Workspace& ws,
-Matrix& out,
-const Vector& f) {
-MatrixUnitIntensity(out,
-Var::stokes_dim(ws),
-f,
-Var::verbosity(ws));
+void MatrixUnitIntensity(Workspace& ws, Matrix& out, const Vector& f) {
+  MatrixUnitIntensity(out, Var::stokes_dim(ws), f, Var::verbosity(ws));
 }
-
 
 /*! Multiply a Matrix with a Vector
 
@@ -9298,16 +9392,10 @@ are the same Vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void MatrixVectorMultiply(Workspace& ws,
-Vector& out,
-const Matrix& m,
-const Vector& v) {
-MatrixVectorMultiply(out,
-m,
-v,
-Var::verbosity(ws));
+void MatrixVectorMultiply(Workspace& ws, Vector& out, const Matrix& m,
+                          const Vector& v) {
+  MatrixVectorMultiply(out, m, v, Var::verbosity(ws));
 }
-
 
 /*! Adds a numeric and a value (out = in+value).
 
@@ -9323,16 +9411,10 @@ The result can either be stored in the same or another numeric.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void NumericAdd(Workspace& ws,
-Numeric& out,
-const Numeric& in,
-const Numeric& value) {
-NumericAdd(out,
-in,
-value,
-Var::verbosity(ws));
+void NumericAdd(Workspace& ws, Numeric& out, const Numeric& in,
+                const Numeric& value) {
+  NumericAdd(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Numeric.
 
@@ -9345,12 +9427,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void NumericCreate(Workspace& ws,
-Numeric& out) {
-NumericCreate(out,
-Var::verbosity(ws));
+void NumericCreate(Workspace& ws, Numeric& out) {
+  NumericCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Derivs a numeric from a vector, following selected operation.
 
@@ -9370,16 +9449,10 @@ The following operations can be selected:
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void NumericFromVector(Workspace& ws,
-Numeric& out,
-const Vector& in,
-const String& op) {
-NumericFromVector(out,
-in,
-op,
-Var::verbosity(ws));
+void NumericFromVector(Workspace& ws, Numeric& out, const Vector& in,
+                       const String& op) {
+  NumericFromVector(out, in, op, Var::verbosity(ws));
 }
-
 
 /*! Inversely scales/divides a numeric with a value (out = in/value).
 
@@ -9395,16 +9468,10 @@ The result can either be stored in the same or another numeric.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void NumericInvScale(Workspace& ws,
-Numeric& out,
-const Numeric& in,
-const Numeric& value) {
-NumericInvScale(out,
-in,
-value,
-Var::verbosity(ws));
+void NumericInvScale(Workspace& ws, Numeric& out, const Numeric& in,
+                     const Numeric& value) {
+  NumericInvScale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Scales/multiplies a numeric with a value (out = in*value).
 
@@ -9420,16 +9487,10 @@ The result can either be stored in the same or another numeric.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void NumericScale(Workspace& ws,
-Numeric& out,
-const Numeric& in,
-const Numeric& value) {
-NumericScale(out,
-in,
-value,
-Var::verbosity(ws));
+void NumericScale(Workspace& ws, Numeric& out, const Numeric& in,
+                  const Numeric& value) {
+  NumericScale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Sets a numeric workspace variable to the given value.
 
@@ -9441,14 +9502,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void NumericSet(Workspace& ws,
-Numeric& out,
-const Numeric& value) {
-NumericSet(out,
-value,
-Var::verbosity(ws));
+void NumericSet(Workspace& ws, Numeric& out, const Numeric& value) {
+  NumericSet(out, value, Var::verbosity(ws));
 }
-
 
 /*! Inversion by the so called optimal estimation method (OEM).
 
@@ -9462,14 +9518,14 @@ where
 
  The current implementation provides 3 methods for the minimization of
 the cost functional: Linear, Gauss-Newton and Levenberg-Marquardt.
-The Gauss-Newton minimizer attempts to find a minimum solution by 
+The Gauss-Newton minimizer attempts to find a minimum solution by
 fitting a quadratic function to the cost functional. The linear minimizer
 is a special case of the Gauss-Newton method, since for a linear forward
 model the exact solution of the minimization problem is obtained after
 the first step. The Levenberg-Marquardt method adaptively constrains the
-search region for the next iteration step by means of the so-called gamma-factor.
-This makes the method more suitable for strongly non-linear problems.
-If the gamma-factor is 0, Levenberg-Marquardt and Gauss-Newton method
+search region for the next iteration step by means of the so-called
+gamma-factor. This makes the method more suitable for strongly non-linear
+problems. If the gamma-factor is 0, Levenberg-Marquardt and Gauss-Newton method
 are identical. Each minimization method (li,gn,lm) has an indirect
 variant (li_cg,gn_cg,lm_cg), which uses the conjugate gradient solver
 for the linear system that has to be solved in each minimzation step.
@@ -9484,12 +9540,11 @@ Description of the special input arguments:
   "gn": Non-linear, with Gauss-Newton iteration scheme.
   "gn_cg": Non-linear, with Gauss-Newton and conjugate gradient solver.
   "lm": Non-linear, with Levenberg-Marquardt (LM) iteration scheme.
-  "lm_cg": Non-linear, with Levenberg-Marquardt (LM) iteration scheme and conjugate gradient solver.
-*max_start_cost*
-  No inversion is done if the cost matching the a priori state is above
-  this value. If set to a negative value, all values are accepted.
-  This argument also controls if the start cost is calculated. If
-  set to <= 0, the start cost in *oem_diagnostics* is set to NaN
+  "lm_cg": Non-linear, with Levenberg-Marquardt (LM) iteration scheme and
+conjugate gradient solver. *max_start_cost* No inversion is done if the cost
+matching the a priori state is above this value. If set to a negative value, all
+values are accepted. This argument also controls if the start cost is
+calculated. If set to <= 0, the start cost in *oem_diagnostics* is set to NaN
   when using "li" and "gn".
 *x_norm*
   A normalisation vector for *x*. A normalisation of *x* can be needed
@@ -9528,62 +9583,45 @@ Description of the special input arguments:
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] method - Iteration method. For this and all options below, see further above.
-@param[in] max_start_cost - Maximum allowed value of cost function at start. (default: std::numeric_limits<Numeric>::infinity())
+@param[in] method - Iteration method. For this and all options below, see
+further above.
+@param[in] max_start_cost - Maximum allowed value of cost function at start.
+(default: std::numeric_limits<Numeric>::infinity())
 @param[in] x_norm - Normalisation of Sx. (default: {})
 @param[in] max_iter - Maximum number of iterations. (default: 10)
 @param[in] stop_dx - Stop criterion for iterative inversions. (default: 0.01)
-@param[in] lm_ga_settings - Settings associated with the ga factor of the LM method. (default: {})
+@param[in] lm_ga_settings - Settings associated with the ga factor of the LM
+method. (default: {})
 @param[in] clear_matrices - An option to save memory. (default: 0)
-@param[in] display_progress - Flag to control if inversion diagnostics shall be printed on the screen. (default: 0)
+@param[in] display_progress - Flag to control if inversion diagnostics shall be
+printed on the screen. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void OEM(Workspace& ws,
-const String& method,
-const Numeric& max_start_cost=std::numeric_limits<Numeric>::infinity(),
-const Vector& x_norm={},
-const Index& max_iter=10,
-const Numeric& stop_dx=0.01,
-const Vector& lm_ga_settings={},
-const Index& clear_matrices=0,
-const Index& display_progress=0) {
-OEM(ws,
-Var::x(ws),
-Var::yf(ws),
-Var::jacobian(ws),
-Var::dxdy(ws),
-Var::oem_diagnostics(ws),
-Var::lm_ga_history(ws),
-Var::oem_errors(ws),
-Var::xa(ws),
-Var::covmat_sx(ws),
-Var::y(ws),
-Var::covmat_se(ws),
-Var::jacobian_quantities(ws),
-Var::inversion_iterate_agenda(ws),
-method,
-max_start_cost,
-x_norm,
-max_iter,
-stop_dx,
-lm_ga_settings,
-clear_matrices,
-display_progress,
-Var::verbosity(ws));
+void OEM(
+    Workspace& ws, const String& method,
+    const Numeric& max_start_cost = std::numeric_limits<Numeric>::infinity(),
+    const Vector& x_norm = {}, const Index& max_iter = 10,
+    const Numeric& stop_dx = 0.01, const Vector& lm_ga_settings = {},
+    const Index& clear_matrices = 0, const Index& display_progress = 0) {
+  OEM(ws, Var::x(ws), Var::yf(ws), Var::jacobian(ws), Var::dxdy(ws),
+      Var::oem_diagnostics(ws), Var::lm_ga_history(ws), Var::oem_errors(ws),
+      Var::xa(ws), Var::covmat_sx(ws), Var::y(ws), Var::covmat_se(ws),
+      Var::jacobian_quantities(ws), Var::inversion_iterate_agenda(ws), method,
+      max_start_cost, x_norm, max_iter, stop_dx, lm_ga_settings, clear_matrices,
+      display_progress, Var::verbosity(ws));
 }
-
 
 /*! Optimization of the pressure grid for RT calculation.
 The methods consists of three parts:
-1) Calculate the single scattering albedo and the scattering opticalthickness from the scattering and absorption species. 
-2) Enhance z_field according to the two thresholds sgl_alb_max and tau_scat_max.If the resulting cloudbox size is bigger than cloudbox_size_max, this step is 
-repeated with a higher threshold of tau_scat_max. 
-3) Interpolate all variables used in doit_mono_agenda to the new z_field 
-This method should be called inside
-*doit_mono_agenda*, right before *cloudbox_field_monoIterate*. It can 
-only be used if *ScatSpeciesMerge* has been called and if it is
-called, *cloudbox_field_monoOptimizeReverse* has to be
+1) Calculate the single scattering albedo and the scattering opticalthickness
+from the scattering and absorption species. 2) Enhance z_field according to the
+two thresholds sgl_alb_max and tau_scat_max.If the resulting cloudbox size is
+bigger than cloudbox_size_max, this step is repeated with a higher threshold of
+tau_scat_max. 3) Interpolate all variables used in doit_mono_agenda to the new
+z_field This method should be called inside *doit_mono_agenda*, right before
+*cloudbox_field_monoIterate*. It can only be used if *ScatSpeciesMerge* has been
+called and if it is called, *cloudbox_field_monoOptimizeReverse* has to be
 called right after *cloudbox_field_monoIterate* to interpolate
 *cloudbox_field_mono* back to the original size.
 Optimization currently only works with *stokes_dim* = 1 .
@@ -9597,30 +9635,17 @@ Optimization currently only works with *stokes_dim* = 1 .
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void OptimizeDoitPressureGrid(Workspace& ws,
-const Numeric& tau_scat_max=0.1,
-const Numeric& sgl_alb_max=0.9,
-const Index& cloudbox_size_max=200) {
-OptimizeDoitPressureGrid(ws,
-Var::p_grid(ws),
-Var::pnd_field(ws),
-Var::t_field(ws),
-Var::scat_data_mono(ws),
-Var::z_field(ws),
-Var::cloudbox_limits(ws),
-Var::cloudbox_field_mono(ws),
-Var::pha_mat_doit(ws),
-Var::vmr_field(ws),
-Var::p_grid_orig(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-Var::propmat_clearsky_agenda(ws),
-tau_scat_max,
-sgl_alb_max,
-cloudbox_size_max,
-Var::verbosity(ws));
+void OptimizeDoitPressureGrid(Workspace& ws, const Numeric& tau_scat_max = 0.1,
+                              const Numeric& sgl_alb_max = 0.9,
+                              const Index& cloudbox_size_max = 200) {
+  OptimizeDoitPressureGrid(
+      ws, Var::p_grid(ws), Var::pnd_field(ws), Var::t_field(ws),
+      Var::scat_data_mono(ws), Var::z_field(ws), Var::cloudbox_limits(ws),
+      Var::cloudbox_field_mono(ws), Var::pha_mat_doit(ws), Var::vmr_field(ws),
+      Var::p_grid_orig(ws), Var::f_grid(ws), Var::f_index(ws),
+      Var::propmat_clearsky_agenda(ws), tau_scat_max, sgl_alb_max,
+      cloudbox_size_max, Var::verbosity(ws));
 }
-
 
 /*! Simple conversion from altitude to pressure.
 
@@ -9629,7 +9654,7 @@ of corresponding pressures. The formula used to convert altitide z to height
  is:
 p = 10.0^(5.0 - z / 1600)
 
-Note that all altitude values in the vector must be less than 120 km, 
+Note that all altitude values in the vector must be less than 120 km,
  otherwise an error will be thrown.
 
 @author Simon Pfreundschuh
@@ -9640,14 +9665,9 @@ Note that all altitude values in the vector must be less than 120 km,
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void PFromZSimple(Workspace& ws,
-Vector& p_grid,
-const Vector& z_grid) {
-PFromZSimple(p_grid,
-z_grid,
-Var::verbosity(ws));
+void PFromZSimple(Workspace& ws, Vector& p_grid, const Vector& z_grid) {
+  PFromZSimple(p_grid, z_grid, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Ppath.
 
@@ -9660,12 +9680,24 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void PpathCreate(Workspace& ws,
-Ppath& out) {
-PpathCreate(out,
-Var::verbosity(ws));
+void PpathCreate(Workspace& ws, Ppath& out) {
+  PpathCreate(out, Var::verbosity(ws));
 }
 
+/*! Prints a variable on the screen.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] in - Variable to be printed.
+@param[in] level - Output level to use. (default: 1)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void Print(Workspace& ws, const Any_0& in, const Index& level = 1) {
+  Print(in, level, Var::verbosity(ws));
+}
 
 /*! Prints (most) physical constants used in ARTS.
 
@@ -9676,9 +9708,24 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void PrintPhysicalConstants(Workspace& ws) {
-PrintPhysicalConstants(Var::verbosity(ws));
+  PrintPhysicalConstants(Var::verbosity(ws));
 }
 
+/*! Prints a list of the workspace variables.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] only_allocated - Flag for printing either all variables (0) or only
+allocated ones (1). (default: 1)
+@param[in] level - Output level to use. (default: 1)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+void PrintWorkspace(Workspace& ws, const Index& only_allocated = 1,
+                    const Index& level = 1) {
+  PrintWorkspace(ws, only_allocated, level, Var::verbosity(ws));
+}
 
 /*! Creates a variable of group PropagationMatrix.
 
@@ -9691,12 +9738,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void PropagationMatrixCreate(Workspace& ws,
-PropagationMatrix& out) {
-PropagationMatrixCreate(out,
-Var::verbosity(ws));
+void PropagationMatrixCreate(Workspace& ws, PropagationMatrix& out) {
+  PropagationMatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group QuantumIdentifier.
 
@@ -9709,12 +9753,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void QuantumIdentifierCreate(Workspace& ws,
-QuantumIdentifier& out) {
-QuantumIdentifierCreate(out,
-Var::verbosity(ws));
+void QuantumIdentifierCreate(Workspace& ws, QuantumIdentifier& out) {
+  QuantumIdentifierCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Sets a QuantumIdentifier workspace variable to the given value
 by converting the input String
@@ -9727,14 +9768,10 @@ by converting the input String
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void QuantumIdentifierSet(Workspace& ws,
-QuantumIdentifier& out,
-const String& string_initializer) {
-QuantumIdentifierSet(out,
-string_initializer,
-Var::verbosity(ws));
+void QuantumIdentifierSet(Workspace& ws, QuantumIdentifier& out,
+                          const String& string_initializer) {
+  QuantumIdentifierSet(out, string_initializer, Var::verbosity(ws));
 }
-
 
 /*! Interface to the PolRadTran RT4 scattering solver (by F. Evans).
 
@@ -9804,65 +9841,58 @@ the actual temperature.
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] nstreams - Number of polar angle directions (streams) in RT4 solution (must be an even number). (default: 16)
-@param[in] pfct_method - Flag which method to apply to derive phase function (for available options see above). (default: "median")
-@param[in] quad_type - Flag which quadrature to apply in RT4 solution (for available options see above). (default: "D")
-@param[in] add_straight_angles - Flag whether to include nadir and zenith as explicit directions (only effective for quad_type G and D). (default: 1)
-@param[in] pfct_aa_grid_size - Number of azimuthal angle grid points to consider in Fourier series decomposition of scattering matrix (only applied for randomly oriented scattering elements) (default: 19)
-@param[in] auto_inc_nstreams - Flag whether to internally increase nstreams (individually per frequency) if norm of (bulk) scattering matrix is not preserved properly. If 0, no adaptation is done. Else *auto_inc_nstreams* gives the maximum number of streams to increase to. Note that the output *cloudbox_field* remains with angular dimension of *nstreams*, only the internal solution is adapted (and then interpolated to the lower-resolution output angular grid). (default: 0)
-@param[in] robust - For *auto_inc_nstreams*>0, flag whether to not fail even if scattering matrix norm is not preserved when maximum stream number is reached. Internal RT4 calculations is then performed with nstreams=*auto_inc_nstreams*. (default: 0)
-@param[in] za_interp_order - For *auto_inc_nstreams*>0, polar angle interpolation order for interpolation from internal increased stream to originally requested nstreams-ifield. (default: 1)
-@param[in] cos_za_interp - For *auto_inc_nstreams*>0, flag whether to do polar angle interpolation in cosine (='mu') space. (default: 0)
-@param[in] max_delta_tau - Maximum optical depth of infinitesimal layer (where single scattering approximation is assumed to apply). (default: 1e-6)
+@param[in] nstreams - Number of polar angle directions (streams) in RT4 solution
+(must be an even number). (default: 16)
+@param[in] pfct_method - Flag which method to apply to derive phase function
+(for available options see above). (default: "median")
+@param[in] quad_type - Flag which quadrature to apply in RT4 solution (for
+available options see above). (default: "D")
+@param[in] add_straight_angles - Flag whether to include nadir and zenith as
+explicit directions (only effective for quad_type G and D). (default: 1)
+@param[in] pfct_aa_grid_size - Number of azimuthal angle grid points to consider
+in Fourier series decomposition of scattering matrix (only applied for randomly
+oriented scattering elements) (default: 19)
+@param[in] auto_inc_nstreams - Flag whether to internally increase nstreams
+(individually per frequency) if norm of (bulk) scattering matrix is not
+preserved properly. If 0, no adaptation is done. Else *auto_inc_nstreams* gives
+the maximum number of streams to increase to. Note that the output
+*cloudbox_field* remains with angular dimension of *nstreams*, only the internal
+solution is adapted (and then interpolated to the lower-resolution output
+angular grid). (default: 0)
+@param[in] robust - For *auto_inc_nstreams*>0, flag whether to not fail even if
+scattering matrix norm is not preserved when maximum stream number is reached.
+Internal RT4 calculations is then performed with nstreams=*auto_inc_nstreams*.
+(default: 0)
+@param[in] za_interp_order - For *auto_inc_nstreams*>0, polar angle
+interpolation order for interpolation from internal increased stream to
+originally requested nstreams-ifield. (default: 1)
+@param[in] cos_za_interp - For *auto_inc_nstreams*>0, flag whether to do polar
+angle interpolation in cosine (='mu') space. (default: 0)
+@param[in] max_delta_tau - Maximum optical depth of infinitesimal layer (where
+single scattering approximation is assumed to apply). (default: 1e-6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void RT4Calc(Workspace& ws,
-const Index& nstreams=16,
-const String& pfct_method="median",
-const String& quad_type="D",
-const Index& add_straight_angles=1,
-const Index& pfct_aa_grid_size=19,
-const Index& auto_inc_nstreams=0,
-const Index& robust=0,
-const Index& za_interp_order=1,
-const Index& cos_za_interp=0,
-const Numeric& max_delta_tau=1e-6) {
-RT4Calc(ws,
-Var::cloudbox_field(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::scat_data_checked(ws),
-Var::cloudbox_checked(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::surface_rtprop_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::pnd_field(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::p_grid(ws),
-Var::scat_data(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::z_surface(ws),
-nstreams,
-pfct_method,
-quad_type,
-add_straight_angles,
-pfct_aa_grid_size,
-auto_inc_nstreams,
-robust,
-za_interp_order,
-cos_za_interp,
-max_delta_tau,
-Var::verbosity(ws));
+void RT4Calc(Workspace& ws, const Index& nstreams = 16,
+             const String& pfct_method = "median",
+             const String& quad_type = "D",
+             const Index& add_straight_angles = 1,
+             const Index& pfct_aa_grid_size = 19,
+             const Index& auto_inc_nstreams = 0, const Index& robust = 0,
+             const Index& za_interp_order = 1, const Index& cos_za_interp = 0,
+             const Numeric& max_delta_tau = 1e-6) {
+  RT4Calc(ws, Var::cloudbox_field(ws), Var::za_grid(ws), Var::aa_grid(ws),
+          Var::atmfields_checked(ws), Var::atmgeom_checked(ws),
+          Var::scat_data_checked(ws), Var::cloudbox_checked(ws),
+          Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+          Var::propmat_clearsky_agenda(ws), Var::surface_rtprop_agenda(ws),
+          Var::atmosphere_dim(ws), Var::pnd_field(ws), Var::t_field(ws),
+          Var::z_field(ws), Var::vmr_field(ws), Var::p_grid(ws),
+          Var::scat_data(ws), Var::f_grid(ws), Var::stokes_dim(ws),
+          Var::z_surface(ws), nstreams, pfct_method, quad_type,
+          add_straight_angles, pfct_aa_grid_size, auto_inc_nstreams, robust,
+          za_interp_order, cos_za_interp, max_delta_tau, Var::verbosity(ws));
 }
-
 
 /*! As RT4Calc except for using RT4's proprietary surface type handling.
 
@@ -9880,71 +9910,59 @@ methods modified to behave similar to ARTS'
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] nstreams - Number of polar angle directions (streams) in RT4 solution (must be an even number). (default: 16)
-@param[in] pfct_method - Flag which method to apply to derive phase function (for available options see above). (default: "median")
-@param[in] ground_type - Flag which surface type/surface property method to use (for available options see above). (default: "A")
-@param[in] quad_type - Flag which quadrature to apply in RT4 solution (for available options see above). (default: "D")
-@param[in] add_straight_angles - Flag whether to include nadir and zenith as explicit directions (only effective for quad_type G and D). (default: 1)
-@param[in] pfct_aa_grid_size - Number of azimuthal angle grid points to consider in Fourier series decomposition of scattering matrix (only applied for randomly oriented scattering elements) (default: 19)
-@param[in] auto_inc_nstreams - Flag whether to internally increase nstreams (individually per frequency) if norm of (bulk) scattering matrix is not preserved properly. If 0, no adaptation is done. Else *auto_inc_nstreams* gives the maximum number of streams to increase to. (default: 0)
-@param[in] robust - For *auto_inc_nstreams*>0, flag whether to not fail even if scattering matrix norm is not preserved when maximum stream number is reached. Internal RT4 calculations is then performed with nstreams=*auto_inc_nstreams*. (default: 0)
-@param[in] za_interp_order - For *auto_inc_nstreams*>0, polar angle interpolation order for interpolation from internal increased stream to originally requested nstreams-ifield. (default: 1)
-@param[in] cos_za_interp - For *auto_inc_nstreams*>0, flag whether to do polar angle interpolation in cosine (='mu') space. (default: 0)
-@param[in] max_delta_tau - Maximum optical depth of infinitesimal layer (where single scattering approximation is assumed to apply). (default: 1e-6)
+@param[in] nstreams - Number of polar angle directions (streams) in RT4 solution
+(must be an even number). (default: 16)
+@param[in] pfct_method - Flag which method to apply to derive phase function
+(for available options see above). (default: "median")
+@param[in] ground_type - Flag which surface type/surface property method to use
+(for available options see above). (default: "A")
+@param[in] quad_type - Flag which quadrature to apply in RT4 solution (for
+available options see above). (default: "D")
+@param[in] add_straight_angles - Flag whether to include nadir and zenith as
+explicit directions (only effective for quad_type G and D). (default: 1)
+@param[in] pfct_aa_grid_size - Number of azimuthal angle grid points to consider
+in Fourier series decomposition of scattering matrix (only applied for randomly
+oriented scattering elements) (default: 19)
+@param[in] auto_inc_nstreams - Flag whether to internally increase nstreams
+(individually per frequency) if norm of (bulk) scattering matrix is not
+preserved properly. If 0, no adaptation is done. Else *auto_inc_nstreams* gives
+the maximum number of streams to increase to. (default: 0)
+@param[in] robust - For *auto_inc_nstreams*>0, flag whether to not fail even if
+scattering matrix norm is not preserved when maximum stream number is reached.
+Internal RT4 calculations is then performed with nstreams=*auto_inc_nstreams*.
+(default: 0)
+@param[in] za_interp_order - For *auto_inc_nstreams*>0, polar angle
+interpolation order for interpolation from internal increased stream to
+originally requested nstreams-ifield. (default: 1)
+@param[in] cos_za_interp - For *auto_inc_nstreams*>0, flag whether to do polar
+angle interpolation in cosine (='mu') space. (default: 0)
+@param[in] max_delta_tau - Maximum optical depth of infinitesimal layer (where
+single scattering approximation is assumed to apply). (default: 1e-6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void RT4CalcWithRT4Surface(Workspace& ws,
-const Index& nstreams=16,
-const String& pfct_method="median",
-const String& ground_type="A",
-const String& quad_type="D",
-const Index& add_straight_angles=1,
-const Index& pfct_aa_grid_size=19,
-const Index& auto_inc_nstreams=0,
-const Index& robust=0,
-const Index& za_interp_order=1,
-const Index& cos_za_interp=0,
-const Numeric& max_delta_tau=1e-6) {
-RT4CalcWithRT4Surface(ws,
-Var::cloudbox_field(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::scat_data_checked(ws),
-Var::cloudbox_checked(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::pnd_field(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::p_grid(ws),
-Var::scat_data(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::z_surface(ws),
-Var::surface_skin_t(ws),
-Var::surface_scalar_reflectivity(ws),
-Var::surface_reflectivity(ws),
-Var::surface_complex_refr_index(ws),
-nstreams,
-pfct_method,
-ground_type,
-quad_type,
-add_straight_angles,
-pfct_aa_grid_size,
-auto_inc_nstreams,
-robust,
-za_interp_order,
-cos_za_interp,
-max_delta_tau,
-Var::verbosity(ws));
+void RT4CalcWithRT4Surface(
+    Workspace& ws, const Index& nstreams = 16,
+    const String& pfct_method = "median", const String& ground_type = "A",
+    const String& quad_type = "D", const Index& add_straight_angles = 1,
+    const Index& pfct_aa_grid_size = 19, const Index& auto_inc_nstreams = 0,
+    const Index& robust = 0, const Index& za_interp_order = 1,
+    const Index& cos_za_interp = 0, const Numeric& max_delta_tau = 1e-6) {
+  RT4CalcWithRT4Surface(
+      ws, Var::cloudbox_field(ws), Var::za_grid(ws), Var::aa_grid(ws),
+      Var::atmfields_checked(ws), Var::atmgeom_checked(ws),
+      Var::scat_data_checked(ws), Var::cloudbox_checked(ws),
+      Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+      Var::propmat_clearsky_agenda(ws), Var::atmosphere_dim(ws),
+      Var::pnd_field(ws), Var::t_field(ws), Var::z_field(ws),
+      Var::vmr_field(ws), Var::p_grid(ws), Var::scat_data(ws), Var::f_grid(ws),
+      Var::stokes_dim(ws), Var::z_surface(ws), Var::surface_skin_t(ws),
+      Var::surface_scalar_reflectivity(ws), Var::surface_reflectivity(ws),
+      Var::surface_complex_refr_index(ws), nstreams, pfct_method, ground_type,
+      quad_type, add_straight_angles, pfct_aa_grid_size, auto_inc_nstreams,
+      robust, za_interp_order, cos_za_interp, max_delta_tau,
+      Var::verbosity(ws));
 }
-
 
 /*! RT4 validation test.
 
@@ -9955,18 +9973,15 @@ data files converted to arts-xml). Output written to (xml-)file.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[out] out_rad - RT4 testc calculation results.
-@param[in] datapath - Folder containing arts-xml converted test case input data. (default: "artscomponents/polradtran/testdata/")
+@param[in] datapath - Folder containing arts-xml converted test case input data.
+(default: "artscomponents/polradtran/testdata/")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void RT4Test(Workspace& ws,
-Tensor4& out_rad,
-const String& datapath="artscomponents/polradtran/testdata/") {
-RT4Test(out_rad,
-datapath,
-Var::verbosity(ws));
+void RT4Test(Workspace& ws, Tensor4& out_rad,
+             const String& datapath = "artscomponents/polradtran/testdata/") {
+  RT4Test(out_rad, datapath, Var::verbosity(ws));
 }
-
 
 /*! Integrates fields like *spectral_irradiance_field* or *cloudbox_field*
 over frequency.
@@ -9983,15 +9998,11 @@ is also removed.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void RadiationFieldSpectralIntegrate(Workspace& ws,
-Any_0& radiation_field,
-const Any_1& spectral_radiation_field) {
-RadiationFieldSpectralIntegrate(radiation_field,
-Var::f_grid(ws),
-spectral_radiation_field,
-Var::verbosity(ws));
+void RadiationFieldSpectralIntegrate(Workspace& ws, Any_0& radiation_field,
+                                     const Any_1& spectral_radiation_field) {
+  RadiationFieldSpectralIntegrate(radiation_field, Var::f_grid(ws),
+                                  spectral_radiation_field, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group RadiationVector.
 
@@ -10004,12 +10015,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void RadiationVectorCreate(Workspace& ws,
-RadiationVector& out) {
-RadiationVectorCreate(out,
-Var::verbosity(ws));
+void RadiationVectorCreate(Workspace& ws, RadiationVector& out) {
+  RadiationVectorCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Adds a Rational and a value (out = in+value).
 
@@ -10025,16 +10033,10 @@ The result can either be stored in the same or another Rational.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void RationalAdd(Workspace& ws,
-Rational& out,
-const Rational& in,
-const Rational& value) {
-RationalAdd(out,
-in,
-value,
-Var::verbosity(ws));
+void RationalAdd(Workspace& ws, Rational& out, const Rational& in,
+                 const Rational& value) {
+  RationalAdd(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Rational.
 
@@ -10047,12 +10049,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void RationalCreate(Workspace& ws,
-Rational& out) {
-RationalCreate(out,
-Var::verbosity(ws));
+void RationalCreate(Workspace& ws, Rational& out) {
+  RationalCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Inversely scales/divides a Rational with a value (out = in/value).
 
@@ -10068,16 +10067,10 @@ The result can either be stored in the same or another Rational.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void RationalInvScale(Workspace& ws,
-Rational& out,
-const Rational& in,
-const Rational& value) {
-RationalInvScale(out,
-in,
-value,
-Var::verbosity(ws));
+void RationalInvScale(Workspace& ws, Rational& out, const Rational& in,
+                      const Rational& value) {
+  RationalInvScale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Scales/multiplies a Rational with a value (out = in*value).
 
@@ -10093,16 +10086,10 @@ The result can either be stored in the same or another Rational.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void RationalScale(Workspace& ws,
-Rational& out,
-const Rational& in,
-const Rational& value) {
-RationalScale(out,
-in,
-value,
-Var::verbosity(ws));
+void RationalScale(Workspace& ws, Rational& out, const Rational& in,
+                   const Rational& value) {
+  RationalScale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Sets a Rational workspace variable to the given value.
 
@@ -10115,16 +10102,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void RationalSet(Workspace& ws,
-Rational& out,
-const Index& numerator,
-const Index& denominator=1) {
-RationalSet(out,
-numerator,
-denominator,
-Var::verbosity(ws));
+void RationalSet(Workspace& ws, Rational& out, const Index& numerator,
+                 const Index& denominator = 1) {
+  RationalSet(out, numerator, denominator, Var::verbosity(ws));
 }
-
 
 /*! Reads an old ArrayOfLineRecord ARTSCAT file
 
@@ -10139,47 +10120,43 @@ information.  Be careful setting the options!
 @param[in] filename - Name of the ARTSCAT file
 @param[in] fmin - Minimum frequency of read lines (default: 0)
 @param[in] fmax - Maximum frequency of read lines (default: 1e99)
-@param[in] globalquantumnumbers - Global quantum number list (space-separated) (default: "")
-@param[in] localquantumnumbers - Local quantum number list (space-separated) (default: "")
-@param[in] normalization_option - Normalization option, see *abs_linesSetNormalization* (default: "None")
-@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring* (default: "None")
-@param[in] population_option - Population option, see *abs_linesSetPopulation* (default: "LTE")
-@param[in] lineshapetype_option - Lineshape option, see *abs_linesSetLineShapeType* (default: "VP")
-@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default: "None")
-@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default: 750e9)
-@param[in] linemixinglimit_value - Line mixing limit, see *abs_linesSetLinemixingLimit* (default: -1)
+@param[in] globalquantumnumbers - Global quantum number list (space-separated)
+(default: "")
+@param[in] localquantumnumbers - Local quantum number list (space-separated)
+(default: "")
+@param[in] normalization_option - Normalization option, see
+*abs_linesSetNormalization* (default: "None")
+@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring*
+(default: "None")
+@param[in] population_option - Population option, see *abs_linesSetPopulation*
+(default: "LTE")
+@param[in] lineshapetype_option - Lineshape option, see
+*abs_linesSetLineShapeType* (default: "VP")
+@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default:
+"None")
+@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default:
+750e9)
+@param[in] linemixinglimit_value - Line mixing limit, see
+*abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ReadARTSCAT(Workspace& ws,
-const String& filename,
-const Numeric& fmin=0,
-const Numeric& fmax=1e99,
-const String& globalquantumnumbers="",
-const String& localquantumnumbers="",
-const String& normalization_option="None",
-const String& mirroring_option="None",
-const String& population_option="LTE",
-const String& lineshapetype_option="VP",
-const String& cutoff_option="None",
-const Numeric& cutoff_value=750e9,
-const Numeric& linemixinglimit_value=-1) {
-ReadARTSCAT(Var::abs_lines(ws),
-filename,
-fmin,
-fmax,
-globalquantumnumbers,
-localquantumnumbers,
-normalization_option,
-mirroring_option,
-population_option,
-lineshapetype_option,
-cutoff_option,
-cutoff_value,
-linemixinglimit_value,
-Var::verbosity(ws));
+void ReadARTSCAT(Workspace& ws, const String& filename, const Numeric& fmin = 0,
+                 const Numeric& fmax = 1e99,
+                 const String& globalquantumnumbers = "",
+                 const String& localquantumnumbers = "",
+                 const String& normalization_option = "None",
+                 const String& mirroring_option = "None",
+                 const String& population_option = "LTE",
+                 const String& lineshapetype_option = "VP",
+                 const String& cutoff_option = "None",
+                 const Numeric& cutoff_value = 750e9,
+                 const Numeric& linemixinglimit_value = -1) {
+  ReadARTSCAT(Var::abs_lines(ws), filename, fmin, fmax, globalquantumnumbers,
+              localquantumnumbers, normalization_option, mirroring_option,
+              population_option, lineshapetype_option, cutoff_option,
+              cutoff_value, linemixinglimit_value, Var::verbosity(ws));
 }
-
 
 /*! Reads an old Array<ArrayOfLineRecord> ARTSCAT file.
 
@@ -10194,54 +10171,52 @@ information.  Be careful setting the options!
 @param[in] filename - Name of the ARTSCAT file
 @param[in] fmin - Minimum frequency of read lines (default: 0)
 @param[in] fmax - Maximum frequency of read lines (default: 1e99)
-@param[in] globalquantumnumbers - Global quantum number list (space-separated) (default: "")
-@param[in] localquantumnumbers - Local quantum number list (space-separated) (default: "")
-@param[in] normalization_option - Normalization option, see *abs_linesSetNormalization* (default: "None")
-@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring* (default: "None")
-@param[in] population_option - Population option, see *abs_linesSetPopulation* (default: "LTE")
-@param[in] lineshapetype_option - Lineshape option, see *abs_linesSetLineShapeType* (default: "VP")
-@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default: "None")
-@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default: 750e9)
-@param[in] linemixinglimit_value - Line mixing limit, see *abs_linesSetLinemixingLimit* (default: -1)
+@param[in] globalquantumnumbers - Global quantum number list (space-separated)
+(default: "")
+@param[in] localquantumnumbers - Local quantum number list (space-separated)
+(default: "")
+@param[in] normalization_option - Normalization option, see
+*abs_linesSetNormalization* (default: "None")
+@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring*
+(default: "None")
+@param[in] population_option - Population option, see *abs_linesSetPopulation*
+(default: "LTE")
+@param[in] lineshapetype_option - Lineshape option, see
+*abs_linesSetLineShapeType* (default: "VP")
+@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default:
+"None")
+@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default:
+750e9)
+@param[in] linemixinglimit_value - Line mixing limit, see
+*abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ReadArrayOfARTSCAT(Workspace& ws,
-const String& filename,
-const Numeric& fmin=0,
-const Numeric& fmax=1e99,
-const String& globalquantumnumbers="",
-const String& localquantumnumbers="",
-const String& normalization_option="None",
-const String& mirroring_option="None",
-const String& population_option="LTE",
-const String& lineshapetype_option="VP",
-const String& cutoff_option="None",
-const Numeric& cutoff_value=750e9,
-const Numeric& linemixinglimit_value=-1) {
-ReadArrayOfARTSCAT(Var::abs_lines(ws),
-filename,
-fmin,
-fmax,
-globalquantumnumbers,
-localquantumnumbers,
-normalization_option,
-mirroring_option,
-population_option,
-lineshapetype_option,
-cutoff_option,
-cutoff_value,
-linemixinglimit_value,
-Var::verbosity(ws));
+void ReadArrayOfARTSCAT(Workspace& ws, const String& filename,
+                        const Numeric& fmin = 0, const Numeric& fmax = 1e99,
+                        const String& globalquantumnumbers = "",
+                        const String& localquantumnumbers = "",
+                        const String& normalization_option = "None",
+                        const String& mirroring_option = "None",
+                        const String& population_option = "LTE",
+                        const String& lineshapetype_option = "VP",
+                        const String& cutoff_option = "None",
+                        const Numeric& cutoff_value = 750e9,
+                        const Numeric& linemixinglimit_value = -1) {
+  ReadArrayOfARTSCAT(Var::abs_lines(ws), filename, fmin, fmax,
+                     globalquantumnumbers, localquantumnumbers,
+                     normalization_option, mirroring_option, population_option,
+                     lineshapetype_option, cutoff_option, cutoff_value,
+                     linemixinglimit_value, Var::verbosity(ws));
 }
-
 
 /*! Reads a HITRAN .par file.
 
 The HITRAN type switch can be:
-	"Pre2004"	-	for old format
-	"Post2004"	-	for new format
-	"Online"	-	for the online format with quantum numbers (highly experimental)
+        "Pre2004"	-	for old format
+        "Post2004"	-	for new format
+        "Online"	-	for the online format with quantum numbers
+(highly experimental)
 
 Be careful setting the options!
 
@@ -10253,50 +10228,47 @@ Be careful setting the options!
 @param[in] filename - Name of the HITRAN file
 @param[in] fmin - Minimum frequency of read lines (default: 0)
 @param[in] fmax - Maximum frequency of read lines (default: 1e99)
-@param[in] globalquantumnumbers - Global quantum number list (space-separated) (default: "")
-@param[in] localquantumnumbers - Local quantum number list (space-separated) (default: "")
-@param[in] hitran_type - Method to use to read the line data (default: "Post2004")
-@param[in] normalization_option - Normalization option, see *abs_linesSetNormalization* (default: "None")
-@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring* (default: "None")
-@param[in] population_option - Population option, see *abs_linesSetPopulation* (default: "LTE")
-@param[in] lineshapetype_option - Lineshape option, see *abs_linesSetLineShapeType* (default: "VP")
-@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default: "None")
-@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default: 750e9)
-@param[in] linemixinglimit_value - Line mixing limit, see *abs_linesSetLinemixingLimit* (default: -1)
+@param[in] globalquantumnumbers - Global quantum number list (space-separated)
+(default: "")
+@param[in] localquantumnumbers - Local quantum number list (space-separated)
+(default: "")
+@param[in] hitran_type - Method to use to read the line data (default:
+"Post2004")
+@param[in] normalization_option - Normalization option, see
+*abs_linesSetNormalization* (default: "None")
+@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring*
+(default: "None")
+@param[in] population_option - Population option, see *abs_linesSetPopulation*
+(default: "LTE")
+@param[in] lineshapetype_option - Lineshape option, see
+*abs_linesSetLineShapeType* (default: "VP")
+@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default:
+"None")
+@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default:
+750e9)
+@param[in] linemixinglimit_value - Line mixing limit, see
+*abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ReadHITRAN(Workspace& ws,
-const String& filename,
-const Numeric& fmin=0,
-const Numeric& fmax=1e99,
-const String& globalquantumnumbers="",
-const String& localquantumnumbers="",
-const String& hitran_type="Post2004",
-const String& normalization_option="None",
-const String& mirroring_option="None",
-const String& population_option="LTE",
-const String& lineshapetype_option="VP",
-const String& cutoff_option="None",
-const Numeric& cutoff_value=750e9,
-const Numeric& linemixinglimit_value=-1) {
-ReadHITRAN(Var::abs_lines(ws),
-filename,
-fmin,
-fmax,
-globalquantumnumbers,
-localquantumnumbers,
-hitran_type,
-normalization_option,
-mirroring_option,
-population_option,
-lineshapetype_option,
-cutoff_option,
-cutoff_value,
-linemixinglimit_value,
-Var::verbosity(ws));
+void ReadHITRAN(Workspace& ws, const String& filename, const Numeric& fmin = 0,
+                const Numeric& fmax = 1e99,
+                const String& globalquantumnumbers = "",
+                const String& localquantumnumbers = "",
+                const String& hitran_type = "Post2004",
+                const String& normalization_option = "None",
+                const String& mirroring_option = "None",
+                const String& population_option = "LTE",
+                const String& lineshapetype_option = "VP",
+                const String& cutoff_option = "None",
+                const Numeric& cutoff_value = 750e9,
+                const Numeric& linemixinglimit_value = -1) {
+  ReadHITRAN(Var::abs_lines(ws), filename, fmin, fmax, globalquantumnumbers,
+             localquantumnumbers, hitran_type, normalization_option,
+             mirroring_option, population_option, lineshapetype_option,
+             cutoff_option, cutoff_value, linemixinglimit_value,
+             Var::verbosity(ws));
 }
-
 
 /*! Reads a JPL file.
 
@@ -10309,47 +10281,43 @@ Be careful setting the options!
 @param[in] filename - Name of the JPL file
 @param[in] fmin - Minimum frequency of read lines (default: 0)
 @param[in] fmax - Maximum frequency of read lines (default: 1e99)
-@param[in] globalquantumnumbers - Global quantum number list (space-separated) (default: "")
-@param[in] localquantumnumbers - Local quantum number list (space-separated) (default: "")
-@param[in] normalization_option - Normalization option, see *abs_linesSetNormalization* (default: "None")
-@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring* (default: "None")
-@param[in] population_option - Population option, see *abs_linesSetPopulation* (default: "LTE")
-@param[in] lineshapetype_option - Lineshape option, see *abs_linesSetLineShapeType* (default: "VP")
-@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default: "None")
-@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default: 750e9)
-@param[in] linemixinglimit_value - Line mixing limit, see *abs_linesSetLinemixingLimit* (default: -1)
+@param[in] globalquantumnumbers - Global quantum number list (space-separated)
+(default: "")
+@param[in] localquantumnumbers - Local quantum number list (space-separated)
+(default: "")
+@param[in] normalization_option - Normalization option, see
+*abs_linesSetNormalization* (default: "None")
+@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring*
+(default: "None")
+@param[in] population_option - Population option, see *abs_linesSetPopulation*
+(default: "LTE")
+@param[in] lineshapetype_option - Lineshape option, see
+*abs_linesSetLineShapeType* (default: "VP")
+@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default:
+"None")
+@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default:
+750e9)
+@param[in] linemixinglimit_value - Line mixing limit, see
+*abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ReadJPL(Workspace& ws,
-const String& filename,
-const Numeric& fmin=0,
-const Numeric& fmax=1e99,
-const String& globalquantumnumbers="",
-const String& localquantumnumbers="",
-const String& normalization_option="None",
-const String& mirroring_option="None",
-const String& population_option="LTE",
-const String& lineshapetype_option="VP",
-const String& cutoff_option="None",
-const Numeric& cutoff_value=750e9,
-const Numeric& linemixinglimit_value=-1) {
-ReadJPL(Var::abs_lines(ws),
-filename,
-fmin,
-fmax,
-globalquantumnumbers,
-localquantumnumbers,
-normalization_option,
-mirroring_option,
-population_option,
-lineshapetype_option,
-cutoff_option,
-cutoff_value,
-linemixinglimit_value,
-Var::verbosity(ws));
+void ReadJPL(Workspace& ws, const String& filename, const Numeric& fmin = 0,
+             const Numeric& fmax = 1e99,
+             const String& globalquantumnumbers = "",
+             const String& localquantumnumbers = "",
+             const String& normalization_option = "None",
+             const String& mirroring_option = "None",
+             const String& population_option = "LTE",
+             const String& lineshapetype_option = "VP",
+             const String& cutoff_option = "None",
+             const Numeric& cutoff_value = 750e9,
+             const Numeric& linemixinglimit_value = -1) {
+  ReadJPL(Var::abs_lines(ws), filename, fmin, fmax, globalquantumnumbers,
+          localquantumnumbers, normalization_option, mirroring_option,
+          population_option, lineshapetype_option, cutoff_option, cutoff_value,
+          linemixinglimit_value, Var::verbosity(ws));
 }
-
 
 /*! Reads a LBLRTM file.
 
@@ -10361,47 +10329,43 @@ Be careful setting the options!
 @param[in] filename - Name of the LBLRTM file
 @param[in] fmin - Minimum frequency of read lines (default: 0)
 @param[in] fmax - Maximum frequency of read lines (default: 1e99)
-@param[in] globalquantumnumbers - Global quantum number list (space-separated) (default: "")
-@param[in] localquantumnumbers - Local quantum number list (space-separated) (default: "")
-@param[in] normalization_option - Normalization option, see *abs_linesSetNormalization* (default: "None")
-@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring* (default: "None")
-@param[in] population_option - Population option, see *abs_linesSetPopulation* (default: "LTE")
-@param[in] lineshapetype_option - Lineshape option, see *abs_linesSetLineShapeType* (default: "VP")
-@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default: "None")
-@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default: 750e9)
-@param[in] linemixinglimit_value - Line mixing limit, see *abs_linesSetLinemixingLimit* (default: -1)
+@param[in] globalquantumnumbers - Global quantum number list (space-separated)
+(default: "")
+@param[in] localquantumnumbers - Local quantum number list (space-separated)
+(default: "")
+@param[in] normalization_option - Normalization option, see
+*abs_linesSetNormalization* (default: "None")
+@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring*
+(default: "None")
+@param[in] population_option - Population option, see *abs_linesSetPopulation*
+(default: "LTE")
+@param[in] lineshapetype_option - Lineshape option, see
+*abs_linesSetLineShapeType* (default: "VP")
+@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default:
+"None")
+@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default:
+750e9)
+@param[in] linemixinglimit_value - Line mixing limit, see
+*abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ReadLBLRTM(Workspace& ws,
-const String& filename,
-const Numeric& fmin=0,
-const Numeric& fmax=1e99,
-const String& globalquantumnumbers="",
-const String& localquantumnumbers="",
-const String& normalization_option="None",
-const String& mirroring_option="None",
-const String& population_option="LTE",
-const String& lineshapetype_option="VP",
-const String& cutoff_option="None",
-const Numeric& cutoff_value=750e9,
-const Numeric& linemixinglimit_value=-1) {
-ReadLBLRTM(Var::abs_lines(ws),
-filename,
-fmin,
-fmax,
-globalquantumnumbers,
-localquantumnumbers,
-normalization_option,
-mirroring_option,
-population_option,
-lineshapetype_option,
-cutoff_option,
-cutoff_value,
-linemixinglimit_value,
-Var::verbosity(ws));
+void ReadLBLRTM(Workspace& ws, const String& filename, const Numeric& fmin = 0,
+                const Numeric& fmax = 1e99,
+                const String& globalquantumnumbers = "",
+                const String& localquantumnumbers = "",
+                const String& normalization_option = "None",
+                const String& mirroring_option = "None",
+                const String& population_option = "LTE",
+                const String& lineshapetype_option = "VP",
+                const String& cutoff_option = "None",
+                const Numeric& cutoff_value = 750e9,
+                const Numeric& linemixinglimit_value = -1) {
+  ReadLBLRTM(Var::abs_lines(ws), filename, fmin, fmax, globalquantumnumbers,
+             localquantumnumbers, normalization_option, mirroring_option,
+             population_option, lineshapetype_option, cutoff_option,
+             cutoff_value, linemixinglimit_value, Var::verbosity(ws));
 }
-
 
 /*! Reads a Mytran2 file.
 
@@ -10415,47 +10379,65 @@ Be careful setting the options!
 @param[in] filename - Name of the Mytran2 file
 @param[in] fmin - Minimum frequency of read lines (default: 0)
 @param[in] fmax - Maximum frequency of read lines (default: 1e99)
-@param[in] globalquantumnumbers - Global quantum number list (space-separated) (default: "")
-@param[in] localquantumnumbers - Local quantum number list (space-separated) (default: "")
-@param[in] normalization_option - Normalization option, see *abs_linesSetNormalization* (default: "None")
-@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring* (default: "None")
-@param[in] population_option - Population option, see *abs_linesSetPopulation* (default: "LTE")
-@param[in] lineshapetype_option - Lineshape option, see *abs_linesSetLineShapeType* (default: "VP")
-@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default: "None")
-@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default: 750e9)
-@param[in] linemixinglimit_value - Line mixing limit, see *abs_linesSetLinemixingLimit* (default: -1)
+@param[in] globalquantumnumbers - Global quantum number list (space-separated)
+(default: "")
+@param[in] localquantumnumbers - Local quantum number list (space-separated)
+(default: "")
+@param[in] normalization_option - Normalization option, see
+*abs_linesSetNormalization* (default: "None")
+@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring*
+(default: "None")
+@param[in] population_option - Population option, see *abs_linesSetPopulation*
+(default: "LTE")
+@param[in] lineshapetype_option - Lineshape option, see
+*abs_linesSetLineShapeType* (default: "VP")
+@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default:
+"None")
+@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default:
+750e9)
+@param[in] linemixinglimit_value - Line mixing limit, see
+*abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ReadMytran2(Workspace& ws,
-const String& filename,
-const Numeric& fmin=0,
-const Numeric& fmax=1e99,
-const String& globalquantumnumbers="",
-const String& localquantumnumbers="",
-const String& normalization_option="None",
-const String& mirroring_option="None",
-const String& population_option="LTE",
-const String& lineshapetype_option="VP",
-const String& cutoff_option="None",
-const Numeric& cutoff_value=750e9,
-const Numeric& linemixinglimit_value=-1) {
-ReadMytran2(Var::abs_lines(ws),
-filename,
-fmin,
-fmax,
-globalquantumnumbers,
-localquantumnumbers,
-normalization_option,
-mirroring_option,
-population_option,
-lineshapetype_option,
-cutoff_option,
-cutoff_value,
-linemixinglimit_value,
-Var::verbosity(ws));
+void ReadMytran2(Workspace& ws, const String& filename, const Numeric& fmin = 0,
+                 const Numeric& fmax = 1e99,
+                 const String& globalquantumnumbers = "",
+                 const String& localquantumnumbers = "",
+                 const String& normalization_option = "None",
+                 const String& mirroring_option = "None",
+                 const String& population_option = "LTE",
+                 const String& lineshapetype_option = "VP",
+                 const String& cutoff_option = "None",
+                 const Numeric& cutoff_value = 750e9,
+                 const Numeric& linemixinglimit_value = -1) {
+  ReadMytran2(Var::abs_lines(ws), filename, fmin, fmax, globalquantumnumbers,
+              localquantumnumbers, normalization_option, mirroring_option,
+              population_option, lineshapetype_option, cutoff_option,
+              cutoff_value, linemixinglimit_value, Var::verbosity(ws));
 }
 
+/*! Reads a workspace variable from a NetCDF file.
+
+This method can read variables of any group.
+
+If the filename is omitted, the variable is read
+from <basename>.<variable_name>.nc.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] out - Variable to be read.
+@param[in] filename - Name of the NetCDF file.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void ReadNetCDF(Workspace& ws, std::pair<Any_0, String>& out,
+                const std::pair<String, String>& filename) {
+  ReadNetCDF(out.first, out.second, filename.first, filename.second,
+             Var::verbosity(ws));
+}
 
 /*! Reads several old ArrayOfLineRecord ARTSCAT file
 
@@ -10470,62 +10452,111 @@ information.  Be careful setting the options!
 @param[in] basename - Path to the files
 @param[in] fmin - Minimum frequency of read lines (default: 0)
 @param[in] fmax - Maximum frequency of read lines (default: 1e99)
-@param[in] globalquantumnumbers - Global quantum number list (space-separated) (default: "")
-@param[in] localquantumnumbers - Local quantum number list (space-separated) (default: "")
-@param[in] ignore_missing - Ignores instead of throws if an *abs_species* is missing (default: 0)
-@param[in] normalization_option - Normalization option, see *abs_linesSetNormalization* (default: "None")
-@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring* (default: "None")
-@param[in] population_option - Population option, see *abs_linesSetPopulation* (default: "LTE")
-@param[in] lineshapetype_option - Lineshape option, see *abs_linesSetLineShapeType* (default: "VP")
-@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default: "None")
-@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default: 750e9)
-@param[in] linemixinglimit_value - Line mixing limit, see *abs_linesSetLinemixingLimit* (default: -1)
+@param[in] globalquantumnumbers - Global quantum number list (space-separated)
+(default: "")
+@param[in] localquantumnumbers - Local quantum number list (space-separated)
+(default: "")
+@param[in] ignore_missing - Ignores instead of throws if an *abs_species* is
+missing (default: 0)
+@param[in] normalization_option - Normalization option, see
+*abs_linesSetNormalization* (default: "None")
+@param[in] mirroring_option - Mirroring option, see *abs_linesSetMirroring*
+(default: "None")
+@param[in] population_option - Population option, see *abs_linesSetPopulation*
+(default: "LTE")
+@param[in] lineshapetype_option - Lineshape option, see
+*abs_linesSetLineShapeType* (default: "VP")
+@param[in] cutoff_option - Cutoff option, see *abs_linesSetCutoff* (default:
+"None")
+@param[in] cutoff_value - Cutoff value, see *abs_linesSetCutoff* (default:
+750e9)
+@param[in] linemixinglimit_value - Line mixing limit, see
+*abs_linesSetLinemixingLimit* (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ReadSplitARTSCAT(Workspace& ws,
-const String& basename,
-const Numeric& fmin=0,
-const Numeric& fmax=1e99,
-const String& globalquantumnumbers="",
-const String& localquantumnumbers="",
-const Index& ignore_missing=0,
-const String& normalization_option="None",
-const String& mirroring_option="None",
-const String& population_option="LTE",
-const String& lineshapetype_option="VP",
-const String& cutoff_option="None",
-const Numeric& cutoff_value=750e9,
-const Numeric& linemixinglimit_value=-1) {
-ReadSplitARTSCAT(Var::abs_lines(ws),
-Var::abs_species(ws),
-basename,
-fmin,
-fmax,
-globalquantumnumbers,
-localquantumnumbers,
-ignore_missing,
-normalization_option,
-mirroring_option,
-population_option,
-lineshapetype_option,
-cutoff_option,
-cutoff_value,
-linemixinglimit_value,
-Var::verbosity(ws));
+void ReadSplitARTSCAT(Workspace& ws, const String& basename,
+                      const Numeric& fmin = 0, const Numeric& fmax = 1e99,
+                      const String& globalquantumnumbers = "",
+                      const String& localquantumnumbers = "",
+                      const Index& ignore_missing = 0,
+                      const String& normalization_option = "None",
+                      const String& mirroring_option = "None",
+                      const String& population_option = "LTE",
+                      const String& lineshapetype_option = "VP",
+                      const String& cutoff_option = "None",
+                      const Numeric& cutoff_value = 750e9,
+                      const Numeric& linemixinglimit_value = -1) {
+  ReadSplitARTSCAT(Var::abs_lines(ws), Var::abs_species(ws), basename, fmin,
+                   fmax, globalquantumnumbers, localquantumnumbers,
+                   ignore_missing, normalization_option, mirroring_option,
+                   population_option, lineshapetype_option, cutoff_option,
+                   cutoff_value, linemixinglimit_value, Var::verbosity(ws));
 }
 
+/*! Reads a workspace variable from an XML file.
+
+This method can read variables of any group.
+
+If the filename is omitted, the variable is read
+from <basename>.<variable_name>.xml.
+If the given filename does not exist, this method will
+also look for files with an added .xml, .xml.gz and .gz extension
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] out - Variable to be read.
+@param[in] filename - Name of the XML file. (default: "")
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void ReadXML(Workspace& ws, std::pair<Any_0, String>& out,
+             const std::pair<String, String>& filename = {"", "filename"}) {
+  ReadXML(out.first, out.second, filename.first, filename.second,
+          Var::verbosity(ws));
+}
+
+/*! As *ReadXML*, but reads indexed file names.
+
+The variable is read from a file with name:
+   <filename>.<file_index>.xml.
+where <file_index> is the value of *file_index*.
+
+This means that *filename* shall here not include the .xml
+extension. Omitting filename works as for *ReadXML*.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] out - Workspace variable to be read.
+@param[in] filename - File name. See above. (default: "")
+@param[in] digits - Equalize the widths of all numbers by padding with zeros as
+necessary. 0 means no padding (default). (default: 0)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void ReadXMLIndexed(Workspace& ws, std::pair<Any_0, String>& out,
+                    const std::pair<String, String>& filename = {"",
+                                                                 "filename"},
+                    const std::pair<Index, String>& digits = {0, "digits"}) {
+  ReadXMLIndexed(out.first, out.second, Var::file_index(ws), filename.first,
+                 digits.first, filename.second, digits.second,
+                 Var::verbosity(ws));
+}
 
 /*! Reduces a larger class to a smaller class of same size.
 
 The Reduce command reduces all "1"-dimensions to nil.  Examples:
-	1) 1 Vector can be reduced to a Numeric
-	2) 2x1 Matrix can be reduced to 2 Vector
-	3) 1x3x1 Tensor3 can be reduced to 3 Vector
-	4) 1x1x1x1 Tensor4 can be reduced to a Numeric
-	5) 3x1x4x1x5 Tensor5 can only be reduced to 3x4x5 Tensor3
-	6) 1x1x1x1x2x3 Tensor6 can be reduced to 2x3 Matrix
-	7) 2x3x4x5x6x7x1 Tensor7 can be reduced to 2x3x4x5x6x7 Tensor6
+        1) 1 Vector can be reduced to a Numeric
+        2) 2x1 Matrix can be reduced to 2 Vector
+        3) 1x3x1 Tensor3 can be reduced to 3 Vector
+        4) 1x1x1x1 Tensor4 can be reduced to a Numeric
+        5) 3x1x4x1x5 Tensor5 can only be reduced to 3x4x5 Tensor3
+        6) 1x1x1x1x2x3 Tensor6 can be reduced to 2x3 Matrix
+        7) 2x3x4x5x6x7x1 Tensor7 can be reduced to 2x3x4x5x6x7 Tensor6
 And so on
 
 @author Oliver Lemke
@@ -10538,14 +10569,9 @@ And so on
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void Reduce(Workspace& ws,
-Any_0& o,
-const Any_1& i) {
-Reduce(o,
-i,
-Var::verbosity(ws));
+void Reduce(Workspace& ws, Any_0& o, const Any_1& i) {
+  Reduce(o, i, Var::verbosity(ws));
 }
-
 
 /*! Adds single scattering data and particle number density for
 individual scattering elements.
@@ -10563,16 +10589,12 @@ the current last existing scattering species in *scat_data*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ScatElementsPndAndScatAdd(Workspace& ws,
-const ArrayOfString& scat_data_files,
-const ArrayOfString& pnd_field_files) {
-ScatElementsPndAndScatAdd(Var::scat_data_raw(ws),
-Var::pnd_field_raw(ws),
-Var::atmosphere_dim(ws),
-scat_data_files,
-pnd_field_files,
-Var::verbosity(ws));
+                               const ArrayOfString& scat_data_files,
+                               const ArrayOfString& pnd_field_files) {
+  ScatElementsPndAndScatAdd(Var::scat_data_raw(ws), Var::pnd_field_raw(ws),
+                            Var::atmosphere_dim(ws), scat_data_files,
+                            pnd_field_files, Var::verbosity(ws));
 }
-
 
 /*! Allows to limit considered scattering elements according to size.
 
@@ -10590,32 +10612,25 @@ their naming).
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] species - Species on which to apply size selection.
 @param[in] sizeparam - Size parameter to apply for size selection.
-@param[in] sizemin - Minimum size [m] of the scattering elements to consider (default: 0.)
-@param[in] sizemax - Maximum size [m] of the scattering elements to consider (if negative, no max. limitation is applied). (default: -1.)
-@param[in] tolerance - Relative numerical tolerance of size limit values. (default: 1e-6)
+@param[in] sizemin - Minimum size [m] of the scattering elements to consider
+(default: 0.)
+@param[in] sizemax - Maximum size [m] of the scattering elements to consider (if
+negative, no max. limitation is applied). (default: -1.)
+@param[in] tolerance - Relative numerical tolerance of size limit values.
+(default: 1e-6)
 @param[in] delim - Delimiter string of *scat_species* elements. (default: "-")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ScatElementsSelect(Workspace& ws,
-const String& species,
-const String& sizeparam,
-const Numeric& sizemin=0.,
-const Numeric& sizemax=-1.,
-const Numeric& tolerance=1e-6,
-const String& delim="-") {
-ScatElementsSelect(Var::scat_data_raw(ws),
-Var::scat_meta(ws),
-Var::scat_species(ws),
-species,
-sizeparam,
-sizemin,
-sizemax,
-tolerance,
-delim,
-Var::verbosity(ws));
+void ScatElementsSelect(Workspace& ws, const String& species,
+                        const String& sizeparam, const Numeric& sizemin = 0.,
+                        const Numeric& sizemax = -1.,
+                        const Numeric& tolerance = 1e-6,
+                        const String& delim = "-") {
+  ScatElementsSelect(Var::scat_data_raw(ws), Var::scat_meta(ws),
+                     Var::scat_species(ws), species, sizeparam, sizemin,
+                     sizemax, tolerance, delim, Var::verbosity(ws));
 }
-
 
 /*! Appends scattering elements to *abs_species* including reading
 single scattering data and corresponding pnd field.
@@ -10635,20 +10650,14 @@ instance of species 'particles' to *abs_species*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ScatElementsToabs_speciesAdd(Workspace& ws,
-const ArrayOfString& scat_data_files,
-const ArrayOfString& pnd_field_files) {
-ScatElementsToabs_speciesAdd(Var::scat_data_raw(ws),
-Var::vmr_field_raw(ws),
-Var::abs_species(ws),
-Var::propmat_clearsky_agenda_checked(ws),
-Var::abs_xsec_agenda_checked(ws),
-Var::atmosphere_dim(ws),
-Var::f_grid(ws),
-scat_data_files,
-pnd_field_files,
-Var::verbosity(ws));
+                                  const ArrayOfString& scat_data_files,
+                                  const ArrayOfString& pnd_field_files) {
+  ScatElementsToabs_speciesAdd(
+      Var::scat_data_raw(ws), Var::vmr_field_raw(ws), Var::abs_species(ws),
+      Var::propmat_clearsky_agenda_checked(ws),
+      Var::abs_xsec_agenda_checked(ws), Var::atmosphere_dim(ws),
+      Var::f_grid(ws), scat_data_files, pnd_field_files, Var::verbosity(ws));
 }
-
 
 /*! Extends valid temperature range of single scattering data.
 
@@ -10679,32 +10688,30 @@ of *scat_species*. If no *species* is specified, the method is
 applied on the current last existing scattering species in
 *scat_data*. Through the latter the method can be applied for cases
 when *scat_species* is not defined (e.g. when *pnd_field* data is
-created externally instead of from hydrometeor fields 
+created externally instead of from hydrometeor fields
 
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] species - Scattering species to act on (see WSM description for details). (default: "")
-@param[in] scat_species_delim - Delimiter string of *scat_species* elements. (default: "-")
-@param[in] T_low - Temperature grid extension point at low temperature limit. (default: -1.)
-@param[in] T_high - Temperature grid extension point at high temperature limit. (default: -1.)
+@param[in] species - Scattering species to act on (see WSM description for
+details). (default: "")
+@param[in] scat_species_delim - Delimiter string of *scat_species* elements.
+(default: "-")
+@param[in] T_low - Temperature grid extension point at low temperature limit.
+(default: -1.)
+@param[in] T_high - Temperature grid extension point at high temperature limit.
+(default: -1.)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ScatSpeciesExtendTemperature(Workspace& ws,
-const String& species="",
-const String& scat_species_delim="-",
-const Numeric& T_low=-1.,
-const Numeric& T_high=-1.) {
-ScatSpeciesExtendTemperature(Var::scat_data_raw(ws),
-Var::scat_species(ws),
-species,
-scat_species_delim,
-T_low,
-T_high,
-Var::verbosity(ws));
+void ScatSpeciesExtendTemperature(Workspace& ws, const String& species = "",
+                                  const String& scat_species_delim = "-",
+                                  const Numeric& T_low = -1.,
+                                  const Numeric& T_high = -1.) {
+  ScatSpeciesExtendTemperature(Var::scat_data_raw(ws), Var::scat_species(ws),
+                               species, scat_species_delim, T_low, T_high,
+                               Var::verbosity(ws));
 }
-
 
 /*! Initializes the scattering species related data variables.
 
@@ -10724,14 +10731,10 @@ said variable, e.g. before *ScatSpeciesPndAndScatAdd*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ScatSpeciesInit(Workspace& ws) {
-ScatSpeciesInit(Var::scat_species(ws),
-Var::scat_data_raw(ws),
-Var::scat_meta(ws),
-Var::scat_data_checked(ws),
-Var::pnd_field_raw(ws),
-Var::verbosity(ws));
+  ScatSpeciesInit(Var::scat_species(ws), Var::scat_data_raw(ws),
+                  Var::scat_meta(ws), Var::scat_data_checked(ws),
+                  Var::pnd_field_raw(ws), Var::verbosity(ws));
 }
-
 
 /*! Merges single scattering data of all scattering elements into one
 element of bulk properties.
@@ -10772,20 +10775,12 @@ This method can only be used with a 1D atmosphere.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ScatSpeciesMerge(Workspace& ws) {
-ScatSpeciesMerge(Var::pnd_field(ws),
-Var::scat_data(ws),
-Var::scat_meta(ws),
-Var::scat_species(ws),
-Var::cloudbox_checked(ws),
-Var::atmosphere_dim(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::z_surface(ws),
-Var::verbosity(ws));
+  ScatSpeciesMerge(Var::pnd_field(ws), Var::scat_data(ws), Var::scat_meta(ws),
+                   Var::scat_species(ws), Var::cloudbox_checked(ws),
+                   Var::atmosphere_dim(ws), Var::cloudbox_on(ws),
+                   Var::cloudbox_limits(ws), Var::t_field(ws), Var::z_field(ws),
+                   Var::z_surface(ws), Var::verbosity(ws));
 }
-
 
 /*! Adds single scattering data and particle number densities for one
 scattering species.
@@ -10810,22 +10805,20 @@ correspond to the order of the pnd-fields, stored in the variable
 @author Claudia Emde, Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] scat_data_files - Array of names of files containing the single scattering data.
-@param[in] pnd_fieldarray_file - Name of file holding the corresponding array of pnd_field data.
+@param[in] scat_data_files - Array of names of files containing the single
+scattering data.
+@param[in] pnd_fieldarray_file - Name of file holding the corresponding array of
+pnd_field data.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ScatSpeciesPndAndScatAdd(Workspace& ws,
-const ArrayOfString& scat_data_files,
-const String& pnd_fieldarray_file) {
-ScatSpeciesPndAndScatAdd(Var::scat_data_raw(ws),
-Var::pnd_field_raw(ws),
-Var::atmosphere_dim(ws),
-scat_data_files,
-pnd_fieldarray_file,
-Var::verbosity(ws));
+                              const ArrayOfString& scat_data_files,
+                              const String& pnd_fieldarray_file) {
+  ScatSpeciesPndAndScatAdd(Var::scat_data_raw(ws), Var::pnd_field_raw(ws),
+                           Var::atmosphere_dim(ws), scat_data_files,
+                           pnd_fieldarray_file, Var::verbosity(ws));
 }
-
 
 /*! Reads single scattering data and scattering meta data for one
 scattering species.
@@ -10857,17 +10850,14 @@ exactly correspond to the order of the scattering meta data files.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ScatSpeciesScatAndMetaRead(Workspace& ws,
-const ArrayOfString& scat_data_files) {
-ScatSpeciesScatAndMetaRead(Var::scat_data_raw(ws),
-Var::scat_meta(ws),
-scat_data_files,
-Var::verbosity(ws));
+                                const ArrayOfString& scat_data_files) {
+  ScatSpeciesScatAndMetaRead(Var::scat_data_raw(ws), Var::scat_meta(ws),
+                             scat_data_files, Var::verbosity(ws));
 }
-
 
 /*! Derives size and mass information for a scattering species.
 This method assumes that the mass-size relationship can described
-by *scat_species_a* and *scat_species_b*. See documentation of 
+by *scat_species_a* and *scat_species_b*. See documentation of
 *scat_species_a* for details.
 
 The quantity to be used as size descriptor is here denoted as x, and
@@ -10890,32 +10880,29 @@ inside [x_fit_start,x_fit_end].
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] species_index - Take data from scattering species of this index (0-based) in *scat_meta*.
+@param[in] species_index - Take data from scattering species of this index
+(0-based) in *scat_meta*.
 @param[in] x_unit - Unit for size grid, allowed options listed above.
-@param[in] x_fit_start - Smallest size to consider in fit to determine a and b. (default: 0)
-@param[in] x_fit_end - Largest size to consider in fit to determine a and b. (default: 1e9)
-@param[in] do_only_x - A flag to deactivate calculation of a and b, to possibly save some time. The a and b parameters are then set to -1.Default is to calculate a and b. (default: 0)
+@param[in] x_fit_start - Smallest size to consider in fit to determine a and b.
+(default: 0)
+@param[in] x_fit_end - Largest size to consider in fit to determine a and b.
+(default: 1e9)
+@param[in] do_only_x - A flag to deactivate calculation of a and b, to possibly
+save some time. The a and b parameters are then set to -1.Default is to
+calculate a and b. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ScatSpeciesSizeMassInfo(Workspace& ws,
-const Index& species_index,
-const String& x_unit,
-const Numeric& x_fit_start=0,
-const Numeric& x_fit_end=1e9,
-const Index& do_only_x=0) {
-ScatSpeciesSizeMassInfo(Var::scat_species_x(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-Var::scat_meta(ws),
-species_index,
-x_unit,
-x_fit_start,
-x_fit_end,
-do_only_x,
-Var::verbosity(ws));
+void ScatSpeciesSizeMassInfo(Workspace& ws, const Index& species_index,
+                             const String& x_unit,
+                             const Numeric& x_fit_start = 0,
+                             const Numeric& x_fit_end = 1e9,
+                             const Index& do_only_x = 0) {
+  ScatSpeciesSizeMassInfo(Var::scat_species_x(ws), Var::scat_species_a(ws),
+                          Var::scat_species_b(ws), Var::scat_meta(ws),
+                          species_index, x_unit, x_fit_start, x_fit_end,
+                          do_only_x, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group ScatteringMetaData.
 
@@ -10928,12 +10915,44 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ScatteringMetaDataCreate(Workspace& ws,
-ScatteringMetaData& out) {
-ScatteringMetaDataCreate(out,
-Var::verbosity(ws));
+void ScatteringMetaDataCreate(Workspace& ws, ScatteringMetaData& out) {
+  ScatteringMetaDataCreate(out, Var::verbosity(ws));
 }
 
+/*! Method to select some elements from one array and copy them to
+a new array. (Works also for vectors.)
+
+This works also for higher dimensional objects, where the selection is
+always performed in the first dimension.
+
+If needleindexes is set to [-1], all elements are copied.
+For example:
+
+Select(y,x,[0,3])
+
+will select the first and fourth row of matrix x and copy them to the
+output matrix y.
+
+Note that it is even safe to use this method if needles and haystack
+are the same variable.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] needles - Selected elements. Must have the same variable type as
+haystack.
+@param[in] haystack - Variable to select from. May be the same variable as
+needles.
+@param[in] needleindexes - The elements to select (zero based indexing, as
+always.)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0, typename Any_1>
+void Select(Workspace& ws, Any_0& needles, const Any_1& haystack,
+            const ArrayOfIndex& needleindexes) {
+  Select(needles, haystack, needleindexes, Var::verbosity(ws));
+}
 
 /*! Change the number of threads used by ARTS.
 
@@ -10944,12 +10963,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void SetNumberOfThreads(Workspace& ws,
-const Index& nthreads) {
-SetNumberOfThreads(nthreads,
-Var::verbosity(ws));
+void SetNumberOfThreads(Workspace& ws, const Index& nthreads) {
+  SetNumberOfThreads(nthreads, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group SingleScatteringData.
 
@@ -10962,12 +10978,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void SingleScatteringDataCreate(Workspace& ws,
-SingleScatteringData& out) {
-SingleScatteringDataCreate(out,
-Var::verbosity(ws));
+void SingleScatteringDataCreate(Workspace& ws, SingleScatteringData& out) {
+  SingleScatteringDataCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Sleeps for a number of seconds
 
@@ -10978,12 +10991,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Sleep(Workspace& ws,
-const Numeric& time) {
-Sleep(time,
-Var::verbosity(ws));
+void Sleep(Workspace& ws, const Numeric& time) {
+  Sleep(time, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Sparse.
 
@@ -10996,12 +11006,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void SparseCreate(Workspace& ws,
-Sparse& out) {
-SparseCreate(out,
-Var::verbosity(ws));
+void SparseCreate(Workspace& ws, Sparse& out) {
+  SparseCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Returns a sparse dentity matrix.
 
@@ -11019,16 +11026,10 @@ value*I.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void SparseMatrixIdentity(Workspace& ws,
-Sparse& out,
-const Index& n,
-const Numeric& value=1) {
-SparseMatrixIdentity(out,
-n,
-value,
-Var::verbosity(ws));
+void SparseMatrixIdentity(Workspace& ws, Sparse& out, const Index& n,
+                          const Numeric& value = 1) {
+  SparseMatrixIdentity(out, n, value, Var::verbosity(ws));
 }
-
 
 /*! Multiplies a Sparse with another Sparse, result stored in Sparse.
 
@@ -11043,16 +11044,10 @@ Makes the calculation: out = m1 * m2
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void SparseSparseMultiply(Workspace& ws,
-Sparse& out,
-const Sparse& m1,
-const Sparse& m2) {
-SparseSparseMultiply(out,
-m1,
-m2,
-Var::verbosity(ws));
+void SparseSparseMultiply(Workspace& ws, Sparse& out, const Sparse& m1,
+                          const Sparse& m2) {
+  SparseSparseMultiply(out, m1, m2, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group SpeciesAuxData.
 
@@ -11065,12 +11060,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void SpeciesAuxDataCreate(Workspace& ws,
-SpeciesAuxData& out) {
-SpeciesAuxDataCreate(out,
-Var::verbosity(ws));
+void SpeciesAuxDataCreate(Workspace& ws, SpeciesAuxData& out) {
+  SpeciesAuxDataCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group StokesVector.
 
@@ -11083,12 +11075,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void StokesVectorCreate(Workspace& ws,
-StokesVector& out) {
-StokesVectorCreate(out,
-Var::verbosity(ws));
+void StokesVectorCreate(Workspace& ws, StokesVector& out) {
+  StokesVectorCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group String.
 
@@ -11101,12 +11090,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void StringCreate(Workspace& ws,
-String& out) {
-StringCreate(out,
-Var::verbosity(ws));
+void StringCreate(Workspace& ws, String& out) {
+  StringCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Concatenate two or more strings.
 
@@ -11130,32 +11116,15 @@ in the input list. Up to 10 strings can be concatenated at once.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void StringJoin(Workspace& ws,
-String& out,
-const String& in1,
-const String& in2,
-const String& in3="",
-const String& in4="",
-const String& in5="",
-const String& in6="",
-const String& in7="",
-const String& in8="",
-const String& in9="",
-const String& in10="") {
-StringJoin(out,
-in1,
-in2,
-in3,
-in4,
-in5,
-in6,
-in7,
-in8,
-in9,
-in10,
-Var::verbosity(ws));
+void StringJoin(Workspace& ws, String& out, const String& in1,
+                const String& in2, const String& in3 = "",
+                const String& in4 = "", const String& in5 = "",
+                const String& in6 = "", const String& in7 = "",
+                const String& in8 = "", const String& in9 = "",
+                const String& in10 = "") {
+  StringJoin(out, in1, in2, in3, in4, in5, in6, in7, in8, in9, in10,
+             Var::verbosity(ws));
 }
-
 
 /*! Sets a String to the given text string.
 
@@ -11167,14 +11136,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void StringSet(Workspace& ws,
-String& out,
-const String& text) {
-StringSet(out,
-text,
-Var::verbosity(ws));
+void StringSet(Workspace& ws, String& out, const String& text) {
+  StringSet(out, text, Var::verbosity(ws));
 }
-
 
 /*! Dummy method for *iy_surface_agenda*.
 
@@ -11191,18 +11155,12 @@ the agenda.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void SurfaceDummy(Workspace& ws) {
-SurfaceDummy(Var::dsurface_rmatrix_dx(ws),
-Var::dsurface_emission_dx(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::surface_props_data(ws),
-Var::surface_props_names(ws),
-Var::dsurface_names(ws),
-Var::jacobian_do(ws),
-Var::verbosity(ws));
+  SurfaceDummy(Var::dsurface_rmatrix_dx(ws), Var::dsurface_emission_dx(ws),
+               Var::atmosphere_dim(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+               Var::surface_props_data(ws), Var::surface_props_names(ws),
+               Var::dsurface_names(ws), Var::jacobian_do(ws),
+               Var::verbosity(ws));
 }
-
 
 /*! FASTEM sea surface microwave emissivity parametrization.
 
@@ -11217,35 +11175,23 @@ For some details and comments see *FastemStandAlone* and *surfaceFastem*.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] transmittance - Transmittance along path of downwelling radiation. A vector with the same length as *f_grid*.
+@param[in] transmittance - Transmittance along path of downwelling radiation. A
+vector with the same length as *f_grid*.
 @param[in] fastem_version - The version of FASTEM to use. (default: 6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void SurfaceFastem(Workspace& ws,
-const Vector& transmittance,
-const Index& fastem_version=6) {
-SurfaceFastem(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::dsurface_rmatrix_dx(ws),
-Var::surface_emission(ws),
-Var::dsurface_emission_dx(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::f_grid(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::surface_props_data(ws),
-Var::surface_props_names(ws),
-Var::dsurface_names(ws),
-Var::jacobian_do(ws),
-transmittance,
-fastem_version,
-Var::verbosity(ws));
+void SurfaceFastem(Workspace& ws, const Vector& transmittance,
+                   const Index& fastem_version = 6) {
+  SurfaceFastem(Var::surface_los(ws), Var::surface_rmatrix(ws),
+                Var::dsurface_rmatrix_dx(ws), Var::surface_emission(ws),
+                Var::dsurface_emission_dx(ws), Var::stokes_dim(ws),
+                Var::atmosphere_dim(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                Var::f_grid(ws), Var::rtp_pos(ws), Var::rtp_los(ws),
+                Var::surface_props_data(ws), Var::surface_props_names(ws),
+                Var::dsurface_names(ws), Var::jacobian_do(ws), transmittance,
+                fastem_version, Var::verbosity(ws));
 }
-
 
 /*! TESSEM sea surface microwave emissivity parametrization.
 
@@ -11276,27 +11222,16 @@ The model itself is represented by the neural networks in
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void SurfaceTessem(Workspace& ws) {
-SurfaceTessem(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::dsurface_rmatrix_dx(ws),
-Var::surface_emission(ws),
-Var::dsurface_emission_dx(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::f_grid(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::tessem_neth(ws),
-Var::tessem_netv(ws),
-Var::surface_props_data(ws),
-Var::surface_props_names(ws),
-Var::dsurface_names(ws),
-Var::jacobian_do(ws),
-Var::verbosity(ws));
+  SurfaceTessem(Var::surface_los(ws), Var::surface_rmatrix(ws),
+                Var::dsurface_rmatrix_dx(ws), Var::surface_emission(ws),
+                Var::dsurface_emission_dx(ws), Var::stokes_dim(ws),
+                Var::atmosphere_dim(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                Var::f_grid(ws), Var::rtp_pos(ws), Var::rtp_los(ws),
+                Var::tessem_neth(ws), Var::tessem_netv(ws),
+                Var::surface_props_data(ws), Var::surface_props_names(ws),
+                Var::dsurface_names(ws), Var::jacobian_do(ws),
+                Var::verbosity(ws));
 }
-
 
 /*! T-Matrix validation test.
 
@@ -11310,10 +11245,7 @@ Should give the same as running the tmatrix_lp executable in
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TMatrixTest(Workspace& ws) {
-TMatrixTest(Var::verbosity(ws));
-}
-
+void TMatrixTest(Workspace& ws) { TMatrixTest(Var::verbosity(ws)); }
 
 /*! Finds the tangent point of a propagation path.
 
@@ -11333,13 +11265,9 @@ vector is set to NaN.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TangentPointExtract(Workspace& ws,
-Vector& tan_pos) {
-TangentPointExtract(tan_pos,
-Var::ppath(ws),
-Var::verbosity(ws));
+void TangentPointExtract(Workspace& ws, Vector& tan_pos) {
+  TangentPointExtract(tan_pos, Var::ppath(ws), Var::verbosity(ws));
 }
-
 
 /*! Prints information about the tangent point of a propagation path.
 
@@ -11355,13 +11283,9 @@ with a zenith angle of 90 deg.)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TangentPointPrint(Workspace& ws,
-const Index& level=1) {
-TangentPointPrint(Var::ppath(ws),
-level,
-Var::verbosity(ws));
+void TangentPointPrint(Workspace& ws, const Index& level = 1) {
+  TangentPointPrint(Var::ppath(ws), level, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group TelsemAtlas.
 
@@ -11374,12 +11298,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TelsemAtlasCreate(Workspace& ws,
-TelsemAtlas& out) {
-TelsemAtlasCreate(out,
-Var::verbosity(ws));
+void TelsemAtlasCreate(Workspace& ws, TelsemAtlas& out) {
+  TelsemAtlasCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Adds a scalar value to all elements of a tensor3.
 
@@ -11395,16 +11316,10 @@ variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor3AddScalar(Workspace& ws,
-Tensor3& out,
-const Tensor3& in,
-const Numeric& value) {
-Tensor3AddScalar(out,
-in,
-value,
-Var::verbosity(ws));
+void Tensor3AddScalar(Workspace& ws, Tensor3& out, const Tensor3& in,
+                      const Numeric& value) {
+  Tensor3AddScalar(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Tensor3.
 
@@ -11417,12 +11332,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor3Create(Workspace& ws,
-Tensor3& out) {
-Tensor3Create(out,
-Var::verbosity(ws));
+void Tensor3Create(Workspace& ws, Tensor3& out) {
+  Tensor3Create(out, Var::verbosity(ws));
 }
-
 
 /*! Extracts a Tensor3 from a Tensor4.
 
@@ -11440,18 +11352,10 @@ Higher order equivalent of *VectorExtractFromMatrix*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor3ExtractFromTensor4(Workspace& ws,
-Tensor3& out,
-const Tensor4& in,
-const Index& i,
-const String& direction) {
-Tensor3ExtractFromTensor4(out,
-in,
-i,
-direction,
-Var::verbosity(ws));
+void Tensor3ExtractFromTensor4(Workspace& ws, Tensor3& out, const Tensor4& in,
+                               const Index& i, const String& direction) {
+  Tensor3ExtractFromTensor4(out, in, i, direction, Var::verbosity(ws));
 }
-
 
 /*! Scales all elements of a tensor with the specified value.
 
@@ -11467,16 +11371,10 @@ variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor3Scale(Workspace& ws,
-Tensor3& out,
-const Tensor3& in,
-const Numeric& value) {
-Tensor3Scale(out,
-in,
-value,
-Var::verbosity(ws));
+void Tensor3Scale(Workspace& ws, Tensor3& out, const Tensor3& in,
+                  const Numeric& value) {
+  Tensor3Scale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a tensor and sets all elements to the specified value.
 
@@ -11490,17 +11388,10 @@ The size is determined by *ncols*, *nrows* etc.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor3SetConstant(Workspace& ws,
-Tensor3& out,
-const Numeric& value) {
-Tensor3SetConstant(out,
-Var::npages(ws),
-Var::nrows(ws),
-Var::ncols(ws),
-value,
-Var::verbosity(ws));
+void Tensor3SetConstant(Workspace& ws, Tensor3& out, const Numeric& value) {
+  Tensor3SetConstant(out, Var::npages(ws), Var::nrows(ws), Var::ncols(ws),
+                     value, Var::verbosity(ws));
 }
-
 
 /*! Adds a scalar value to all elements of a tensor4.
 
@@ -11516,16 +11407,10 @@ variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor4AddScalar(Workspace& ws,
-Tensor4& out,
-const Tensor4& in,
-const Numeric& value) {
-Tensor4AddScalar(out,
-in,
-value,
-Var::verbosity(ws));
+void Tensor4AddScalar(Workspace& ws, Tensor4& out, const Tensor4& in,
+                      const Numeric& value) {
+  Tensor4AddScalar(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Tensor4.
 
@@ -11538,12 +11423,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor4Create(Workspace& ws,
-Tensor4& out) {
-Tensor4Create(out,
-Var::verbosity(ws));
+void Tensor4Create(Workspace& ws, Tensor4& out) {
+  Tensor4Create(out, Var::verbosity(ws));
 }
-
 
 /*! Scales all elements of a tensor with the specified value.
 
@@ -11559,16 +11441,10 @@ variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor4Scale(Workspace& ws,
-Tensor4& out,
-const Tensor4& in,
-const Numeric& value) {
-Tensor4Scale(out,
-in,
-value,
-Var::verbosity(ws));
+void Tensor4Scale(Workspace& ws, Tensor4& out, const Tensor4& in,
+                  const Numeric& value) {
+  Tensor4Scale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a tensor and sets all elements to the specified value.
 
@@ -11582,18 +11458,10 @@ The size is determined by *ncols*, *nrows* etc.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor4SetConstant(Workspace& ws,
-Tensor4& out,
-const Numeric& value) {
-Tensor4SetConstant(out,
-Var::nbooks(ws),
-Var::npages(ws),
-Var::nrows(ws),
-Var::ncols(ws),
-value,
-Var::verbosity(ws));
+void Tensor4SetConstant(Workspace& ws, Tensor4& out, const Numeric& value) {
+  Tensor4SetConstant(out, Var::nbooks(ws), Var::npages(ws), Var::nrows(ws),
+                     Var::ncols(ws), value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Tensor5.
 
@@ -11606,12 +11474,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor5Create(Workspace& ws,
-Tensor5& out) {
-Tensor5Create(out,
-Var::verbosity(ws));
+void Tensor5Create(Workspace& ws, Tensor5& out) {
+  Tensor5Create(out, Var::verbosity(ws));
 }
-
 
 /*! Scales all elements of a tensor with the specified value.
 
@@ -11627,16 +11492,10 @@ variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor5Scale(Workspace& ws,
-Tensor5& out,
-const Tensor5& in,
-const Numeric& value) {
-Tensor5Scale(out,
-in,
-value,
-Var::verbosity(ws));
+void Tensor5Scale(Workspace& ws, Tensor5& out, const Tensor5& in,
+                  const Numeric& value) {
+  Tensor5Scale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a tensor and sets all elements to the specified value.
 
@@ -11650,19 +11509,10 @@ The size is determined by *ncols*, *nrows* etc.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor5SetConstant(Workspace& ws,
-Tensor5& out,
-const Numeric& value) {
-Tensor5SetConstant(out,
-Var::nshelves(ws),
-Var::nbooks(ws),
-Var::npages(ws),
-Var::nrows(ws),
-Var::ncols(ws),
-value,
-Var::verbosity(ws));
+void Tensor5SetConstant(Workspace& ws, Tensor5& out, const Numeric& value) {
+  Tensor5SetConstant(out, Var::nshelves(ws), Var::nbooks(ws), Var::npages(ws),
+                     Var::nrows(ws), Var::ncols(ws), value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Tensor6.
 
@@ -11675,12 +11525,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor6Create(Workspace& ws,
-Tensor6& out) {
-Tensor6Create(out,
-Var::verbosity(ws));
+void Tensor6Create(Workspace& ws, Tensor6& out) {
+  Tensor6Create(out, Var::verbosity(ws));
 }
-
 
 /*! Scales all elements of a tensor with the specified value.
 
@@ -11696,16 +11543,10 @@ variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor6Scale(Workspace& ws,
-Tensor6& out,
-const Tensor6& in,
-const Numeric& value) {
-Tensor6Scale(out,
-in,
-value,
-Var::verbosity(ws));
+void Tensor6Scale(Workspace& ws, Tensor6& out, const Tensor6& in,
+                  const Numeric& value) {
+  Tensor6Scale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a tensor and sets all elements to the specified value.
 
@@ -11719,20 +11560,11 @@ The size is determined by *ncols*, *nrows* etc.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor6SetConstant(Workspace& ws,
-Tensor6& out,
-const Numeric& value) {
-Tensor6SetConstant(out,
-Var::nvitrines(ws),
-Var::nshelves(ws),
-Var::nbooks(ws),
-Var::npages(ws),
-Var::nrows(ws),
-Var::ncols(ws),
-value,
-Var::verbosity(ws));
+void Tensor6SetConstant(Workspace& ws, Tensor6& out, const Numeric& value) {
+  Tensor6SetConstant(out, Var::nvitrines(ws), Var::nshelves(ws),
+                     Var::nbooks(ws), Var::npages(ws), Var::nrows(ws),
+                     Var::ncols(ws), value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Tensor7.
 
@@ -11745,12 +11577,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor7Create(Workspace& ws,
-Tensor7& out) {
-Tensor7Create(out,
-Var::verbosity(ws));
+void Tensor7Create(Workspace& ws, Tensor7& out) {
+  Tensor7Create(out, Var::verbosity(ws));
 }
-
 
 /*! Scales all elements of a tensor with the specified value.
 
@@ -11766,16 +11595,10 @@ variable.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor7Scale(Workspace& ws,
-Tensor7& out,
-const Tensor7& in,
-const Numeric& value) {
-Tensor7Scale(out,
-in,
-value,
-Var::verbosity(ws));
+void Tensor7Scale(Workspace& ws, Tensor7& out, const Tensor7& in,
+                  const Numeric& value) {
+  Tensor7Scale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a tensor and sets all elements to the specified value.
 
@@ -11789,21 +11612,11 @@ The size is determined by *ncols*, *nrows* etc.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Tensor7SetConstant(Workspace& ws,
-Tensor7& out,
-const Numeric& value) {
-Tensor7SetConstant(out,
-Var::nlibraries(ws),
-Var::nvitrines(ws),
-Var::nshelves(ws),
-Var::nbooks(ws),
-Var::npages(ws),
-Var::nrows(ws),
-Var::ncols(ws),
-value,
-Var::verbosity(ws));
+void Tensor7SetConstant(Workspace& ws, Tensor7& out, const Numeric& value) {
+  Tensor7SetConstant(out, Var::nlibraries(ws), Var::nvitrines(ws),
+                     Var::nshelves(ws), Var::nbooks(ws), Var::npages(ws),
+                     Var::nrows(ws), Var::ncols(ws), value, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group TessemNN.
 
@@ -11816,12 +11629,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TessemNNCreate(Workspace& ws,
-TessemNN& out) {
-TessemNNCreate(out,
-Var::verbosity(ws));
+void TessemNNCreate(Workspace& ws, TessemNN& out) {
+  TessemNNCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Reads the initialization data for the TESSEM NeuralNet from an ASCII file.
 
@@ -11829,18 +11639,15 @@ Var::verbosity(ws));
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[out] tessem_nn - Tessem NeuralNet configuration.
-@param[in] filename - NeuralNet parameters file as provided in the TESSEM 2 distribution.
+@param[in] filename - NeuralNet parameters file as provided in the TESSEM 2
+distribution.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TessemNNReadAscii(Workspace& ws,
-TessemNN& tessem_nn,
-const String& filename) {
-TessemNNReadAscii(tessem_nn,
-filename,
-Var::verbosity(ws));
+void TessemNNReadAscii(Workspace& ws, TessemNN& tessem_nn,
+                       const String& filename) {
+  TessemNNReadAscii(tessem_nn, filename, Var::verbosity(ws));
 }
-
 
 /*! A dummy method that can be used for test purposes.
 
@@ -11855,10 +11662,7 @@ something out quickly.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void Test(Workspace& ws) {
-Test(Var::verbosity(ws));
-}
-
+void Test(Workspace& ws) { Test(Var::verbosity(ws)); }
 
 /*! A method that is used for the TestArrayOfAgenda test case.
 
@@ -11869,14 +11673,9 @@ Test(Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TestArrayOfAgenda(Workspace& ws,
-const Index& index=0) {
-TestArrayOfAgenda(ws,
-Var::test_agenda_array(ws),
-index,
-Var::verbosity(ws));
+void TestArrayOfAgenda(Workspace& ws, const Index& index = 0) {
+  TestArrayOfAgenda(ws, Var::test_agenda_array(ws), index, Var::verbosity(ws));
 }
-
 
 /*! Example method for TESSEM2.
 
@@ -11899,16 +11698,10 @@ from the Tessem 2 distribution, the input Vector should contain
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TestTessem(Workspace& ws,
-Vector& outvalues,
-const TessemNN& net,
-const Vector& invalues) {
-TestTessem(outvalues,
-net,
-invalues,
-Var::verbosity(ws));
+void TestTessem(Workspace& ws, Vector& outvalues, const TessemNN& net,
+                const Vector& invalues) {
+  TestTessem(outvalues, net, invalues, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Time.
 
@@ -11921,12 +11714,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TimeCreate(Workspace& ws,
-Time& out) {
-TimeCreate(out,
-Var::verbosity(ws));
+void TimeCreate(Workspace& ws, Time& out) {
+  TimeCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Timer.
 
@@ -11939,12 +11729,30 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TimerCreate(Workspace& ws,
-Timer& out) {
-TimerCreate(out,
-Var::verbosity(ws));
+void TimerCreate(Workspace& ws, Timer& out) {
+  TimerCreate(out, Var::verbosity(ws));
 }
 
+/*! As *Ignore* but for agenda output.
+
+This method is handy for use in agendas in order to suppress
+warnings about not-produced output workspace variables.
+
+What it does, in case the variable is initialized already, is:
+Nothing!
+In case the variable is not yet initialized, it is set to NaN.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] in - Variable to do nothing with.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void Touch(Workspace& ws, Any_0& in) {
+  Touch(in, Var::verbosity(ws));
+}
 
 /*! Creates a variable of group TransmissionMatrix.
 
@@ -11957,12 +11765,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void TransmissionMatrixCreate(Workspace& ws,
-TransmissionMatrix& out) {
-TransmissionMatrixCreate(out,
-Var::verbosity(ws));
+void TransmissionMatrixCreate(Workspace& ws, TransmissionMatrix& out) {
+  TransmissionMatrixCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Adds a scalar to all elements of a vector.
 
@@ -11977,16 +11782,10 @@ The result can either be stored in the same or another vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorAddScalar(Workspace& ws,
-Vector& out,
-const Vector& in,
-const Numeric& value) {
-VectorAddScalar(out,
-in,
-value,
-Var::verbosity(ws));
+void VectorAddScalar(Workspace& ws, Vector& out, const Vector& in,
+                     const Numeric& value) {
+  VectorAddScalar(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Element-wise addition of two vectors.
 
@@ -12007,16 +11806,10 @@ the same WSV as any of the the other vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorAddVector(Workspace& ws,
-Vector& c,
-const Vector& a,
-const Vector& b) {
-VectorAddVector(c,
-a,
-b,
-Var::verbosity(ws));
+void VectorAddVector(Workspace& ws, Vector& c, const Vector& a,
+                     const Vector& b) {
+  VectorAddVector(c, a, b, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Vector.
 
@@ -12029,12 +11822,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorCreate(Workspace& ws,
-Vector& out) {
-VectorCreate(out,
-Var::verbosity(ws));
+void VectorCreate(Workspace& ws, Vector& out) {
+  VectorCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Keeps only values of a vector inside the specified range.
 
@@ -12053,18 +11843,11 @@ The result can either be stored in the same or another vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorCrop(Workspace& ws,
-Vector& out,
-const Vector& in,
-const Numeric& min_value=-99e99,
-const Numeric& max_value=99e99) {
-VectorCrop(out,
-in,
-min_value,
-max_value,
-Var::verbosity(ws));
+void VectorCrop(Workspace& ws, Vector& out, const Vector& in,
+                const Numeric& min_value = -99e99,
+                const Numeric& max_value = 99e99) {
+  VectorCrop(out, in, min_value, max_value, Var::verbosity(ws));
 }
-
 
 /*! Extracts a Vector from a Matrix.
 
@@ -12081,18 +11864,10 @@ to create output Vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorExtractFromMatrix(Workspace& ws,
-Vector& out,
-const Matrix& in,
-const Index& i,
-const String& direction) {
-VectorExtractFromMatrix(out,
-in,
-i,
-direction,
-Var::verbosity(ws));
+void VectorExtractFromMatrix(Workspace& ws, Vector& out, const Matrix& in,
+                             const Index& i, const String& direction) {
+  VectorExtractFromMatrix(out, in, i, direction, Var::verbosity(ws));
 }
-
 
 /*! Flips a vector.
 
@@ -12107,14 +11882,9 @@ either be stored in the same or another vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorFlip(Workspace& ws,
-Vector& out,
-const Vector& in) {
-VectorFlip(out,
-in,
-Var::verbosity(ws));
+void VectorFlip(Workspace& ws, Vector& out, const Vector& in) {
+  VectorFlip(out, in, Var::verbosity(ws));
 }
-
 
 /*! Insert some additional points into a grid.
 
@@ -12145,16 +11915,10 @@ Generic input:
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorInsertGridPoints(Workspace& ws,
-Vector& out,
-const Vector& in,
-const Vector& points) {
-VectorInsertGridPoints(out,
-in,
-points,
-Var::verbosity(ws));
+void VectorInsertGridPoints(Workspace& ws, Vector& out, const Vector& in,
+                            const Vector& points) {
+  VectorInsertGridPoints(out, in, points, Var::verbosity(ws));
 }
-
 
 /*! Initializes a vector with linear spacing.
 
@@ -12163,7 +11927,7 @@ equals always the step value, but the last value can deviate from
 the stop value. *step* can be both positive and negative.
 
 The created vector is [start, start+step, start+2*step, ...]
- 
+
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
@@ -12174,23 +11938,15 @@ The created vector is [start, start+step, start+2*step, ...]
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorLinSpace(Workspace& ws,
-Vector& out,
-const Numeric& start,
-const Numeric& stop,
-const Numeric& step) {
-VectorLinSpace(out,
-start,
-stop,
-step,
-Var::verbosity(ws));
+void VectorLinSpace(Workspace& ws, Vector& out, const Numeric& start,
+                    const Numeric& stop, const Numeric& step) {
+  VectorLinSpace(out, start, stop, step, Var::verbosity(ws));
 }
-
 
 /*! Initializes a vector with logarithmic spacing.
 
 The first element equals always the start value, and the spacing
-equals always the step value, but note that the last value can 
+equals always the step value, but note that the last value can
 deviate from the stop value. The keyword step can be both positive
 and negative.
 
@@ -12210,18 +11966,10 @@ Explicitly, the vector is:
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorLogSpace(Workspace& ws,
-Vector& out,
-const Numeric& start,
-const Numeric& stop,
-const Numeric& step) {
-VectorLogSpace(out,
-start,
-stop,
-step,
-Var::verbosity(ws));
+void VectorLogSpace(Workspace& ws, Vector& out, const Numeric& start,
+                    const Numeric& stop, const Numeric& step) {
+  VectorLogSpace(out, start, stop, step, Var::verbosity(ws));
 }
-
 
 /*! Multiply a Vector with a Matrix and store the result in another
 Vector.
@@ -12239,16 +11987,10 @@ multiplying the H Matrix to spectra.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorMatrixMultiply(Workspace& ws,
-Vector& out,
-const Matrix& m,
-const Vector& v) {
-VectorMatrixMultiply(out,
-m,
-v,
-Var::verbosity(ws));
+void VectorMatrixMultiply(Workspace& ws, Vector& out, const Matrix& m,
+                          const Vector& v) {
+  VectorMatrixMultiply(out, m, v, Var::verbosity(ws));
 }
-
 
 /*! Creates a vector with length *nelem*, equally spaced between the
 given end values.
@@ -12264,17 +12006,10 @@ The length (*nelem*) must be larger than 1.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorNLinSpace(Workspace& ws,
-Vector& out,
-const Numeric& start,
-const Numeric& stop) {
-VectorNLinSpace(out,
-Var::nelem(ws),
-start,
-stop,
-Var::verbosity(ws));
+void VectorNLinSpace(Workspace& ws, Vector& out, const Numeric& start,
+                     const Numeric& stop) {
+  VectorNLinSpace(out, Var::nelem(ws), start, stop, Var::verbosity(ws));
 }
-
 
 /*! Creates a vector with length *nelem*, equally logarithmically
 spaced between the given end values.
@@ -12290,17 +12025,10 @@ The length (*nelem*) must be larger than 1.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorNLogSpace(Workspace& ws,
-Vector& out,
-const Numeric& start,
-const Numeric& stop) {
-VectorNLogSpace(out,
-Var::nelem(ws),
-start,
-stop,
-Var::verbosity(ws));
+void VectorNLogSpace(Workspace& ws, Vector& out, const Numeric& start,
+                     const Numeric& stop) {
+  VectorNLogSpace(out, Var::nelem(ws), start, stop, Var::verbosity(ws));
 }
-
 
 /*! Converts a Matrix to a Vector.
 
@@ -12317,16 +12045,10 @@ order. The ouput vector has the same length for both options.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorReshapeMatrix(Workspace& ws,
-Vector& out,
-const Matrix& in,
-const String& direction="column") {
-VectorReshapeMatrix(out,
-in,
-direction,
-Var::verbosity(ws));
+void VectorReshapeMatrix(Workspace& ws, Vector& out, const Matrix& in,
+                         const String& direction = "column") {
+  VectorReshapeMatrix(out, in, direction, Var::verbosity(ws));
 }
-
 
 /*! Scales all elements of a vector with the same value.
 
@@ -12341,16 +12063,10 @@ The result can either be stored in the same or another vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorScale(Workspace& ws,
-Vector& out,
-const Vector& in,
-const Numeric& value) {
-VectorScale(out,
-in,
-value,
-Var::verbosity(ws));
+void VectorScale(Workspace& ws, Vector& out, const Vector& in,
+                 const Numeric& value) {
+  VectorScale(out, in, value, Var::verbosity(ws));
 }
-
 
 /*! Create a vector from the given list of numbers.
 
@@ -12365,14 +12081,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorSet(Workspace& ws,
-Vector& out,
-const Vector& value) {
-VectorSet(out,
-value,
-Var::verbosity(ws));
+void VectorSet(Workspace& ws, Vector& out, const Vector& value) {
+  VectorSet(out, value, Var::verbosity(ws));
 }
-
 
 /*! Creates a vector and sets all elements to the specified value.
 
@@ -12386,15 +12097,9 @@ The vector length is determined by *nelem*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorSetConstant(Workspace& ws,
-Vector& out,
-const Numeric& value) {
-VectorSetConstant(out,
-Var::nelem(ws),
-value,
-Var::verbosity(ws));
+void VectorSetConstant(Workspace& ws, Vector& out, const Numeric& value) {
+  VectorSetConstant(out, Var::nelem(ws), value, Var::verbosity(ws));
 }
-
 
 /*! Element-wise subtraction of two vectors.
 
@@ -12415,16 +12120,10 @@ the same WSV as any of the the other vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorSubtractVector(Workspace& ws,
-Vector& c,
-const Vector& a,
-const Vector& b) {
-VectorSubtractVector(c,
-a,
-b,
-Var::verbosity(ws));
+void VectorSubtractVector(Workspace& ws, Vector& c, const Vector& a,
+                          const Vector& b) {
+  VectorSubtractVector(c, a, b, Var::verbosity(ws));
 }
-
 
 /*! Multiply a Vector with another Vector and store result in a third one.
 
@@ -12440,16 +12139,10 @@ the same as any of the input Vectors.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorVectorMultiply(Workspace& ws,
-Vector& out,
-const Vector& v1,
-const Vector& v2) {
-VectorVectorMultiply(out,
-v1,
-v2,
-Var::verbosity(ws));
+void VectorVectorMultiply(Workspace& ws, Vector& out, const Vector& v1,
+                          const Vector& v2) {
+  VectorVectorMultiply(out, v1, v2, Var::verbosity(ws));
 }
-
 
 /*! Converts a set of geometrical tangent altitudes to zenith angles.
 
@@ -12467,17 +12160,10 @@ only for 1D. The zenith angles are always set to be positive.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorZtanToZa1D(Workspace& ws,
-Vector& v_za,
-const Vector& v_ztan) {
-VectorZtanToZa1D(v_za,
-Var::sensor_pos(ws),
-Var::refellipsoid(ws),
-Var::atmosphere_dim(ws),
-v_ztan,
-Var::verbosity(ws));
+void VectorZtanToZa1D(Workspace& ws, Vector& v_za, const Vector& v_ztan) {
+  VectorZtanToZa1D(v_za, Var::sensor_pos(ws), Var::refellipsoid(ws),
+                   Var::atmosphere_dim(ws), v_ztan, Var::verbosity(ws));
 }
-
 
 /*! Converts a set of true tangent altitudes to zenith angles.
 
@@ -12495,24 +12181,13 @@ only for 1D. The zenith angles are always set to be positive.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VectorZtanToZaRefr1D(Workspace& ws,
-Vector& v_za,
-const Vector& v_ztan) {
-VectorZtanToZaRefr1D(ws,
-v_za,
-Var::refr_index_air_agenda(ws),
-Var::sensor_pos(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::refellipsoid(ws),
-Var::atmosphere_dim(ws),
-Var::f_grid(ws),
-v_ztan,
-Var::verbosity(ws));
+void VectorZtanToZaRefr1D(Workspace& ws, Vector& v_za, const Vector& v_ztan) {
+  VectorZtanToZaRefr1D(ws, v_za, Var::refr_index_air_agenda(ws),
+                       Var::sensor_pos(ws), Var::p_grid(ws), Var::t_field(ws),
+                       Var::z_field(ws), Var::vmr_field(ws),
+                       Var::refellipsoid(ws), Var::atmosphere_dim(ws),
+                       Var::f_grid(ws), v_ztan, Var::verbosity(ws));
 }
-
 
 /*! Creates a variable of group Verbosity.
 
@@ -12525,12 +12200,9 @@ After being created, the variable is uninitialized.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void VerbosityCreate(Workspace& ws,
-Verbosity& out) {
-VerbosityCreate(out,
-Var::verbosity(ws));
+void VerbosityCreate(Workspace& ws, Verbosity& out) {
+  VerbosityCreate(out, Var::verbosity(ws));
 }
-
 
 /*! Select some channels for WMRF calculation.
 
@@ -12542,7 +12214,7 @@ If not all channels are requested for
 simulation, then this method can be used to remove the unwanted
 channels. It changes a number of variables in consistent fashion:
 
-- Unwanted channels are removed from f_backend. 
+- Unwanted channels are removed from f_backend.
 - Unwanted channels are removed from wmrf_weights.
 - Unnecessary frequencies are removed from f_grid.
 - Unnecessary frequencies are removed from wmrf_weights.
@@ -12554,13 +12226,9 @@ channels. It changes a number of variables in consistent fashion:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void WMRFSelectChannels(Workspace& ws) {
-WMRFSelectChannels(Var::f_grid(ws),
-Var::wmrf_weights(ws),
-Var::f_backend(ws),
-Var::wmrf_channels(ws),
-Var::verbosity(ws));
+  WMRFSelectChannels(Var::f_grid(ws), Var::wmrf_weights(ws), Var::f_backend(ws),
+                     Var::wmrf_channels(ws), Var::verbosity(ws));
 }
-
 
 /*! Initialize the wigner 3 tables
 
@@ -12569,20 +12237,19 @@ The default values take about 400 Mb memory.
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] fast_wigner_stored_symbols - Number of stored symbols possible before replacements (default: 20000000)
-@param[in] largest_wigner_symbol_parameter - Largest symbol used for initializing factorials (e.g., largest J or L) (default: 250)
+@param[in] fast_wigner_stored_symbols - Number of stored symbols possible before
+replacements (default: 20000000)
+@param[in] largest_wigner_symbol_parameter - Largest symbol used for
+initializing factorials (e.g., largest J or L) (default: 250)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void Wigner3Init(Workspace& ws,
-const Index& fast_wigner_stored_symbols=20000000,
-const Index& largest_wigner_symbol_parameter=250) {
-Wigner3Init(Var::wigner_initialized(ws),
-fast_wigner_stored_symbols,
-largest_wigner_symbol_parameter,
-Var::verbosity(ws));
+                 const Index& fast_wigner_stored_symbols = 20000000,
+                 const Index& largest_wigner_symbol_parameter = 250) {
+  Wigner3Init(Var::wigner_initialized(ws), fast_wigner_stored_symbols,
+              largest_wigner_symbol_parameter, Var::verbosity(ws));
 }
-
 
 /*! Unloads the wigner 3 tables
 
@@ -12593,10 +12260,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void Wigner3Unload(Workspace& ws) {
-Wigner3Unload(Var::wigner_initialized(ws),
-Var::verbosity(ws));
+  Wigner3Unload(Var::wigner_initialized(ws), Var::verbosity(ws));
 }
-
 
 /*! Initialize the wigner 3 and 6 tables
 
@@ -12605,20 +12270,19 @@ The default values take about 1 Gb memory.
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] fast_wigner_stored_symbols - Number of stored symbols possible before replacements (default: 20000000)
-@param[in] largest_wigner_symbol_parameter - Largest symbol used for initializing factorials (e.g., largest J or L) (default: 250)
+@param[in] fast_wigner_stored_symbols - Number of stored symbols possible before
+replacements (default: 20000000)
+@param[in] largest_wigner_symbol_parameter - Largest symbol used for
+initializing factorials (e.g., largest J or L) (default: 250)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void Wigner6Init(Workspace& ws,
-const Index& fast_wigner_stored_symbols=20000000,
-const Index& largest_wigner_symbol_parameter=250) {
-Wigner6Init(Var::wigner_initialized(ws),
-fast_wigner_stored_symbols,
-largest_wigner_symbol_parameter,
-Var::verbosity(ws));
+                 const Index& fast_wigner_stored_symbols = 20000000,
+                 const Index& largest_wigner_symbol_parameter = 250) {
+  Wigner6Init(Var::wigner_initialized(ws), fast_wigner_stored_symbols,
+              largest_wigner_symbol_parameter, Var::verbosity(ws));
 }
-
 
 /*! Unloads the wigner 3 and 6 tables
 
@@ -12629,10 +12293,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void Wigner6Unload(Workspace& ws) {
-Wigner6Unload(Var::wigner_initialized(ws),
-Var::verbosity(ws));
+  Wigner6Unload(Var::wigner_initialized(ws), Var::verbosity(ws));
 }
-
 
 /*! Prints the fast wigner table information if compiled with this option
 
@@ -12643,10 +12305,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void WignerFastInfoPrint(Workspace& ws) {
-WignerFastInfoPrint(Var::wigner_initialized(ws),
-Var::verbosity(ws));
+  WignerFastInfoPrint(Var::wigner_initialized(ws), Var::verbosity(ws));
 }
-
 
 /*! Interpolation of raw wind fields to calculation grids.
 Heritage from *AtmFieldsCalc*
@@ -12658,26 +12318,18 @@ is allowed and applied.
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] interp_order - Interpolation order (1=linear interpolation). (default: 1)
+@param[in] interp_order - Interpolation order (1=linear interpolation).
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void WindFieldsCalc(Workspace& ws,
-const Index& interp_order=1) {
-WindFieldsCalc(Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::wind_u_field_raw(ws),
-Var::wind_v_field_raw(ws),
-Var::wind_w_field_raw(ws),
-Var::atmosphere_dim(ws),
-interp_order,
-Var::verbosity(ws));
+void WindFieldsCalc(Workspace& ws, const Index& interp_order = 1) {
+  WindFieldsCalc(Var::wind_u_field(ws), Var::wind_v_field(ws),
+                 Var::wind_w_field(ws), Var::p_grid(ws), Var::lat_grid(ws),
+                 Var::lon_grid(ws), Var::wind_u_field_raw(ws),
+                 Var::wind_v_field_raw(ws), Var::wind_w_field_raw(ws),
+                 Var::atmosphere_dim(ws), interp_order, Var::verbosity(ws));
 }
-
 
 /*! Interpolation of 1D raw atmospheric fields to create 2D or 3D
 homogeneous wind fields.  Derived from *AtmFieldsCalcExpand1D*
@@ -12690,26 +12342,19 @@ longitudes for 3D, to create a homogeneous atmosphere.
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] interp_order - Interpolation order (1=linear interpolation). (default: 1)
+@param[in] interp_order - Interpolation order (1=linear interpolation).
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void WindFieldsCalcExpand1D(Workspace& ws,
-const Index& interp_order=1) {
-WindFieldsCalcExpand1D(Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::wind_u_field_raw(ws),
-Var::wind_v_field_raw(ws),
-Var::wind_w_field_raw(ws),
-Var::atmosphere_dim(ws),
-interp_order,
-Var::verbosity(ws));
+void WindFieldsCalcExpand1D(Workspace& ws, const Index& interp_order = 1) {
+  WindFieldsCalcExpand1D(Var::wind_u_field(ws), Var::wind_v_field(ws),
+                         Var::wind_w_field(ws), Var::p_grid(ws),
+                         Var::lat_grid(ws), Var::lon_grid(ws),
+                         Var::wind_u_field_raw(ws), Var::wind_v_field_raw(ws),
+                         Var::wind_w_field_raw(ws), Var::atmosphere_dim(ws),
+                         interp_order, Var::verbosity(ws));
 }
-
 
 /*! Reads wind field data from a scenario.
 
@@ -12723,29 +12368,25 @@ accordingly.
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] basename - Name of scenario, probably including the full path. For example: "/data/wind_field"
+@param[in] basename - Name of scenario, probably including the full path. For
+example: "/data/wind_field"
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void WindRawRead(Workspace& ws,
-const String& basename) {
-WindRawRead(Var::wind_u_field_raw(ws),
-Var::wind_v_field_raw(ws),
-Var::wind_w_field_raw(ws),
-basename,
-Var::verbosity(ws));
+void WindRawRead(Workspace& ws, const String& basename) {
+  WindRawRead(Var::wind_u_field_raw(ws), Var::wind_v_field_raw(ws),
+              Var::wind_w_field_raw(ws), basename, Var::verbosity(ws));
 }
-
 
 /*! Writes a 'molecular_tau_file' as required for libRadtran.
 
-The libRadtran (www.libradtran.org) radiative transfer package is a 
-comprehensive package for various applications, it can be used to 
-compute radiances, irradiances, actinic fluxes, ... for the solar 
-and the thermal spectral ranges. Absorption is usually treated using 
-k-distributions or other parameterizations. For calculations with high 
-spectral resolution it requires absorption coefficients from an external 
-line-by-line model. Using this method, arts generates a file that can be 
+The libRadtran (www.libradtran.org) radiative transfer package is a
+comprehensive package for various applications, it can be used to
+compute radiances, irradiances, actinic fluxes, ... for the solar
+and the thermal spectral ranges. Absorption is usually treated using
+k-distributions or other parameterizations. For calculations with high
+spectral resolution it requires absorption coefficients from an external
+line-by-line model. Using this method, arts generates a file that can be
 used by libRadtran (option molecular_tau_file).
 
 @author Claudia Emde
@@ -12755,22 +12396,120 @@ used by libRadtran (option molecular_tau_file).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void WriteMolTau(Workspace& ws,
-const String& filename) {
-WriteMolTau(Var::f_grid(ws),
-Var::z_field(ws),
-Var::propmat_clearsky_field(ws),
-Var::atmosphere_dim(ws),
-filename,
-Var::verbosity(ws));
+void WriteMolTau(Workspace& ws, const String& filename) {
+  WriteMolTau(Var::f_grid(ws), Var::z_field(ws),
+              Var::propmat_clearsky_field(ws), Var::atmosphere_dim(ws),
+              filename, Var::verbosity(ws));
 }
 
+/*! Writes a workspace variable to a NetCDF file.
+
+This method can write variables of limited groups.
+
+If the filename is omitted, the variable is written
+to <basename>.<variable_name>.nc.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] in - Variable to be saved.
+@param[in] filename - Name of the NetCDF file. (default: "")
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void WriteNetCDF(Workspace& ws, const std::pair<Any_0, String>& in,
+                 const std::pair<String, String>& filename = {"", "filename"}) {
+  WriteNetCDF(in.first, filename.first, in.second, filename.second,
+              Var::verbosity(ws));
+}
+
+/*! As *WriteNetCDF*, but creates indexed file names.
+
+This method can write variables of any group.
+
+If the filename is omitted, the variable is written
+to <basename>.<variable_name>.nc.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] in - Variable to be saved.
+@param[in] filename - Name of the NetCDF file. (default: "")
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void WriteNetCDFIndexed(Workspace& ws, const std::pair<Any_0, String>& in,
+                        const std::pair<String, String>& filename = {
+                            "", "filename"}) {
+  WriteNetCDFIndexed(Var::file_index(ws), in.first, filename.first, in.second,
+                     filename.second, Var::verbosity(ws));
+}
+
+/*! Writes a workspace variable to an XML file.
+
+This method can write variables of any group.
+
+If the filename is omitted, the variable is written
+to <basename>.<variable_name>.xml.
+If no_clobber is set to 1, an increasing number will be
+appended to the filename if the file already exists.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] in - Variable to be saved.
+@param[in] filename - Name of the XML file. (default: "")
+@param[in] no_clobber - 0: Overwrite existing files, 1: Use unique filenames
+(default: 0)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void WriteXML(Workspace& ws, const std::pair<Any_0, String>& in,
+              const std::pair<String, String>& filename = {"", "filename"},
+              const std::pair<Index, String>& no_clobber = {0, "no_clobber"}) {
+  WriteXML(Var::output_file_format(ws), in.first, filename.first,
+           no_clobber.first, in.second, filename.second, no_clobber.second,
+           Var::verbosity(ws));
+}
+
+/*! As *WriteXML*, but creates indexed file names.
+
+The variable is written to a file with name:
+   <filename>.<file_index>.xml.
+where <file_index> is the value of *file_index*.
+
+This means that *filename* shall here not include the .xml
+extension. Omitting filename works as for *WriteXML*.
+
+@author Patrick Eriksson, Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] in - Workspace variable to be saved.
+@param[in] filename - File name. See above. (default: "")
+@param[in] digits - Equalize the widths of all numbers by padding with zeros as
+necessary. 0 means no padding (default). (default: 0)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void WriteXMLIndexed(Workspace& ws, const std::pair<Any_0, String>& in,
+                     const std::pair<String, String>& filename = {"",
+                                                                  "filename"},
+                     const std::pair<Index, String>& digits = {0, "digits"}) {
+  WriteXMLIndexed(Var::output_file_format(ws), Var::file_index(ws), in.first,
+                  filename.first, digits.first, in.second, filename.second,
+                  digits.second, Var::verbosity(ws));
+}
 
 /*! Simple conversion from pressure to altitude.
 
 This function converts a vector of pressure values to an approximate vector
 of corresponding heights. The formula used to convert pressure to height is:
-z = 16000 * (5.0 - log10(p))That is, a pressure is  assumed to decrease by a factor of 10 every 16km.
+z = 16000 * (5.0 - log10(p))That is, a pressure is  assumed to decrease by a
+factor of 10 every 16km.
 
 Note that all pressure values in the vector must be greater than 0.01.
 
@@ -12782,14 +12521,9 @@ Note that all pressure values in the vector must be greater than 0.01.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ZFromPSimple(Workspace& ws,
-Vector& z_grid,
-const Vector& p_grid) {
-ZFromPSimple(z_grid,
-p_grid,
-Var::verbosity(ws));
+void ZFromPSimple(Workspace& ws, Vector& z_grid, const Vector& p_grid) {
+  ZFromPSimple(z_grid, p_grid, Var::verbosity(ws));
 }
-
 
 /*! Takes CIARecord as input and appends the results in the appropriate place.
 
@@ -12802,19 +12536,16 @@ species in cia_record are not in *abs_cia_data*, the CIARecord is pushed back.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] cia_record - CIA record to append to *abs_cia_data*.
-@param[in] clobber - If true, the new input clobbers the old cia data. (default: 0)
+@param[in] clobber - If true, the new input clobbers the old cia data. (default:
+0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_cia_dataAddCIARecord(Workspace& ws,
-const CIARecord& cia_record,
-const Index& clobber=0) {
-abs_cia_dataAddCIARecord(Var::abs_cia_data(ws),
-cia_record,
-clobber,
-Var::verbosity(ws));
+void abs_cia_dataAddCIARecord(Workspace& ws, const CIARecord& cia_record,
+                              const Index& clobber = 0) {
+  abs_cia_dataAddCIARecord(Var::abs_cia_data(ws), cia_record, clobber,
+                           Var::verbosity(ws));
 }
-
 
 /*! Read data from a CIA data file for all CIA molecules defined
 in *abs_species*.
@@ -12823,7 +12554,7 @@ The units in the HITRAN file are:
 Frequency: cm^(-1)
 Binary absorption cross-section: cm^5 molec^(-2)
 
-Upon reading we convert this to the ARTS internal SI units 
+Upon reading we convert this to the ARTS internal SI units
 of Hz and m^5 molec^(-2).
 
 @author Oliver Lemke
@@ -12833,14 +12564,10 @@ of Hz and m^5 molec^(-2).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_cia_dataReadFromCIA(Workspace& ws,
-const String& catalogpath) {
-abs_cia_dataReadFromCIA(Var::abs_cia_data(ws),
-Var::abs_species(ws),
-catalogpath,
-Var::verbosity(ws));
+void abs_cia_dataReadFromCIA(Workspace& ws, const String& catalogpath) {
+  abs_cia_dataReadFromCIA(Var::abs_cia_data(ws), Var::abs_species(ws),
+                          catalogpath, Var::verbosity(ws));
 }
-
 
 /*! Read data from a CIA XML file and check that all CIA tags defined
 in *abs_species* are present in the file.
@@ -12854,14 +12581,10 @@ The units of the data are described in *abs_cia_dataReadFromCIA*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_cia_dataReadFromXML(Workspace& ws,
-const String& filename="") {
-abs_cia_dataReadFromXML(Var::abs_cia_data(ws),
-Var::abs_species(ws),
-filename,
-Var::verbosity(ws));
+void abs_cia_dataReadFromXML(Workspace& ws, const String& filename = "") {
+  abs_cia_dataReadFromXML(Var::abs_cia_data(ws), Var::abs_species(ws), filename,
+                          Var::verbosity(ws));
 }
-
 
 /*! Calculate absorption coefficients from cross sections.
 
@@ -12878,24 +12601,15 @@ Cross sections are multiplied by n*VMR.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_coefCalcFromXsec(Workspace& ws) {
-abs_coefCalcFromXsec(Var::abs_coef(ws),
-Var::src_coef(ws),
-Var::dabs_coef_dx(ws),
-Var::dsrc_coef_dx(ws),
-Var::abs_coef_per_species(ws),
-Var::src_coef_per_species(ws),
-Var::abs_xsec_per_species(ws),
-Var::src_xsec_per_species(ws),
-Var::dabs_xsec_per_species_dx(ws),
-Var::dsrc_xsec_per_species_dx(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::abs_vmrs(ws),
-Var::abs_p(ws),
-Var::abs_t(ws),
-Var::verbosity(ws));
+  abs_coefCalcFromXsec(
+      Var::abs_coef(ws), Var::src_coef(ws), Var::dabs_coef_dx(ws),
+      Var::dsrc_coef_dx(ws), Var::abs_coef_per_species(ws),
+      Var::src_coef_per_species(ws), Var::abs_xsec_per_species(ws),
+      Var::src_xsec_per_species(ws), Var::dabs_xsec_per_species_dx(ws),
+      Var::dsrc_xsec_per_species_dx(ws), Var::abs_species(ws),
+      Var::jacobian_quantities(ws), Var::abs_vmrs(ws), Var::abs_p(ws),
+      Var::abs_t(ws), Var::verbosity(ws));
 }
-
 
 /*! Appends the description of a continuum model or a complete absorption
 model to *abs_cont_names* and *abs_cont_parameters*.
@@ -12911,29 +12625,22 @@ file includes/continua.arts for default parameters for the various models.
 @param[in] tagname - The name (species tag) of a continuum model. Must match one
 of the models implemented in ARTS.
 
-@param[in] model - A string selecting a particular continuum/full model under this
-species tag.
+@param[in] model - A string selecting a particular continuum/full model under
+this species tag.
 
-@param[in] userparam - A Vector containing the required parameters for the selected model.
-The meaning of the parameters and how many parameters are required
-depends on the model.
- (default: {})
+@param[in] userparam - A Vector containing the required parameters for the
+selected model. The meaning of the parameters and how many parameters are
+required depends on the model. (default: {})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_cont_descriptionAppend(Workspace& ws,
-const String& tagname,
-const String& model,
-const Vector& userparam={}) {
-abs_cont_descriptionAppend(Var::abs_cont_names(ws),
-Var::abs_cont_models(ws),
-Var::abs_cont_parameters(ws),
-tagname,
-model,
-userparam,
-Var::verbosity(ws));
+void abs_cont_descriptionAppend(Workspace& ws, const String& tagname,
+                                const String& model,
+                                const Vector& userparam = {}) {
+  abs_cont_descriptionAppend(Var::abs_cont_names(ws), Var::abs_cont_models(ws),
+                             Var::abs_cont_parameters(ws), tagname, model,
+                             userparam, Var::verbosity(ws));
 }
-
 
 /*! Initializes the two workspace variables for the continuum description,
 *abs_cont_names* and *abs_cont_parameters*.
@@ -12943,9 +12650,9 @@ variables to empty Arrays. It is just necessary because the method
 *abs_cont_descriptionAppend* wants to append to the variables.
 
 Formally, the continuum description workspace variables are required
-by the absorption calculation methods (e.g., *abs_coefCalcFromXsec*). Therefore you
-always have to call at least *abs_cont_descriptionInit*, even if you do
-not want to use any continua.
+by the absorption calculation methods (e.g., *abs_coefCalcFromXsec*). Therefore
+you always have to call at least *abs_cont_descriptionInit*, even if you do not
+want to use any continua.
 
 @author Thomas Kuhn
 @author Stefan Buehler
@@ -12955,12 +12662,9 @@ not want to use any continua.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_cont_descriptionInit(Workspace& ws) {
-abs_cont_descriptionInit(Var::abs_cont_names(ws),
-Var::abs_cont_models(ws),
-Var::abs_cont_parameters(ws),
-Var::verbosity(ws));
+  abs_cont_descriptionInit(Var::abs_cont_names(ws), Var::abs_cont_models(ws),
+                           Var::abs_cont_parameters(ws), Var::verbosity(ws));
 }
-
 
 /*! Reads HITRAN line mixing data from a basedir
 The basedir must point at line mixing data as provided by HITRAN.
@@ -12983,47 +12687,39 @@ https://hitran.org/supplementary/
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] basedir - Direcory where the linemixing data is to be found
-@param[in] linemixinglimit - Line mixing limit as defined by *AbsorptionLines* (default: -1)
+@param[in] linemixinglimit - Line mixing limit as defined by *AbsorptionLines*
+(default: -1)
 @param[in] fmin - Minimum frequency to read from (default: 0)
 @param[in] fmax - Maximum frequency to read until (default: 1e99)
 @param[in] stot - Minimum integrated band strength to consider (default: 0)
-@param[in] mode - Mode of calculations.  The options are: "VP", "VP_Y", "SDVP", "SDVP_Y", "FullW", and "VP_W" (default: "VP_W")
+@param[in] mode - Mode of calculations.  The options are: "VP", "VP_Y", "SDVP",
+"SDVP_Y", "FullW", and "VP_W" (default: "VP_W")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_hitran_relmat_dataReadHitranRelmatDataAndLines(Workspace& ws,
-const String& basedir,
-const Numeric& linemixinglimit=-1,
-const Numeric& fmin=0,
-const Numeric& fmax=1e99,
-const Numeric& stot=0,
-const String& mode="VP_W") {
-abs_hitran_relmat_dataReadHitranRelmatDataAndLines(Var::abs_hitran_relmat_data(ws),
-Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-basedir,
-linemixinglimit,
-fmin,
-fmax,
-stot,
-mode,
-Var::verbosity(ws));
+void abs_hitran_relmat_dataReadHitranRelmatDataAndLines(
+    Workspace& ws, const String& basedir, const Numeric& linemixinglimit = -1,
+    const Numeric& fmin = 0, const Numeric& fmax = 1e99,
+    const Numeric& stot = 0, const String& mode = "VP_W") {
+  abs_hitran_relmat_dataReadHitranRelmatDataAndLines(
+      Var::abs_hitran_relmat_data(ws), Var::abs_lines_per_species(ws),
+      Var::abs_species(ws), basedir, linemixinglimit, fmin, fmax, stot, mode,
+      Var::verbosity(ws));
 }
 
-
-/*! Appends all lines in *abs_lines* that match with lines in replacement_lines if *safe*.
-If not *safe*, appends all lines.
+/*! Appends all lines in *abs_lines* that match with lines in replacement_lines
+if *safe*. If not *safe*, appends all lines.
 
 No appended line is allowed to match any line in *abs_lines* if *safe*
 
 Conditional behavior if *safe*:
-	If the AbosorptionLines to be appended match no AbsorptionLines
-	in *abs_lines*, then the entire AbsorptionLines is appended.
-	Otherwise, only a single AbsorptionLines can be matched and is not
-	allowed to have any internal matches
+        If the AbosorptionLines to be appended match no AbsorptionLines
+        in *abs_lines*, then the entire AbsorptionLines is appended.
+        Otherwise, only a single AbsorptionLines can be matched and is not
+        allowed to have any internal matches
 
-Note that lines are identified by their AbsorptionLines tags and by their quantum numbers
-in *safe* mode.
+Note that lines are identified by their AbsorptionLines tags and by their
+quantum numbers in *safe* mode.
 
 @author Richard Larsson
 
@@ -13034,19 +12730,15 @@ in *safe* mode.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesAppendWithLines(Workspace& ws,
-const ArrayOfAbsorptionLines& appending_lines,
-const Index& safe=1) {
-abs_linesAppendWithLines(Var::abs_lines(ws),
-appending_lines,
-safe,
-Var::verbosity(ws));
+                              const ArrayOfAbsorptionLines& appending_lines,
+                              const Index& safe = 1) {
+  abs_linesAppendWithLines(Var::abs_lines(ws), appending_lines, safe,
+                           Var::verbosity(ws));
 }
 
-
-/*! Change parameter of all levels in *abs_lines* that match with *QuantumIdentifier*.
-Only works for these parameters:
-parameter_name = "Statistical Weight"
-parameter_name = "Zeeman Coefficient"
+/*! Change parameter of all levels in *abs_lines* that match with
+*QuantumIdentifier*. Only works for these parameters: parameter_name =
+"Statistical Weight" parameter_name = "Zeeman Coefficient"
 
 @author Richard Larsson
 
@@ -13054,23 +12746,20 @@ parameter_name = "Zeeman Coefficient"
 @param[in] QI - Information to match the level.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching level's value
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesChangeBaseParameterForMatchingLevel(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change,
-const Index& relative=0) {
-abs_linesChangeBaseParameterForMatchingLevel(Var::abs_lines(ws),
-QI,
-parameter_name,
-change,
-relative,
-Var::verbosity(ws));
+                                                  const QuantumIdentifier& QI,
+                                                  const String& parameter_name,
+                                                  const Numeric& change,
+                                                  const Index& relative = 0) {
+  abs_linesChangeBaseParameterForMatchingLevel(Var::abs_lines(ws), QI,
+                                               parameter_name, change, relative,
+                                               Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesChangeBaseParameterForMatchingLevel*
 
@@ -13080,37 +12769,30 @@ Var::verbosity(ws));
 @param[in] QI - Information to match the level.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching level's value
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesChangeBaseParameterForMatchingLevels(Workspace& ws,
-const ArrayOfQuantumIdentifier& QI,
-const String& parameter_name,
-const Vector& change,
-const Index& relative=0) {
-abs_linesChangeBaseParameterForMatchingLevels(Var::abs_lines(ws),
-QI,
-parameter_name,
-change,
-relative,
-Var::verbosity(ws));
+void abs_linesChangeBaseParameterForMatchingLevels(
+    Workspace& ws, const ArrayOfQuantumIdentifier& QI,
+    const String& parameter_name, const Vector& change,
+    const Index& relative = 0) {
+  abs_linesChangeBaseParameterForMatchingLevels(Var::abs_lines(ws), QI,
+                                                parameter_name, change,
+                                                relative, Var::verbosity(ws));
 }
 
+/*! Change parameter of all lines in *abs_lines* that match with
+*QuantumIdentifier*. Only works for these parameters: parameter_name = "Central
+Frequency" parameter_name = "Line Strength" parameter_name = "Lower State
+Energy" parameter_name = "Einstein Coefficient" parameter_name = "Lower
+Statistical Weight" parameter_name = "Upper Statistical Weight" parameter_name =
+"Lower Zeeman Coefficient" parameter_name = "Upper Zeeman Coefficient"
 
-/*! Change parameter of all lines in *abs_lines* that match with *QuantumIdentifier*.
-Only works for these parameters:
-parameter_name = "Central Frequency"
-parameter_name = "Line Strength"
-parameter_name = "Lower State Energy"
-parameter_name = "Einstein Coefficient"
-parameter_name = "Lower Statistical Weight"
-parameter_name = "Upper Statistical Weight"
-parameter_name = "Lower Zeeman Coefficient"
-parameter_name = "Upper Zeeman Coefficient"
-
-Note that loose_matching:=0 means only identical quantum identifiers are accepted,
-otherwise the numbers in QI must just be contained in the line identifier
+Note that loose_matching:=0 means only identical quantum identifiers are
+accepted, otherwise the numbers in QI must just be contained in the line
+identifier
 
 @author Richard Larsson
 
@@ -13118,52 +12800,47 @@ otherwise the numbers in QI must just be contained in the line identifier
 @param[in] QI - Information to match the line.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching line's value
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
-@param[in] loose_matching - Flag for loose match (0 means only complete matches) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
+@param[in] loose_matching - Flag for loose match (0 means only complete matches)
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesChangeBaseParameterForMatchingLines(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change,
-const Index& relative=0,
-const Index& loose_matching=0) {
-abs_linesChangeBaseParameterForMatchingLines(Var::abs_lines(ws),
-QI,
-parameter_name,
-change,
-relative,
-loose_matching,
-Var::verbosity(ws));
+void abs_linesChangeBaseParameterForMatchingLines(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
+    const Numeric& change, const Index& relative = 0,
+    const Index& loose_matching = 0) {
+  abs_linesChangeBaseParameterForMatchingLines(
+      Var::abs_lines(ws), QI, parameter_name, change, relative, loose_matching,
+      Var::verbosity(ws));
 }
-
 
 /*! Change line shape model data parameter in matching lines.
 
 The matching is done so that QI must be in the line identifier
 
 Acceptable parameter(s) are:
-	"G0"
-	"D0"
-	"G2"
-	"D2"
-	"FVC"
-	"ETA"
-	"Y"
-	"G"
-	"DV"
+        "G0"
+        "D0"
+        "G2"
+        "D2"
+        "FVC"
+        "ETA"
+        "Y"
+        "G"
+        "DV"
 
 Acceptable coefficient(s) are:
-	"X0"
-	"X1"
-	"X2"
-	"X3"
+        "X0"
+        "X1"
+        "X2"
+        "X3"
 
 Acceptable species are:
-	"AIR" (so long as it is the broadening species list)
-	"SELF" (so long as it is the broadening species list)
-	Any species in the line broadening species
+        "AIR" (so long as it is the broadening species list)
+        "SELF" (so long as it is the broadening species list)
+        Any species in the line broadening species
 
 The line parameter will have its old value plus the change if
 relative is false, else it will have its old value times
@@ -13179,27 +12856,19 @@ Throws an error if it cannot find any targets to change
 @param[in] coefficient - Coefficient of the parameter to be changed
 @param[in] species - Species of parameter to be changed
 @param[in] change - Change in the value found
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesChangeLineShapeModelParameterForMatchingLines(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter,
-const String& coefficient,
-const String& species,
-const Numeric& change,
-const Index& relative=0) {
-abs_linesChangeLineShapeModelParameterForMatchingLines(Var::abs_lines(ws),
-QI,
-parameter,
-coefficient,
-species,
-change,
-relative,
-Var::verbosity(ws));
+void abs_linesChangeLineShapeModelParameterForMatchingLines(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
+    const String& coefficient, const String& species, const Numeric& change,
+    const Index& relative = 0) {
+  abs_linesChangeLineShapeModelParameterForMatchingLines(
+      Var::abs_lines(ws), QI, parameter, coefficient, species, change, relative,
+      Var::verbosity(ws));
 }
-
 
 /*! Removes empty bands from *abs_lines*.
 
@@ -13210,10 +12879,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesCleanupEmpty(Workspace& ws) {
-abs_linesCleanupEmpty(Var::abs_lines(ws),
-Var::verbosity(ws));
+  abs_linesCleanupEmpty(Var::abs_lines(ws), Var::verbosity(ws));
 }
-
 
 /*! Removes lines that are unimportant because of their
 cutoff frequency range
@@ -13226,11 +12893,8 @@ cutoff frequency range
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesCompact(Workspace& ws) {
-abs_linesCompact(Var::abs_lines(ws),
-Var::f_grid(ws),
-Var::verbosity(ws));
+  abs_linesCompact(Var::abs_lines(ws), Var::f_grid(ws), Var::verbosity(ws));
 }
-
 
 /*! Deletes all lines in *abs_lines* that have bad central frequencies
 
@@ -13245,15 +12909,10 @@ Otherwise deletes all lines with a frequency above f0.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesDeleteBadF0(Workspace& ws,
-const Numeric& f0,
-const Index& lower=1) {
-abs_linesDeleteBadF0(Var::abs_lines(ws),
-f0,
-lower,
-Var::verbosity(ws));
+void abs_linesDeleteBadF0(Workspace& ws, const Numeric& f0,
+                          const Index& lower = 1) {
+  abs_linesDeleteBadF0(Var::abs_lines(ws), f0, lower, Var::verbosity(ws));
 }
-
 
 /*! Deletes all lines in *abs_lines* that have undefined Js or Js
 that change more than 1 between energy levels
@@ -13265,10 +12924,9 @@ that change more than 1 between energy levels
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesDeleteLinesWithBadOrHighChangingJs(Workspace& ws) {
-abs_linesDeleteLinesWithBadOrHighChangingJs(Var::abs_lines(ws),
-Var::verbosity(ws));
+  abs_linesDeleteLinesWithBadOrHighChangingJs(Var::abs_lines(ws),
+                                              Var::verbosity(ws));
 }
-
 
 /*! Deletes all lines in *abs_lines* that have too large quantum number
 
@@ -13280,15 +12938,13 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesDeleteLinesWithQuantumNumberAbove(Workspace& ws,
-const String& quantumnumber,
-const Index& quantumnumber_value) {
-abs_linesDeleteLinesWithQuantumNumberAbove(Var::abs_lines(ws),
-quantumnumber,
-quantumnumber_value,
-Var::verbosity(ws));
+void abs_linesDeleteLinesWithQuantumNumberAbove(
+    Workspace& ws, const String& quantumnumber,
+    const Index& quantumnumber_value) {
+  abs_linesDeleteLinesWithQuantumNumberAbove(Var::abs_lines(ws), quantumnumber,
+                                             quantumnumber_value,
+                                             Var::verbosity(ws));
 }
-
 
 /*! Deletes all lines in *abs_lines* that have undefined local quanta
 
@@ -13299,17 +12955,16 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesDeleteLinesWithUndefinedLocalQuanta(Workspace& ws) {
-abs_linesDeleteLinesWithUndefinedLocalQuanta(Var::abs_lines(ws),
-Var::verbosity(ws));
+  abs_linesDeleteLinesWithUndefinedLocalQuanta(Var::abs_lines(ws),
+                                               Var::verbosity(ws));
 }
-
 
 /*! Deletes all lines in *abs_lines* that match with lines in replacement_lines.
 
 If a deleted line has no match, then nothing happens.
 
-Note that lines are identified by their AbsorptionLines tags and by their quantum numbers.
-There is no need to have all values correct.
+Note that lines are identified by their AbsorptionLines tags and by their
+quantum numbers. There is no need to have all values correct.
 
 @author Richard Larsson
 
@@ -13319,12 +12974,10 @@ There is no need to have all values correct.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesDeleteWithLines(Workspace& ws,
-const ArrayOfAbsorptionLines& deleting_lines) {
-abs_linesDeleteWithLines(Var::abs_lines(ws),
-deleting_lines,
-Var::verbosity(ws));
+                              const ArrayOfAbsorptionLines& deleting_lines) {
+  abs_linesDeleteWithLines(Var::abs_lines(ws), deleting_lines,
+                           Var::verbosity(ws));
 }
-
 
 /*! Keep only *qid*-matches in *abs_lines*
 
@@ -13340,17 +12993,12 @@ The latter means the isotopologue has to be ignores.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesKeepBands(Workspace& ws,
-const QuantumIdentifier& qid,
-const Index& ignore_spec=1,
-const Index& ignore_isot=1) {
-abs_linesKeepBands(Var::abs_lines(ws),
-qid,
-ignore_spec,
-ignore_isot,
-Var::verbosity(ws));
+void abs_linesKeepBands(Workspace& ws, const QuantumIdentifier& qid,
+                        const Index& ignore_spec = 1,
+                        const Index& ignore_isot = 1) {
+  abs_linesKeepBands(Var::abs_lines(ws), qid, ignore_spec, ignore_isot,
+                     Var::verbosity(ws));
 }
-
 
 /*! Print the count of defined quantum numbers in the catalog
 
@@ -13361,10 +13009,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesPrintDefinedQuantumNumbers(Workspace& ws) {
-abs_linesPrintDefinedQuantumNumbers(Var::abs_lines(ws),
-Var::verbosity(ws));
+  abs_linesPrintDefinedQuantumNumbers(Var::abs_lines(ws), Var::verbosity(ws));
 }
-
 
 /*! Reads a catalog of absorption lines files in a directory
 
@@ -13372,19 +13018,16 @@ Var::verbosity(ws));
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] basename - The path to the split catalog files
-@param[in] robust - Flag to continue in case nothing is found [0 throws, 1 continues] (default: 0)
+@param[in] robust - Flag to continue in case nothing is found [0 throws, 1
+continues] (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesReadSpeciesSplitCatalog(Workspace& ws,
-const String& basename,
-const Index& robust=0) {
-abs_linesReadSpeciesSplitCatalog(Var::abs_lines(ws),
-basename,
-robust,
-Var::verbosity(ws));
+void abs_linesReadSpeciesSplitCatalog(Workspace& ws, const String& basename,
+                                      const Index& robust = 0) {
+  abs_linesReadSpeciesSplitCatalog(Var::abs_lines(ws), basename, robust,
+                                   Var::verbosity(ws));
 }
-
 
 /*! Removes *qid* band from *abs_lines*
 
@@ -13395,13 +13038,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesRemoveBand(Workspace& ws,
-const QuantumIdentifier& qid) {
-abs_linesRemoveBand(Var::abs_lines(ws),
-qid,
-Var::verbosity(ws));
+void abs_linesRemoveBand(Workspace& ws, const QuantumIdentifier& qid) {
+  abs_linesRemoveBand(Var::abs_lines(ws), qid, Var::verbosity(ws));
 }
-
 
 /*! Removes unused quantums from local values in the line lists
 
@@ -13412,10 +13051,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesRemoveUnusedLocalQuantumNumbers(Workspace& ws) {
-abs_linesRemoveUnusedLocalQuantumNumbers(Var::abs_lines(ws),
-Var::verbosity(ws));
+  abs_linesRemoveUnusedLocalQuantumNumbers(Var::abs_lines(ws),
+                                           Var::verbosity(ws));
 }
-
 
 /*! Replace all lines in *abs_lines* that match with lines in replacement_lines.
 
@@ -13423,7 +13061,8 @@ Each replacement_lines must match excatly a single line in *abs_lines*.
 
 The matching required identical quantum number signatures to work
 
-Note that lines are identified by their AbsorptionLines tags and by their quantum numbers.
+Note that lines are identified by their AbsorptionLines tags and by their
+quantum numbers.
 
 @author Richard Larsson
 
@@ -13433,17 +13072,14 @@ Note that lines are identified by their AbsorptionLines tags and by their quantu
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesReplaceWithLines(Workspace& ws,
-const ArrayOfAbsorptionLines& replacing_lines) {
-abs_linesReplaceWithLines(Var::abs_lines(ws),
-replacing_lines,
-Var::verbosity(ws));
+                               const ArrayOfAbsorptionLines& replacing_lines) {
+  abs_linesReplaceWithLines(Var::abs_lines(ws), replacing_lines,
+                            Var::verbosity(ws));
 }
 
-
-/*! Set parameter of all levels in *abs_lines* that match with *QuantumIdentifier*.
-Only works for these parameters:
-parameter_name = "Statistical Weight"
-parameter_name = "Zeeman Coefficient"
+/*! Set parameter of all levels in *abs_lines* that match with
+*QuantumIdentifier*. Only works for these parameters: parameter_name =
+"Statistical Weight" parameter_name = "Zeeman Coefficient"
 
 @author Richard Larsson
 
@@ -13455,16 +13091,12 @@ parameter_name = "Zeeman Coefficient"
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesSetBaseParameterForMatchingLevel(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change) {
-abs_linesSetBaseParameterForMatchingLevel(Var::abs_lines(ws),
-QI,
-parameter_name,
-change,
-Var::verbosity(ws));
+                                               const QuantumIdentifier& QI,
+                                               const String& parameter_name,
+                                               const Numeric& change) {
+  abs_linesSetBaseParameterForMatchingLevel(
+      Var::abs_lines(ws), QI, parameter_name, change, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetBaseParameterForMatchingLevel*
 
@@ -13477,31 +13109,23 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetBaseParameterForMatchingLevels(Workspace& ws,
-const ArrayOfQuantumIdentifier& QI,
-const String& parameter_name,
-const Vector& change) {
-abs_linesSetBaseParameterForMatchingLevels(Var::abs_lines(ws),
-QI,
-parameter_name,
-change,
-Var::verbosity(ws));
+void abs_linesSetBaseParameterForMatchingLevels(
+    Workspace& ws, const ArrayOfQuantumIdentifier& QI,
+    const String& parameter_name, const Vector& change) {
+  abs_linesSetBaseParameterForMatchingLevels(
+      Var::abs_lines(ws), QI, parameter_name, change, Var::verbosity(ws));
 }
 
+/*! Set parameter of all lines in *abs_lines* that match with
+*QuantumIdentifier*. Only works for these parameters: parameter_name = "Central
+Frequency" parameter_name = "Line Strength" parameter_name = "Lower State
+Energy" parameter_name = "Einstein Coefficient" parameter_name = "Lower
+Statistical Weight" parameter_name = "Upper Statistical Weight" parameter_name =
+"Lower Zeeman Coefficient" parameter_name = "Upper Zeeman Coefficient"
 
-/*! Set parameter of all lines in *abs_lines* that match with *QuantumIdentifier*.
-Only works for these parameters:
-parameter_name = "Central Frequency"
-parameter_name = "Line Strength"
-parameter_name = "Lower State Energy"
-parameter_name = "Einstein Coefficient"
-parameter_name = "Lower Statistical Weight"
-parameter_name = "Upper Statistical Weight"
-parameter_name = "Lower Zeeman Coefficient"
-parameter_name = "Upper Zeeman Coefficient"
-
-Note that loose_matching:=0 means only identical quantum identifiers are accepted,
-otherwise the numbers in QI must just be contained in the line identifier
+Note that loose_matching:=0 means only identical quantum identifiers are
+accepted, otherwise the numbers in QI must just be contained in the line
+identifier
 
 @author Richard Larsson
 
@@ -13509,23 +13133,18 @@ otherwise the numbers in QI must just be contained in the line identifier
 @param[in] QI - Information to match the line.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching line's value
-@param[in] loose_matching - Flag for loose match (0 means only complete matches) (default: 0)
+@param[in] loose_matching - Flag for loose match (0 means only complete matches)
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetBaseParameterForMatchingLines(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change,
-const Index& loose_matching=0) {
-abs_linesSetBaseParameterForMatchingLines(Var::abs_lines(ws),
-QI,
-parameter_name,
-change,
-loose_matching,
-Var::verbosity(ws));
+void abs_linesSetBaseParameterForMatchingLines(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
+    const Numeric& change, const Index& loose_matching = 0) {
+  abs_linesSetBaseParameterForMatchingLines(Var::abs_lines(ws), QI,
+                                            parameter_name, change,
+                                            loose_matching, Var::verbosity(ws));
 }
-
 
 /*! Sets cutoff type and magnitude for all lines.
 
@@ -13533,12 +13152,13 @@ The line is cut off when this is active at the given frequency.
 The only non-zero range is from this range to its negative equivalent
 
 Available options:
-	"None"   	 - 	 No cutoff
-	"ByLine" 	 - 	 Cutoff relative line center, highest frequency: F0+cutoff
-	"ByBand" 	 - 	 Absolute frequency, highest frequency: cutoff
+        "None"   	 - 	 No cutoff
+        "ByLine" 	 - 	 Cutoff relative line center, highest frequency:
+F0+cutoff "ByBand" 	 - 	 Absolute frequency, highest frequency: cutoff
 
 For "ByLine", the negative frequency is at F0-cutoff
-For "ByBand", the negative frequency is at cutoff minus twice the average band frequency
+For "ByBand", the negative frequency is at cutoff minus twice the average band
+frequency
 
 @author Richard Larsson
 
@@ -13548,15 +13168,10 @@ For "ByBand", the negative frequency is at cutoff minus twice the average band f
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetCutoff(Workspace& ws,
-const String& option,
-const Numeric& value) {
-abs_linesSetCutoff(Var::abs_lines(ws),
-option,
-value,
-Var::verbosity(ws));
+void abs_linesSetCutoff(Workspace& ws, const String& option,
+                        const Numeric& value) {
+  abs_linesSetCutoff(Var::abs_lines(ws), option, value, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetCutoff* for more options.
 
@@ -13571,17 +13186,12 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetCutoffForMatch(Workspace& ws,
-const String& option,
-const Numeric& value,
-const QuantumIdentifier& ID) {
-abs_linesSetCutoffForMatch(Var::abs_lines(ws),
-option,
-value,
-ID,
-Var::verbosity(ws));
+void abs_linesSetCutoffForMatch(Workspace& ws, const String& option,
+                                const Numeric& value,
+                                const QuantumIdentifier& ID) {
+  abs_linesSetCutoffForMatch(Var::abs_lines(ws), option, value, ID,
+                             Var::verbosity(ws));
 }
-
 
 /*! Sets a broadening parameter to empty if it is efficiently empty
 
@@ -13595,36 +13205,35 @@ and computational time by not doing unecessary calculations
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesSetEmptyBroadeningParametersToEmpty(Workspace& ws) {
-abs_linesSetEmptyBroadeningParametersToEmpty(Var::abs_lines(ws),
-Var::verbosity(ws));
+  abs_linesSetEmptyBroadeningParametersToEmpty(Var::abs_lines(ws),
+                                               Var::verbosity(ws));
 }
-
 
 /*! Sets line shape model data parameter in matching lines.
 
 The matching is done so that QI must be in the line identifier
 
 Acceptable parameter(s) are:
-	"G0"
-	"D0"
-	"G2"
-	"D2"
-	"FVC"
-	"ETA"
-	"Y"
-	"G"
-	"DV"
+        "G0"
+        "D0"
+        "G2"
+        "D2"
+        "FVC"
+        "ETA"
+        "Y"
+        "G"
+        "DV"
 
 Acceptable coefficient(s) are:
-	"X0"
-	"X1"
-	"X2"
-	"X3"
+        "X0"
+        "X1"
+        "X2"
+        "X3"
 
 Acceptable species are:
-	"AIR" (so long as it is the broadening species list)
-	"SELF" (so long as it is the broadening species list)
-	Any species in the line broadening species
+        "AIR" (so long as it is the broadening species list)
+        "SELF" (so long as it is the broadening species list)
+        Any species in the line broadening species
 
 Throws an error if it cannot find any targets to change
 
@@ -13639,30 +13248,22 @@ Throws an error if it cannot find any targets to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetLineShapeModelParameterForMatchingLines(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter,
-const String& coefficient,
-const String& species,
-const Numeric& change) {
-abs_linesSetLineShapeModelParameterForMatchingLines(Var::abs_lines(ws),
-QI,
-parameter,
-coefficient,
-species,
-change,
-Var::verbosity(ws));
+void abs_linesSetLineShapeModelParameterForMatchingLines(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
+    const String& coefficient, const String& species, const Numeric& change) {
+  abs_linesSetLineShapeModelParameterForMatchingLines(
+      Var::abs_lines(ws), QI, parameter, coefficient, species, change,
+      Var::verbosity(ws));
 }
-
 
 /*! Sets shape calculations type for all lines.
 
 Available options:
-	"DP"   	 - 	 Doppler profile
-	"LP"   	 - 	 Lorentz profile
-	"VP"   	 - 	 Voigt profile
-	"SDVP" 	 - 	 Speed-dependent Voigt profile
-	"HTP"  	 - 	 Hartman-Tran profile
+        "DP"   	 - 	 Doppler profile
+        "LP"   	 - 	 Lorentz profile
+        "VP"   	 - 	 Voigt profile
+        "SDVP" 	 - 	 Speed-dependent Voigt profile
+        "HTP"  	 - 	 Hartman-Tran profile
 
 See the theory guide for more details.
 
@@ -13673,13 +13274,9 @@ See the theory guide for more details.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetLineShapeType(Workspace& ws,
-const String& option) {
-abs_linesSetLineShapeType(Var::abs_lines(ws),
-option,
-Var::verbosity(ws));
+void abs_linesSetLineShapeType(Workspace& ws, const String& option) {
+  abs_linesSetLineShapeType(Var::abs_lines(ws), option, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLineShapeType* for options
 
@@ -13693,15 +13290,11 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetLineShapeTypeForMatch(Workspace& ws,
-const String& option,
-const QuantumIdentifier& ID) {
-abs_linesSetLineShapeTypeForMatch(Var::abs_lines(ws),
-option,
-ID,
-Var::verbosity(ws));
+void abs_linesSetLineShapeTypeForMatch(Workspace& ws, const String& option,
+                                       const QuantumIdentifier& ID) {
+  abs_linesSetLineShapeTypeForMatch(Var::abs_lines(ws), option, ID,
+                                    Var::verbosity(ws));
 }
-
 
 /*! Sets line mixing limit for all lines.
 
@@ -13715,13 +13308,9 @@ Otherwise, line mixing is inactive if the pressure is below the limit.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetLinemixingLimit(Workspace& ws,
-const Numeric& value) {
-abs_linesSetLinemixingLimit(Var::abs_lines(ws),
-value,
-Var::verbosity(ws));
+void abs_linesSetLinemixingLimit(Workspace& ws, const Numeric& value) {
+  abs_linesSetLinemixingLimit(Var::abs_lines(ws), value, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLinemixingLimit* for values
 
@@ -13735,28 +13324,24 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetLinemixingLimitForMatch(Workspace& ws,
-const Numeric& value,
-const QuantumIdentifier& ID) {
-abs_linesSetLinemixingLimitForMatch(Var::abs_lines(ws),
-value,
-ID,
-Var::verbosity(ws));
+void abs_linesSetLinemixingLimitForMatch(Workspace& ws, const Numeric& value,
+                                         const QuantumIdentifier& ID) {
+  abs_linesSetLinemixingLimitForMatch(Var::abs_lines(ws), value, ID,
+                                      Var::verbosity(ws));
 }
-
 
 /*! Sets mirroring type for all lines.
 
 Available options:
-	"None"    	 - 	 No mirrored line
-	"Same"    	 - 	 Mirrored line broadened by line shape
-	"Manual"  	 - 	 Manually mirrored line (be careful; allows all frequencies)
-	"Lorentz" 	 - 	 Mirrored line broadened by Lorentz
+        "None"    	 - 	 No mirrored line
+        "Same"    	 - 	 Mirrored line broadened by line shape
+        "Manual"  	 - 	 Manually mirrored line (be careful; allows all
+frequencies) "Lorentz" 	 - 	 Mirrored line broadened by Lorentz
 
 Note that mirroring is never applied for DP line shape
-Also note that Lorentz profile is approached by most line shapes at high frequency offset.
-Also note that Manual settings are potentially dangerous as other frequency
-offsets might not work as hoped.
+Also note that Lorentz profile is approached by most line shapes at high
+frequency offset. Also note that Manual settings are potentially dangerous as
+other frequency offsets might not work as hoped.
 
 @author Richard Larsson
 
@@ -13765,13 +13350,9 @@ offsets might not work as hoped.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetMirroring(Workspace& ws,
-const String& option) {
-abs_linesSetMirroring(Var::abs_lines(ws),
-option,
-Var::verbosity(ws));
+void abs_linesSetMirroring(Workspace& ws, const String& option) {
+  abs_linesSetMirroring(Var::abs_lines(ws), option, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetMirroring* for options
 
@@ -13785,23 +13366,19 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetMirroringForMatch(Workspace& ws,
-const String& option,
-const QuantumIdentifier& ID) {
-abs_linesSetMirroringForMatch(Var::abs_lines(ws),
-option,
-ID,
-Var::verbosity(ws));
+void abs_linesSetMirroringForMatch(Workspace& ws, const String& option,
+                                   const QuantumIdentifier& ID) {
+  abs_linesSetMirroringForMatch(Var::abs_lines(ws), option, ID,
+                                Var::verbosity(ws));
 }
-
 
 /*! Sets normalization type for all lines.
 
 Available options:
-	"VVH"  	 - 	 Van Vleck and Huber
-	"VVW"  	 - 	 Van Vleck and Weisskopf
-	"RQ"   	 - 	 Rosenkranz quadratic
-	"None" 	 - 	 No extra normalization
+        "VVH"  	 - 	 Van Vleck and Huber
+        "VVW"  	 - 	 Van Vleck and Weisskopf
+        "RQ"   	 - 	 Rosenkranz quadratic
+        "None" 	 - 	 No extra normalization
 
 See the theory guide for more details.
 
@@ -13812,13 +13389,9 @@ See the theory guide for more details.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetNormalization(Workspace& ws,
-const String& option) {
-abs_linesSetNormalization(Var::abs_lines(ws),
-option,
-Var::verbosity(ws));
+void abs_linesSetNormalization(Workspace& ws, const String& option) {
+  abs_linesSetNormalization(Var::abs_lines(ws), option, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetNormalization* for options
 
@@ -13832,22 +13405,20 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetNormalizationForMatch(Workspace& ws,
-const String& option,
-const QuantumIdentifier& ID) {
-abs_linesSetNormalizationForMatch(Var::abs_lines(ws),
-option,
-ID,
-Var::verbosity(ws));
+void abs_linesSetNormalizationForMatch(Workspace& ws, const String& option,
+                                       const QuantumIdentifier& ID) {
+  abs_linesSetNormalizationForMatch(Var::abs_lines(ws), option, ID,
+                                    Var::verbosity(ws));
 }
-
 
 /*! Sets population type for all lines.
 
 Available options:
-	"LTE"                          	 - 	 Standard distribution by temperature
-	"NLTE-VibrationalTemperatures" 	 - 	 LTE but with vibrational temperatures
-	"NLTE"                         	 - 	 Distribution is given as input
+        "LTE"                          	 - 	 Standard distribution by
+temperature
+        "NLTE-VibrationalTemperatures" 	 - 	 LTE but with vibrational
+temperatures
+        "NLTE"                         	 - 	 Distribution is given as input
 
 You must have set *nlte_field* and/or its ilk to use the NLTE methods.
 
@@ -13858,13 +13429,9 @@ You must have set *nlte_field* and/or its ilk to use the NLTE methods.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetPopulation(Workspace& ws,
-const String& option) {
-abs_linesSetPopulation(Var::abs_lines(ws),
-option,
-Var::verbosity(ws));
+void abs_linesSetPopulation(Workspace& ws, const String& option) {
+  abs_linesSetPopulation(Var::abs_lines(ws), option, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetPopulation* for options
 
@@ -13878,15 +13445,11 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetPopulationForMatch(Workspace& ws,
-const String& option,
-const QuantumIdentifier& ID) {
-abs_linesSetPopulationForMatch(Var::abs_lines(ws),
-option,
-ID,
-Var::verbosity(ws));
+void abs_linesSetPopulationForMatch(Workspace& ws, const String& option,
+                                    const QuantumIdentifier& ID) {
+  abs_linesSetPopulationForMatch(Var::abs_lines(ws), option, ID,
+                                 Var::verbosity(ws));
 }
-
 
 /*! Sets a quantum number to a new value
 
@@ -13902,16 +13465,12 @@ This function only acts on matches between the bands and input ID
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesSetQuantumNumberForMatch(Workspace& ws,
-const String& quantum_number,
-const Rational& value,
-const QuantumIdentifier& ID) {
-abs_linesSetQuantumNumberForMatch(Var::abs_lines(ws),
-quantum_number,
-value,
-ID,
-Var::verbosity(ws));
+                                       const String& quantum_number,
+                                       const Rational& value,
+                                       const QuantumIdentifier& ID) {
+  abs_linesSetQuantumNumberForMatch(Var::abs_lines(ws), quantum_number, value,
+                                    ID, Var::verbosity(ws));
 }
-
 
 /*! Sets reference temperature for all lines.
 
@@ -13922,13 +13481,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetT0(Workspace& ws,
-const Numeric& value) {
-abs_linesSetT0(Var::abs_lines(ws),
-value,
-Var::verbosity(ws));
+void abs_linesSetT0(Workspace& ws, const Numeric& value) {
+  abs_linesSetT0(Var::abs_lines(ws), value, Var::verbosity(ws));
 }
-
 
 /*! Sets reference temperature
 
@@ -13942,15 +13497,10 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesSetT0ForMatch(Workspace& ws,
-const Numeric& value,
-const QuantumIdentifier& ID) {
-abs_linesSetT0ForMatch(Var::abs_lines(ws),
-value,
-ID,
-Var::verbosity(ws));
+void abs_linesSetT0ForMatch(Workspace& ws, const Numeric& value,
+                            const QuantumIdentifier& ID) {
+  abs_linesSetT0ForMatch(Var::abs_lines(ws), value, ID, Var::verbosity(ws));
 }
-
 
 /*! Truncates all global quantum numbers
 and then recombine the line list.
@@ -13962,10 +13512,8 @@ and then recombine the line list.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_linesTruncateGlobalQuantumNumbers(Workspace& ws) {
-abs_linesTruncateGlobalQuantumNumbers(Var::abs_lines(ws),
-Var::verbosity(ws));
+  abs_linesTruncateGlobalQuantumNumbers(Var::abs_lines(ws), Var::verbosity(ws));
 }
-
 
 /*! As *abs_linesWriteSplitXML* but writes an array
 per species
@@ -13977,21 +13525,17 @@ per species
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesWriteSpeciesSplitXML(Workspace& ws,
-const String& basename) {
-abs_linesWriteSpeciesSplitXML(Var::output_file_format(ws),
-Var::abs_lines(ws),
-basename,
-Var::verbosity(ws));
+void abs_linesWriteSpeciesSplitXML(Workspace& ws, const String& basename) {
+  abs_linesWriteSpeciesSplitXML(Var::output_file_format(ws), Var::abs_lines(ws),
+                                basename, Var::verbosity(ws));
 }
-
 
 /*! Writes a split catalog, AbsorptionLines by AbsorptionLines.
 
 There will be one unique file generated per AbsorptionLines in *abs_lines*.
 
 The names of these files will be:
-	basename+"."+AbsorptionLines.SpeciesName()+"."+to_string(N)+".xml"
+        basename+"."+AbsorptionLines.SpeciesName()+"."+to_string(N)+".xml"
 where N>=0 and the species name is something line "H2O".
 
 @author Richard Larsson
@@ -14001,14 +13545,10 @@ where N>=0 and the species name is something line "H2O".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_linesWriteSplitXML(Workspace& ws,
-const String& basename) {
-abs_linesWriteSplitXML(Var::output_file_format(ws),
-Var::abs_lines(ws),
-basename,
-Var::verbosity(ws));
+void abs_linesWriteSplitXML(Workspace& ws, const String& basename) {
+  abs_linesWriteSplitXML(Var::output_file_format(ws), Var::abs_lines(ws),
+                         basename, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesChangeBaseParameterForMatchingLevel*
 
@@ -14018,23 +13558,18 @@ Var::verbosity(ws));
 @param[in] QI - Information to match the level.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching level's value
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesChangeBaseParameterForMatchingLevel(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change,
-const Index& relative=0) {
-abs_lines_per_speciesChangeBaseParameterForMatchingLevel(Var::abs_lines_per_species(ws),
-QI,
-parameter_name,
-change,
-relative,
-Var::verbosity(ws));
+void abs_lines_per_speciesChangeBaseParameterForMatchingLevel(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
+    const Numeric& change, const Index& relative = 0) {
+  abs_lines_per_speciesChangeBaseParameterForMatchingLevel(
+      Var::abs_lines_per_species(ws), QI, parameter_name, change, relative,
+      Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesChangeBaseParameterForMatchingLevel*
 
@@ -14044,23 +13579,19 @@ Var::verbosity(ws));
 @param[in] QI - Information to match the level.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching level's value
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesChangeBaseParameterForMatchingLevels(Workspace& ws,
-const ArrayOfQuantumIdentifier& QI,
-const String& parameter_name,
-const Vector& change,
-const Index& relative=0) {
-abs_lines_per_speciesChangeBaseParameterForMatchingLevels(Var::abs_lines_per_species(ws),
-QI,
-parameter_name,
-change,
-relative,
-Var::verbosity(ws));
+void abs_lines_per_speciesChangeBaseParameterForMatchingLevels(
+    Workspace& ws, const ArrayOfQuantumIdentifier& QI,
+    const String& parameter_name, const Vector& change,
+    const Index& relative = 0) {
+  abs_lines_per_speciesChangeBaseParameterForMatchingLevels(
+      Var::abs_lines_per_species(ws), QI, parameter_name, change, relative,
+      Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesChangeBaseParameterForMatchingLines*
 
@@ -14070,26 +13601,21 @@ Var::verbosity(ws));
 @param[in] QI - Information to match the line.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching line's value
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
-@param[in] loose_matching - Flag for loose match (0 means only complete matches) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
+@param[in] loose_matching - Flag for loose match (0 means only complete matches)
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesChangeBaseParameterForMatchingLines(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change,
-const Index& relative=0,
-const Index& loose_matching=0) {
-abs_lines_per_speciesChangeBaseParameterForMatchingLines(Var::abs_lines_per_species(ws),
-QI,
-parameter_name,
-change,
-relative,
-loose_matching,
-Var::verbosity(ws));
+void abs_lines_per_speciesChangeBaseParameterForMatchingLines(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
+    const Numeric& change, const Index& relative = 0,
+    const Index& loose_matching = 0) {
+  abs_lines_per_speciesChangeBaseParameterForMatchingLines(
+      Var::abs_lines_per_species(ws), QI, parameter_name, change, relative,
+      loose_matching, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesChangeBaseParameterForMatchingLines* but for single species
 
@@ -14099,30 +13625,22 @@ Var::verbosity(ws));
 @param[in] QI - Information to match the line.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching line's value
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
-@param[in] loose_matching - Flag for loose match (0 means only complete matches) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
+@param[in] loose_matching - Flag for loose match (0 means only complete matches)
+(default: 0)
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesChangeBaseParameterForSpecies(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change,
-const String& species_tag,
-const Index& relative=0,
-const Index& loose_matching=0) {
-abs_lines_per_speciesChangeBaseParameterForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-QI,
-parameter_name,
-change,
-relative,
-loose_matching,
-species_tag,
-Var::verbosity(ws));
+void abs_lines_per_speciesChangeBaseParameterForSpecies(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
+    const Numeric& change, const String& species_tag, const Index& relative = 0,
+    const Index& loose_matching = 0) {
+  abs_lines_per_speciesChangeBaseParameterForSpecies(
+      Var::abs_lines_per_species(ws), Var::abs_species(ws), QI, parameter_name,
+      change, relative, loose_matching, species_tag, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesChangeLineShapeModelParameterForMatchingLines*
 
@@ -14134,27 +13652,19 @@ Var::verbosity(ws));
 @param[in] coefficient - Coefficient of the parameter to be changed
 @param[in] species - Species of parameter to be changed
 @param[in] change - Change in the value found
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesChangeLineShapeModelParameterForMatchingLines(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter,
-const String& coefficient,
-const String& species,
-const Numeric& change,
-const Index& relative=0) {
-abs_lines_per_speciesChangeLineShapeModelParameterForMatchingLines(Var::abs_lines_per_species(ws),
-QI,
-parameter,
-coefficient,
-species,
-change,
-relative,
-Var::verbosity(ws));
+void abs_lines_per_speciesChangeLineShapeModelParameterForMatchingLines(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
+    const String& coefficient, const String& species, const Numeric& change,
+    const Index& relative = 0) {
+  abs_lines_per_speciesChangeLineShapeModelParameterForMatchingLines(
+      Var::abs_lines_per_species(ws), QI, parameter, coefficient, species,
+      change, relative, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesChangeLineShapeModelParameterForMatchingLines*
 
@@ -14166,31 +13676,20 @@ Var::verbosity(ws));
 @param[in] coefficient - Coefficient of the parameter to be changed
 @param[in] species - Species of parameter to be changed
 @param[in] change - Change in the value found
-@param[in] relative - Flag for relative change (0 is absolute change) (default: 0)
+@param[in] relative - Flag for relative change (0 is absolute change) (default:
+0)
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesChangeLineShapeModelParameterForSpecies(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter,
-const String& coefficient,
-const String& species,
-const Numeric& change,
-const String& species_tag,
-const Index& relative=0) {
-abs_lines_per_speciesChangeLineShapeModelParameterForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-QI,
-parameter,
-coefficient,
-species,
-change,
-relative,
-species_tag,
-Var::verbosity(ws));
+void abs_lines_per_speciesChangeLineShapeModelParameterForSpecies(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
+    const String& coefficient, const String& species, const Numeric& change,
+    const String& species_tag, const Index& relative = 0) {
+  abs_lines_per_speciesChangeLineShapeModelParameterForSpecies(
+      Var::abs_lines_per_species(ws), Var::abs_species(ws), QI, parameter,
+      coefficient, species, change, relative, species_tag, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesCompact*
 
@@ -14202,11 +13701,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesCompact(Workspace& ws) {
-abs_lines_per_speciesCompact(Var::abs_lines_per_species(ws),
-Var::f_grid(ws),
-Var::verbosity(ws));
+  abs_lines_per_speciesCompact(Var::abs_lines_per_species(ws), Var::f_grid(ws),
+                               Var::verbosity(ws));
 }
-
 
 /*! Split lines up into the different species.
 
@@ -14220,12 +13717,10 @@ There will be no respect for the internal layer of *abs_species*
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesCreateFromLines(Workspace& ws) {
-abs_lines_per_speciesCreateFromLines(Var::abs_lines_per_species(ws),
-Var::abs_lines(ws),
-Var::abs_species(ws),
-Var::verbosity(ws));
+  abs_lines_per_speciesCreateFromLines(Var::abs_lines_per_species(ws),
+                                       Var::abs_lines(ws), Var::abs_species(ws),
+                                       Var::verbosity(ws));
 }
-
 
 /*! See *abs_lines_per_speciesReadSplitCatalog* but expects
 a single file per species of *ArrayOfAbsorptionLines*
@@ -14234,20 +13729,18 @@ a single file per species of *ArrayOfAbsorptionLines*
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] basename - The path to the split catalog files
-@param[in] robust - Flag to continue in case nothing is found [0 throws, 1 continues] (default: 0)
+@param[in] robust - Flag to continue in case nothing is found [0 throws, 1
+continues] (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesReadSpeciesSplitCatalog(Workspace& ws,
-const String& basename,
-const Index& robust=0) {
-abs_lines_per_speciesReadSpeciesSplitCatalog(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-basename,
-robust,
-Var::verbosity(ws));
+                                                  const String& basename,
+                                                  const Index& robust = 0) {
+  abs_lines_per_speciesReadSpeciesSplitCatalog(Var::abs_lines_per_species(ws),
+                                               Var::abs_species(ws), basename,
+                                               robust, Var::verbosity(ws));
 }
-
 
 /*! Reads *abs_lines_per_species* split by
 *abs_linesWriteSplitXML* or *abs_lines_per_speciesWriteSplitXML*
@@ -14262,13 +13755,11 @@ Note that this will sort the isotopologue
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesReadSplitCatalog(Workspace& ws,
-const String& basename) {
-abs_lines_per_speciesReadSplitCatalog(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-basename,
-Var::verbosity(ws));
+                                           const String& basename) {
+  abs_lines_per_speciesReadSplitCatalog(Var::abs_lines_per_species(ws),
+                                        Var::abs_species(ws), basename,
+                                        Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetBaseParameterForMatchingLevel*
 
@@ -14281,17 +13772,13 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetBaseParameterForMatchingLevel(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change) {
-abs_lines_per_speciesSetBaseParameterForMatchingLevel(Var::abs_lines_per_species(ws),
-QI,
-parameter_name,
-change,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetBaseParameterForMatchingLevel(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
+    const Numeric& change) {
+  abs_lines_per_speciesSetBaseParameterForMatchingLevel(
+      Var::abs_lines_per_species(ws), QI, parameter_name, change,
+      Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetBaseParameterForMatchingLevel*
 
@@ -14304,17 +13791,13 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetBaseParameterForMatchingLevels(Workspace& ws,
-const ArrayOfQuantumIdentifier& QI,
-const String& parameter_name,
-const Vector& change) {
-abs_lines_per_speciesSetBaseParameterForMatchingLevels(Var::abs_lines_per_species(ws),
-QI,
-parameter_name,
-change,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetBaseParameterForMatchingLevels(
+    Workspace& ws, const ArrayOfQuantumIdentifier& QI,
+    const String& parameter_name, const Vector& change) {
+  abs_lines_per_speciesSetBaseParameterForMatchingLevels(
+      Var::abs_lines_per_species(ws), QI, parameter_name, change,
+      Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetBaseParameterForMatchingLines*
 
@@ -14324,23 +13807,18 @@ Var::verbosity(ws));
 @param[in] QI - Information to match the line.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching line's value
-@param[in] loose_matching - Flag for loose match (0 means only complete matches) (default: 0)
+@param[in] loose_matching - Flag for loose match (0 means only complete matches)
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetBaseParameterForMatchingLines(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change,
-const Index& loose_matching=0) {
-abs_lines_per_speciesSetBaseParameterForMatchingLines(Var::abs_lines_per_species(ws),
-QI,
-parameter_name,
-change,
-loose_matching,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetBaseParameterForMatchingLines(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
+    const Numeric& change, const Index& loose_matching = 0) {
+  abs_lines_per_speciesSetBaseParameterForMatchingLines(
+      Var::abs_lines_per_species(ws), QI, parameter_name, change,
+      loose_matching, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetBaseParameterForMatchingLines* but for single species
 
@@ -14350,27 +13828,20 @@ Var::verbosity(ws));
 @param[in] QI - Information to match the line.
 @param[in] parameter_name - Name of parameter to be replaced
 @param[in] change - Value with which to change matching line's value
-@param[in] loose_matching - Flag for loose match (0 means only complete matches) (default: 0)
+@param[in] loose_matching - Flag for loose match (0 means only complete matches)
+(default: 0)
 @param[in] species_tag - The species tag from *abs_species* to change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetBaseParameterForSpecies(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter_name,
-const Numeric& change,
-const String& species_tag,
-const Index& loose_matching=0) {
-abs_lines_per_speciesSetBaseParameterForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-QI,
-parameter_name,
-change,
-loose_matching,
-species_tag,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetBaseParameterForSpecies(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter_name,
+    const Numeric& change, const String& species_tag,
+    const Index& loose_matching = 0) {
+  abs_lines_per_speciesSetBaseParameterForSpecies(
+      Var::abs_lines_per_species(ws), Var::abs_species(ws), QI, parameter_name,
+      change, loose_matching, species_tag, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetCutoff*
 
@@ -14382,15 +13853,11 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetCutoff(Workspace& ws,
-const String& option,
-const Numeric& value) {
-abs_lines_per_speciesSetCutoff(Var::abs_lines_per_species(ws),
-option,
-value,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetCutoff(Workspace& ws, const String& option,
+                                    const Numeric& value) {
+  abs_lines_per_speciesSetCutoff(Var::abs_lines_per_species(ws), option, value,
+                                 Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetCutoff* for more options.
 
@@ -14405,17 +13872,12 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetCutoffForMatch(Workspace& ws,
-const String& option,
-const Numeric& value,
-const QuantumIdentifier& ID) {
-abs_lines_per_speciesSetCutoffForMatch(Var::abs_lines_per_species(ws),
-option,
-value,
-ID,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetCutoffForMatch(Workspace& ws, const String& option,
+                                            const Numeric& value,
+                                            const QuantumIdentifier& ID) {
+  abs_lines_per_speciesSetCutoffForMatch(Var::abs_lines_per_species(ws), option,
+                                         value, ID, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetCutoff* but for single species
 
@@ -14429,17 +13891,13 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesSetCutoffForSpecies(Workspace& ws,
-const String& option,
-const Numeric& value,
-const String& species_tag) {
-abs_lines_per_speciesSetCutoffForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-option,
-value,
-species_tag,
-Var::verbosity(ws));
+                                              const String& option,
+                                              const Numeric& value,
+                                              const String& species_tag) {
+  abs_lines_per_speciesSetCutoffForSpecies(Var::abs_lines_per_species(ws),
+                                           Var::abs_species(ws), option, value,
+                                           species_tag, Var::verbosity(ws));
 }
-
 
 /*! Empties *abs_lines_per_species* at the correct size.
 
@@ -14450,11 +13908,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesSetEmpty(Workspace& ws) {
-abs_lines_per_speciesSetEmpty(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-Var::verbosity(ws));
+  abs_lines_per_speciesSetEmpty(Var::abs_lines_per_species(ws),
+                                Var::abs_species(ws), Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLineShapeModelParameterForMatchingLines*
 
@@ -14469,21 +13925,13 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetLineShapeModelParameterForMatchingLines(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter,
-const String& coefficient,
-const String& species,
-const Numeric& change) {
-abs_lines_per_speciesSetLineShapeModelParameterForMatchingLines(Var::abs_lines_per_species(ws),
-QI,
-parameter,
-coefficient,
-species,
-change,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetLineShapeModelParameterForMatchingLines(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
+    const String& coefficient, const String& species, const Numeric& change) {
+  abs_lines_per_speciesSetLineShapeModelParameterForMatchingLines(
+      Var::abs_lines_per_species(ws), QI, parameter, coefficient, species,
+      change, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLineShapeModelParameterForMatchingLines*
 
@@ -14499,24 +13947,14 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetLineShapeModelParameterForSpecies(Workspace& ws,
-const QuantumIdentifier& QI,
-const String& parameter,
-const String& coefficient,
-const String& species,
-const Numeric& change,
-const String& species_tag) {
-abs_lines_per_speciesSetLineShapeModelParameterForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-QI,
-parameter,
-coefficient,
-species,
-change,
-species_tag,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetLineShapeModelParameterForSpecies(
+    Workspace& ws, const QuantumIdentifier& QI, const String& parameter,
+    const String& coefficient, const String& species, const Numeric& change,
+    const String& species_tag) {
+  abs_lines_per_speciesSetLineShapeModelParameterForSpecies(
+      Var::abs_lines_per_species(ws), Var::abs_species(ws), QI, parameter,
+      coefficient, species, change, species_tag, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLineShapeType*
 
@@ -14528,12 +13966,10 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesSetLineShapeType(Workspace& ws,
-const String& option) {
-abs_lines_per_speciesSetLineShapeType(Var::abs_lines_per_species(ws),
-option,
-Var::verbosity(ws));
+                                           const String& option) {
+  abs_lines_per_speciesSetLineShapeType(Var::abs_lines_per_species(ws), option,
+                                        Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLineShapeType* for options
 
@@ -14547,15 +13983,11 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetLineShapeTypeForMatch(Workspace& ws,
-const String& option,
-const QuantumIdentifier& ID) {
-abs_lines_per_speciesSetLineShapeTypeForMatch(Var::abs_lines_per_species(ws),
-option,
-ID,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetLineShapeTypeForMatch(
+    Workspace& ws, const String& option, const QuantumIdentifier& ID) {
+  abs_lines_per_speciesSetLineShapeTypeForMatch(Var::abs_lines_per_species(ws),
+                                                option, ID, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLineShapeType* but for single species
 
@@ -14567,16 +13999,12 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetLineShapeTypeForSpecies(Workspace& ws,
-const String& option,
-const String& species_tag) {
-abs_lines_per_speciesSetLineShapeTypeForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-option,
-species_tag,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetLineShapeTypeForSpecies(
+    Workspace& ws, const String& option, const String& species_tag) {
+  abs_lines_per_speciesSetLineShapeTypeForSpecies(
+      Var::abs_lines_per_species(ws), Var::abs_species(ws), option, species_tag,
+      Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLinemixingLimit*
 
@@ -14588,12 +14016,10 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesSetLinemixingLimit(Workspace& ws,
-const Numeric& value) {
-abs_lines_per_speciesSetLinemixingLimit(Var::abs_lines_per_species(ws),
-value,
-Var::verbosity(ws));
+                                             const Numeric& value) {
+  abs_lines_per_speciesSetLinemixingLimit(Var::abs_lines_per_species(ws), value,
+                                          Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLinemixingLimit* for values
 
@@ -14607,15 +14033,11 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetLinemixingLimitForMatch(Workspace& ws,
-const Numeric& value,
-const QuantumIdentifier& ID) {
-abs_lines_per_speciesSetLinemixingLimitForMatch(Var::abs_lines_per_species(ws),
-value,
-ID,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetLinemixingLimitForMatch(
+    Workspace& ws, const Numeric& value, const QuantumIdentifier& ID) {
+  abs_lines_per_speciesSetLinemixingLimitForMatch(
+      Var::abs_lines_per_species(ws), value, ID, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetLinemixingLimit* but for single species
 
@@ -14627,16 +14049,12 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetLinemixingLimitForSpecies(Workspace& ws,
-const Numeric& value,
-const String& species_tag) {
-abs_lines_per_speciesSetLinemixingLimitForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-value,
-species_tag,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetLinemixingLimitForSpecies(
+    Workspace& ws, const Numeric& value, const String& species_tag) {
+  abs_lines_per_speciesSetLinemixingLimitForSpecies(
+      Var::abs_lines_per_species(ws), Var::abs_species(ws), value, species_tag,
+      Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetMirroring*
 
@@ -14647,13 +14065,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetMirroring(Workspace& ws,
-const String& option) {
-abs_lines_per_speciesSetMirroring(Var::abs_lines_per_species(ws),
-option,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetMirroring(Workspace& ws, const String& option) {
+  abs_lines_per_speciesSetMirroring(Var::abs_lines_per_species(ws), option,
+                                    Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetMirroring* for options
 
@@ -14668,14 +14083,11 @@ This function only acts on matches between the bands and input ID
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesSetMirroringForMatch(Workspace& ws,
-const String& option,
-const QuantumIdentifier& ID) {
-abs_lines_per_speciesSetMirroringForMatch(Var::abs_lines_per_species(ws),
-option,
-ID,
-Var::verbosity(ws));
+                                               const String& option,
+                                               const QuantumIdentifier& ID) {
+  abs_lines_per_speciesSetMirroringForMatch(Var::abs_lines_per_species(ws),
+                                            option, ID, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetMirroring* but for single species
 
@@ -14688,15 +14100,12 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesSetMirroringForSpecies(Workspace& ws,
-const String& option,
-const String& species_tag) {
-abs_lines_per_speciesSetMirroringForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-option,
-species_tag,
-Var::verbosity(ws));
+                                                 const String& option,
+                                                 const String& species_tag) {
+  abs_lines_per_speciesSetMirroringForSpecies(Var::abs_lines_per_species(ws),
+                                              Var::abs_species(ws), option,
+                                              species_tag, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetNormalization*
 
@@ -14708,12 +14117,10 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesSetNormalization(Workspace& ws,
-const String& option) {
-abs_lines_per_speciesSetNormalization(Var::abs_lines_per_species(ws),
-option,
-Var::verbosity(ws));
+                                           const String& option) {
+  abs_lines_per_speciesSetNormalization(Var::abs_lines_per_species(ws), option,
+                                        Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetNormalization* for options
 
@@ -14727,15 +14134,11 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetNormalizationForMatch(Workspace& ws,
-const String& option,
-const QuantumIdentifier& ID) {
-abs_lines_per_speciesSetNormalizationForMatch(Var::abs_lines_per_species(ws),
-option,
-ID,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetNormalizationForMatch(
+    Workspace& ws, const String& option, const QuantumIdentifier& ID) {
+  abs_lines_per_speciesSetNormalizationForMatch(Var::abs_lines_per_species(ws),
+                                                option, ID, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetNormalization* but for single species
 
@@ -14747,16 +14150,12 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetNormalizationForSpecies(Workspace& ws,
-const String& option,
-const String& species_tag) {
-abs_lines_per_speciesSetNormalizationForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-option,
-species_tag,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetNormalizationForSpecies(
+    Workspace& ws, const String& option, const String& species_tag) {
+  abs_lines_per_speciesSetNormalizationForSpecies(
+      Var::abs_lines_per_species(ws), Var::abs_species(ws), option, species_tag,
+      Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetPopulation*
 
@@ -14767,13 +14166,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetPopulation(Workspace& ws,
-const String& option) {
-abs_lines_per_speciesSetPopulation(Var::abs_lines_per_species(ws),
-option,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetPopulation(Workspace& ws, const String& option) {
+  abs_lines_per_speciesSetPopulation(Var::abs_lines_per_species(ws), option,
+                                     Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetPopulation* for options
 
@@ -14788,14 +14184,11 @@ This function only acts on matches between the bands and input ID
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesSetPopulationForMatch(Workspace& ws,
-const String& option,
-const QuantumIdentifier& ID) {
-abs_lines_per_speciesSetPopulationForMatch(Var::abs_lines_per_species(ws),
-option,
-ID,
-Var::verbosity(ws));
+                                                const String& option,
+                                                const QuantumIdentifier& ID) {
+  abs_lines_per_speciesSetPopulationForMatch(Var::abs_lines_per_species(ws),
+                                             option, ID, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetPopulation* but for single species
 
@@ -14808,15 +14201,12 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesSetPopulationForSpecies(Workspace& ws,
-const String& option,
-const String& species_tag) {
-abs_lines_per_speciesSetPopulationForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-option,
-species_tag,
-Var::verbosity(ws));
+                                                  const String& option,
+                                                  const String& species_tag) {
+  abs_lines_per_speciesSetPopulationForSpecies(Var::abs_lines_per_species(ws),
+                                               Var::abs_species(ws), option,
+                                               species_tag, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetQuantumNumberForMatch*
 
@@ -14829,17 +14219,13 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetQuantumNumberForMatch(Workspace& ws,
-const String& quantum_number,
-const Rational& value,
-const QuantumIdentifier& ID) {
-abs_lines_per_speciesSetQuantumNumberForMatch(Var::abs_lines_per_species(ws),
-quantum_number,
-value,
-ID,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetQuantumNumberForMatch(
+    Workspace& ws, const String& quantum_number, const Rational& value,
+    const QuantumIdentifier& ID) {
+  abs_lines_per_speciesSetQuantumNumberForMatch(Var::abs_lines_per_species(ws),
+                                                quantum_number, value, ID,
+                                                Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetT0*
 
@@ -14850,13 +14236,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetT0(Workspace& ws,
-const Numeric& value) {
-abs_lines_per_speciesSetT0(Var::abs_lines_per_species(ws),
-value,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetT0(Workspace& ws, const Numeric& value) {
+  abs_lines_per_speciesSetT0(Var::abs_lines_per_species(ws), value,
+                             Var::verbosity(ws));
 }
-
 
 /*! Sets reference temperature
 
@@ -14870,15 +14253,11 @@ This function only acts on matches between the bands and input ID
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetT0ForMatch(Workspace& ws,
-const Numeric& value,
-const QuantumIdentifier& ID) {
-abs_lines_per_speciesSetT0ForMatch(Var::abs_lines_per_species(ws),
-value,
-ID,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetT0ForMatch(Workspace& ws, const Numeric& value,
+                                        const QuantumIdentifier& ID) {
+  abs_lines_per_speciesSetT0ForMatch(Var::abs_lines_per_species(ws), value, ID,
+                                     Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesSetT0* but for single species
 
@@ -14890,16 +14269,12 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesSetT0ForSpecies(Workspace& ws,
-const Numeric& value,
-const String& species_tag) {
-abs_lines_per_speciesSetT0ForSpecies(Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-value,
-species_tag,
-Var::verbosity(ws));
+void abs_lines_per_speciesSetT0ForSpecies(Workspace& ws, const Numeric& value,
+                                          const String& species_tag) {
+  abs_lines_per_speciesSetT0ForSpecies(Var::abs_lines_per_species(ws),
+                                       Var::abs_species(ws), value, species_tag,
+                                       Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesWriteSpeciesSplitXML*
 
@@ -14914,13 +14289,11 @@ generating identifiers for the order in *abs_species*
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lines_per_speciesWriteSpeciesSplitXML(Workspace& ws,
-const String& basename) {
-abs_lines_per_speciesWriteSpeciesSplitXML(Var::output_file_format(ws),
-Var::abs_lines_per_species(ws),
-basename,
-Var::verbosity(ws));
+                                               const String& basename) {
+  abs_lines_per_speciesWriteSpeciesSplitXML(Var::output_file_format(ws),
+                                            Var::abs_lines_per_species(ws),
+                                            basename, Var::verbosity(ws));
 }
-
 
 /*! See *abs_linesWriteSplitXML*
 
@@ -14934,14 +14307,11 @@ generating identifiers for the order in *abs_species*
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lines_per_speciesWriteSplitXML(Workspace& ws,
-const String& basename) {
-abs_lines_per_speciesWriteSplitXML(Var::output_file_format(ws),
-Var::abs_lines_per_species(ws),
-basename,
-Var::verbosity(ws));
+void abs_lines_per_speciesWriteSplitXML(Workspace& ws, const String& basename) {
+  abs_lines_per_speciesWriteSplitXML(Var::output_file_format(ws),
+                                     Var::abs_lines_per_species(ws), basename,
+                                     Var::verbosity(ws));
 }
-
 
 /*! Adapts a gas absorption lookup table to the current calculation.
 
@@ -14965,13 +14335,9 @@ always use this method to set it!
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lookupAdapt(Workspace& ws) {
-abs_lookupAdapt(Var::abs_lookup(ws),
-Var::abs_lookup_is_adapted(ws),
-Var::abs_species(ws),
-Var::f_grid(ws),
-Var::verbosity(ws));
+  abs_lookupAdapt(Var::abs_lookup(ws), Var::abs_lookup_is_adapted(ws),
+                  Var::abs_species(ws), Var::f_grid(ws), Var::verbosity(ws));
 }
-
 
 /*! Creates a gas absorption lookup table.
 
@@ -14995,21 +14361,12 @@ always H2O.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lookupCalc(Workspace& ws) {
-abs_lookupCalc(ws,
-Var::abs_lookup(ws),
-Var::abs_lookup_is_adapted(ws),
-Var::abs_species(ws),
-Var::abs_nls(ws),
-Var::f_grid(ws),
-Var::abs_p(ws),
-Var::abs_vmrs(ws),
-Var::abs_t(ws),
-Var::abs_t_pert(ws),
-Var::abs_nls_pert(ws),
-Var::abs_xsec_agenda(ws),
-Var::verbosity(ws));
+  abs_lookupCalc(ws, Var::abs_lookup(ws), Var::abs_lookup_is_adapted(ws),
+                 Var::abs_species(ws), Var::abs_nls(ws), Var::f_grid(ws),
+                 Var::abs_p(ws), Var::abs_vmrs(ws), Var::abs_t(ws),
+                 Var::abs_t_pert(ws), Var::abs_nls_pert(ws),
+                 Var::abs_xsec_agenda(ws), Var::verbosity(ws));
 }
-
 
 /*! Creates an empty gas absorption lookup table.
 
@@ -15023,10 +14380,8 @@ the empty table to an XML file, to see the file format.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lookupInit(Workspace& ws) {
-abs_lookupInit(Var::abs_lookup(ws),
-Var::verbosity(ws));
+  abs_lookupInit(Var::abs_lookup(ws), Var::verbosity(ws));
 }
-
 
 /*! Set up input parameters for abs_lookupCalc.
 
@@ -15050,37 +14405,29 @@ See also:
 @author Stefan Buehler
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] p_step - Maximum step in log10(p[Pa]). If the pressure grid is coarser than this, additional points are added until each log step is smaller than this. (default: 0.05)
-@param[in] t_step - The temperature variation grid step in Kelvin, for a 2D or 3D atmosphere. For a 1D atmosphere this parameter is not used. (default: 100)
-@param[in] h2o_step - The H2O variation grid step [fractional], if H2O variations are done (which is determined automatically, based on abs_species and the atmospheric dimension). For a 1D atmosphere this parameter is not used. (default: 100)
+@param[in] p_step - Maximum step in log10(p[Pa]). If the pressure grid is
+coarser than this, additional points are added until each log step is smaller
+than this. (default: 0.05)
+@param[in] t_step - The temperature variation grid step in Kelvin, for a 2D or
+3D atmosphere. For a 1D atmosphere this parameter is not used. (default: 100)
+@param[in] h2o_step - The H2O variation grid step [fractional], if H2O
+variations are done (which is determined automatically, based on abs_species and
+the atmospheric dimension). For a 1D atmosphere this parameter is not used.
+(default: 100)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lookupSetup(Workspace& ws,
-const Numeric& p_step=0.05,
-const Numeric& t_step=100,
-const Numeric& h2o_step=100) {
-abs_lookupSetup(Var::abs_p(ws),
-Var::abs_t(ws),
-Var::abs_t_pert(ws),
-Var::abs_vmrs(ws),
-Var::abs_nls(ws),
-Var::abs_nls_pert(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::atmfields_checked(ws),
-Var::abs_species(ws),
-Var::abs_p_interp_order(ws),
-Var::abs_t_interp_order(ws),
-Var::abs_nls_interp_order(ws),
-p_step,
-t_step,
-h2o_step,
-Var::verbosity(ws));
+void abs_lookupSetup(Workspace& ws, const Numeric& p_step = 0.05,
+                     const Numeric& t_step = 100,
+                     const Numeric& h2o_step = 100) {
+  abs_lookupSetup(Var::abs_p(ws), Var::abs_t(ws), Var::abs_t_pert(ws),
+                  Var::abs_vmrs(ws), Var::abs_nls(ws), Var::abs_nls_pert(ws),
+                  Var::atmosphere_dim(ws), Var::p_grid(ws), Var::t_field(ws),
+                  Var::vmr_field(ws), Var::atmfields_checked(ws),
+                  Var::abs_species(ws), Var::abs_p_interp_order(ws),
+                  Var::abs_t_interp_order(ws), Var::abs_nls_interp_order(ws),
+                  p_step, t_step, h2o_step, Var::verbosity(ws));
 }
-
 
 /*! Set up input parameters for abs_lookupCalc for batch calculations.
 
@@ -15108,8 +14455,8 @@ and *abs_t_pert* for the chosen interpolation order.
 
 The method checks each given field using *atmfields_checkedCalc*.
 If a field does not pass the check, a run-time error is thrown.
-To prevent this, the parameter *robust* can be set to one: Invalid 
-atmospheres are skipped, but the run continues. This matches the 
+To prevent this, the parameter *robust* can be set to one: Invalid
+atmospheres are skipped, but the run continues. This matches the
 robust behaviour of *ybatchCalc*.
 
 See also:
@@ -15118,46 +14465,39 @@ See also:
 @author Stefan Buehler
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] p_step - Grid step in log10(p[Pa]) (base 10 logarithm). (default: 0.05)
-@param[in] t_step - The temperature variation grid step in Kelvin. The true step can become finer than this, if required by the interpolation order. (default: 20)
-@param[in] h2o_step - The H2O variation grid step [fractional], if H2O variations are done (which is determined automatically, based on abs_species and the atmospheric dimension). As for T, the true step can turn out finer if required by the interpolation order. (default: 100)
-@param[in] extremes - You can give here explicit extreme values to add to abs_t_pert and abs_nls_pert. The order is [t_pert_min, t_pert_max, nls_pert_min, nls_pert_max]. (default: {})
+@param[in] p_step - Grid step in log10(p[Pa]) (base 10 logarithm). (default:
+0.05)
+@param[in] t_step - The temperature variation grid step in Kelvin. The true step
+can become finer than this, if required by the interpolation order. (default:
+20)
+@param[in] h2o_step - The H2O variation grid step [fractional], if H2O
+variations are done (which is determined automatically, based on abs_species and
+the atmospheric dimension). As for T, the true step can turn out finer if
+required by the interpolation order. (default: 100)
+@param[in] extremes - You can give here explicit extreme values to add to
+abs_t_pert and abs_nls_pert. The order is [t_pert_min, t_pert_max, nls_pert_min,
+nls_pert_max]. (default: {})
 @param[in] robust - A flag with value 1 or 0. If set to one, the batch
 setup will continue, even if individual fields are invalid.
 This is consistent with the behaviour of *ybatchCalc*. (default: 0)
-@param[in] check_gridnames - A flag with value 1 or 0. If set to one, the gridnames of 
- every *atm_fields_compact* are checked. (default: 0)
+@param[in] check_gridnames - A flag with value 1 or 0. If set to one, the
+gridnames of every *atm_fields_compact* are checked. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lookupSetupBatch(Workspace& ws,
-const Numeric& p_step=0.05,
-const Numeric& t_step=20,
-const Numeric& h2o_step=100,
-const Vector& extremes={},
-const Index& robust=0,
-const Index& check_gridnames=0) {
-abs_lookupSetupBatch(Var::abs_p(ws),
-Var::abs_t(ws),
-Var::abs_t_pert(ws),
-Var::abs_vmrs(ws),
-Var::abs_nls(ws),
-Var::abs_nls_pert(ws),
-Var::abs_species(ws),
-Var::batch_atm_fields_compact(ws),
-Var::abs_p_interp_order(ws),
-Var::abs_t_interp_order(ws),
-Var::abs_nls_interp_order(ws),
-Var::atmosphere_dim(ws),
-p_step,
-t_step,
-h2o_step,
-extremes,
-robust,
-check_gridnames,
-Var::verbosity(ws));
+void abs_lookupSetupBatch(Workspace& ws, const Numeric& p_step = 0.05,
+                          const Numeric& t_step = 20,
+                          const Numeric& h2o_step = 100,
+                          const Vector& extremes = {}, const Index& robust = 0,
+                          const Index& check_gridnames = 0) {
+  abs_lookupSetupBatch(
+      Var::abs_p(ws), Var::abs_t(ws), Var::abs_t_pert(ws), Var::abs_vmrs(ws),
+      Var::abs_nls(ws), Var::abs_nls_pert(ws), Var::abs_species(ws),
+      Var::batch_atm_fields_compact(ws), Var::abs_p_interp_order(ws),
+      Var::abs_t_interp_order(ws), Var::abs_nls_interp_order(ws),
+      Var::atmosphere_dim(ws), p_step, t_step, h2o_step, extremes, robust,
+      check_gridnames, Var::verbosity(ws));
 }
-
 
 /*! Set up input parameters for abs_lookupCalc for a wide range of
 atmospheric conditions.
@@ -15186,7 +14526,8 @@ min(H2O) / max(H2O) [VMR]: -5.52e-07 / 0.049
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] p_min - Pressure grid minimum [Pa]. (default: 0.5)
 @param[in] p_max - Pressure grid maximum [Pa]. (default: 110000)
-@param[in] p_step - Pressure grid step in log10(p[Pa]) (base 10 logarithm). (default: 0.05)
+@param[in] p_step - Pressure grid step in log10(p[Pa]) (base 10 logarithm).
+(default: 0.05)
 @param[in] t_min - Temperature grid minimum [K]. (default: 100)
 @param[in] t_max - Temperature grid maximum [K]. (default: 400)
 @param[in] h2o_min - Humidity grid minimum [fractional]. (default: 0)
@@ -15194,34 +14535,19 @@ min(H2O) / max(H2O) [VMR]: -5.52e-07 / 0.049
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_lookupSetupWide(Workspace& ws,
-const Numeric& p_min=0.5,
-const Numeric& p_max=110000,
-const Numeric& p_step=0.05,
-const Numeric& t_min=100,
-const Numeric& t_max=400,
-const Numeric& h2o_min=0,
-const Numeric& h2o_max=0.05) {
-abs_lookupSetupWide(Var::abs_p(ws),
-Var::abs_t(ws),
-Var::abs_t_pert(ws),
-Var::abs_vmrs(ws),
-Var::abs_nls(ws),
-Var::abs_nls_pert(ws),
-Var::abs_species(ws),
-Var::abs_p_interp_order(ws),
-Var::abs_t_interp_order(ws),
-Var::abs_nls_interp_order(ws),
-p_min,
-p_max,
-p_step,
-t_min,
-t_max,
-h2o_min,
-h2o_max,
-Var::verbosity(ws));
+void abs_lookupSetupWide(Workspace& ws, const Numeric& p_min = 0.5,
+                         const Numeric& p_max = 110000,
+                         const Numeric& p_step = 0.05,
+                         const Numeric& t_min = 100, const Numeric& t_max = 400,
+                         const Numeric& h2o_min = 0,
+                         const Numeric& h2o_max = 0.05) {
+  abs_lookupSetupWide(Var::abs_p(ws), Var::abs_t(ws), Var::abs_t_pert(ws),
+                      Var::abs_vmrs(ws), Var::abs_nls(ws),
+                      Var::abs_nls_pert(ws), Var::abs_species(ws),
+                      Var::abs_p_interp_order(ws), Var::abs_t_interp_order(ws),
+                      Var::abs_nls_interp_order(ws), p_min, p_max, p_step,
+                      t_min, t_max, h2o_min, h2o_max, Var::verbosity(ws));
 }
-
 
 /*! Test accuracy of absorption lookup table with Monte Carlo Algorithm.
 
@@ -15243,17 +14569,11 @@ Produces no workspace output, only output to the output streams.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lookupTestAccMC(Workspace& ws) {
-abs_lookupTestAccMC(ws,
-Var::abs_lookup(ws),
-Var::abs_lookup_is_adapted(ws),
-Var::abs_p_interp_order(ws),
-Var::abs_t_interp_order(ws),
-Var::abs_nls_interp_order(ws),
-Var::mc_seed(ws),
-Var::abs_xsec_agenda(ws),
-Var::verbosity(ws));
+  abs_lookupTestAccMC(ws, Var::abs_lookup(ws), Var::abs_lookup_is_adapted(ws),
+                      Var::abs_p_interp_order(ws), Var::abs_t_interp_order(ws),
+                      Var::abs_nls_interp_order(ws), Var::mc_seed(ws),
+                      Var::abs_xsec_agenda(ws), Var::verbosity(ws));
 }
-
 
 /*! Test accuracy of absorption lookup table.
 
@@ -15272,16 +14592,12 @@ Produces no workspace output, only output to the output streams.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_lookupTestAccuracy(Workspace& ws) {
-abs_lookupTestAccuracy(ws,
-Var::abs_lookup(ws),
-Var::abs_lookup_is_adapted(ws),
-Var::abs_p_interp_order(ws),
-Var::abs_t_interp_order(ws),
-Var::abs_nls_interp_order(ws),
-Var::abs_xsec_agenda(ws),
-Var::verbosity(ws));
+  abs_lookupTestAccuracy(
+      ws, Var::abs_lookup(ws), Var::abs_lookup_is_adapted(ws),
+      Var::abs_p_interp_order(ws), Var::abs_t_interp_order(ws),
+      Var::abs_nls_interp_order(ws), Var::abs_xsec_agenda(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Sets NLTE values manually
 
@@ -15294,15 +14610,10 @@ Touch
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_nlteFromRaw(Workspace& ws,
-const Matrix& data) {
-abs_nlteFromRaw(Var::abs_nlte(ws),
-Var::nlte_level_identifiers(ws),
-Var::nlte_vibrational_energies(ws),
-data,
-Var::verbosity(ws));
+void abs_nlteFromRaw(Workspace& ws, const Matrix& data) {
+  abs_nlteFromRaw(Var::abs_nlte(ws), Var::nlte_level_identifiers(ws),
+                  Var::nlte_vibrational_energies(ws), data, Var::verbosity(ws));
 }
-
 
 /*! Adds species tag groups to the list of absorption species.
 
@@ -15323,15 +14634,10 @@ add. Inside the String, separate the tags by commas
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_speciesAdd(Workspace& ws,
-const ArrayOfString& species) {
-abs_speciesAdd(Var::abs_species(ws),
-Var::propmat_clearsky_agenda_checked(ws),
-Var::abs_xsec_agenda_checked(ws),
-species,
-Var::verbosity(ws));
+void abs_speciesAdd(Workspace& ws, const ArrayOfString& species) {
+  abs_speciesAdd(Var::abs_species(ws), Var::propmat_clearsky_agenda_checked(ws),
+                 Var::abs_xsec_agenda_checked(ws), species, Var::verbosity(ws));
 }
-
 
 /*! Adds a species tag group to the list of absorption species and
 jacobian quantities.
@@ -15355,30 +14661,16 @@ method only handles a single tag group, in contrast to
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_speciesAdd2(Workspace& ws,
-const Vector& gin1,
-const Vector& gin2,
-const Vector& gin3,
-const String& species,
-const String& unit="vmr") {
-abs_speciesAdd2(ws,
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::propmat_clearsky_agenda_checked(ws),
-Var::abs_xsec_agenda_checked(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-gin1,
-gin2,
-gin3,
-species,
-unit,
-Var::verbosity(ws));
+void abs_speciesAdd2(Workspace& ws, const Vector& gin1, const Vector& gin2,
+                     const Vector& gin3, const String& species,
+                     const String& unit = "vmr") {
+  abs_speciesAdd2(ws, Var::abs_species(ws), Var::jacobian_quantities(ws),
+                  Var::jacobian_agenda(ws),
+                  Var::propmat_clearsky_agenda_checked(ws),
+                  Var::abs_xsec_agenda_checked(ws), Var::atmosphere_dim(ws),
+                  Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws), gin1,
+                  gin2, gin3, species, unit, Var::verbosity(ws));
 }
-
 
 /*! Sets *abs_species*[i][0] to all species in ARTS
 
@@ -15389,12 +14681,10 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_speciesDefineAll(Workspace& ws) {
-abs_speciesDefineAll(Var::abs_species(ws),
-Var::propmat_clearsky_agenda_checked(ws),
-Var::abs_xsec_agenda_checked(ws),
-Var::verbosity(ws));
+  abs_speciesDefineAll(Var::abs_species(ws),
+                       Var::propmat_clearsky_agenda_checked(ws),
+                       Var::abs_xsec_agenda_checked(ws), Var::verbosity(ws));
 }
-
 
 /*! Define one tag group for each species known to ARTS and included in an
 atmospheric scenario.
@@ -15412,15 +14702,11 @@ For example: /pool/lookup2/arts-data/atmosphere/fascod/tropical
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_speciesDefineAllInScenario(Workspace& ws,
-const String& basename) {
-abs_speciesDefineAllInScenario(Var::abs_species(ws),
-Var::propmat_clearsky_agenda_checked(ws),
-Var::abs_xsec_agenda_checked(ws),
-basename,
-Var::verbosity(ws));
+void abs_speciesDefineAllInScenario(Workspace& ws, const String& basename) {
+  abs_speciesDefineAllInScenario(
+      Var::abs_species(ws), Var::propmat_clearsky_agenda_checked(ws),
+      Var::abs_xsec_agenda_checked(ws), basename, Var::verbosity(ws));
 }
-
 
 /*! Sets  *abs_species* to be empty.
 
@@ -15431,10 +14717,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_speciesInit(Workspace& ws) {
-abs_speciesInit(Var::abs_species(ws),
-Var::verbosity(ws));
+  abs_speciesInit(Var::abs_species(ws), Var::verbosity(ws));
 }
-
 
 /*! Set up a list of absorption species tag groups.
 
@@ -15472,7 +14756,7 @@ Example:
                "H2O-PWR98" ]
 
    The first tag group selects all O3-666 lines between 500 and
-   501 GHz plus all O3-686 lines. 
+   501 GHz plus all O3-686 lines.
 
    The second tag group selects all remaining O3 transitions.
 
@@ -15511,15 +14795,11 @@ create. Inside the String, separate the tags by commas
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void abs_speciesSet(Workspace& ws,
-const ArrayOfString& species) {
-abs_speciesSet(Var::abs_species(ws),
-Var::abs_xsec_agenda_checked(ws),
-Var::propmat_clearsky_agenda_checked(ws),
-species,
-Var::verbosity(ws));
+void abs_speciesSet(Workspace& ws, const ArrayOfString& species) {
+  abs_speciesSet(Var::abs_species(ws), Var::abs_xsec_agenda_checked(ws),
+                 Var::propmat_clearsky_agenda_checked(ws), species,
+                 Var::verbosity(ws));
 }
-
 
 /*! Add gas absorption to first element of absorption vector.
 
@@ -15534,11 +14814,9 @@ absorption vector.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_vecAddGas(Workspace& ws) {
-abs_vecAddGas(Var::abs_vec(ws),
-Var::propmat_clearsky(ws),
-Var::verbosity(ws));
+  abs_vecAddGas(Var::abs_vec(ws), Var::propmat_clearsky(ws),
+                Var::verbosity(ws));
 }
-
 
 /*! Checks if the *abs_xsec_agenda* contains all necessary
 methods to calculate all the species in *abs_species*.
@@ -15553,13 +14831,10 @@ is used, e.g. *abs_lookupCalc*, *ybatchCalc*, *yCalc*
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_xsec_agenda_checkedCalc(Workspace& ws) {
-abs_xsec_agenda_checkedCalc(ws,
-Var::abs_xsec_agenda_checked(ws),
-Var::abs_species(ws),
-Var::abs_xsec_agenda(ws),
-Var::verbosity(ws));
+  abs_xsec_agenda_checkedCalc(ws, Var::abs_xsec_agenda_checked(ws),
+                              Var::abs_species(ws), Var::abs_xsec_agenda(ws),
+                              Var::verbosity(ws));
 }
-
 
 /*! Calculate absorption cross sections per tag group for HITRAN CIA continua.
 
@@ -15571,29 +14846,23 @@ runs, since subsequent functions will not be able to deal with NAN values.
 @author Stefan Buehler
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] T_extrapolfac - Temperature extrapolation factor (relative to grid spacing). (default: 0.5)
-@param[in] robust - Set to 1 to suppress runtime errors (and return NAN values instead). (default: 0)
+@param[in] T_extrapolfac - Temperature extrapolation factor (relative to grid
+spacing). (default: 0.5)
+@param[in] robust - Set to 1 to suppress runtime errors (and return NAN values
+instead). (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_xsec_per_speciesAddCIA(Workspace& ws,
-const Numeric& T_extrapolfac=0.5,
-const Index& robust=0) {
-abs_xsec_per_speciesAddCIA(Var::abs_xsec_per_species(ws),
-Var::dabs_xsec_per_species_dx(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::abs_species_active(ws),
-Var::f_grid(ws),
-Var::abs_p(ws),
-Var::abs_t(ws),
-Var::abs_vmrs(ws),
-Var::abs_cia_data(ws),
-T_extrapolfac,
-robust,
-Var::verbosity(ws));
+                                const Numeric& T_extrapolfac = 0.5,
+                                const Index& robust = 0) {
+  abs_xsec_per_speciesAddCIA(
+      Var::abs_xsec_per_species(ws), Var::dabs_xsec_per_species_dx(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws),
+      Var::abs_species_active(ws), Var::f_grid(ws), Var::abs_p(ws),
+      Var::abs_t(ws), Var::abs_vmrs(ws), Var::abs_cia_data(ws), T_extrapolfac,
+      robust, Var::verbosity(ws));
 }
-
 
 /*! Calculate absorption cross sections per tag group for continua.
 
@@ -15604,21 +14873,14 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_xsec_per_speciesAddConts(Workspace& ws) {
-abs_xsec_per_speciesAddConts(Var::abs_xsec_per_species(ws),
-Var::dabs_xsec_per_species_dx(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::abs_species_active(ws),
-Var::f_grid(ws),
-Var::abs_p(ws),
-Var::abs_t(ws),
-Var::abs_vmrs(ws),
-Var::abs_cont_names(ws),
-Var::abs_cont_parameters(ws),
-Var::abs_cont_models(ws),
-Var::verbosity(ws));
+  abs_xsec_per_speciesAddConts(
+      Var::abs_xsec_per_species(ws), Var::dabs_xsec_per_species_dx(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws),
+      Var::abs_species_active(ws), Var::f_grid(ws), Var::abs_p(ws),
+      Var::abs_t(ws), Var::abs_vmrs(ws), Var::abs_cont_names(ws),
+      Var::abs_cont_parameters(ws), Var::abs_cont_models(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Calculate absorption cross sections per tag group for HITRAN xsec species.
 
@@ -15635,29 +14897,22 @@ This method depends on the FFTW-3 library.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] apply_tfit - Apply temperature fit. (default: 1)
 @param[in] force_p - Positive value forces constant pressure [Pa]. (default: -1)
-@param[in] force_t - Positive value forces constant temperature [K]. (default: -1)
+@param[in] force_t - Positive value forces constant temperature [K]. (default:
+-1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_xsec_per_speciesAddHitranXsec(Workspace& ws,
-const Index& apply_tfit=1,
-const Numeric& force_p=-1,
-const Numeric& force_t=-1) {
-abs_xsec_per_speciesAddHitranXsec(Var::abs_xsec_per_species(ws),
-Var::dabs_xsec_per_species_dx(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::abs_species_active(ws),
-Var::f_grid(ws),
-Var::abs_p(ws),
-Var::abs_t(ws),
-Var::hitran_xsec_data(ws),
-apply_tfit,
-force_p,
-force_t,
-Var::verbosity(ws));
+                                       const Index& apply_tfit = 1,
+                                       const Numeric& force_p = -1,
+                                       const Numeric& force_t = -1) {
+  abs_xsec_per_speciesAddHitranXsec(
+      Var::abs_xsec_per_species(ws), Var::dabs_xsec_per_species_dx(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws),
+      Var::abs_species_active(ws), Var::f_grid(ws), Var::abs_p(ws),
+      Var::abs_t(ws), Var::hitran_xsec_data(ws), apply_tfit, force_p, force_t,
+      Var::verbosity(ws));
 }
-
 
 /*! Calculates the line spectrum for both attenuation and phase
 for each tag group and adds it to abs_xsec_per_species.
@@ -15669,32 +14924,22 @@ for each tag group and adds it to abs_xsec_per_species.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_xsec_per_speciesAddLines(Workspace& ws) {
-abs_xsec_per_speciesAddLines(Var::abs_xsec_per_species(ws),
-Var::src_xsec_per_species(ws),
-Var::dabs_xsec_per_species_dx(ws),
-Var::dsrc_xsec_per_species_dx(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::abs_species_active(ws),
-Var::f_grid(ws),
-Var::abs_p(ws),
-Var::abs_t(ws),
-Var::abs_nlte(ws),
-Var::abs_vmrs(ws),
-Var::abs_lines_per_species(ws),
-Var::isotopologue_ratios(ws),
-Var::partition_functions(ws),
-Var::lbl_checked(ws),
-Var::verbosity(ws));
+  abs_xsec_per_speciesAddLines(
+      Var::abs_xsec_per_species(ws), Var::src_xsec_per_species(ws),
+      Var::dabs_xsec_per_species_dx(ws), Var::dsrc_xsec_per_species_dx(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws),
+      Var::abs_species_active(ws), Var::f_grid(ws), Var::abs_p(ws),
+      Var::abs_t(ws), Var::abs_nlte(ws), Var::abs_vmrs(ws),
+      Var::abs_lines_per_species(ws), Var::isotopologue_ratios(ws),
+      Var::partition_functions(ws), Var::lbl_checked(ws), Var::verbosity(ws));
 }
-
 
 /*! Reimplementation of published O2 absorption line cross-section algorithm
 
 Based on:
-	Dmitriy S. Makarov, Mikhail Yu. Tretyakov, Philip W. Rosenkranz, JQSRT 243, 2020,
-	Revision of the 60-GHz atmospheric oxygen absorption band models for practical use,
-	https://doi.org/10.1016/j.jqsrt.2019.106798
+        Dmitriy S. Makarov, Mikhail Yu. Tretyakov, Philip W. Rosenkranz, JQSRT
+243, 2020, Revision of the 60-GHz atmospheric oxygen absorption band models for
+practical use, https://doi.org/10.1016/j.jqsrt.2019.106798
 
 Note that this is only really applicable to Earth and at lower altitudes.
 The only two tested derivatives are for frequency and for temperature but
@@ -15707,17 +14952,11 @@ other untested derivatives are available for all model parameters except a2
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_xsec_per_speciesAddPredefinedO2MPM2020(Workspace& ws) {
-abs_xsec_per_speciesAddPredefinedO2MPM2020(Var::abs_xsec_per_species(ws),
-Var::dabs_xsec_per_species_dx(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::f_grid(ws),
-Var::abs_p(ws),
-Var::abs_t(ws),
-Var::abs_vmrs(ws),
-Var::verbosity(ws));
+  abs_xsec_per_speciesAddPredefinedO2MPM2020(
+      Var::abs_xsec_per_species(ws), Var::dabs_xsec_per_species_dx(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws), Var::f_grid(ws),
+      Var::abs_p(ws), Var::abs_t(ws), Var::abs_vmrs(ws), Var::verbosity(ws));
 }
-
 
 /*! Initialize *abs_xsec_per_species*.
 
@@ -15733,20 +14972,13 @@ The size is determined from *abs_species*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void abs_xsec_per_speciesInit(Workspace& ws) {
-abs_xsec_per_speciesInit(Var::abs_xsec_per_species(ws),
-Var::src_xsec_per_species(ws),
-Var::dabs_xsec_per_species_dx(ws),
-Var::dsrc_xsec_per_species_dx(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::abs_species_active(ws),
-Var::f_grid(ws),
-Var::abs_p(ws),
-Var::abs_xsec_agenda_checked(ws),
-Var::nlte_do(ws),
-Var::verbosity(ws));
+  abs_xsec_per_speciesInit(
+      Var::abs_xsec_per_species(ws), Var::src_xsec_per_species(ws),
+      Var::dabs_xsec_per_species_dx(ws), Var::dsrc_xsec_per_species_dx(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws),
+      Var::abs_species_active(ws), Var::f_grid(ws), Var::abs_p(ws),
+      Var::abs_xsec_agenda_checked(ws), Var::nlte_do(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets up a gaussian antenna response.
 
@@ -15773,25 +15005,20 @@ The antenna repsonse is not normalised.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] fwhm - Full width at half-maximum
-@param[in] xwidth_si - Half-width of response, in terms of std. dev. (default: 3)
+@param[in] xwidth_si - Half-width of response, in terms of std. dev. (default:
+3)
 @param[in] dx_si - Grid spacing, in terms of std. dev. (default: 0.1)
 @param[in] do_2d - Set to 1 to create a 2D antenna pattern. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void antenna_responseGaussian(Workspace& ws,
-const Numeric& fwhm,
-const Numeric& xwidth_si=3,
-const Numeric& dx_si=0.1,
-const Index& do_2d=0) {
-antenna_responseGaussian(Var::antenna_response(ws),
-fwhm,
-xwidth_si,
-dx_si,
-do_2d,
-Var::verbosity(ws));
+void antenna_responseGaussian(Workspace& ws, const Numeric& fwhm,
+                              const Numeric& xwidth_si = 3,
+                              const Numeric& dx_si = 0.1,
+                              const Index& do_2d = 0) {
+  antenna_responseGaussian(Var::antenna_response(ws), fwhm, xwidth_si, dx_si,
+                           do_2d, Var::verbosity(ws));
 }
-
 
 /*! Sets up gaussian antenna responses.
 
@@ -15825,7 +15052,8 @@ The antenna repsonse is not normalised.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] leff - Effective size of the antenna
-@param[in] xwidth_si - Half-width of response, in terms of std. dev. (default: 3)
+@param[in] xwidth_si - Half-width of response, in terms of std. dev. (default:
+3)
 @param[in] dx_si - Grid spacing, in terms of std. dev. (default: 0.1)
 @param[in] nf - Number of points in frequency grid (must be >= 2)
 @param[in] fstart - Start point of frequency grid
@@ -15834,25 +15062,16 @@ The antenna repsonse is not normalised.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void antenna_responseVaryingGaussian(Workspace& ws,
-const Numeric& leff,
-const Index& nf,
-const Numeric& fstart,
-const Numeric& fstop,
-const Numeric& xwidth_si=3,
-const Numeric& dx_si=0.1,
-const Index& do_2d=0) {
-antenna_responseVaryingGaussian(Var::antenna_response(ws),
-leff,
-xwidth_si,
-dx_si,
-nf,
-fstart,
-fstop,
-do_2d,
-Var::verbosity(ws));
+void antenna_responseVaryingGaussian(Workspace& ws, const Numeric& leff,
+                                     const Index& nf, const Numeric& fstart,
+                                     const Numeric& fstop,
+                                     const Numeric& xwidth_si = 3,
+                                     const Numeric& dx_si = 0.1,
+                                     const Index& do_2d = 0) {
+  antenna_responseVaryingGaussian(Var::antenna_response(ws), leff, xwidth_si,
+                                  dx_si, nf, fstart, fstop, do_2d,
+                                  Var::verbosity(ws));
 }
-
 
 /*! Adds a constant field to atm_fields_compact.
 
@@ -15876,24 +15095,20 @@ For Earth this should be set to ["abs_species-H2O"]
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] name - Name of additional atmospheric field, with constant value.
 @param[in] value - Constant value of additional field.
-@param[in] prepend - 0 = Append to the end, 1 = insert at the beginning. (default: 0)
-@param[in] condensibles - List of condensibles used to scale down the VMR of the added species. (default: {})
+@param[in] prepend - 0 = Append to the end, 1 = insert at the beginning.
+(default: 0)
+@param[in] condensibles - List of condensibles used to scale down the VMR of the
+added species. (default: {})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void atm_fields_compactAddConstant(Workspace& ws,
-const String& name,
-const Numeric& value,
-const Index& prepend=0,
-const ArrayOfString& condensibles={}) {
-atm_fields_compactAddConstant(Var::atm_fields_compact(ws),
-name,
-value,
-prepend,
-condensibles,
-Var::verbosity(ws));
+void atm_fields_compactAddConstant(Workspace& ws, const String& name,
+                                   const Numeric& value,
+                                   const Index& prepend = 0,
+                                   const ArrayOfString& condensibles = {}) {
+  atm_fields_compactAddConstant(Var::atm_fields_compact(ws), name, value,
+                                prepend, condensibles, Var::verbosity(ws));
 }
-
 
 /*! Adds a field to atm_fields_compact, with interpolation.
 
@@ -15917,21 +15132,17 @@ tagging structure described for *atm_fields_compact*.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] name - Name of additional atmospheric field.
 @param[in] value - Value of additional atmospheric field.
-@param[in] prepend - 0 = Append to the end, 1 = insert at the beginning. (default: 0)
+@param[in] prepend - 0 = Append to the end, 1 = insert at the beginning.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void atm_fields_compactAddSpecies(Workspace& ws,
-const String& name,
-const GriddedField3& value,
-const Index& prepend=0) {
-atm_fields_compactAddSpecies(Var::atm_fields_compact(ws),
-name,
-value,
-prepend,
-Var::verbosity(ws));
+void atm_fields_compactAddSpecies(Workspace& ws, const String& name,
+                                  const GriddedField3& value,
+                                  const Index& prepend = 0) {
+  atm_fields_compactAddSpecies(Var::atm_fields_compact(ws), name, value,
+                               prepend, Var::verbosity(ws));
 }
-
 
 /*! Removes unrealistically small or erroneous data from
 *atm_fields_compact* (or other GriddedField4 data)
@@ -15948,17 +15159,15 @@ artefacts rather than physical values.)
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] threshold - Threshold below which *atm_fields_compact* values are set to zero.
+@param[in] threshold - Threshold below which *atm_fields_compact* values are set
+to zero.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void atm_fields_compactCleanup(Workspace& ws,
-const Numeric& threshold) {
-atm_fields_compactCleanup(Var::atm_fields_compact(ws),
-threshold,
-Var::verbosity(ws));
+void atm_fields_compactCleanup(Workspace& ws, const Numeric& threshold) {
+  atm_fields_compactCleanup(Var::atm_fields_compact(ws), threshold,
+                            Var::verbosity(ws));
 }
-
 
 /*! Initiates *atm_fields_compact* from a field.
 
@@ -15973,15 +15182,11 @@ but with one dimension as length 1.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void atm_fields_compactCreateFromField(Workspace& ws,
-const String& name,
-const GriddedField3& field) {
-atm_fields_compactCreateFromField(Var::atm_fields_compact(ws),
-name,
-field,
-Var::verbosity(ws));
+void atm_fields_compactCreateFromField(Workspace& ws, const String& name,
+                                       const GriddedField3& field) {
+  atm_fields_compactCreateFromField(Var::atm_fields_compact(ws), name, field,
+                                    Var::verbosity(ws));
 }
-
 
 /*! Sets *atm_fields_compact* from 1D fields given in form of a matrix.
 
@@ -16023,16 +15228,12 @@ Works only for *atmosphere_dim==1.*
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void atm_fields_compactFromMatrix(Workspace& ws,
-const Matrix& gin1,
-const ArrayOfString& field_names) {
-atm_fields_compactFromMatrix(Var::atm_fields_compact(ws),
-Var::atmosphere_dim(ws),
-gin1,
-field_names,
-Var::verbosity(ws));
+void atm_fields_compactFromMatrix(Workspace& ws, const Matrix& gin1,
+                                  const ArrayOfString& field_names) {
+  atm_fields_compactFromMatrix(Var::atm_fields_compact(ws),
+                               Var::atmosphere_dim(ws), gin1, field_names,
+                               Var::verbosity(ws));
 }
-
 
 /*! Calls *p_gridFromZRaw*, *lat_gridFromZRaw* and *lon_gridFromZRaw*
 
@@ -16043,16 +15244,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void atm_gridsFromZRaw(Workspace& ws,
-const Index& no_negZ=1) {
-atm_gridsFromZRaw(Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field_raw(ws),
-no_negZ,
-Var::verbosity(ws));
+void atm_gridsFromZRaw(Workspace& ws, const Index& no_negZ = 1) {
+  atm_gridsFromZRaw(Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                    Var::z_field_raw(ws), no_negZ, Var::verbosity(ws));
 }
-
 
 /*! Checks consistency of (clear sky) atmospheric fields.
 
@@ -16089,34 +15284,22 @@ important.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] negative_vmr_ok - Flag whether to accept vmr_field < 0. (default: 0)
-@param[in] bad_partition_functions_ok - Flag whether to accept partition functions not covering *t_field* range. (default: 0)
+@param[in] bad_partition_functions_ok - Flag whether to accept partition
+functions not covering *t_field* range. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void atmfields_checkedCalc(Workspace& ws,
-const Index& negative_vmr_ok=0,
-const Index& bad_partition_functions_ok=0) {
-atmfields_checkedCalc(Var::atmfields_checked(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::abs_species(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::partition_functions(ws),
-Var::abs_f_interp_order(ws),
-negative_vmr_ok,
-bad_partition_functions_ok,
-Var::verbosity(ws));
+void atmfields_checkedCalc(Workspace& ws, const Index& negative_vmr_ok = 0,
+                           const Index& bad_partition_functions_ok = 0) {
+  atmfields_checkedCalc(
+      Var::atmfields_checked(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+      Var::lat_grid(ws), Var::lon_grid(ws), Var::abs_species(ws),
+      Var::t_field(ws), Var::vmr_field(ws), Var::wind_u_field(ws),
+      Var::wind_v_field(ws), Var::wind_w_field(ws), Var::mag_u_field(ws),
+      Var::mag_v_field(ws), Var::mag_w_field(ws), Var::partition_functions(ws),
+      Var::abs_f_interp_order(ws), negative_vmr_ok, bad_partition_functions_ok,
+      Var::verbosity(ws));
 }
-
 
 /*! Checks consistency of geometric considerations of the atmosphere.
 
@@ -16146,19 +15329,12 @@ See further *atmgeom_checkedCalc*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void atmgeom_checkedCalc(Workspace& ws) {
-atmgeom_checkedCalc(Var::atmgeom_checked(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::verbosity(ws));
+  atmgeom_checkedCalc(Var::atmgeom_checked(ws), Var::atmosphere_dim(ws),
+                      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                      Var::z_field(ws), Var::refellipsoid(ws),
+                      Var::z_surface(ws), Var::lat_true(ws), Var::lon_true(ws),
+                      Var::verbosity(ws));
 }
-
 
 /*! Calculates the averaging kernel matrix describing the sensitivity of the
 OEM retrieval with respect to the true state of the system. A prerequisite
@@ -16172,12 +15348,8 @@ calculation in which the jacobian and the gain matrix dxdy have been calculated.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void avkCalc(Workspace& ws) {
-avkCalc(Var::avk(ws),
-Var::dxdy(ws),
-Var::jacobian(ws),
-Var::verbosity(ws));
+  avkCalc(Var::avk(ws), Var::dxdy(ws), Var::jacobian(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets up a rectangular channel response.
 
@@ -16193,13 +15365,10 @@ The method assumes that all channels have the same response.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void backend_channel_responseFlat(Workspace& ws,
-const Numeric& resolution) {
-backend_channel_responseFlat(Var::backend_channel_response(ws),
-resolution,
-Var::verbosity(ws));
+void backend_channel_responseFlat(Workspace& ws, const Numeric& resolution) {
+  backend_channel_responseFlat(Var::backend_channel_response(ws), resolution,
+                               Var::verbosity(ws));
 }
-
 
 /*! Sets up a gaussian backend channel response.
 
@@ -16225,22 +15394,18 @@ is max *dx_si*).
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] fwhm - Full width at half-maximum
-@param[in] xwidth_si - Half-width of response, in terms of std. dev. (default: {3})
+@param[in] xwidth_si - Half-width of response, in terms of std. dev. (default:
+{3})
 @param[in] dx_si - Grid spacing, in terms of std. dev. (default: {0.1})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void backend_channel_responseGaussian(Workspace& ws,
-const Vector& fwhm,
-const Vector& xwidth_si={3},
-const Vector& dx_si={0.1}) {
-backend_channel_responseGaussian(Var::backend_channel_response(ws),
-fwhm,
-xwidth_si,
-dx_si,
-Var::verbosity(ws));
+void backend_channel_responseGaussian(Workspace& ws, const Vector& fwhm,
+                                      const Vector& xwidth_si = {3},
+                                      const Vector& dx_si = {0.1}) {
+  backend_channel_responseGaussian(Var::backend_channel_response(ws), fwhm,
+                                   xwidth_si, dx_si, Var::verbosity(ws));
 }
-
 
 /*! Adds a constant field to batch_atm_fields_compact.
 
@@ -16252,24 +15417,20 @@ The format is equal to that WSM.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] name - Name of additional atmospheric field, with constant value.
 @param[in] value - Constant value of additional field.
-@param[in] prepend - 0 = Append to the end, 1 = insert at the beginning. (default: 0)
-@param[in] condensibles - List of condensibles used to scale down the VMR of the added species. (default: {})
+@param[in] prepend - 0 = Append to the end, 1 = insert at the beginning.
+(default: 0)
+@param[in] condensibles - List of condensibles used to scale down the VMR of the
+added species. (default: {})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void batch_atm_fields_compactAddConstant(Workspace& ws,
-const String& name,
-const Numeric& value,
-const Index& prepend=0,
-const ArrayOfString& condensibles={}) {
-batch_atm_fields_compactAddConstant(Var::batch_atm_fields_compact(ws),
-name,
-value,
-prepend,
-condensibles,
-Var::verbosity(ws));
+void batch_atm_fields_compactAddConstant(
+    Workspace& ws, const String& name, const Numeric& value,
+    const Index& prepend = 0, const ArrayOfString& condensibles = {}) {
+  batch_atm_fields_compactAddConstant(Var::batch_atm_fields_compact(ws), name,
+                                      value, prepend, condensibles,
+                                      Var::verbosity(ws));
 }
-
 
 /*! Adds a field to *batch_atm_fields_compact*, with interpolation.
 
@@ -16279,23 +15440,20 @@ in *batch_atm_fields_compact*. For details, see *atm_fields_compactAddSpecies*.
 @author Gerrit Holl
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] name - Name of additional atmospheric field. Use, e.g., vmr_ch4 for methane VMR
+@param[in] name - Name of additional atmospheric field. Use, e.g., vmr_ch4 for
+methane VMR
 @param[in] value - Value of additional atmospheric field.
-@param[in] prepend - 0 = Append to the end, 1 = insert at the beginning. (default: 0)
+@param[in] prepend - 0 = Append to the end, 1 = insert at the beginning.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void batch_atm_fields_compactAddSpecies(Workspace& ws,
-const String& name,
-const GriddedField3& value,
-const Index& prepend=0) {
-batch_atm_fields_compactAddSpecies(Var::batch_atm_fields_compact(ws),
-name,
-value,
-prepend,
-Var::verbosity(ws));
+void batch_atm_fields_compactAddSpecies(Workspace& ws, const String& name,
+                                        const GriddedField3& value,
+                                        const Index& prepend = 0) {
+  batch_atm_fields_compactAddSpecies(Var::batch_atm_fields_compact(ws), name,
+                                     value, prepend, Var::verbosity(ws));
 }
-
 
 /*! Removes unrealistically small or erroneous data from each data field
 of *batch_atm_fields_compact* (or other AerrayOfGriddedField4 data)
@@ -16312,17 +15470,15 @@ artefacts rather than physical values.)
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] threshold - Threshold below which *atm_fields_compact* values are set to zero.
+@param[in] threshold - Threshold below which *atm_fields_compact* values are set
+to zero.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void batch_atm_fields_compactCleanup(Workspace& ws,
-const Numeric& threshold) {
-batch_atm_fields_compactCleanup(Var::batch_atm_fields_compact(ws),
-threshold,
-Var::verbosity(ws));
+void batch_atm_fields_compactCleanup(Workspace& ws, const Numeric& threshold) {
+  batch_atm_fields_compactCleanup(Var::batch_atm_fields_compact(ws), threshold,
+                                  Var::verbosity(ws));
 }
-
 
 /*! Expand batch of 1D atmospheric state matrices to batch_atm_fields_compact.
 
@@ -16344,21 +15500,19 @@ batch_atm_fields_compactAddSpecies* for adding additional fields.
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] atmospheres_fields - Batch of atmospheres stored in one array of matrix
+@param[in] atmospheres_fields - Batch of atmospheres stored in one array of
+matrix
 @param[in] field_names - Order/names of atmospheric fields.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void batch_atm_fields_compactFromArrayOfMatrix(Workspace& ws,
-const ArrayOfMatrix& atmospheres_fields,
-const ArrayOfString& field_names) {
-batch_atm_fields_compactFromArrayOfMatrix(Var::batch_atm_fields_compact(ws),
-Var::atmosphere_dim(ws),
-atmospheres_fields,
-field_names,
-Var::verbosity(ws));
+void batch_atm_fields_compactFromArrayOfMatrix(
+    Workspace& ws, const ArrayOfMatrix& atmospheres_fields,
+    const ArrayOfString& field_names) {
+  batch_atm_fields_compactFromArrayOfMatrix(
+      Var::batch_atm_fields_compact(ws), Var::atmosphere_dim(ws),
+      atmospheres_fields, field_names, Var::verbosity(ws));
 }
-
 
 /*! Deactivates the cloud box.
 
@@ -16376,21 +15530,13 @@ consitent with *jacobian_quantities*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void cloudboxOff(Workspace& ws) {
-cloudboxOff(Var::cloudbox_on(ws),
-Var::ppath_inside_cloudbox_do(ws),
-Var::cloudbox_limits(ws),
-Var::iy_cloudbox_agenda(ws),
-Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::scat_species(ws),
-Var::scat_data(ws),
-Var::scat_data_raw(ws),
-Var::scat_data_checked(ws),
-Var::particle_masses(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  cloudboxOff(Var::cloudbox_on(ws), Var::ppath_inside_cloudbox_do(ws),
+              Var::cloudbox_limits(ws), Var::iy_cloudbox_agenda(ws),
+              Var::pnd_field(ws), Var::dpnd_field_dx(ws), Var::scat_species(ws),
+              Var::scat_data(ws), Var::scat_data_raw(ws),
+              Var::scat_data_checked(ws), Var::particle_masses(ws),
+              Var::jacobian_quantities(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets the cloud box to encompass the cloud given by the entries
 in *particle_field*.
@@ -16433,28 +15579,25 @@ Works only for *atmosphere_dim==1.*
 @author Jana Mendrok, Daniel Kreyling
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] particle_field - A collection of particle property fields (e.g. *particle_bulkprop_field*, *scat_species_mass_density_field*).
-@param[in] cloudbox_limits_old - Preset cloudbox limits, e.g. resulting from a previous run of *cloudboxSetAutomatically*. (default: {-1})
-@param[in] cloudbox_margin - Minimum distance [m] between lowest 'cloudy' level and cloudbox lower limit. If set to *-1* (default), the cloudbox lower limit is fixed to 0, i.e., corresponds to the lowest atmospheric level (or the surface). (default: -1)
+@param[in] particle_field - A collection of particle property fields (e.g.
+*particle_bulkprop_field*, *scat_species_mass_density_field*).
+@param[in] cloudbox_limits_old - Preset cloudbox limits, e.g. resulting from a
+previous run of *cloudboxSetAutomatically*. (default: {-1})
+@param[in] cloudbox_margin - Minimum distance [m] between lowest 'cloudy' level
+and cloudbox lower limit. If set to *-1* (default), the cloudbox lower limit is
+fixed to 0, i.e., corresponds to the lowest atmospheric level (or the surface).
+(default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudboxSetAutomatically(Workspace& ws,
-const Tensor4& particle_field,
-const ArrayOfIndex& cloudbox_limits_old={-1},
-const Numeric& cloudbox_margin=-1) {
-cloudboxSetAutomatically(Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-particle_field,
-cloudbox_limits_old,
-cloudbox_margin,
-Var::verbosity(ws));
+void cloudboxSetAutomatically(Workspace& ws, const Tensor4& particle_field,
+                              const ArrayOfIndex& cloudbox_limits_old = {-1},
+                              const Numeric& cloudbox_margin = -1) {
+  cloudboxSetAutomatically(
+      Var::cloudbox_on(ws), Var::cloudbox_limits(ws), Var::atmosphere_dim(ws),
+      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws), particle_field,
+      cloudbox_limits_old, cloudbox_margin, Var::verbosity(ws));
 }
-
 
 /*! Sets the cloudbox to cover the full atmosphere.
 
@@ -16465,15 +15608,10 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void cloudboxSetFullAtm(Workspace& ws) {
-cloudboxSetFullAtm(Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::verbosity(ws));
+  cloudboxSetFullAtm(Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+                     Var::atmosphere_dim(ws), Var::p_grid(ws),
+                     Var::lat_grid(ws), Var::lon_grid(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets the cloud box to encompass the given positions.
 
@@ -16509,28 +15647,14 @@ grid end points.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudboxSetManually(Workspace& ws,
-const Numeric& p1,
-const Numeric& p2,
-const Numeric& lat1,
-const Numeric& lat2,
-const Numeric& lon1,
-const Numeric& lon2) {
-cloudboxSetManually(Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-p1,
-p2,
-lat1,
-lat2,
-lon1,
-lon2,
-Var::verbosity(ws));
+void cloudboxSetManually(Workspace& ws, const Numeric& p1, const Numeric& p2,
+                         const Numeric& lat1, const Numeric& lat2,
+                         const Numeric& lon1, const Numeric& lon2) {
+  cloudboxSetManually(Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+                      Var::atmosphere_dim(ws), Var::p_grid(ws),
+                      Var::lat_grid(ws), Var::lon_grid(ws), p1, p2, lat1, lat2,
+                      lon1, lon2, Var::verbosity(ws));
 }
-
 
 /*! Sets the cloud box to encompass the given positions.
 
@@ -16550,28 +15674,15 @@ The altitude limit is then set to the end point of *p_grid*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudboxSetManuallyAltitude(Workspace& ws,
-const Numeric& z1,
-const Numeric& z2,
-const Numeric& lat1,
-const Numeric& lat2,
-const Numeric& lon1,
-const Numeric& lon2) {
-cloudboxSetManuallyAltitude(Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::z_field(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-z1,
-z2,
-lat1,
-lat2,
-lon1,
-lon2,
-Var::verbosity(ws));
+void cloudboxSetManuallyAltitude(Workspace& ws, const Numeric& z1,
+                                 const Numeric& z2, const Numeric& lat1,
+                                 const Numeric& lat2, const Numeric& lon1,
+                                 const Numeric& lon2) {
+  cloudboxSetManuallyAltitude(Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+                              Var::atmosphere_dim(ws), Var::z_field(ws),
+                              Var::lat_grid(ws), Var::lon_grid(ws), z1, z2,
+                              lat1, lat2, lon1, lon2, Var::verbosity(ws));
 }
-
 
 /*! Checks consistency and validity of the cloudbox governing variables.
 
@@ -16603,32 +15714,17 @@ is set to 1.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudbox_checkedCalc(Workspace& ws,
-const Index& negative_pnd_ok=0) {
-cloudbox_checkedCalc(Var::cloudbox_checked(ws),
-Var::atmfields_checked(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::z_surface(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::jacobian_quantities(ws),
-Var::scat_data(ws),
-Var::scat_species(ws),
-Var::particle_masses(ws),
-Var::abs_species(ws),
-negative_pnd_ok,
-Var::verbosity(ws));
+void cloudbox_checkedCalc(Workspace& ws, const Index& negative_pnd_ok = 0) {
+  cloudbox_checkedCalc(
+      Var::cloudbox_checked(ws), Var::atmfields_checked(ws),
+      Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), Var::z_field(ws), Var::z_surface(ws),
+      Var::wind_u_field(ws), Var::wind_v_field(ws), Var::wind_w_field(ws),
+      Var::cloudbox_on(ws), Var::cloudbox_limits(ws), Var::pnd_field(ws),
+      Var::dpnd_field_dx(ws), Var::jacobian_quantities(ws), Var::scat_data(ws),
+      Var::scat_species(ws), Var::particle_masses(ws), Var::abs_species(ws),
+      negative_pnd_ok, Var::verbosity(ws));
 }
-
 
 /*! Extracts a part of an existing *cloudbox_field*.
 
@@ -16657,26 +15753,17 @@ Indexes for dimensions not used are ignored.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudbox_fieldCrop(Workspace& ws,
-const Index& new_limit0=0,
-const Index& new_limit1=0,
-const Index& new_limit2=0,
-const Index& new_limit3=0,
-const Index& new_limit4=0,
-const Index& new_limit5=0) {
-cloudbox_fieldCrop(Var::cloudbox_field(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::cloudbox_on(ws),
-new_limit0,
-new_limit1,
-new_limit2,
-new_limit3,
-new_limit4,
-new_limit5,
-Var::verbosity(ws));
+void cloudbox_fieldCrop(Workspace& ws, const Index& new_limit0 = 0,
+                        const Index& new_limit1 = 0,
+                        const Index& new_limit2 = 0,
+                        const Index& new_limit3 = 0,
+                        const Index& new_limit4 = 0,
+                        const Index& new_limit5 = 0) {
+  cloudbox_fieldCrop(Var::cloudbox_field(ws), Var::cloudbox_limits(ws),
+                     Var::atmosphere_dim(ws), Var::cloudbox_on(ws), new_limit0,
+                     new_limit1, new_limit2, new_limit3, new_limit4, new_limit5,
+                     Var::verbosity(ws));
 }
-
 
 /*! Interpolate clearsky field on all gridpoints in cloudbox.
 
@@ -16699,19 +15786,13 @@ used.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void cloudbox_fieldSetClearsky(Workspace& ws,
-const Index& all_frequencies=1) {
-cloudbox_fieldSetClearsky(Var::cloudbox_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::cloudbox_on(ws),
-Var::doit_is_initialized(ws),
-all_frequencies,
-Var::verbosity(ws));
+                               const Index& all_frequencies = 1) {
+  cloudbox_fieldSetClearsky(Var::cloudbox_field(ws), Var::p_grid(ws),
+                            Var::lat_grid(ws), Var::lon_grid(ws),
+                            Var::cloudbox_limits(ws), Var::atmosphere_dim(ws),
+                            Var::cloudbox_on(ws), Var::doit_is_initialized(ws),
+                            all_frequencies, Var::verbosity(ws));
 }
-
 
 /*! This method sets the initial field inside the cloudbox to a
 constant value.
@@ -16722,23 +15803,17 @@ control file by *value*.
 @author Claudia Emde
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] value - A vector containing *stokes_dim* elements with the value of the initial field for each Stokes dimension.
+@param[in] value - A vector containing *stokes_dim* elements with the value of
+the initial field for each Stokes dimension.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudbox_fieldSetConst(Workspace& ws,
-const Vector& value) {
-cloudbox_fieldSetConst(Var::cloudbox_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-value,
-Var::verbosity(ws));
+void cloudbox_fieldSetConst(Workspace& ws, const Vector& value) {
+  cloudbox_fieldSetConst(Var::cloudbox_field(ws), Var::p_grid(ws),
+                         Var::lat_grid(ws), Var::lon_grid(ws),
+                         Var::cloudbox_limits(ws), Var::atmosphere_dim(ws),
+                         Var::stokes_dim(ws), value, Var::verbosity(ws));
 }
-
 
 /*! This method sets the initial field inside the cloudbox to a
 constant value per frequency slice.
@@ -16749,23 +15824,17 @@ dimension in the control file by *value*.
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] value - A matrix containing *stokes_dim* elements per frequency (row) with the value of the initial field for each frequency and Stokes dimension.
+@param[in] value - A matrix containing *stokes_dim* elements per frequency (row)
+with the value of the initial field for each frequency and Stokes dimension.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudbox_fieldSetConstPerFreq(Workspace& ws,
-const Matrix& value) {
-cloudbox_fieldSetConstPerFreq(Var::cloudbox_field(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-value,
-Var::verbosity(ws));
+void cloudbox_fieldSetConstPerFreq(Workspace& ws, const Matrix& value) {
+  cloudbox_fieldSetConstPerFreq(
+      Var::cloudbox_field(ws), Var::p_grid(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), Var::cloudbox_limits(ws), Var::atmosphere_dim(ws),
+      Var::stokes_dim(ws), value, Var::verbosity(ws));
 }
-
 
 /*! Sets the initial cloudbox intensity field *cloudbox_field* from a
 precalculated field.
@@ -16782,23 +15851,18 @@ clearsky incoming field as, e.g., calculated by *DoitGetIncoming*.
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] cloudbox_field_precalc - Precalculated radiation field (of type *cloudbox_field*)
+@param[in] cloudbox_field_precalc - Precalculated radiation field (of type
+*cloudbox_field*)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void cloudbox_fieldSetFromPrecalc(Workspace& ws,
-const Tensor7& cloudbox_field_precalc) {
-cloudbox_fieldSetFromPrecalc(Var::cloudbox_field(ws),
-Var::za_grid(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::cloudbox_limits(ws),
-Var::doit_is_initialized(ws),
-cloudbox_field_precalc,
-Var::verbosity(ws));
+                                  const Tensor7& cloudbox_field_precalc) {
+  cloudbox_fieldSetFromPrecalc(
+      Var::cloudbox_field(ws), Var::za_grid(ws), Var::f_grid(ws),
+      Var::atmosphere_dim(ws), Var::stokes_dim(ws), Var::cloudbox_limits(ws),
+      Var::doit_is_initialized(ws), cloudbox_field_precalc, Var::verbosity(ws));
 }
-
 
 /*! RT calculation in cloudbox with fixed scattering integral (1D).
 
@@ -16817,29 +15881,16 @@ It is recommended to use *cloudbox_fieldUpdateSeq1D*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void cloudbox_fieldUpdate1D(Workspace& ws) {
-cloudbox_fieldUpdate1D(ws,
-Var::cloudbox_field_mono(ws),
-Var::doit_scat_field(ws),
-Var::cloudbox_limits(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::vmr_field(ws),
-Var::spt_calc_agenda(ws),
-Var::za_grid(ws),
-Var::pnd_field(ws),
-Var::ppath_step_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::p_grid(ws),
-Var::z_field(ws),
-Var::refellipsoid(ws),
-Var::t_field(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-Var::surface_rtprop_agenda(ws),
-Var::doit_za_interp(ws),
-Var::verbosity(ws));
+  cloudbox_fieldUpdate1D(
+      ws, Var::cloudbox_field_mono(ws), Var::doit_scat_field(ws),
+      Var::cloudbox_limits(ws), Var::propmat_clearsky_agenda(ws),
+      Var::vmr_field(ws), Var::spt_calc_agenda(ws), Var::za_grid(ws),
+      Var::pnd_field(ws), Var::ppath_step_agenda(ws), Var::ppath_lmax(ws),
+      Var::ppath_lraytrace(ws), Var::p_grid(ws), Var::z_field(ws),
+      Var::refellipsoid(ws), Var::t_field(ws), Var::f_grid(ws),
+      Var::f_index(ws), Var::surface_rtprop_agenda(ws), Var::doit_za_interp(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! RT calculation in cloudbox with fixed scattering integral.
 
@@ -16853,42 +15904,27 @@ information refer to AUG.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] normalize - Apply normalization to scattered field. (default: 1)
-@param[in] norm_error_threshold - Error threshold for scattered field correction factor. (default: 1.0)
-@param[in] norm_debug - Debugging flag. Set to 1 to output normalization factor to out0. (default: 0)
+@param[in] norm_error_threshold - Error threshold for scattered field correction
+factor. (default: 1.0)
+@param[in] norm_debug - Debugging flag. Set to 1 to output normalization factor
+to out0. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudbox_fieldUpdateSeq1D(Workspace& ws,
-const Index& normalize=1,
-const Numeric& norm_error_threshold=1.0,
-const Index& norm_debug=0) {
-cloudbox_fieldUpdateSeq1D(ws,
-Var::cloudbox_field_mono(ws),
-Var::doit_scat_field(ws),
-Var::cloudbox_limits(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::vmr_field(ws),
-Var::spt_calc_agenda(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::pnd_field(ws),
-Var::ppath_step_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::p_grid(ws),
-Var::z_field(ws),
-Var::refellipsoid(ws),
-Var::t_field(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-Var::surface_rtprop_agenda(ws),
-Var::doit_za_interp(ws),
-normalize,
-norm_error_threshold,
-norm_debug,
-Var::verbosity(ws));
+void cloudbox_fieldUpdateSeq1D(Workspace& ws, const Index& normalize = 1,
+                               const Numeric& norm_error_threshold = 1.0,
+                               const Index& norm_debug = 0) {
+  cloudbox_fieldUpdateSeq1D(
+      ws, Var::cloudbox_field_mono(ws), Var::doit_scat_field(ws),
+      Var::cloudbox_limits(ws), Var::propmat_clearsky_agenda(ws),
+      Var::vmr_field(ws), Var::spt_calc_agenda(ws), Var::za_grid(ws),
+      Var::aa_grid(ws), Var::pnd_field(ws), Var::ppath_step_agenda(ws),
+      Var::ppath_lmax(ws), Var::ppath_lraytrace(ws), Var::p_grid(ws),
+      Var::z_field(ws), Var::refellipsoid(ws), Var::t_field(ws),
+      Var::f_grid(ws), Var::f_index(ws), Var::surface_rtprop_agenda(ws),
+      Var::doit_za_interp(ws), normalize, norm_error_threshold, norm_debug,
+      Var::verbosity(ws));
 }
-
 
 /*! RT calculation in cloudbox with fixed scattering integral.
 
@@ -16908,24 +15944,14 @@ be used for limb simulations.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void cloudbox_fieldUpdateSeq1DPP(Workspace& ws) {
-cloudbox_fieldUpdateSeq1DPP(ws,
-Var::cloudbox_field_mono(ws),
-Var::za_index(ws),
-Var::doit_scat_field(ws),
-Var::cloudbox_limits(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::vmr_field(ws),
-Var::spt_calc_agenda(ws),
-Var::za_grid(ws),
-Var::pnd_field(ws),
-Var::p_grid(ws),
-Var::z_field(ws),
-Var::t_field(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-Var::verbosity(ws));
+  cloudbox_fieldUpdateSeq1DPP(
+      ws, Var::cloudbox_field_mono(ws), Var::za_index(ws),
+      Var::doit_scat_field(ws), Var::cloudbox_limits(ws),
+      Var::propmat_clearsky_agenda(ws), Var::vmr_field(ws),
+      Var::spt_calc_agenda(ws), Var::za_grid(ws), Var::pnd_field(ws),
+      Var::p_grid(ws), Var::z_field(ws), Var::t_field(ws), Var::f_grid(ws),
+      Var::f_index(ws), Var::verbosity(ws));
 }
-
 
 /*! RT calculation in cloudbox with fixed scattering integral.
 
@@ -16944,31 +15970,16 @@ calculations.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void cloudbox_fieldUpdateSeq3D(Workspace& ws) {
-cloudbox_fieldUpdateSeq3D(ws,
-Var::cloudbox_field_mono(ws),
-Var::doit_scat_field(ws),
-Var::cloudbox_limits(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::vmr_field(ws),
-Var::spt_calc_agenda(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::pnd_field(ws),
-Var::ppath_step_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::refellipsoid(ws),
-Var::t_field(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-Var::doit_za_interp(ws),
-Var::verbosity(ws));
+  cloudbox_fieldUpdateSeq3D(
+      ws, Var::cloudbox_field_mono(ws), Var::doit_scat_field(ws),
+      Var::cloudbox_limits(ws), Var::propmat_clearsky_agenda(ws),
+      Var::vmr_field(ws), Var::spt_calc_agenda(ws), Var::za_grid(ws),
+      Var::aa_grid(ws), Var::pnd_field(ws), Var::ppath_step_agenda(ws),
+      Var::ppath_lmax(ws), Var::ppath_lraytrace(ws), Var::p_grid(ws),
+      Var::lat_grid(ws), Var::lon_grid(ws), Var::z_field(ws),
+      Var::refellipsoid(ws), Var::t_field(ws), Var::f_grid(ws),
+      Var::f_index(ws), Var::doit_za_interp(ws), Var::verbosity(ws));
 }
-
 
 /*! Iterative solution of the VRTE (DOIT method).
 
@@ -16987,24 +15998,20 @@ Note: The atmospheric dimensionality *atmosphere_dim* can be
 @author Claudia Emde, Jakob Doerr
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] accelerated - Index wether to accelerate only the intensity (1) or the whole Stokes Vector (4) (default: 0)
+@param[in] accelerated - Index wether to accelerate only the intensity (1) or
+the whole Stokes Vector (4) (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudbox_field_monoIterate(Workspace& ws,
-const Index& accelerated=0) {
-cloudbox_field_monoIterate(ws,
-Var::cloudbox_field_mono(ws),
-Var::doit_scat_field_agenda(ws),
-Var::doit_rte_agenda(ws),
-Var::doit_conv_test_agenda(ws),
-accelerated,
-Var::verbosity(ws));
+void cloudbox_field_monoIterate(Workspace& ws, const Index& accelerated = 0) {
+  cloudbox_field_monoIterate(
+      ws, Var::cloudbox_field_mono(ws), Var::doit_scat_field_agenda(ws),
+      Var::doit_rte_agenda(ws), Var::doit_conv_test_agenda(ws), accelerated,
+      Var::verbosity(ws));
 }
 
-
 /*! Interpolate *cloudbox_field_mono* back to the original p_grid.
-For detailed description, see *OptimizeDoitPressureGrid*. 
+For detailed description, see *OptimizeDoitPressureGrid*.
 
 @author Jakob Doerr
 
@@ -17013,13 +16020,10 @@ For detailed description, see *OptimizeDoitPressureGrid*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void cloudbox_field_monoOptimizeReverse(Workspace& ws) {
-cloudbox_field_monoOptimizeReverse(Var::cloudbox_field_mono(ws),
-Var::p_grid_orig(ws),
-Var::p_grid(ws),
-Var::cloudbox_limits(ws),
-Var::verbosity(ws));
+  cloudbox_field_monoOptimizeReverse(
+      Var::cloudbox_field_mono(ws), Var::p_grid_orig(ws), Var::p_grid(ws),
+      Var::cloudbox_limits(ws), Var::verbosity(ws));
 }
-
 
 /*! This method sets the initial field inside the cloudbox to a
 constant value. The method works only for monochromatic
@@ -17031,27 +16035,22 @@ control file by *value*.
 @author Claudia Emde
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] value - A vector containing 4 elements with the value of the initial field for each Stokes dimension.
+@param[in] value - A vector containing 4 elements with the value of the initial
+field for each Stokes dimension.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void cloudbox_field_monoSetConst(Workspace& ws,
-const Vector& value) {
-cloudbox_field_monoSetConst(Var::cloudbox_field_mono(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-value,
-Var::verbosity(ws));
+void cloudbox_field_monoSetConst(Workspace& ws, const Vector& value) {
+  cloudbox_field_monoSetConst(Var::cloudbox_field_mono(ws), Var::p_grid(ws),
+                              Var::lat_grid(ws), Var::lon_grid(ws),
+                              Var::cloudbox_limits(ws), Var::atmosphere_dim(ws),
+                              Var::stokes_dim(ws), value, Var::verbosity(ws));
 }
 
-
-/*! Reads *collision_coefficients* and *collision_line_identifiers* from location on filesystem
-with many species.  The species in this location must match *abs_species*.  The location
-must also contain an ArrayOfQuantumIdentifier file ending with qid.xml
+/*! Reads *collision_coefficients* and *collision_line_identifiers* from
+location on filesystem with many species.  The species in this location must
+match *abs_species*.  The location must also contain an ArrayOfQuantumIdentifier
+file ending with qid.xml
 
 @author Richard Larsson
 
@@ -17061,14 +16060,11 @@ must also contain an ArrayOfQuantumIdentifier file ending with qid.xml
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void collision_coefficientsFromSplitFiles(Workspace& ws,
-const String& basename="./") {
-collision_coefficientsFromSplitFiles(Var::collision_coefficients(ws),
-Var::collision_line_identifiers(ws),
-Var::abs_species(ws),
-basename,
-Var::verbosity(ws));
+                                          const String& basename = "./") {
+  collision_coefficientsFromSplitFiles(
+      Var::collision_coefficients(ws), Var::collision_line_identifiers(ws),
+      Var::abs_species(ws), basename, Var::verbosity(ws));
 }
-
 
 /*! Set complex refractive index to a constant value.
 
@@ -17083,15 +16079,11 @@ set to the value 0).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void complex_refr_indexConstant(Workspace& ws,
-const Numeric& refr_index_real,
-const Numeric& refr_index_imag) {
-complex_refr_indexConstant(Var::complex_refr_index(ws),
-refr_index_real,
-refr_index_imag,
-Var::verbosity(ws));
+void complex_refr_indexConstant(Workspace& ws, const Numeric& refr_index_real,
+                                const Numeric& refr_index_imag) {
+  complex_refr_indexConstant(Var::complex_refr_index(ws), refr_index_real,
+                             refr_index_imag, Var::verbosity(ws));
 }
-
 
 /*! Refractive index of ice following Matzler06 parameterization.
 
@@ -17117,15 +16109,11 @@ J. Geophys. Res., 113, D14220, doi:10.1029/2007JD009744.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void complex_refr_indexIceMatzler06(Workspace& ws,
-const Vector& data_f_grid,
-const Vector& data_T_grid) {
-complex_refr_indexIceMatzler06(Var::complex_refr_index(ws),
-data_f_grid,
-data_T_grid,
-Var::verbosity(ws));
+void complex_refr_indexIceMatzler06(Workspace& ws, const Vector& data_f_grid,
+                                    const Vector& data_T_grid) {
+  complex_refr_indexIceMatzler06(Var::complex_refr_index(ws), data_f_grid,
+                                 data_T_grid, Var::verbosity(ws));
 }
-
 
 /*! Refractive index of ice following Warren84 parameterization.
 
@@ -17162,15 +16150,11 @@ of Ice from 250 to 400 nm, Geophys. Res. Lett. 18, 1233-1235
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void complex_refr_indexIceWarren84(Workspace& ws,
-const Vector& data_f_grid,
-const Vector& data_T_grid) {
-complex_refr_indexIceWarren84(Var::complex_refr_index(ws),
-data_f_grid,
-data_T_grid,
-Var::verbosity(ws));
+void complex_refr_indexIceWarren84(Workspace& ws, const Vector& data_f_grid,
+                                   const Vector& data_T_grid) {
+  complex_refr_indexIceWarren84(Var::complex_refr_index(ws), data_f_grid,
+                                data_T_grid, Var::verbosity(ws));
 }
-
 
 /*! Complex refractive index of liquid water according to Liebe 1993.
 
@@ -17192,15 +16176,187 @@ accuracy of the parametrization below 0 C is not known by us.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void complex_refr_indexWaterLiebe93(Workspace& ws,
-const Vector& data_f_grid,
-const Vector& data_T_grid) {
-complex_refr_indexWaterLiebe93(Var::complex_refr_index(ws),
-data_f_grid,
-data_T_grid,
-Var::verbosity(ws));
+void complex_refr_indexWaterLiebe93(Workspace& ws, const Vector& data_f_grid,
+                                    const Vector& data_T_grid) {
+  complex_refr_indexWaterLiebe93(Var::complex_refr_index(ws), data_f_grid,
+                                 data_T_grid, Var::verbosity(ws));
 }
 
+/*! Create 1D covariance matrix.
+
+Creates a 1D covariance matrix for two retrieval quantities on given
+ grids from a given functional form. Elements  of the covariance matrix
+are computed as
+ S_{i,j} = sigma_i * sigma_j * f(d_{i,j} / l_{i,j})
+ where d_{i,j} is the distance between the two grid points and l_{i,j}
+ the mean of the correlation lengths of the grid points.
+
+ If a cutoff value co is given elements with absolute value less than this
+ are set to zero.
+
+The following functional forms are available:
+  "exp": f(x) = exp(-x)
+  "lin": f(x) = 1.0 - x, for x > 1.0, 0.0 otherwise
+  "gauss": f(x) = exp(-x^2)
+
+@author Simon Pfreundschuh
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] out - The matrix in which to store the covariance matrix.
+@param[in] grid_1 - The retrieval grid for the first retrieval quantity.
+@param[in] grid_2 - The retrieval grid for the second retrieval quantity. (If
+empty taken as grid_1) (default: {})
+@param[in] sigma_1 - The variances of the first retrieval quantity.
+@param[in] sigma_2 - The variances of the second retrieval quantity.(If empty
+taken as sigma_1) (default: {})
+@param[in] cls_1 - The correlations lengths of the first retrieval quantity.
+@param[in] cls_2 - The correlations lengths of the second retrieval quantity.(If
+empty taken as cls_1) (default: {})
+@param[in] co - The cutoff value for covariance matrix elements. (default: 0.0)
+@param[in] fname - The name of the functional form to use.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void covmat1D(Workspace& ws, Any_0& out, const Vector& grid_1,
+              const Vector& sigma_1, const Vector& cls_1, const String& fname,
+              const Vector& grid_2 = {}, const Vector& sigma_2 = {},
+              const Vector& cls_2 = {}, const Numeric& co = 0.0) {
+  covmat1D(out, grid_1, grid_2, sigma_1, sigma_2, cls_1, cls_2, co, fname,
+           Var::verbosity(ws));
+}
+
+/*! Create Markov Process Covariance Matrix.
+
+Create a markov process covariance matrix for a retrieval quantity on
+ evenly spaced 1D grid. The correlation between two grid points i,j is
+ is computed as
+ cov(i,j) = sigma[i] * sigma[j] * exp(- d(i,j) / lc)
+ where d(i,j) = abs(grid[i] - grid[j]).
+
+This function also sets covmat_inv_block to the analytically computed inverse
+of the covariance matrix of the markov provess, which is tri-diagonal. Note
+that this requires the retrieval grid to be evenly spaced.
+
+@author Simon Pfreundschuh
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] out - The matrix in which to store the covariance matrix.
+@param[out] out_inverse - The matrix in which to store the inverse of the
+covariance matrix.
+@param[in] grid - The retrieval grid.
+@param[in] sigma - The vairance for each grid point.
+@param[in] lc - The correlation length of the Markov process.
+@param[in] co - The cutoff value below which elements will be set to 0.0
+(default: 0.0)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0, typename Any_1>
+void covmat1DMarkov(Workspace& ws, Any_0& out, Any_1& out_inverse,
+                    const Vector& grid, const Vector& sigma, const Numeric& lc,
+                    const Numeric& co = 0.0) {
+  covmat1DMarkov(out, out_inverse, grid, sigma, lc, co, Var::verbosity(ws));
+}
+
+/*! Sets the matrix in covmat_block to a diagonal matrix with the variances
+provided in *vars* as diagonal elements.
+Also sets covmat_block_inv to the inverse of the block so that the
+computation of the inverse is avoided.
+
+@author Simon Pfreundschuh
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[out] out - The matrix in which to store the covariance matrix.
+@param[out] out_inverse - The matrix in which to store the inverse of the
+covariance matrix.
+@param[in] vars - Variances to be used as diagonal elements of covmat_block.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0, typename Any_1>
+void covmatDiagonal(Workspace& ws, Any_0& out, Any_1& out_inverse,
+                    const Vector& vars) {
+  covmatDiagonal(out, out_inverse, vars, Var::verbosity(ws));
+}
+
+/*! Add a block to the measurement covariance matrix *covmat_se*
+
+This functions adds a given dense or sparse matrix as block to the covariance
+matrix *covmat_sx*. The position of the block can be given by the generic
+arguments *i* and *j*. Note that diagonal blocks must be added in order starting
+from in  the top left corner. If an off-diagonal block is added it must have
+corresponding existing blocks on the diagonal and these must be consistent with
+the dimensions of the block.  If *i* and *j*  are not provided, the blok will be
+added at the first free spot on the diagonal.
+
+@author Simon Pfreundschuh
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] block - The block to add to the covariance matrix
+@param[in] i - Index of a retrieval quantity. Must satisfy *i* <= *j*. (default:
+-1)
+@param[in] j - Index of a retrieval quantity. Must satisfy *i* <= *j*. (default:
+-1)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void covmat_seAddBlock(Workspace& ws, const Any_0& block, const Index& i = -1,
+                       const Index& j = -1) {
+  covmat_seAddBlock(Var::covmat_se(ws), block, i, j, Var::verbosity(ws));
+}
+
+/*! Add the inverse of a block to covariance matrix *covmat_se*
+
+This functions adds a given matrix as the inverse of a block in the covariance
+matrix *covmat_se*. The purpose of this function is to allow the user to
+to use a precomputed inverse for this block in the covariance matrix, that may
+for example have been obtained analytically.
+
+This function requires the corresponding non-inverse block to already be present
+in *covmat_se*
+
+ Note that for this to work this retrieval quantity must be independent from
+other retrieval quantities that do not have an inverse. Otherwise the inverse
+will be ignored and recomputed numerically.
+
+For the rest, the same requirements as for *covmat_seAddBlock* apply.
+
+@author Simon Pfreundschuh
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] block - The inverse block to add to the covariance matrix
+@param[in] i - Index of a retrieval quantity. Must satisfy *i* <= *j*. (default:
+-1)
+@param[in] j - Index of a retrieval quantity. Must satisfy *i* <= *j*. (default:
+-1)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void covmat_seAddInverseBlock(Workspace& ws, const Any_0& block,
+                              const Index& i = -1, const Index& j = -1) {
+  covmat_seAddInverseBlock(Var::covmat_se(ws), block, i, j, Var::verbosity(ws));
+}
+
+/*! Set covmat_se to a given matrix.
+
+This sets the measurement covariance matrix *covmat_se* to
+the matrix given by the generic input *covmat*. The covariance
+matrix can be of type CovarianceMatrix, Matrix or Sparse.
+
+@author Simon Pfreundschuh
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] covmat - The matrix to set as the covariance matrix.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void covmat_seSet(Workspace& ws, const Any_0& covmat) {
+  covmat_seSet(Var::covmat_se(ws), covmat, Var::verbosity(ws));
+}
 
 /*! Calculates the covariance matrix describing the error due to uncertainties
 in the observation system. The uncertainties of the observation system are
@@ -17217,12 +16373,9 @@ computation where also the gain matrix has been computed.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void covmat_soCalc(Workspace& ws) {
-covmat_soCalc(Var::covmat_so(ws),
-Var::dxdy(ws),
-Var::covmat_se(ws),
-Var::verbosity(ws));
+  covmat_soCalc(Var::covmat_so(ws), Var::dxdy(ws), Var::covmat_se(ws),
+                Var::verbosity(ws));
 }
-
 
 /*! Calculates the covariance matrix describing the error due to smoothing.
 The calculation of *covmat_ss* also requires the averaging kernel matrix *avk*
@@ -17235,38 +16388,116 @@ to be computed after a successful OEM calculation.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void covmat_ssCalc(Workspace& ws) {
-covmat_ssCalc(Var::covmat_ss(ws),
-Var::avk(ws),
-Var::covmat_sx(ws),
-Var::verbosity(ws));
+  covmat_ssCalc(Var::covmat_ss(ws), Var::avk(ws), Var::covmat_sx(ws),
+                Var::verbosity(ws));
 }
 
+/*! Add a block to the a priori covariance matrix *covmat_sx*
 
-/*! Extract the square root of the diagonal of the state space covariance matrix.
-This function extracts the diagonal of the state space covariance matrix
+This functions adds a given matrix as a block in the covariance
+matrix *covmat_sx*. The position of the block can be given by the generic
+arguments *i* and *j*, which should give the index of the retrieval quantity in
+*jacobian_quantities*, which is given just by the order the quantities have been
+added to the retrieval.
+
+If arguments *i* and *j* are omitted, the block will be added as diagonal block
+for the last added retrieval quantity.
+
+If provided, the index *i* must be less than or equal to *j*. Also the provided
+block must be consistent with the corresponding retrieval quantities.
+
+@author Simon Pfreundschuh
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] block - The block to add to the covariance matrix
+@param[in] i - Index of a retrieval quantity. Must satisfy *i* <= *j*. (default:
+-1)
+@param[in] j - Index of a retrieval quantity. Must satisfy *i* <= *j*. (default:
+-1)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void covmat_sxAddBlock(Workspace& ws, const Any_0& block, const Index& i = -1,
+                       const Index& j = -1) {
+  covmat_sxAddBlock(Var::covmat_sx(ws), Var::jacobian_quantities(ws), block, i,
+                    j, Var::verbosity(ws));
+}
+
+/*! Add the inverse of a block in covariance matrix *covmat_sx*
+
+This functions adds a given matrix as the inverse of a block in the covariance
+matrix *covmat_sx*. The purpose of this function is to allow the user to
+to use a precomputed inverse for this block in the covariance matrix, the may
+for example by obtained analytically.
+
+This function requires the non-inverse block to already be present in
+*covmat_sx*
+
+ Note that for this to work this retrieval quantity must be independent from
+other retrieval quantities that do not have an inverse. Otherwise the inverse
+will be ignored and recomputed numerically.
+
+For the rest, the same requirements as for *covmat_sxAddBlock* apply.
+
+@author Simon Pfreundschuh
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] block - The inverse block to add to the covariance matrix
+@param[in] i - Index of a retrieval quantity. Must satisfy *i* <= *j*. (default:
+-1)
+@param[in] j - Index of a retrieval quantity. Must satisfy *i* <= *j*. (default:
+-1)
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void covmat_sxAddInverseBlock(Workspace& ws, const Any_0& block,
+                              const Index& i = -1, const Index& j = -1) {
+  covmat_sxAddInverseBlock(Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                           block, i, j, Var::verbosity(ws));
+}
+
+/*! Extract the square root of the diagonal of the state space covariance
+matrix. This function extracts the diagonal of the state space covariance matrix
 *covmat_sx* and computes its square root. The resulting vector can then
 be used as *x_norm* argument for the OEM method to avoid scaling problems.
 
 @author Simon Pfreundschuh
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[out] x_norm - The vector containing the square root of the diagonal elements of *covmat_sx*
+@param[out] x_norm - The vector containing the square root of the diagonal
+elements of *covmat_sx*
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void covmat_sxExtractSqrtDiagonal(Workspace& ws,
-Vector& x_norm) {
-covmat_sxExtractSqrtDiagonal(x_norm,
-Var::covmat_sx(ws),
-Var::verbosity(ws));
+void covmat_sxExtractSqrtDiagonal(Workspace& ws, Vector& x_norm) {
+  covmat_sxExtractSqrtDiagonal(x_norm, Var::covmat_sx(ws), Var::verbosity(ws));
 }
 
+/*! Set covmat_sx to a given matrix.
+
+This sets the measurement covariance matrix *covmat_sx* to
+the matrix given by the generic input *covmat*. The covariance
+matrix can be of type CovarianceMatrix, Matrix or Sparse.
+
+@author Simon Pfreundschuh
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] covmat - The matrix to set as the covariance matrix.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void covmat_sxSet(Workspace& ws, const Any_0& covmat) {
+  covmat_sxSet(Var::covmat_sx(ws), covmat, Var::verbosity(ws));
+}
 
 /*! Calculates maximum and area equivalent diameters from volume
 equivalent diameter.
 
 This is primarily a help function for using the T-matrix method
-and only a few particle shapes are handled. 
+and only a few particle shapes are handled.
 For shapes handled and further comments on the input arguments, see
 *scat_data_singleTmatrix*.
 
@@ -17282,32 +16513,28 @@ either (pi*d^2)/4 or (h*d).
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[out] diameter_max - Maximum dimension of the particle.
-@param[out] diameter_area_equ - Maximum axial area equivalent diameter of the particle, see above.
+@param[out] diameter_area_equ - Maximum axial area equivalent diameter of the
+particle, see above.
 @param[in] shape - Particle shape.
 @param[in] diameter_volume_equ - Particle equivalent volume diameter.
 @param[in] aspect_ratio - Particle aspect ratio.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void diameter_maxFromDiameter_volume_equ(Workspace& ws,
-Numeric& diameter_max,
-Numeric& diameter_area_equ,
-const String& shape,
-const Numeric& diameter_volume_equ,
-const Numeric& aspect_ratio) {
-diameter_maxFromDiameter_volume_equ(diameter_max,
-diameter_area_equ,
-shape,
-diameter_volume_equ,
-aspect_ratio,
-Var::verbosity(ws));
+void diameter_maxFromDiameter_volume_equ(Workspace& ws, Numeric& diameter_max,
+                                         Numeric& diameter_area_equ,
+                                         const String& shape,
+                                         const Numeric& diameter_volume_equ,
+                                         const Numeric& aspect_ratio) {
+  diameter_maxFromDiameter_volume_equ(diameter_max, diameter_area_equ, shape,
+                                      diameter_volume_equ, aspect_ratio,
+                                      Var::verbosity(ws));
 }
-
 
 /*! Converts from maximum to volume equivalent diameter.
 
 This is primarily a help function for using the T-matrix part
-and only a few particle shapes are handled. 
+and only a few particle shapes are handled.
 For shapes handled and further comments on the input arguments,
 see *scat_data_singleTmatrix*.
 
@@ -17326,19 +16553,14 @@ Also the volume is provided. It is simply sqrt(pi*dveq^3/6).
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void diameter_volume_equFromDiameter_max(Workspace& ws,
-Numeric& diameter_volume_equ,
-Numeric& volume,
-const String& shape,
-const Numeric& diameter_max,
-const Numeric& aspect_ratio) {
-diameter_volume_equFromDiameter_max(diameter_volume_equ,
-volume,
-shape,
-diameter_max,
-aspect_ratio,
-Var::verbosity(ws));
+                                         Numeric& diameter_volume_equ,
+                                         Numeric& volume, const String& shape,
+                                         const Numeric& diameter_max,
+                                         const Numeric& aspect_ratio) {
+  diameter_volume_equFromDiameter_max(diameter_volume_equ, volume, shape,
+                                      diameter_max, aspect_ratio,
+                                      Var::verbosity(ws));
 }
-
 
 /*! DOIT convergence test (maximum absolute difference).
 
@@ -17348,34 +16570,32 @@ component separately. The convergence test is fullfilled under the
 following conditions:
    |I(m+1) - I(m)| < epsilon_1     Intensity.
    |Q(m+1) - Q(m)| < epsilon_2     The other Stokes components.
-   |U(m+1) - U(m)| < epsilon_3   
-   |V(m+1) - V(m)| < epsilon_4   
+   |U(m+1) - U(m)| < epsilon_3
+   |V(m+1) - V(m)| < epsilon_4
 These conditions have to be valid for all positions in the
 cloudbox and for all directions.
 
 @author Claudia Emde
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] epsilon - Limits for convergence. A vector with length matching *stokes_dim* with unit [W / (m^2 Hz sr)].
-@param[in] max_iterations - Maximum number of iterations allowed to reach convergencelimit. (default: 100)
-@param[in] nonconv_return_nan - Flag whether to accept result at max_iterations (0=default)or whether to return NaNs in case of non-convergence atmax_iterations (default: 0)
+@param[in] epsilon - Limits for convergence. A vector with length matching
+*stokes_dim* with unit [W / (m^2 Hz sr)].
+@param[in] max_iterations - Maximum number of iterations allowed to reach
+convergencelimit. (default: 100)
+@param[in] nonconv_return_nan - Flag whether to accept result at max_iterations
+(0=default)or whether to return NaNs in case of non-convergence atmax_iterations
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void doit_conv_flagAbs(Workspace& ws,
-const Vector& epsilon,
-const Index& max_iterations=100,
-const Index& nonconv_return_nan=0) {
-doit_conv_flagAbs(Var::doit_conv_flag(ws),
-Var::doit_iteration_counter(ws),
-Var::cloudbox_field_mono(ws),
-Var::cloudbox_field_mono_old(ws),
-epsilon,
-max_iterations,
-nonconv_return_nan,
-Var::verbosity(ws));
+void doit_conv_flagAbs(Workspace& ws, const Vector& epsilon,
+                       const Index& max_iterations = 100,
+                       const Index& nonconv_return_nan = 0) {
+  doit_conv_flagAbs(Var::doit_conv_flag(ws), Var::doit_iteration_counter(ws),
+                    Var::cloudbox_field_mono(ws),
+                    Var::cloudbox_field_mono_old(ws), epsilon, max_iterations,
+                    nonconv_return_nan, Var::verbosity(ws));
 }
-
 
 /*! DOIT convergence test (maximum absolute difference in Rayleigh Jeans BT)
 
@@ -17386,28 +16606,25 @@ Rayleigh-Jeans brighntess temperatures.
 @author Claudia Emde
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] epsilon - Limits for convergence. A vector with length matching *stokes_dim* with unit [K].
-@param[in] max_iterations - Maximum number of iterations allowed to reach convergencelimit. (default: 100)
-@param[in] nonconv_return_nan - Flag whether to accept result at max_iterations (0=default)or whether to return NaNs in case of non-convergence atmax_iterations (default: 0)
+@param[in] epsilon - Limits for convergence. A vector with length matching
+*stokes_dim* with unit [K].
+@param[in] max_iterations - Maximum number of iterations allowed to reach
+convergencelimit. (default: 100)
+@param[in] nonconv_return_nan - Flag whether to accept result at max_iterations
+(0=default)or whether to return NaNs in case of non-convergence atmax_iterations
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void doit_conv_flagAbsBT(Workspace& ws,
-const Vector& epsilon,
-const Index& max_iterations=100,
-const Index& nonconv_return_nan=0) {
-doit_conv_flagAbsBT(Var::doit_conv_flag(ws),
-Var::doit_iteration_counter(ws),
-Var::cloudbox_field_mono(ws),
-Var::cloudbox_field_mono_old(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-epsilon,
-max_iterations,
-nonconv_return_nan,
-Var::verbosity(ws));
+void doit_conv_flagAbsBT(Workspace& ws, const Vector& epsilon,
+                         const Index& max_iterations = 100,
+                         const Index& nonconv_return_nan = 0) {
+  doit_conv_flagAbsBT(Var::doit_conv_flag(ws), Var::doit_iteration_counter(ws),
+                      Var::cloudbox_field_mono(ws),
+                      Var::cloudbox_field_mono_old(ws), Var::f_grid(ws),
+                      Var::f_index(ws), epsilon, max_iterations,
+                      nonconv_return_nan, Var::verbosity(ws));
 }
-
 
 /*! DOIT convergence test (least squares).
 
@@ -17421,28 +16638,25 @@ DOIT result might be wrong.
 @author Claudia Emde
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] epsilon - Limits for convergence. A vector with length matching *stokes_dim* with unit [K].
-@param[in] max_iterations - Maximum number of iterations allowed to reach convergencelimit. (default: 100)
-@param[in] nonconv_return_nan - Flag whether to accept result at max_iterations (0=default)or whether to return NaNs in case of non-convergence atmax_iterations (default: 0)
+@param[in] epsilon - Limits for convergence. A vector with length matching
+*stokes_dim* with unit [K].
+@param[in] max_iterations - Maximum number of iterations allowed to reach
+convergencelimit. (default: 100)
+@param[in] nonconv_return_nan - Flag whether to accept result at max_iterations
+(0=default)or whether to return NaNs in case of non-convergence atmax_iterations
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void doit_conv_flagLsq(Workspace& ws,
-const Vector& epsilon,
-const Index& max_iterations=100,
-const Index& nonconv_return_nan=0) {
-doit_conv_flagLsq(Var::doit_conv_flag(ws),
-Var::doit_iteration_counter(ws),
-Var::cloudbox_field_mono(ws),
-Var::cloudbox_field_mono_old(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-epsilon,
-max_iterations,
-nonconv_return_nan,
-Var::verbosity(ws));
+void doit_conv_flagLsq(Workspace& ws, const Vector& epsilon,
+                       const Index& max_iterations = 100,
+                       const Index& nonconv_return_nan = 0) {
+  doit_conv_flagLsq(Var::doit_conv_flag(ws), Var::doit_iteration_counter(ws),
+                    Var::cloudbox_field_mono(ws),
+                    Var::cloudbox_field_mono_old(ws), Var::f_grid(ws),
+                    Var::f_index(ws), epsilon, max_iterations,
+                    nonconv_return_nan, Var::verbosity(ws));
 }
-
 
 /*! Calculates the scattering integral field in the DOIT module.
 
@@ -17458,21 +16672,13 @@ angles. For more information please refer to AUG.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void doit_scat_fieldCalc(Workspace& ws) {
-doit_scat_fieldCalc(ws,
-Var::doit_scat_field(ws),
-Var::pha_mat_spt_agenda(ws),
-Var::cloudbox_field_mono(ws),
-Var::pnd_field(ws),
-Var::t_field(ws),
-Var::atmosphere_dim(ws),
-Var::cloudbox_limits(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::doit_za_grid_size(ws),
-Var::pha_mat_doit(ws),
-Var::verbosity(ws));
+  doit_scat_fieldCalc(ws, Var::doit_scat_field(ws), Var::pha_mat_spt_agenda(ws),
+                      Var::cloudbox_field_mono(ws), Var::pnd_field(ws),
+                      Var::t_field(ws), Var::atmosphere_dim(ws),
+                      Var::cloudbox_limits(ws), Var::za_grid(ws),
+                      Var::aa_grid(ws), Var::doit_za_grid_size(ws),
+                      Var::pha_mat_doit(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates the scattering integral field in the DOIT module (limb).
 
@@ -17498,22 +16704,13 @@ For more information please refer to AUG.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void doit_scat_fieldCalcLimb(Workspace& ws) {
-doit_scat_fieldCalcLimb(ws,
-Var::doit_scat_field(ws),
-Var::pha_mat_spt_agenda(ws),
-Var::cloudbox_field_mono(ws),
-Var::pnd_field(ws),
-Var::t_field(ws),
-Var::atmosphere_dim(ws),
-Var::cloudbox_limits(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::doit_za_grid_size(ws),
-Var::doit_za_interp(ws),
-Var::pha_mat_doit(ws),
-Var::verbosity(ws));
+  doit_scat_fieldCalcLimb(
+      ws, Var::doit_scat_field(ws), Var::pha_mat_spt_agenda(ws),
+      Var::cloudbox_field_mono(ws), Var::pnd_field(ws), Var::t_field(ws),
+      Var::atmosphere_dim(ws), Var::cloudbox_limits(ws), Var::za_grid(ws),
+      Var::aa_grid(ws), Var::doit_za_grid_size(ws), Var::doit_za_interp(ws),
+      Var::pha_mat_doit(ws), Var::verbosity(ws));
 }
-
 
 /*! Zenith angle grid optimization for scattering calculation.
 
@@ -17537,16 +16734,11 @@ frequency.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void doit_za_grid_optCalc(Workspace& ws,
-const Numeric& acc) {
-doit_za_grid_optCalc(Var::doit_za_grid_opt(ws),
-Var::cloudbox_field_mono(ws),
-Var::za_grid(ws),
-Var::doit_za_interp(ws),
-acc,
-Var::verbosity(ws));
+void doit_za_grid_optCalc(Workspace& ws, const Numeric& acc) {
+  doit_za_grid_optCalc(Var::doit_za_grid_opt(ws), Var::cloudbox_field_mono(ws),
+                       Var::za_grid(ws), Var::doit_za_interp(ws), acc,
+                       Var::verbosity(ws));
 }
-
 
 /*! Define interpolation method for zenith angle dimension.
 
@@ -17556,18 +16748,15 @@ interpolations in the zenith angle dimension.
 @author Claudia Emde
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] interp_method - Interpolation method ("linear" or "polynomial"). (default: "linear")
+@param[in] interp_method - Interpolation method ("linear" or "polynomial").
+(default: "linear")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void doit_za_interpSet(Workspace& ws,
-const String& interp_method="linear") {
-doit_za_interpSet(Var::doit_za_interp(ws),
-Var::atmosphere_dim(ws),
-interp_method,
-Var::verbosity(ws));
+void doit_za_interpSet(Workspace& ws, const String& interp_method = "linear") {
+  doit_za_interpSet(Var::doit_za_interp(ws), Var::atmosphere_dim(ws),
+                    interp_method, Var::verbosity(ws));
 }
-
 
 /*! Add gas absorption to all diagonal elements of extinction matrix.
 
@@ -17581,11 +16770,9 @@ different gas species and add the result to the extinction matrix.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ext_matAddGas(Workspace& ws) {
-ext_matAddGas(Var::ext_mat(ws),
-Var::propmat_clearsky(ws),
-Var::verbosity(ws));
+  ext_matAddGas(Var::ext_mat(ws), Var::propmat_clearsky(ws),
+                Var::verbosity(ws));
 }
-
 
 /*! Sets *f_grid* to a grid relative to *abs_lines_per_species*
 
@@ -17607,18 +16794,13 @@ if used carelessly
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void f_gridFromAbsorptionLines(Workspace& ws,
-const Index& num_freqs,
-const Numeric& delta_f_low=-5e6,
-const Numeric& delta_f_upp=5e6) {
-f_gridFromAbsorptionLines(Var::f_grid(ws),
-Var::abs_lines_per_species(ws),
-delta_f_low,
-delta_f_upp,
-num_freqs,
-Var::verbosity(ws));
+void f_gridFromAbsorptionLines(Workspace& ws, const Index& num_freqs,
+                               const Numeric& delta_f_low = -5e6,
+                               const Numeric& delta_f_upp = 5e6) {
+  f_gridFromAbsorptionLines(Var::f_grid(ws), Var::abs_lines_per_species(ws),
+                            delta_f_low, delta_f_upp, num_freqs,
+                            Var::verbosity(ws));
 }
-
 
 /*! Sets *f_grid* to the frequency grid of *abs_lookup*.
 
@@ -17632,11 +16814,9 @@ call of *abs_lookupAdapt*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void f_gridFromGasAbsLookup(Workspace& ws) {
-f_gridFromGasAbsLookup(Var::f_grid(ws),
-Var::abs_lookup(ws),
-Var::verbosity(ws));
+  f_gridFromGasAbsLookup(Var::f_grid(ws), Var::abs_lookup(ws),
+                         Var::verbosity(ws));
 }
-
 
 /*! Automatically calculate f_grid to match the sensor.
 
@@ -17669,19 +16849,14 @@ see *f_gridFromSensorHIRS*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void f_gridFromSensorAMSU(Workspace& ws,
-const Numeric& spacing=.1e9) {
-f_gridFromSensorAMSU(Var::f_grid(ws),
-Var::lo_multi(ws),
-Var::f_backend_multi(ws),
-Var::backend_channel_response_multi(ws),
-spacing,
-Var::verbosity(ws));
+void f_gridFromSensorAMSU(Workspace& ws, const Numeric& spacing = .1e9) {
+  f_gridFromSensorAMSU(
+      Var::f_grid(ws), Var::lo_multi(ws), Var::f_backend_multi(ws),
+      Var::backend_channel_response_multi(ws), spacing, Var::verbosity(ws));
 }
 
-
-/*! Automatcially calculate f_grid to match the sensor. 
-This function is based on 'f_gridFromSensorAMSU' 
+/*! Automatcially calculate f_grid to match the sensor.
+This function is based on 'f_gridFromSensorAMSU'
 
 The method calculates *f_grid* to match the instrument, as given by
 the backend frequencies *f_backend*, and the backend channel
@@ -17703,17 +16878,12 @@ fine as requested.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void f_gridFromSensorAMSUgeneric(Workspace& ws,
-const Numeric& spacing=.1e9,
-const Vector& verbosityVect={}) {
-f_gridFromSensorAMSUgeneric(Var::f_grid(ws),
-Var::f_backend_multi(ws),
-Var::backend_channel_response_multi(ws),
-spacing,
-verbosityVect,
-Var::verbosity(ws));
+void f_gridFromSensorAMSUgeneric(Workspace& ws, const Numeric& spacing = .1e9,
+                                 const Vector& verbosityVect = {}) {
+  f_gridFromSensorAMSUgeneric(Var::f_grid(ws), Var::f_backend_multi(ws),
+                              Var::backend_channel_response_multi(ws), spacing,
+                              verbosityVect, Var::verbosity(ws));
 }
-
 
 /*! Automatically calculate f_grid to match the sensor.
 
@@ -17742,15 +16912,11 @@ There is a similar method for AMSU-type instruments, see
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void f_gridFromSensorHIRS(Workspace& ws,
-const Numeric& spacing=5e8) {
-f_gridFromSensorHIRS(Var::f_grid(ws),
-Var::f_backend(ws),
-Var::backend_channel_response(ws),
-spacing,
-Var::verbosity(ws));
+void f_gridFromSensorHIRS(Workspace& ws, const Numeric& spacing = 5e8) {
+  f_gridFromSensorHIRS(Var::f_grid(ws), Var::f_backend(ws),
+                       Var::backend_channel_response(ws), spacing,
+                       Var::verbosity(ws));
 }
-
 
 /*! Sets *f_grid* and associated variables match MetMM settings.
 
@@ -17785,26 +16951,21 @@ supposed to be identical.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] freq_spacing - Desired grid spacing in Hz. (default: {.1e9})
-@param[in] freq_number - Number of frequencies per passband for each channel. (default: {-1})
-@param[in] freq_merge_threshold - Merge frequencies that are closer than this value in Hz. (default: 1)
+@param[in] freq_number - Number of frequencies per passband for each channel.
+(default: {-1})
+@param[in] freq_merge_threshold - Merge frequencies that are closer than this
+value in Hz. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void f_gridMetMM(Workspace& ws,
-const Vector& freq_spacing={.1e9},
-const ArrayOfIndex& freq_number={-1},
-const Numeric& freq_merge_threshold=1) {
-f_gridMetMM(Var::f_grid(ws),
-Var::f_backend(ws),
-Var::channel2fgrid_indexes(ws),
-Var::channel2fgrid_weights(ws),
-Var::met_mm_backend(ws),
-freq_spacing,
-freq_number,
-freq_merge_threshold,
-Var::verbosity(ws));
+void f_gridMetMM(Workspace& ws, const Vector& freq_spacing = {.1e9},
+                 const ArrayOfIndex& freq_number = {-1},
+                 const Numeric& freq_merge_threshold = 1) {
+  f_gridMetMM(Var::f_grid(ws), Var::f_backend(ws),
+              Var::channel2fgrid_indexes(ws), Var::channel2fgrid_weights(ws),
+              Var::met_mm_backend(ws), freq_spacing, freq_number,
+              freq_merge_threshold, Var::verbosity(ws));
 }
-
 
 /*! Gravity at zero altitude on Earth.
 
@@ -17817,11 +16978,8 @@ Sets *g0* for the given latitude using a standard parameterisation.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void g0Earth(Workspace& ws) {
-g0Earth(Var::g0(ws),
-Var::lat(ws),
-Var::verbosity(ws));
+  g0Earth(Var::g0(ws), Var::lat(ws), Var::verbosity(ws));
 }
-
 
 /*! Gravity at zero altitude on Io.
 
@@ -17833,11 +16991,7 @@ Numeric from Wikipedia.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void g0Io(Workspace& ws) {
-g0Io(Var::g0(ws),
-Var::verbosity(ws));
-}
-
+void g0Io(Workspace& ws) { g0Io(Var::g0(ws), Var::verbosity(ws)); }
 
 /*! Gravity at zero altitude on Jupiter.
 
@@ -17850,11 +17004,7 @@ MPS under ESA-planetary study (TN1).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void g0Jupiter(Workspace& ws) {
-g0Jupiter(Var::g0(ws),
-Var::verbosity(ws));
-}
-
+void g0Jupiter(Workspace& ws) { g0Jupiter(Var::g0(ws), Var::verbosity(ws)); }
 
 /*! Gravity at zero altitude on Mars.
 
@@ -17867,11 +17017,7 @@ MPS under ESA-planetary study (TN1).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void g0Mars(Workspace& ws) {
-g0Mars(Var::g0(ws),
-Var::verbosity(ws));
-}
-
+void g0Mars(Workspace& ws) { g0Mars(Var::g0(ws), Var::verbosity(ws)); }
 
 /*! Gravity at zero altitude on Venus.
 
@@ -17884,11 +17030,7 @@ Sets *g0*  to mean equatorial gravity on Venus. Value from Ahrens
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void g0Venus(Workspace& ws) {
-g0Venus(Var::g0(ws),
-Var::verbosity(ws));
-}
-
+void g0Venus(Workspace& ws) { g0Venus(Var::g0(ws), Var::verbosity(ws)); }
 
 /*! Sets geo-position based on *ppath*.
 
@@ -17904,11 +17046,8 @@ observation geometry and if the cloudbox is active.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void geo_posEndOfPpath(Workspace& ws) {
-geo_posEndOfPpath(Var::geo_pos(ws),
-Var::ppath(ws),
-Var::verbosity(ws));
+  geo_posEndOfPpath(Var::geo_pos(ws), Var::ppath(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets geo-position based on *ppath*.
 
@@ -17922,11 +17061,9 @@ of the present propagation path having the lowest altitude.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void geo_posLowestAltitudeOfPpath(Workspace& ws) {
-geo_posLowestAltitudeOfPpath(Var::geo_pos(ws),
-Var::ppath(ws),
-Var::verbosity(ws));
+  geo_posLowestAltitudeOfPpath(Var::geo_pos(ws), Var::ppath(ws),
+                               Var::verbosity(ws));
 }
-
 
 /*! Sets geo-position based on *ppath*.
 
@@ -17943,18 +17080,14 @@ set to NaN.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void geo_posWherePpathPassesZref(Workspace& ws,
-const Numeric& z_ref) {
-geo_posWherePpathPassesZref(Var::geo_pos(ws),
-Var::ppath(ws),
-z_ref,
-Var::verbosity(ws));
+void geo_posWherePpathPassesZref(Workspace& ws, const Numeric& z_ref) {
+  geo_posWherePpathPassesZref(Var::geo_pos(ws), Var::ppath(ws), z_ref,
+                              Var::verbosity(ws));
 }
-
 
 /*! Calculates heating rates. It assumes that the heating rates
 depend only on the vertical derivation of the net flux.
-The net flux is the sum of the irradiance field in upward 
+The net flux is the sum of the irradiance field in upward
  direction and the irradiance field in downward direction
 
 @author Manfred Brath
@@ -17964,20 +17097,15 @@ The net flux is the sum of the irradiance field in upward
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void heating_ratesFromIrradiance(Workspace& ws) {
-heating_ratesFromIrradiance(Var::heating_rates(ws),
-Var::p_grid(ws),
-Var::irradiance_field(ws),
-Var::specific_heat_capacity(ws),
-Var::g0(ws),
-Var::verbosity(ws));
+  heating_ratesFromIrradiance(
+      Var::heating_rates(ws), Var::p_grid(ws), Var::irradiance_field(ws),
+      Var::specific_heat_capacity(ws), Var::g0(ws), Var::verbosity(ws));
 }
 
-
-/*! Calculate the irradiance also known as flux density from the *radiance_field* .
-by integrating over the angular grids according to the grids set
-by *AngularGridsSetFluxCalc* 
-See *AngularGridsSetFluxCalc to set 
-*za_grid, aa_grid, and za_grid_weights*
+/*! Calculate the irradiance also known as flux density from the
+*radiance_field* . by integrating over the angular grids according to the grids
+set by *AngularGridsSetFluxCalc* See *AngularGridsSetFluxCalc to set *za_grid,
+aa_grid, and za_grid_weights*
 
 @author Manfred Brath
 
@@ -17986,14 +17114,10 @@ See *AngularGridsSetFluxCalc to set
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void irradiance_fieldFromRadiance(Workspace& ws) {
-irradiance_fieldFromRadiance(Var::irradiance_field(ws),
-Var::radiance_field(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::za_grid_weights(ws),
-Var::verbosity(ws));
+  irradiance_fieldFromRadiance(
+      Var::irradiance_field(ws), Var::radiance_field(ws), Var::za_grid(ws),
+      Var::aa_grid(ws), Var::za_grid_weights(ws), Var::verbosity(ws));
 }
-
 
 /*! Initialize isotopologue ratios with default values from built-in
 species data.
@@ -18005,10 +17129,9 @@ species data.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void isotopologue_ratiosInitFromBuiltin(Workspace& ws) {
-isotopologue_ratiosInitFromBuiltin(Var::isotopologue_ratios(ws),
-Var::verbosity(ws));
+  isotopologue_ratiosInitFromBuiltin(Var::isotopologue_ratios(ws),
+                                     Var::verbosity(ws));
 }
-
 
 /*! Simulation of radar/lidar, restricted to single scattering.
 
@@ -18073,66 +17196,38 @@ are filled with zeros.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] trans_in_jacobian - Flag determining if change in transmission is considered in calculation of the Jacobian or not. (default: 0)
-@param[in] pext_scaling - Particle extinction is scaled with this value. A value inside [0,2]. Set it to 0 if you want to remove particle extinction totally. (default: 1)
-@param[in] t_interp_order - Interpolation order of temperature for scattering data (so far only applied in phase matrix, not in extinction and absorption. (default: 1)
+@param[in] trans_in_jacobian - Flag determining if change in transmission is
+considered in calculation of the Jacobian or not. (default: 0)
+@param[in] pext_scaling - Particle extinction is scaled with this value. A value
+inside [0,2]. Set it to 0 if you want to remove particle extinction totally.
+(default: 1)
+@param[in] t_interp_order - Interpolation order of temperature for scattering
+data (so far only applied in phase matrix, not in extinction and absorption.
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void iyActiveSingleScat(Workspace& ws,
-const Index& trans_in_jacobian=0,
-const Numeric& pext_scaling=1,
-const Index& t_interp_order=1) {
-iyActiveSingleScat(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::diy_dx(ws),
-Var::ppvar_p(ws),
-Var::ppvar_t(ws),
-Var::ppvar_nlte(ws),
-Var::ppvar_vmr(ws),
-Var::ppvar_wind(ws),
-Var::ppvar_mag(ws),
-Var::ppvar_pnd(ws),
-Var::ppvar_f(ws),
-Var::ppvar_trans_cumulat(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::scat_species(ws),
-Var::scat_data(ws),
-Var::scat_data_checked(ws),
-Var::iy_aux_vars(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::ppath(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::iy_transmitter_agenda(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_transmission(ws),
-Var::rte_alonglos_v(ws),
-trans_in_jacobian,
-pext_scaling,
-t_interp_order,
-Var::verbosity(ws));
+void iyActiveSingleScat(Workspace& ws, const Index& trans_in_jacobian = 0,
+                        const Numeric& pext_scaling = 1,
+                        const Index& t_interp_order = 1) {
+  iyActiveSingleScat(
+      ws, Var::iy(ws), Var::iy_aux(ws), Var::diy_dx(ws), Var::ppvar_p(ws),
+      Var::ppvar_t(ws), Var::ppvar_nlte(ws), Var::ppvar_vmr(ws),
+      Var::ppvar_wind(ws), Var::ppvar_mag(ws), Var::ppvar_pnd(ws),
+      Var::ppvar_f(ws), Var::ppvar_trans_cumulat(ws), Var::stokes_dim(ws),
+      Var::f_grid(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+      Var::t_field(ws), Var::nlte_field(ws), Var::vmr_field(ws),
+      Var::abs_species(ws), Var::wind_u_field(ws), Var::wind_v_field(ws),
+      Var::wind_w_field(ws), Var::mag_u_field(ws), Var::mag_v_field(ws),
+      Var::mag_w_field(ws), Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+      Var::pnd_field(ws), Var::dpnd_field_dx(ws), Var::scat_species(ws),
+      Var::scat_data(ws), Var::scat_data_checked(ws), Var::iy_aux_vars(ws),
+      Var::jacobian_do(ws), Var::jacobian_quantities(ws), Var::ppath(ws),
+      Var::propmat_clearsky_agenda(ws), Var::water_p_eq_agenda(ws),
+      Var::iy_transmitter_agenda(ws), Var::iy_agenda_call1(ws),
+      Var::iy_transmission(ws), Var::rte_alonglos_v(ws), trans_in_jacobian,
+      pext_scaling, t_interp_order, Var::verbosity(ws));
 }
-
 
 /*! TESTING
 
@@ -18140,66 +17235,38 @@ Var::verbosity(ws));
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] trans_in_jacobian - Flag determining if change in transmission is considered in calculation of the Jacobian or not. (default: 0)
-@param[in] pext_scaling - Particle extinction is scaled with this value. A value inside [0,2]. Set it to 0 if you want to remove particle extinction totally. (default: 1)
-@param[in] t_interp_order - Interpolation order of temperature for scattering data (so far only applied in phase matrix, not in extinction and absorption. (default: 1)
+@param[in] trans_in_jacobian - Flag determining if change in transmission is
+considered in calculation of the Jacobian or not. (default: 0)
+@param[in] pext_scaling - Particle extinction is scaled with this value. A value
+inside [0,2]. Set it to 0 if you want to remove particle extinction totally.
+(default: 1)
+@param[in] t_interp_order - Interpolation order of temperature for scattering
+data (so far only applied in phase matrix, not in extinction and absorption.
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void iyActiveSingleScat2(Workspace& ws,
-const Index& trans_in_jacobian=0,
-const Numeric& pext_scaling=1,
-const Index& t_interp_order=1) {
-iyActiveSingleScat2(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::diy_dx(ws),
-Var::ppvar_p(ws),
-Var::ppvar_t(ws),
-Var::ppvar_nlte(ws),
-Var::ppvar_vmr(ws),
-Var::ppvar_wind(ws),
-Var::ppvar_mag(ws),
-Var::ppvar_pnd(ws),
-Var::ppvar_f(ws),
-Var::ppvar_trans_cumulat(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::scat_species(ws),
-Var::scat_data(ws),
-Var::scat_data_checked(ws),
-Var::iy_aux_vars(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::ppath(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::iy_transmitter_agenda(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_transmission(ws),
-Var::rte_alonglos_v(ws),
-trans_in_jacobian,
-pext_scaling,
-t_interp_order,
-Var::verbosity(ws));
+void iyActiveSingleScat2(Workspace& ws, const Index& trans_in_jacobian = 0,
+                         const Numeric& pext_scaling = 1,
+                         const Index& t_interp_order = 1) {
+  iyActiveSingleScat2(
+      ws, Var::iy(ws), Var::iy_aux(ws), Var::diy_dx(ws), Var::ppvar_p(ws),
+      Var::ppvar_t(ws), Var::ppvar_nlte(ws), Var::ppvar_vmr(ws),
+      Var::ppvar_wind(ws), Var::ppvar_mag(ws), Var::ppvar_pnd(ws),
+      Var::ppvar_f(ws), Var::ppvar_trans_cumulat(ws), Var::stokes_dim(ws),
+      Var::f_grid(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+      Var::t_field(ws), Var::nlte_field(ws), Var::vmr_field(ws),
+      Var::abs_species(ws), Var::wind_u_field(ws), Var::wind_v_field(ws),
+      Var::wind_w_field(ws), Var::mag_u_field(ws), Var::mag_v_field(ws),
+      Var::mag_w_field(ws), Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+      Var::pnd_field(ws), Var::dpnd_field_dx(ws), Var::scat_species(ws),
+      Var::scat_data(ws), Var::scat_data_checked(ws), Var::iy_aux_vars(ws),
+      Var::jacobian_do(ws), Var::jacobian_quantities(ws), Var::ppath(ws),
+      Var::propmat_clearsky_agenda(ws), Var::water_p_eq_agenda(ws),
+      Var::iy_transmitter_agenda(ws), Var::iy_agenda_call1(ws),
+      Var::iy_transmission(ws), Var::rte_alonglos_v(ws), trans_in_jacobian,
+      pext_scaling, t_interp_order, Var::verbosity(ws));
 }
-
 
 /*! Conversion of *iy* to other spectral units.
 
@@ -18228,15 +17295,10 @@ Please note that *diy_dx* is not handled.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iyApplyUnit(Workspace& ws) {
-iyApplyUnit(Var::iy(ws),
-Var::iy_aux(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::iy_aux_vars(ws),
-Var::iy_unit(ws),
-Var::verbosity(ws));
+  iyApplyUnit(Var::iy(ws), Var::iy_aux(ws), Var::stokes_dim(ws),
+              Var::f_grid(ws), Var::iy_aux_vars(ws), Var::iy_unit(ws),
+              Var::verbosity(ws));
 }
-
 
 /*! A single monochromatic pencil beam calculation.
 
@@ -18257,27 +17319,14 @@ incorporated by using *yCalc*
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iyCalc(Workspace& ws) {
-iyCalc(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::ppath(ws),
-Var::atmgeom_checked(ws),
-Var::atmfields_checked(ws),
-Var::iy_aux_vars(ws),
-Var::iy_id(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::scat_data_checked(ws),
-Var::f_grid(ws),
-Var::nlte_field(ws),
-Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::rte_pos2(ws),
-Var::iy_unit(ws),
-Var::iy_main_agenda(ws),
-Var::verbosity(ws));
+  iyCalc(ws, Var::iy(ws), Var::iy_aux(ws), Var::ppath(ws),
+         Var::atmgeom_checked(ws), Var::atmfields_checked(ws),
+         Var::iy_aux_vars(ws), Var::iy_id(ws), Var::cloudbox_on(ws),
+         Var::cloudbox_checked(ws), Var::scat_data_checked(ws), Var::f_grid(ws),
+         Var::nlte_field(ws), Var::rte_pos(ws), Var::rte_los(ws),
+         Var::rte_pos2(ws), Var::iy_unit(ws), Var::iy_main_agenda(ws),
+         Var::verbosity(ws));
 }
-
 
 /*! Standard method for radiative transfer calculations with emission.
 
@@ -18323,55 +17372,25 @@ are filled with zeros.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iyEmissionStandard(Workspace& ws) {
-iyEmissionStandard(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::diy_dx(ws),
-Var::ppvar_p(ws),
-Var::ppvar_t(ws),
-Var::ppvar_nlte(ws),
-Var::ppvar_vmr(ws),
-Var::ppvar_wind(ws),
-Var::ppvar_mag(ws),
-Var::ppvar_f(ws),
-Var::ppvar_iy(ws),
-Var::ppvar_trans_cumulat(ws),
-Var::ppvar_trans_partial(ws),
-Var::iy_id(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::cloudbox_on(ws),
-Var::iy_unit(ws),
-Var::iy_aux_vars(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::ppath(ws),
-Var::rte_pos2(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::iy_main_agenda(ws),
-Var::iy_space_agenda(ws),
-Var::iy_surface_agenda(ws),
-Var::iy_cloudbox_agenda(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_transmission(ws),
-Var::rte_alonglos_v(ws),
-Var::surface_props_data(ws),
-Var::verbosity(ws));
+  iyEmissionStandard(
+      ws, Var::iy(ws), Var::iy_aux(ws), Var::diy_dx(ws), Var::ppvar_p(ws),
+      Var::ppvar_t(ws), Var::ppvar_nlte(ws), Var::ppvar_vmr(ws),
+      Var::ppvar_wind(ws), Var::ppvar_mag(ws), Var::ppvar_f(ws),
+      Var::ppvar_iy(ws), Var::ppvar_trans_cumulat(ws),
+      Var::ppvar_trans_partial(ws), Var::iy_id(ws), Var::stokes_dim(ws),
+      Var::f_grid(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+      Var::t_field(ws), Var::nlte_field(ws), Var::vmr_field(ws),
+      Var::abs_species(ws), Var::wind_u_field(ws), Var::wind_v_field(ws),
+      Var::wind_w_field(ws), Var::mag_u_field(ws), Var::mag_v_field(ws),
+      Var::mag_w_field(ws), Var::cloudbox_on(ws), Var::iy_unit(ws),
+      Var::iy_aux_vars(ws), Var::jacobian_do(ws), Var::jacobian_quantities(ws),
+      Var::ppath(ws), Var::rte_pos2(ws), Var::propmat_clearsky_agenda(ws),
+      Var::water_p_eq_agenda(ws), Var::iy_main_agenda(ws),
+      Var::iy_space_agenda(ws), Var::iy_surface_agenda(ws),
+      Var::iy_cloudbox_agenda(ws), Var::iy_agenda_call1(ws),
+      Var::iy_transmission(ws), Var::rte_alonglos_v(ws),
+      Var::surface_props_data(ws), Var::verbosity(ws));
 }
-
 
 /*! DEPRECATED! Should go away soon
 Sequential version of *iyEmissionStandard*
@@ -18386,55 +17405,25 @@ For documentation see *iyEmissionStandard*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iyEmissionStandardSequential(Workspace& ws) {
-iyEmissionStandardSequential(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::diy_dx(ws),
-Var::ppvar_p(ws),
-Var::ppvar_t(ws),
-Var::ppvar_nlte(ws),
-Var::ppvar_vmr(ws),
-Var::ppvar_wind(ws),
-Var::ppvar_mag(ws),
-Var::ppvar_f(ws),
-Var::ppvar_iy(ws),
-Var::ppvar_trans_cumulat(ws),
-Var::ppvar_trans_partial(ws),
-Var::iy_id(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::cloudbox_on(ws),
-Var::iy_unit(ws),
-Var::iy_aux_vars(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::ppath(ws),
-Var::rte_pos2(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::iy_main_agenda(ws),
-Var::iy_space_agenda(ws),
-Var::iy_surface_agenda(ws),
-Var::iy_cloudbox_agenda(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_transmission(ws),
-Var::rte_alonglos_v(ws),
-Var::surface_props_data(ws),
-Var::verbosity(ws));
+  iyEmissionStandardSequential(
+      ws, Var::iy(ws), Var::iy_aux(ws), Var::diy_dx(ws), Var::ppvar_p(ws),
+      Var::ppvar_t(ws), Var::ppvar_nlte(ws), Var::ppvar_vmr(ws),
+      Var::ppvar_wind(ws), Var::ppvar_mag(ws), Var::ppvar_f(ws),
+      Var::ppvar_iy(ws), Var::ppvar_trans_cumulat(ws),
+      Var::ppvar_trans_partial(ws), Var::iy_id(ws), Var::stokes_dim(ws),
+      Var::f_grid(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+      Var::t_field(ws), Var::nlte_field(ws), Var::vmr_field(ws),
+      Var::abs_species(ws), Var::wind_u_field(ws), Var::wind_v_field(ws),
+      Var::wind_w_field(ws), Var::mag_u_field(ws), Var::mag_v_field(ws),
+      Var::mag_w_field(ws), Var::cloudbox_on(ws), Var::iy_unit(ws),
+      Var::iy_aux_vars(ws), Var::jacobian_do(ws), Var::jacobian_quantities(ws),
+      Var::ppath(ws), Var::rte_pos2(ws), Var::propmat_clearsky_agenda(ws),
+      Var::water_p_eq_agenda(ws), Var::iy_main_agenda(ws),
+      Var::iy_space_agenda(ws), Var::iy_surface_agenda(ws),
+      Var::iy_cloudbox_agenda(ws), Var::iy_agenda_call1(ws),
+      Var::iy_transmission(ws), Var::rte_alonglos_v(ws),
+      Var::surface_props_data(ws), Var::verbosity(ws));
 }
-
 
 /*! So far just for testing.
 
@@ -18443,72 +17432,37 @@ Var::verbosity(ws));
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] Naa_grid - Number of azimuth angles to consider in scattering source term integral. (default: 19)
-@param[in] t_interp_order - Interpolation order of temperature for scattering data (so far only applied in phase matrix, not in extinction and absorption. (default: 1)
+@param[in] Naa_grid - Number of azimuth angles to consider in scattering source
+term integral. (default: 19)
+@param[in] t_interp_order - Interpolation order of temperature for scattering
+data (so far only applied in phase matrix, not in extinction and absorption.
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void iyHybrid(Workspace& ws,
-const Index& Naa_grid=19,
-const Index& t_interp_order=1) {
-iyHybrid(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::diy_dx(ws),
-Var::ppvar_p(ws),
-Var::ppvar_t(ws),
-Var::ppvar_nlte(ws),
-Var::ppvar_vmr(ws),
-Var::ppvar_wind(ws),
-Var::ppvar_mag(ws),
-Var::ppvar_pnd(ws),
-Var::ppvar_f(ws),
-Var::ppvar_iy(ws),
-Var::ppvar_trans_cumulat(ws),
-Var::iy_id(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::scat_species(ws),
-Var::scat_data(ws),
-Var::iy_unit(ws),
-Var::iy_aux_vars(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::iy_main_agenda(ws),
-Var::iy_space_agenda(ws),
-Var::iy_surface_agenda(ws),
-Var::iy_cloudbox_agenda(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_transmission(ws),
-Var::ppath(ws),
-Var::rte_pos2(ws),
-Var::rte_alonglos_v(ws),
-Var::surface_props_data(ws),
-Var::cloudbox_field(ws),
-Var::za_grid(ws),
-Naa_grid,
-t_interp_order,
-Var::verbosity(ws));
+void iyHybrid(Workspace& ws, const Index& Naa_grid = 19,
+              const Index& t_interp_order = 1) {
+  iyHybrid(ws, Var::iy(ws), Var::iy_aux(ws), Var::diy_dx(ws), Var::ppvar_p(ws),
+           Var::ppvar_t(ws), Var::ppvar_nlte(ws), Var::ppvar_vmr(ws),
+           Var::ppvar_wind(ws), Var::ppvar_mag(ws), Var::ppvar_pnd(ws),
+           Var::ppvar_f(ws), Var::ppvar_iy(ws), Var::ppvar_trans_cumulat(ws),
+           Var::iy_id(ws), Var::stokes_dim(ws), Var::f_grid(ws),
+           Var::atmosphere_dim(ws), Var::p_grid(ws), Var::t_field(ws),
+           Var::nlte_field(ws), Var::vmr_field(ws), Var::abs_species(ws),
+           Var::wind_u_field(ws), Var::wind_v_field(ws), Var::wind_w_field(ws),
+           Var::mag_u_field(ws), Var::mag_v_field(ws), Var::mag_w_field(ws),
+           Var::cloudbox_on(ws), Var::cloudbox_limits(ws), Var::pnd_field(ws),
+           Var::dpnd_field_dx(ws), Var::scat_species(ws), Var::scat_data(ws),
+           Var::iy_unit(ws), Var::iy_aux_vars(ws), Var::jacobian_do(ws),
+           Var::jacobian_quantities(ws), Var::propmat_clearsky_agenda(ws),
+           Var::water_p_eq_agenda(ws), Var::iy_main_agenda(ws),
+           Var::iy_space_agenda(ws), Var::iy_surface_agenda(ws),
+           Var::iy_cloudbox_agenda(ws), Var::iy_agenda_call1(ws),
+           Var::iy_transmission(ws), Var::ppath(ws), Var::rte_pos2(ws),
+           Var::rte_alonglos_v(ws), Var::surface_props_data(ws),
+           Var::cloudbox_field(ws), Var::za_grid(ws), Naa_grid, t_interp_order,
+           Var::verbosity(ws));
 }
-
 
 /*! So far just for even more testing.
 
@@ -18517,72 +17471,37 @@ Var::verbosity(ws));
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] Naa_grid - Number of azimuth angles to consider in scattering source term integral. (default: 19)
-@param[in] t_interp_order - Interpolation order of temperature for scattering data (so far only applied in phase matrix, not in extinction and absorption. (default: 1)
+@param[in] Naa_grid - Number of azimuth angles to consider in scattering source
+term integral. (default: 19)
+@param[in] t_interp_order - Interpolation order of temperature for scattering
+data (so far only applied in phase matrix, not in extinction and absorption.
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void iyHybrid2(Workspace& ws,
-const Index& Naa_grid=19,
-const Index& t_interp_order=1) {
-iyHybrid2(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::diy_dx(ws),
-Var::ppvar_p(ws),
-Var::ppvar_t(ws),
-Var::ppvar_nlte(ws),
-Var::ppvar_vmr(ws),
-Var::ppvar_wind(ws),
-Var::ppvar_mag(ws),
-Var::ppvar_pnd(ws),
-Var::ppvar_f(ws),
-Var::ppvar_iy(ws),
-Var::ppvar_trans_cumulat(ws),
-Var::iy_id(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::scat_species(ws),
-Var::scat_data(ws),
-Var::iy_unit(ws),
-Var::iy_aux_vars(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::iy_main_agenda(ws),
-Var::iy_space_agenda(ws),
-Var::iy_surface_agenda(ws),
-Var::iy_cloudbox_agenda(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_transmission(ws),
-Var::ppath(ws),
-Var::rte_pos2(ws),
-Var::rte_alonglos_v(ws),
-Var::surface_props_data(ws),
-Var::cloudbox_field(ws),
-Var::za_grid(ws),
-Naa_grid,
-t_interp_order,
-Var::verbosity(ws));
+void iyHybrid2(Workspace& ws, const Index& Naa_grid = 19,
+               const Index& t_interp_order = 1) {
+  iyHybrid2(ws, Var::iy(ws), Var::iy_aux(ws), Var::diy_dx(ws), Var::ppvar_p(ws),
+            Var::ppvar_t(ws), Var::ppvar_nlte(ws), Var::ppvar_vmr(ws),
+            Var::ppvar_wind(ws), Var::ppvar_mag(ws), Var::ppvar_pnd(ws),
+            Var::ppvar_f(ws), Var::ppvar_iy(ws), Var::ppvar_trans_cumulat(ws),
+            Var::iy_id(ws), Var::stokes_dim(ws), Var::f_grid(ws),
+            Var::atmosphere_dim(ws), Var::p_grid(ws), Var::t_field(ws),
+            Var::nlte_field(ws), Var::vmr_field(ws), Var::abs_species(ws),
+            Var::wind_u_field(ws), Var::wind_v_field(ws), Var::wind_w_field(ws),
+            Var::mag_u_field(ws), Var::mag_v_field(ws), Var::mag_w_field(ws),
+            Var::cloudbox_on(ws), Var::cloudbox_limits(ws), Var::pnd_field(ws),
+            Var::dpnd_field_dx(ws), Var::scat_species(ws), Var::scat_data(ws),
+            Var::iy_unit(ws), Var::iy_aux_vars(ws), Var::jacobian_do(ws),
+            Var::jacobian_quantities(ws), Var::propmat_clearsky_agenda(ws),
+            Var::water_p_eq_agenda(ws), Var::iy_main_agenda(ws),
+            Var::iy_space_agenda(ws), Var::iy_surface_agenda(ws),
+            Var::iy_cloudbox_agenda(ws), Var::iy_agenda_call1(ws),
+            Var::iy_transmission(ws), Var::ppath(ws), Var::rte_pos2(ws),
+            Var::rte_alonglos_v(ws), Var::surface_props_data(ws),
+            Var::cloudbox_field(ws), Var::za_grid(ws), Naa_grid, t_interp_order,
+            Var::verbosity(ws));
 }
-
 
 /*! In development ....
 
@@ -18591,65 +17510,38 @@ Describe how *atm_fields_compact* is filled.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] return_atm1d - Flag to trigger that *atm_fields_compact* is filled.  (default: 0)
-@param[in] skip_vmr - Flag to not include vmr data in *atm_fields_compact*. (default: 0)
-@param[in] skip_pnd - Flag to not include pnd data in *atm_fields_compact*. (default: 0)
-@param[in] return_masses - Flag to include particle category masses in *atm_fields_compact*.Conversion is done by *particle_masses*. (default: 0)
+@param[in] return_atm1d - Flag to trigger that *atm_fields_compact* is filled.
+(default: 0)
+@param[in] skip_vmr - Flag to not include vmr data in *atm_fields_compact*.
+(default: 0)
+@param[in] skip_pnd - Flag to not include pnd data in *atm_fields_compact*.
+(default: 0)
+@param[in] return_masses - Flag to include particle category masses in
+*atm_fields_compact*.Conversion is done by *particle_masses*. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iyIndependentBeamApproximation(Workspace& ws,
-const Index& return_atm1d=0,
-const Index& skip_vmr=0,
-const Index& skip_pnd=0,
-const Index& return_masses=0) {
-iyIndependentBeamApproximation(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::ppath(ws),
-Var::diy_dx(ws),
-Var::atm_fields_compact(ws),
-Var::iy_id(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::vmr_field(ws),
-Var::nlte_field(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::particle_masses(ws),
-Var::ppath_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_unit(ws),
-Var::iy_transmission(ws),
-Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::rte_pos2(ws),
-Var::jacobian_do(ws),
-Var::iy_aux_vars(ws),
-Var::iy_independent_beam_approx_agenda(ws),
-return_atm1d,
-skip_vmr,
-skip_pnd,
-return_masses,
-Var::verbosity(ws));
+                                    const Index& return_atm1d = 0,
+                                    const Index& skip_vmr = 0,
+                                    const Index& skip_pnd = 0,
+                                    const Index& return_masses = 0) {
+  iyIndependentBeamApproximation(
+      ws, Var::iy(ws), Var::iy_aux(ws), Var::ppath(ws), Var::diy_dx(ws),
+      Var::atm_fields_compact(ws), Var::iy_id(ws), Var::f_grid(ws),
+      Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), Var::lat_true(ws), Var::lon_true(ws), Var::t_field(ws),
+      Var::z_field(ws), Var::vmr_field(ws), Var::nlte_field(ws),
+      Var::wind_u_field(ws), Var::wind_v_field(ws), Var::wind_w_field(ws),
+      Var::mag_u_field(ws), Var::mag_v_field(ws), Var::mag_w_field(ws),
+      Var::cloudbox_on(ws), Var::cloudbox_limits(ws), Var::pnd_field(ws),
+      Var::particle_masses(ws), Var::ppath_agenda(ws), Var::ppath_lmax(ws),
+      Var::ppath_lraytrace(ws), Var::iy_agenda_call1(ws), Var::iy_unit(ws),
+      Var::iy_transmission(ws), Var::rte_pos(ws), Var::rte_los(ws),
+      Var::rte_pos2(ws), Var::jacobian_do(ws), Var::iy_aux_vars(ws),
+      Var::iy_independent_beam_approx_agenda(ws), return_atm1d, skip_vmr,
+      skip_pnd, return_masses, Var::verbosity(ws));
 }
-
 
 /*! Interpolates the intensity field of the cloud box.
 
@@ -18678,44 +17570,30 @@ selected, in the same manner as for zenith.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] za_interp_order - Zenith angle interpolation order. (default: 1)
-@param[in] za_restrict - Flag whether to restric zenith angle interpolation to one hemisphere. (default: 1)
-@param[in] cos_za_interp - Flag whether to do zenith angle interpolation in cosine space. (default: 0)
-@param[in] za_extpolfac - Maximum allowed extrapolation range in zenith angle. (default: 0.5)
+@param[in] za_restrict - Flag whether to restric zenith angle interpolation to
+one hemisphere. (default: 1)
+@param[in] cos_za_interp - Flag whether to do zenith angle interpolation in
+cosine space. (default: 0)
+@param[in] za_extpolfac - Maximum allowed extrapolation range in zenith angle.
+(default: 0.5)
 @param[in] aa_interp_order - Azimuth angle interpolation order. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void iyInterpCloudboxField(Workspace& ws,
-const Index& za_interp_order=1,
-const Index& za_restrict=1,
-const Index& cos_za_interp=0,
-const Numeric& za_extpolfac=0.5,
-const Index& aa_interp_order=1) {
-iyInterpCloudboxField(Var::iy(ws),
-Var::cloudbox_field(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::jacobian_do(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::z_surface(ws),
-Var::stokes_dim(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::f_grid(ws),
-za_interp_order,
-za_restrict,
-cos_za_interp,
-za_extpolfac,
-aa_interp_order,
-Var::verbosity(ws));
+void iyInterpCloudboxField(Workspace& ws, const Index& za_interp_order = 1,
+                           const Index& za_restrict = 1,
+                           const Index& cos_za_interp = 0,
+                           const Numeric& za_extpolfac = 0.5,
+                           const Index& aa_interp_order = 1) {
+  iyInterpCloudboxField(
+      Var::iy(ws), Var::cloudbox_field(ws), Var::rtp_pos(ws), Var::rtp_los(ws),
+      Var::jacobian_do(ws), Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+      Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), Var::z_field(ws), Var::z_surface(ws),
+      Var::stokes_dim(ws), Var::za_grid(ws), Var::aa_grid(ws), Var::f_grid(ws),
+      za_interp_order, za_restrict, cos_za_interp, za_extpolfac,
+      aa_interp_order, Var::verbosity(ws));
 }
-
 
 /*! Radiative transfer calculations one frequency at the time.
 
@@ -18735,23 +17613,13 @@ path for each individual frequency is calculated.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iyLoopFrequencies(Workspace& ws) {
-iyLoopFrequencies(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::ppath(ws),
-Var::diy_dx(ws),
-Var::iy_aux_vars(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_transmission(ws),
-Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::rte_pos2(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::iy_loop_freqs_agenda(ws),
-Var::verbosity(ws));
+  iyLoopFrequencies(ws, Var::iy(ws), Var::iy_aux(ws), Var::ppath(ws),
+                    Var::diy_dx(ws), Var::iy_aux_vars(ws),
+                    Var::iy_agenda_call1(ws), Var::iy_transmission(ws),
+                    Var::rte_pos(ws), Var::rte_los(ws), Var::rte_pos2(ws),
+                    Var::stokes_dim(ws), Var::f_grid(ws),
+                    Var::iy_loop_freqs_agenda(ws), Var::verbosity(ws));
 }
-
 
 /*! Interface to Monte Carlo part for *iy_main_agenda*.
 
@@ -18790,53 +17658,28 @@ where
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] t_interp_order - Interpolation order of temperature for scattering data (so far only applied in phase matrix, not in extinction and absorption. (default: 1)
+@param[in] t_interp_order - Interpolation order of temperature for scattering
+data (so far only applied in phase matrix, not in extinction and absorption.
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void iyMC(Workspace& ws,
-const Index& t_interp_order=1) {
-iyMC(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::diy_dx(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_transmission(ws),
-Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::iy_aux_vars(ws),
-Var::jacobian_do(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::scat_data(ws),
-Var::iy_space_agenda(ws),
-Var::surface_rtprop_agenda(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::ppath_step_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::pnd_field(ws),
-Var::iy_unit(ws),
-Var::mc_std_err(ws),
-Var::mc_max_time(ws),
-Var::mc_max_iter(ws),
-Var::mc_min_iter(ws),
-Var::mc_taustep_limit(ws),
-t_interp_order,
-Var::verbosity(ws));
+void iyMC(Workspace& ws, const Index& t_interp_order = 1) {
+  iyMC(ws, Var::iy(ws), Var::iy_aux(ws), Var::diy_dx(ws),
+       Var::iy_agenda_call1(ws), Var::iy_transmission(ws), Var::rte_pos(ws),
+       Var::rte_los(ws), Var::iy_aux_vars(ws), Var::jacobian_do(ws),
+       Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+       Var::lon_grid(ws), Var::z_field(ws), Var::t_field(ws),
+       Var::vmr_field(ws), Var::refellipsoid(ws), Var::z_surface(ws),
+       Var::cloudbox_on(ws), Var::cloudbox_limits(ws), Var::stokes_dim(ws),
+       Var::f_grid(ws), Var::scat_data(ws), Var::iy_space_agenda(ws),
+       Var::surface_rtprop_agenda(ws), Var::propmat_clearsky_agenda(ws),
+       Var::ppath_step_agenda(ws), Var::ppath_lmax(ws),
+       Var::ppath_lraytrace(ws), Var::pnd_field(ws), Var::iy_unit(ws),
+       Var::mc_std_err(ws), Var::mc_max_time(ws), Var::mc_max_iter(ws),
+       Var::mc_min_iter(ws), Var::mc_taustep_limit(ws), t_interp_order,
+       Var::verbosity(ws));
 }
-
 
 /*! Change of main output variable.
 
@@ -18856,16 +17699,10 @@ Jacobian variables are not handled.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void iyReplaceFromAux(Workspace& ws,
-const String& aux_var) {
-iyReplaceFromAux(Var::iy(ws),
-Var::iy_aux(ws),
-Var::iy_aux_vars(ws),
-Var::jacobian_do(ws),
-aux_var,
-Var::verbosity(ws));
+void iyReplaceFromAux(Workspace& ws, const String& aux_var) {
+  iyReplaceFromAux(Var::iy(ws), Var::iy_aux(ws), Var::iy_aux_vars(ws),
+                   Var::jacobian_do(ws), aux_var, Var::verbosity(ws));
 }
-
 
 /*! Switch between the elements of *iy_surface_agenda_array*.
 
@@ -18880,25 +17717,14 @@ with index *surface_type* (0-based) is called.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iySurfaceCallAgendaX(Workspace& ws) {
-iySurfaceCallAgendaX(ws,
-Var::iy(ws),
-Var::diy_dx(ws),
-Var::iy_unit(ws),
-Var::iy_transmission(ws),
-Var::iy_id(ws),
-Var::cloudbox_on(ws),
-Var::jacobian_do(ws),
-Var::f_grid(ws),
-Var::iy_main_agenda(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::rte_pos2(ws),
-Var::iy_surface_agenda_array(ws),
-Var::surface_type(ws),
-Var::surface_type_aux(ws),
-Var::verbosity(ws));
+  iySurfaceCallAgendaX(ws, Var::iy(ws), Var::diy_dx(ws), Var::iy_unit(ws),
+                       Var::iy_transmission(ws), Var::iy_id(ws),
+                       Var::cloudbox_on(ws), Var::jacobian_do(ws),
+                       Var::f_grid(ws), Var::iy_main_agenda(ws),
+                       Var::rtp_pos(ws), Var::rtp_los(ws), Var::rte_pos2(ws),
+                       Var::iy_surface_agenda_array(ws), Var::surface_type(ws),
+                       Var::surface_type_aux(ws), Var::verbosity(ws));
 }
-
 
 /*! Usage of FASTEM for emissivity and reflectivity of water surfaces.
 
@@ -18923,42 +17749,26 @@ comments on variables and limitations.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] salinity - Salinity, 0-1. That is, 3% is given as 0.03. (default: 0.035)
+@param[in] salinity - Salinity, 0-1. That is, 3% is given as 0.03. (default:
+0.035)
 @param[in] wind_speed - Wind speed.
 @param[in] wind_direction - Wind direction. See further above. (default: 0)
 @param[in] fastem_version - The version of FASTEM to use. (default: 6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void iySurfaceFastem(Workspace& ws,
-const Numeric& wind_speed,
-const Numeric& salinity=0.035,
-const Numeric& wind_direction=0,
-const Index& fastem_version=6) {
-iySurfaceFastem(ws,
-Var::iy(ws),
-Var::diy_dx(ws),
-Var::iy_transmission(ws),
-Var::iy_id(ws),
-Var::jacobian_do(ws),
-Var::atmosphere_dim(ws),
-Var::nlte_field(ws),
-Var::cloudbox_on(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::rte_pos2(ws),
-Var::iy_unit(ws),
-Var::iy_main_agenda(ws),
-Var::surface_skin_t(ws),
-salinity,
-wind_speed,
-wind_direction,
-fastem_version,
-Var::verbosity(ws));
+void iySurfaceFastem(Workspace& ws, const Numeric& wind_speed,
+                     const Numeric& salinity = 0.035,
+                     const Numeric& wind_direction = 0,
+                     const Index& fastem_version = 6) {
+  iySurfaceFastem(
+      ws, Var::iy(ws), Var::diy_dx(ws), Var::iy_transmission(ws),
+      Var::iy_id(ws), Var::jacobian_do(ws), Var::atmosphere_dim(ws),
+      Var::nlte_field(ws), Var::cloudbox_on(ws), Var::stokes_dim(ws),
+      Var::f_grid(ws), Var::rtp_pos(ws), Var::rtp_los(ws), Var::rte_pos2(ws),
+      Var::iy_unit(ws), Var::iy_main_agenda(ws), Var::surface_skin_t(ws),
+      salinity, wind_speed, wind_direction, fastem_version, Var::verbosity(ws));
 }
-
 
 /*! Interface to *surface_rtprop_agenda* for *iy_surface_agenda*.
 
@@ -18976,26 +17786,14 @@ in a straightforward fashion.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iySurfaceRtpropAgenda(Workspace& ws) {
-iySurfaceRtpropAgenda(ws,
-Var::iy(ws),
-Var::diy_dx(ws),
-Var::iy_transmission(ws),
-Var::iy_id(ws),
-Var::jacobian_do(ws),
-Var::atmosphere_dim(ws),
-Var::nlte_field(ws),
-Var::cloudbox_on(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::rte_pos2(ws),
-Var::iy_unit(ws),
-Var::iy_main_agenda(ws),
-Var::surface_rtprop_agenda(ws),
-Var::verbosity(ws));
+  iySurfaceRtpropAgenda(
+      ws, Var::iy(ws), Var::diy_dx(ws), Var::iy_transmission(ws),
+      Var::iy_id(ws), Var::jacobian_do(ws), Var::atmosphere_dim(ws),
+      Var::nlte_field(ws), Var::cloudbox_on(ws), Var::stokes_dim(ws),
+      Var::f_grid(ws), Var::rtp_pos(ws), Var::rtp_los(ws), Var::rte_pos2(ws),
+      Var::iy_unit(ws), Var::iy_main_agenda(ws), Var::surface_rtprop_agenda(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Applies *surface_los*, *surface_rmatrix* and *surface_emission*.
 
@@ -19015,32 +17813,17 @@ by calling *iy_main_agenda*. See further AUG.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iySurfaceRtpropCalc(Workspace& ws) {
-iySurfaceRtpropCalc(ws,
-Var::iy(ws),
-Var::diy_dx(ws),
-Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::dsurface_names(ws),
-Var::dsurface_rmatrix_dx(ws),
-Var::dsurface_emission_dx(ws),
-Var::iy_transmission(ws),
-Var::iy_id(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::atmosphere_dim(ws),
-Var::nlte_field(ws),
-Var::cloudbox_on(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::rte_pos2(ws),
-Var::iy_unit(ws),
-Var::iy_main_agenda(ws),
-Var::verbosity(ws));
+  iySurfaceRtpropCalc(ws, Var::iy(ws), Var::diy_dx(ws), Var::surface_los(ws),
+                      Var::surface_rmatrix(ws), Var::surface_emission(ws),
+                      Var::dsurface_names(ws), Var::dsurface_rmatrix_dx(ws),
+                      Var::dsurface_emission_dx(ws), Var::iy_transmission(ws),
+                      Var::iy_id(ws), Var::jacobian_do(ws),
+                      Var::jacobian_quantities(ws), Var::atmosphere_dim(ws),
+                      Var::nlte_field(ws), Var::cloudbox_on(ws),
+                      Var::stokes_dim(ws), Var::f_grid(ws), Var::rtp_pos(ws),
+                      Var::rtp_los(ws), Var::rte_pos2(ws), Var::iy_unit(ws),
+                      Var::iy_main_agenda(ws), Var::verbosity(ws));
 }
-
 
 /*! Standard method for handling transmission measurements.
 
@@ -19083,53 +17866,23 @@ Valid choices for auxiliary data are:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iyTransmissionStandard(Workspace& ws) {
-iyTransmissionStandard(ws,
-Var::iy(ws),
-Var::iy_aux(ws),
-Var::diy_dx(ws),
-Var::ppvar_p(ws),
-Var::ppvar_t(ws),
-Var::ppvar_nlte(ws),
-Var::ppvar_vmr(ws),
-Var::ppvar_wind(ws),
-Var::ppvar_mag(ws),
-Var::ppvar_pnd(ws),
-Var::ppvar_f(ws),
-Var::ppvar_iy(ws),
-Var::ppvar_trans_cumulat(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::t_field(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::scat_species(ws),
-Var::scat_data(ws),
-Var::iy_aux_vars(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::ppath(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::iy_transmitter_agenda(ws),
-Var::iy_agenda_call1(ws),
-Var::iy_transmission(ws),
-Var::rte_alonglos_v(ws),
-Var::verbosity(ws));
+  iyTransmissionStandard(
+      ws, Var::iy(ws), Var::iy_aux(ws), Var::diy_dx(ws), Var::ppvar_p(ws),
+      Var::ppvar_t(ws), Var::ppvar_nlte(ws), Var::ppvar_vmr(ws),
+      Var::ppvar_wind(ws), Var::ppvar_mag(ws), Var::ppvar_pnd(ws),
+      Var::ppvar_f(ws), Var::ppvar_iy(ws), Var::ppvar_trans_cumulat(ws),
+      Var::stokes_dim(ws), Var::f_grid(ws), Var::atmosphere_dim(ws),
+      Var::p_grid(ws), Var::t_field(ws), Var::nlte_field(ws),
+      Var::vmr_field(ws), Var::abs_species(ws), Var::wind_u_field(ws),
+      Var::wind_v_field(ws), Var::wind_w_field(ws), Var::mag_u_field(ws),
+      Var::mag_v_field(ws), Var::mag_w_field(ws), Var::cloudbox_on(ws),
+      Var::cloudbox_limits(ws), Var::pnd_field(ws), Var::dpnd_field_dx(ws),
+      Var::scat_species(ws), Var::scat_data(ws), Var::iy_aux_vars(ws),
+      Var::jacobian_do(ws), Var::jacobian_quantities(ws), Var::ppath(ws),
+      Var::propmat_clearsky_agenda(ws), Var::water_p_eq_agenda(ws),
+      Var::iy_transmitter_agenda(ws), Var::iy_agenda_call1(ws),
+      Var::iy_transmission(ws), Var::rte_alonglos_v(ws), Var::verbosity(ws));
 }
-
 
 /*! Transmitted signal having multiple polarisations.
 
@@ -19146,13 +17899,9 @@ signal/pulses are set to be of unit magnitude, such as [1,1,0,0].
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iy_transmitterMultiplePol(Workspace& ws) {
-iy_transmitterMultiplePol(Var::iy(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::instrument_pol(ws),
-Var::verbosity(ws));
+  iy_transmitterMultiplePol(Var::iy(ws), Var::stokes_dim(ws), Var::f_grid(ws),
+                            Var::instrument_pol(ws), Var::verbosity(ws));
 }
-
 
 /*! Transmitted signal having a single polarisations.
 
@@ -19170,13 +17919,9 @@ magnitude, such as [1,1,0,0].
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void iy_transmitterSinglePol(Workspace& ws) {
-iy_transmitterSinglePol(Var::iy(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::instrument_pol(ws),
-Var::verbosity(ws));
+  iy_transmitterSinglePol(Var::iy(ws), Var::stokes_dim(ws), Var::f_grid(ws),
+                          Var::instrument_pol(ws), Var::verbosity(ws));
 }
-
 
 /*! Includes an absorption species in the Jacobian.
 
@@ -19214,33 +17959,21 @@ latitude and longitude as outermost loop.
 @param[in] g3 - Longitude retreival grid.
 @param[in] species - The species tag of the retrieval quantity.
 @param[in] unit - Retrieval unit. See above. (default: "vmr")
-@param[in] for_species_tag - Index-bool for acting on species tags or species. (default: 1)
+@param[in] for_species_tag - Index-bool for acting on species tags or species.
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddAbsSpecies(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& species,
-const String& unit="vmr",
-const Index& for_species_tag=1) {
-jacobianAddAbsSpecies(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-species,
-unit,
-for_species_tag,
-Var::verbosity(ws));
+void jacobianAddAbsSpecies(Workspace& ws, const Vector& g1, const Vector& g2,
+                           const Vector& g3, const String& species,
+                           const String& unit = "vmr",
+                           const Index& for_species_tag = 1) {
+  jacobianAddAbsSpecies(ws, Var::jacobian_quantities(ws),
+                        Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                        Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                        g1, g2, g3, species, unit, for_species_tag,
+                        Var::verbosity(ws));
 }
-
 
 /*! Includes a basic catalog parameter in the Jacobian. These are constant
 over all layers and so only a single vector output is returned.
@@ -19274,16 +18007,12 @@ catalog_identity="O2-66 TR UP J 1 LO J 0" may be used, but then the
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianAddBasicCatalogParameter(Workspace& ws,
-const QuantumIdentifier& catalog_identity,
-const String& catalog_parameter) {
-jacobianAddBasicCatalogParameter(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-catalog_identity,
-catalog_parameter,
-Var::verbosity(ws));
+                                      const QuantumIdentifier& catalog_identity,
+                                      const String& catalog_parameter) {
+  jacobianAddBasicCatalogParameter(ws, Var::jacobian_quantities(ws),
+                                   Var::jacobian_agenda(ws), catalog_identity,
+                                   catalog_parameter, Var::verbosity(ws));
 }
-
 
 /*! See *jacobianAddBasicCatalogParameter*.
 
@@ -19299,17 +18028,13 @@ by looping calls to *jacobianAddBasicCatalogParameter* over these input
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddBasicCatalogParameters(Workspace& ws,
-const ArrayOfQuantumIdentifier& catalog_identities,
-const ArrayOfString& catalog_parameters) {
-jacobianAddBasicCatalogParameters(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-catalog_identities,
-catalog_parameters,
-Var::verbosity(ws));
+void jacobianAddBasicCatalogParameters(
+    Workspace& ws, const ArrayOfQuantumIdentifier& catalog_identities,
+    const ArrayOfString& catalog_parameters) {
+  jacobianAddBasicCatalogParameters(
+      ws, Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+      catalog_identities, catalog_parameters, Var::verbosity(ws));
 }
-
 
 /*! Includes a frequency fit of shift type in the Jacobian.
 
@@ -19327,16 +18052,11 @@ This method adds one element to the state vector (*x*).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddFreqShift(Workspace& ws,
-const Numeric& df=100e3) {
-jacobianAddFreqShift(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::f_grid(ws),
-df,
-Var::verbosity(ws));
+void jacobianAddFreqShift(Workspace& ws, const Numeric& df = 100e3) {
+  jacobianAddFreqShift(ws, Var::jacobian_quantities(ws),
+                       Var::jacobian_agenda(ws), Var::f_grid(ws), df,
+                       Var::verbosity(ws));
 }
-
 
 /*! Includes a frequency fit of stretch type in the Jacobian.
 
@@ -19354,16 +18074,11 @@ This method adds one element to the state vector (*x*).
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddFreqStretch(Workspace& ws,
-const Numeric& df=100e3) {
-jacobianAddFreqStretch(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::f_grid(ws),
-df,
-Var::verbosity(ws));
+void jacobianAddFreqStretch(Workspace& ws, const Numeric& df = 100e3) {
+  jacobianAddFreqStretch(ws, Var::jacobian_quantities(ws),
+                         Var::jacobian_agenda(ws), Var::f_grid(ws), df,
+                         Var::verbosity(ws));
 }
-
 
 /*! Includes one magnetic field component in the Jacobian.
 
@@ -19395,27 +18110,14 @@ The dB-parameter is only used for Faraday rotation
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddMagField(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& component="v",
-const Numeric& dB=1.0e-7) {
-jacobianAddMagField(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-component,
-dB,
-Var::verbosity(ws));
+void jacobianAddMagField(Workspace& ws, const Vector& g1, const Vector& g2,
+                         const Vector& g3, const String& component = "v",
+                         const Numeric& dB = 1.0e-7) {
+  jacobianAddMagField(ws, Var::jacobian_quantities(ws),
+                      Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws), g1,
+                      g2, g3, component, dB, Var::verbosity(ws));
 }
-
 
 /*! Experimental NLTE Jacobian.
 
@@ -19448,27 +18150,15 @@ directly than to individually call this function
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddNLTE(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const QuantumIdentifier& energy_level_identity,
-const Numeric& dx=1.0e-3) {
-jacobianAddNLTE(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-energy_level_identity,
-dx,
-Var::verbosity(ws));
+void jacobianAddNLTE(Workspace& ws, const Vector& g1, const Vector& g2,
+                     const Vector& g3,
+                     const QuantumIdentifier& energy_level_identity,
+                     const Numeric& dx = 1.0e-3) {
+  jacobianAddNLTE(ws, Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+                  Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+                  Var::lon_grid(ws), g1, g2, g3, energy_level_identity, dx,
+                  Var::verbosity(ws));
 }
-
 
 /*! Experimental NLTE Jacobian.  Same as *jacobianAddNLTE* but for
 many levels
@@ -19490,27 +18180,15 @@ is conveniently almost always the same as *nlte_level_identifiers*
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddNLTEs(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const ArrayOfQuantumIdentifier& energy_level_identities,
-const Numeric& dx=1.0e-3) {
-jacobianAddNLTEs(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-energy_level_identities,
-dx,
-Var::verbosity(ws));
+void jacobianAddNLTEs(Workspace& ws, const Vector& g1, const Vector& g2,
+                      const Vector& g3,
+                      const ArrayOfQuantumIdentifier& energy_level_identities,
+                      const Numeric& dx = 1.0e-3) {
+  jacobianAddNLTEs(ws, Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+                   Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+                   Var::lon_grid(ws), g1, g2, g3, energy_level_identities, dx,
+                   Var::verbosity(ws));
 }
-
 
 /*! Adds sensor pointing zenith angle off-set jacobian.
 
@@ -19546,27 +18224,22 @@ case, the coefficient for polynomial order 0 comes first etc.
 @author Mattias Ekstrom
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] poly_order - Order of polynomial to describe the time variation of pointing off-sets. (default: 0)
+@param[in] poly_order - Order of polynomial to describe the time variation of
+pointing off-sets. (default: 0)
 @param[in] calcmode - Calculation method. See above (default: "recalc")
-@param[in] dza - Size of perturbation to apply (when applicable). (default: 0.01)
+@param[in] dza - Size of perturbation to apply (when applicable). (default:
+0.01)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddPointingZa(Workspace& ws,
-const Index& poly_order=0,
-const String& calcmode="recalc",
-const Numeric& dza=0.01) {
-jacobianAddPointingZa(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::sensor_pos(ws),
-Var::sensor_time(ws),
-poly_order,
-calcmode,
-dza,
-Var::verbosity(ws));
+void jacobianAddPointingZa(Workspace& ws, const Index& poly_order = 0,
+                           const String& calcmode = "recalc",
+                           const Numeric& dza = 0.01) {
+  jacobianAddPointingZa(ws, Var::jacobian_quantities(ws),
+                        Var::jacobian_agenda(ws), Var::sensor_pos(ws),
+                        Var::sensor_time(ws), poly_order, calcmode, dza,
+                        Var::verbosity(ws));
 }
-
 
 /*! Includes polynomial baseline fit in the Jacobian.
 
@@ -19584,42 +18257,37 @@ If the simulation/retrieval deals with a single spectrum, the number
 of elements added to the state vector (*x*) is poly_order+1. The
 coefficient for polynomial order 0 comes first etc. The same is true
 if *no_pol_variation*, *no_los_variation* and *no_mblock_variation*
-all are set to 1, even if several spectra are involved. Otherwise thenumber of elements added to *x* depends on the number of spectra and
-the settings of *no_pol_variation*, *no_los_variation* and 
-*no_mblock_variation*. The coefficients of the different polynomial
-orders are treated as separate retrieval quantities. That is, the
-the elements associated with polynomial order 0 are grouped and form
-together a retrieval quantity. The coefficients for higher polynomial
-orders are treated in the same way.
+all are set to 1, even if several spectra are involved. Otherwise thenumber of
+elements added to *x* depends on the number of spectra and the settings of
+*no_pol_variation*, *no_los_variation* and *no_mblock_variation*. The
+coefficients of the different polynomial orders are treated as separate
+retrieval quantities. That is, the the elements associated with polynomial order
+0 are grouped and form together a retrieval quantity. The coefficients for
+higher polynomial orders are treated in the same way.
 
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] poly_order - Polynomial order to use for the fit.
-@param[in] no_pol_variation - Set to 1 if the baseline off-set is the same for all Stokes components. (default: 0)
-@param[in] no_los_variation - Set to 1 if the baseline off-set is the same for all line-of-sights (inside each measurement block). (default: 0)
-@param[in] no_mblock_variation - Set to 1 if the baseline off-set is the same for all measurement blocks. (default: 0)
+@param[in] no_pol_variation - Set to 1 if the baseline off-set is the same for
+all Stokes components. (default: 0)
+@param[in] no_los_variation - Set to 1 if the baseline off-set is the same for
+all line-of-sights (inside each measurement block). (default: 0)
+@param[in] no_mblock_variation - Set to 1 if the baseline off-set is the same
+for all measurement blocks. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddPolyfit(Workspace& ws,
-const Index& poly_order,
-const Index& no_pol_variation=0,
-const Index& no_los_variation=0,
-const Index& no_mblock_variation=0) {
-jacobianAddPolyfit(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::sensor_pos(ws),
-poly_order,
-no_pol_variation,
-no_los_variation,
-no_mblock_variation,
-Var::verbosity(ws));
+void jacobianAddPolyfit(Workspace& ws, const Index& poly_order,
+                        const Index& no_pol_variation = 0,
+                        const Index& no_los_variation = 0,
+                        const Index& no_mblock_variation = 0) {
+  jacobianAddPolyfit(ws, Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+                     Var::sensor_response_pol_grid(ws),
+                     Var::sensor_response_dlos_grid(ws), Var::sensor_pos(ws),
+                     poly_order, no_pol_variation, no_los_variation,
+                     no_mblock_variation, Var::verbosity(ws));
 }
-
 
 /*! Includes a scattering species in the Jacobian.
 
@@ -19639,32 +18307,20 @@ latitude and longitude as outermost loop.
 @param[in] g1 - Pressure retrieval grid.
 @param[in] g2 - Latitude retrieval grid.
 @param[in] g3 - Longitude retreival grid.
-@param[in] species - Name of scattering species, must match one element in *scat_species*.
+@param[in] species - Name of scattering species, must match one element in
+*scat_species*.
 @param[in] quantity - Retrieval quantity, e.g. "IWC".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddScatSpecies(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& species,
-const String& quantity) {
-jacobianAddScatSpecies(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-species,
-quantity,
-Var::verbosity(ws));
+void jacobianAddScatSpecies(Workspace& ws, const Vector& g1, const Vector& g2,
+                            const Vector& g3, const String& species,
+                            const String& quantity) {
+  jacobianAddScatSpecies(ws, Var::jacobian_quantities(ws),
+                         Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                         Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                         g1, g2, g3, species, quantity, Var::verbosity(ws));
 }
-
 
 /*! Adds a line shape parameter to the Jacobian calculations. These
 are constant over all levels so only a single *x*-value is added
@@ -19712,20 +18368,14 @@ Also see said function for an example of how to set the QuantumIdentifier
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianAddShapeCatalogParameter(Workspace& ws,
-const QuantumIdentifier& line_identity,
-const String& species,
-const String& variable,
-const String& coefficient) {
-jacobianAddShapeCatalogParameter(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-line_identity,
-species,
-variable,
-coefficient,
-Var::verbosity(ws));
+                                      const QuantumIdentifier& line_identity,
+                                      const String& species,
+                                      const String& variable,
+                                      const String& coefficient) {
+  jacobianAddShapeCatalogParameter(
+      ws, Var::jacobian_quantities(ws), Var::jacobian_agenda(ws), line_identity,
+      species, variable, coefficient, Var::verbosity(ws));
 }
-
 
 /*! See *jacobianAddShapeCatalogParameter* for information on
 the GIN parameters
@@ -19741,17 +18391,17 @@ in the description of *jacobianAddShapeCatalogParameter*
 For example, if *line_identities* have length 5, *species* length 4,
 *variables* length 3, and *coefficients* length 2, there will be
 5*4x3x2 = 120 new additions to *jacobian_quantities* in the order:
-	[{line_identities[0], species[0], variables[0] coefficients[0]}]
-	[{line_identities[0], species[0], variables[0] coefficients[1]}]
-	[{line_identities[0], species[0], variables[1] coefficients[0]}]
-	[{line_identities[0], species[0], variables[1] coefficients[1]}]
-	[{line_identities[0], species[0], variables[2] coefficients[0]}]
-	[{line_identities[0], species[0], variables[2] coefficients[1]}]
-	[{line_identities[0], species[1], variables[0] coefficients[0]}]
-	...
-	[{line_identities[4], species[3], variables[1] coefficients[1]}]
-	[{line_identities[4], species[3], variables[2] coefficients[0]}]
-	[{line_identities[4], species[3], variables[2] coefficients[1]}]
+        [{line_identities[0], species[0], variables[0] coefficients[0]}]
+        [{line_identities[0], species[0], variables[0] coefficients[1]}]
+        [{line_identities[0], species[0], variables[1] coefficients[0]}]
+        [{line_identities[0], species[0], variables[1] coefficients[1]}]
+        [{line_identities[0], species[0], variables[2] coefficients[0]}]
+        [{line_identities[0], species[0], variables[2] coefficients[1]}]
+        [{line_identities[0], species[1], variables[0] coefficients[0]}]
+        ...
+        [{line_identities[4], species[3], variables[1] coefficients[1]}]
+        [{line_identities[4], species[3], variables[2] coefficients[0]}]
+        [{line_identities[4], species[3], variables[2] coefficients[1]}]
 or in words: lines first, then species, then variables, then coefficients
 
 @author Richard Larsson
@@ -19764,21 +18414,14 @@ or in words: lines first, then species, then variables, then coefficients
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddShapeCatalogParameters(Workspace& ws,
-const ArrayOfQuantumIdentifier& line_identities,
-const ArrayOfString& species,
-const ArrayOfString& variables,
-const ArrayOfString& coefficients) {
-jacobianAddShapeCatalogParameters(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-line_identities,
-species,
-variables,
-coefficients,
-Var::verbosity(ws));
+void jacobianAddShapeCatalogParameters(
+    Workspace& ws, const ArrayOfQuantumIdentifier& line_identities,
+    const ArrayOfString& species, const ArrayOfString& variables,
+    const ArrayOfString& coefficients) {
+  jacobianAddShapeCatalogParameters(
+      ws, Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+      line_identities, species, variables, coefficients, Var::verbosity(ws));
 }
-
 
 /*! Includes sinusoidal baseline fit in the Jacobian.
 
@@ -19794,42 +18437,37 @@ If the simulation/retrieval deals with a single spectrum, the number
 of elements added to the state vector (*x*) is 2*nperiods, where
 nperiods is the length of *period_lengths*. The same is true
 if *no_pol_variation*, *no_los_variation* and *no_mblock_variation*
-all are set to 1, even if several spectra are involved. Otherwise thenumber of elements added to *x* depends on the number of spectra and
-the settings of *no_pol_variation*, *no_los_variation* and 
-*no_mblock_variation*. The sine and cosine terms for each period
-length are treated as a  separate retrieval quantities. That is, the
-the elements associated with the first period length are grouped and
-form together a retrieval quantity, etc. Inside each retrieval quantity
-the pairs of sine and cosine terms are kept together, in given order.
+all are set to 1, even if several spectra are involved. Otherwise thenumber of
+elements added to *x* depends on the number of spectra and the settings of
+*no_pol_variation*, *no_los_variation* and *no_mblock_variation*. The sine and
+cosine terms for each period length are treated as a  separate retrieval
+quantities. That is, the the elements associated with the first period length
+are grouped and form together a retrieval quantity, etc. Inside each retrieval
+quantity the pairs of sine and cosine terms are kept together, in given order.
 
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] period_lengths - Period lengths of the fit.
-@param[in] no_pol_variation - Set to 1 if the baseline off-set is the same for all Stokes components. (default: 0)
-@param[in] no_los_variation - Set to 1 if the baseline off-set is the same for all line-of-sights (inside each measurement block). (default: 0)
-@param[in] no_mblock_variation - Set to 1 if the baseline off-set is the same for all measurement blocks. (default: 0)
+@param[in] no_pol_variation - Set to 1 if the baseline off-set is the same for
+all Stokes components. (default: 0)
+@param[in] no_los_variation - Set to 1 if the baseline off-set is the same for
+all line-of-sights (inside each measurement block). (default: 0)
+@param[in] no_mblock_variation - Set to 1 if the baseline off-set is the same
+for all measurement blocks. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddSinefit(Workspace& ws,
-const Vector& period_lengths,
-const Index& no_pol_variation=0,
-const Index& no_los_variation=0,
-const Index& no_mblock_variation=0) {
-jacobianAddSinefit(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::sensor_pos(ws),
-period_lengths,
-no_pol_variation,
-no_los_variation,
-no_mblock_variation,
-Var::verbosity(ws));
+void jacobianAddSinefit(Workspace& ws, const Vector& period_lengths,
+                        const Index& no_pol_variation = 0,
+                        const Index& no_los_variation = 0,
+                        const Index& no_mblock_variation = 0) {
+  jacobianAddSinefit(ws, Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+                     Var::sensor_response_pol_grid(ws),
+                     Var::sensor_response_dlos_grid(ws), Var::sensor_pos(ws),
+                     period_lengths, no_pol_variation, no_los_variation,
+                     no_mblock_variation, Var::verbosity(ws));
 }
-
 
 /*! Includes a special absorption species in the Jacobian.
 
@@ -19861,25 +18499,14 @@ latitude and longitude as outermost loop.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddSpecialSpecies(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& species) {
-jacobianAddSpecialSpecies(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-species,
-Var::verbosity(ws));
+void jacobianAddSpecialSpecies(Workspace& ws, const Vector& g1,
+                               const Vector& g2, const Vector& g3,
+                               const String& species) {
+  jacobianAddSpecialSpecies(
+      ws, Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+      Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), g1, g2, g3, species, Var::verbosity(ws));
 }
-
 
 /*! Includes a surface quantity in the Jacobian.
 
@@ -19905,22 +18532,13 @@ as outermost loop.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddSurfaceQuantity(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const String& quantity) {
-jacobianAddSurfaceQuantity(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-quantity,
-Var::verbosity(ws));
+void jacobianAddSurfaceQuantity(Workspace& ws, const Vector& g1,
+                                const Vector& g2, const String& quantity) {
+  jacobianAddSurfaceQuantity(ws, Var::jacobian_quantities(ws),
+                             Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                             Var::lat_grid(ws), Var::lon_grid(ws), g1, g2,
+                             quantity, Var::verbosity(ws));
 }
-
 
 /*! Includes atmospheric temperatures in the Jacobian.
 
@@ -19930,14 +18548,14 @@ Hydrostatic equilibrium (HSE) can be included.
 The analytical calculation approach neglects so far refraction
 totally, but considers the local effect of HSE.
 The later should be accaptable for observations around zenith and
-nadir. There is no warning if the method is applied incorrectly, 
+nadir. There is no warning if the method is applied incorrectly,
 with respect to these issues. Note that the argument *hse* of this
 WSM only refers to the Jacobian calculation, if the model and/or
 retrieved atmosphere actually fulfils HSE or not is governed in
 other manners.
 
 The calculations (both options) assume that gas species are defined
-in VMR (a change in temperature then changes the number density). 
+in VMR (a change in temperature then changes the number density).
 This has the consequence that retrieval of temperatures and number
 density can not be mixed. Neither any warning here!
 
@@ -19959,25 +18577,13 @@ latitude and longitude as outermost loop.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddTemperature(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& hse="on") {
-jacobianAddTemperature(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-hse,
-Var::verbosity(ws));
+void jacobianAddTemperature(Workspace& ws, const Vector& g1, const Vector& g2,
+                            const Vector& g3, const String& hse = "on") {
+  jacobianAddTemperature(ws, Var::jacobian_quantities(ws),
+                         Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                         Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                         g1, g2, g3, hse, Var::verbosity(ws));
 }
-
 
 /*! Includes one atmospheric wind component in the Jacobian.
 
@@ -19988,7 +18594,7 @@ however, so therefore a frequency perturbation df is required
 and as a consequence *abs_f_interp_order* must be > 0.
 
 The wind field components are retrieved separately, and,
-hence, the argument *component* can be "u", "v" or "w" 
+hence, the argument *component* can be "u", "v" or "w"
 for vector components, or just "strength" for total wind speed.
 
 The number of elements added to the state vector (*x*) is:
@@ -20009,27 +18615,14 @@ latitude and longitude as outermost loop.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianAddWind(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& component="v",
-const Numeric& dfrequency=0.1) {
-jacobianAddWind(ws,
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-component,
-dfrequency,
-Var::verbosity(ws));
+void jacobianAddWind(Workspace& ws, const Vector& g1, const Vector& g2,
+                     const Vector& g3, const String& component = "v",
+                     const Numeric& dfrequency = 0.1) {
+  jacobianAddWind(ws, Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+                  Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+                  Var::lon_grid(ws), g1, g2, g3, component, dfrequency,
+                  Var::verbosity(ws));
 }
-
 
 /*! Applies adjustments and transformations on *jacobian*.
 
@@ -20056,12 +18649,9 @@ The method accepts if *jacobian* is empty, and then does, nothing.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianAdjustAndTransform(Workspace& ws) {
-jacobianAdjustAndTransform(Var::jacobian(ws),
-Var::jacobian_quantities(ws),
-Var::x(ws),
-Var::verbosity(ws));
+  jacobianAdjustAndTransform(Var::jacobian(ws), Var::jacobian_quantities(ws),
+                             Var::x(ws), Var::verbosity(ws));
 }
-
 
 /*! This function doesn't do anything. It just exists to satisfy
 the input and output requirement of the *jacobian_agenda*.
@@ -20077,13 +18667,9 @@ the user.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianCalcDoNothing(Workspace& ws) {
-jacobianCalcDoNothing(Var::jacobian(ws),
-Var::mblock_index(ws),
-Var::iyb(ws),
-Var::yb(ws),
-Var::verbosity(ws));
+  jacobianCalcDoNothing(Var::jacobian(ws), Var::mblock_index(ws), Var::iyb(ws),
+                        Var::yb(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates frequency shift jacobians by interpolation
 of *iyb*.
@@ -20098,18 +18684,11 @@ and should normally not be called by the user.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianCalcFreqShift(Workspace& ws) {
-jacobianCalcFreqShift(Var::jacobian(ws),
-Var::mblock_index(ws),
-Var::iyb(ws),
-Var::yb(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  jacobianCalcFreqShift(Var::jacobian(ws), Var::mblock_index(ws), Var::iyb(ws),
+                        Var::yb(ws), Var::stokes_dim(ws), Var::f_grid(ws),
+                        Var::mblock_dlos_grid(ws), Var::sensor_response(ws),
+                        Var::jacobian_quantities(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates frequency stretch jacobians by interpolation
 of *iyb*.
@@ -20124,21 +18703,13 @@ and should normally not be called by the user.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianCalcFreqStretch(Workspace& ws) {
-jacobianCalcFreqStretch(Var::jacobian(ws),
-Var::mblock_index(ws),
-Var::iyb(ws),
-Var::yb(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  jacobianCalcFreqStretch(
+      Var::jacobian(ws), Var::mblock_index(ws), Var::iyb(ws), Var::yb(ws),
+      Var::stokes_dim(ws), Var::f_grid(ws), Var::mblock_dlos_grid(ws),
+      Var::sensor_response(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_dlos_grid(ws),
+      Var::jacobian_quantities(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates zenith angle pointing deviation jacobians by
 inter-extrapolation of *iyb*.
@@ -20154,20 +18725,12 @@ called by the user.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianCalcPointingZaInterp(Workspace& ws) {
-jacobianCalcPointingZaInterp(Var::jacobian(ws),
-Var::mblock_index(ws),
-Var::iyb(ws),
-Var::yb(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::sensor_los(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::sensor_time(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  jacobianCalcPointingZaInterp(
+      Var::jacobian(ws), Var::mblock_index(ws), Var::iyb(ws), Var::yb(ws),
+      Var::stokes_dim(ws), Var::f_grid(ws), Var::sensor_los(ws),
+      Var::mblock_dlos_grid(ws), Var::sensor_response(ws), Var::sensor_time(ws),
+      Var::jacobian_quantities(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates zenith angle pointing deviation jacobians by
 recalulation of *iyb*.
@@ -20184,29 +18747,15 @@ called by the user.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianCalcPointingZaRecalc(Workspace& ws) {
-jacobianCalcPointingZaRecalc(ws,
-Var::jacobian(ws),
-Var::mblock_index(ws),
-Var::iyb(ws),
-Var::yb(ws),
-Var::atmosphere_dim(ws),
-Var::nlte_field(ws),
-Var::cloudbox_on(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::sensor_pos(ws),
-Var::sensor_los(ws),
-Var::transmitter_pos(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::sensor_time(ws),
-Var::iy_unit(ws),
-Var::iy_main_agenda(ws),
-Var::geo_pos_agenda(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  jacobianCalcPointingZaRecalc(
+      ws, Var::jacobian(ws), Var::mblock_index(ws), Var::iyb(ws), Var::yb(ws),
+      Var::atmosphere_dim(ws), Var::nlte_field(ws), Var::cloudbox_on(ws),
+      Var::stokes_dim(ws), Var::f_grid(ws), Var::sensor_pos(ws),
+      Var::sensor_los(ws), Var::transmitter_pos(ws), Var::mblock_dlos_grid(ws),
+      Var::sensor_response(ws), Var::sensor_time(ws), Var::iy_unit(ws),
+      Var::iy_main_agenda(ws), Var::geo_pos_agenda(ws),
+      Var::jacobian_quantities(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates jacobians for polynomial baseline fit.
 
@@ -20220,21 +18769,13 @@ and should normally not be called by the user.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianCalcPolyfit(Workspace& ws,
-const Index& poly_coeff) {
-jacobianCalcPolyfit(Var::jacobian(ws),
-Var::mblock_index(ws),
-Var::iyb(ws),
-Var::yb(ws),
-Var::sensor_response(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::jacobian_quantities(ws),
-poly_coeff,
-Var::verbosity(ws));
+void jacobianCalcPolyfit(Workspace& ws, const Index& poly_coeff) {
+  jacobianCalcPolyfit(
+      Var::jacobian(ws), Var::mblock_index(ws), Var::iyb(ws), Var::yb(ws),
+      Var::sensor_response(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_dlos_grid(ws),
+      Var::jacobian_quantities(ws), poly_coeff, Var::verbosity(ws));
 }
-
 
 /*! Calculates jacobians for sinusoidal baseline fit.
 
@@ -20244,25 +18785,18 @@ and should normally not be called by the user.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] period_index - Index among the period length specified for add-method.
+@param[in] period_index - Index among the period length specified for
+add-method.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianCalcSinefit(Workspace& ws,
-const Index& period_index) {
-jacobianCalcSinefit(Var::jacobian(ws),
-Var::mblock_index(ws),
-Var::iyb(ws),
-Var::yb(ws),
-Var::sensor_response(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::jacobian_quantities(ws),
-period_index,
-Var::verbosity(ws));
+void jacobianCalcSinefit(Workspace& ws, const Index& period_index) {
+  jacobianCalcSinefit(
+      Var::jacobian(ws), Var::mblock_index(ws), Var::iyb(ws), Var::yb(ws),
+      Var::sensor_response(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_dlos_grid(ws),
+      Var::jacobian_quantities(ws), period_index, Var::verbosity(ws));
 }
-
 
 /*! Closes the array of retrieval quantities and prepares for
 calculation of the Jacobian matrix.
@@ -20280,13 +18814,9 @@ No calculations are performed here.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianClose(Workspace& ws) {
-jacobianClose(ws,
-Var::jacobian_do(ws),
-Var::jacobian_agenda(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  jacobianClose(ws, Var::jacobian_do(ws), Var::jacobian_agenda(ws),
+                Var::jacobian_quantities(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets *jacobian* based on the difference vetween two measurement vectors.
 
@@ -20306,16 +18836,11 @@ This gives a Jacobian wit a single column.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianFromTwoY(Workspace& ws,
-const Vector& y_pert,
-const Numeric& pert_size) {
-jacobianFromTwoY(Var::jacobian(ws),
-Var::y(ws),
-y_pert,
-pert_size,
-Var::verbosity(ws));
+void jacobianFromTwoY(Workspace& ws, const Vector& y_pert,
+                      const Numeric& pert_size) {
+  jacobianFromTwoY(Var::jacobian(ws), Var::y(ws), y_pert, pert_size,
+                   Var::verbosity(ws));
 }
-
 
 /*! Sets *jacobian* based on perturbation calcuations.
 
@@ -20333,15 +18858,10 @@ Column i of *jacobian* equals: (ybatch[i]-y)/pert_size.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void jacobianFromYbatch(Workspace& ws,
-const Numeric& pert_size) {
-jacobianFromYbatch(Var::jacobian(ws),
-Var::ybatch(ws),
-Var::y(ws),
-pert_size,
-Var::verbosity(ws));
+void jacobianFromYbatch(Workspace& ws, const Numeric& pert_size) {
+  jacobianFromYbatch(Var::jacobian(ws), Var::ybatch(ws), Var::y(ws), pert_size,
+                     Var::verbosity(ws));
 }
-
 
 /*! Initialises the variables connected to the Jacobian matrix.
 
@@ -20359,11 +18879,9 @@ The Jacobian quantities are initialised to be empty.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianInit(Workspace& ws) {
-jacobianInit(Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::verbosity(ws));
+  jacobianInit(Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+               Var::verbosity(ws));
 }
-
 
 /*! Makes mandatory initialisation of some jacobian variables.
 
@@ -20381,12 +18899,9 @@ Sets *jacobian_do* to 0.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianOff(Workspace& ws) {
-jacobianOff(Var::jacobian_do(ws),
-Var::jacobian_agenda(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  jacobianOff(Var::jacobian_do(ws), Var::jacobian_agenda(ws),
+              Var::jacobian_quantities(ws), Var::verbosity(ws));
 }
-
 
 /*! Adds an affine transformation of the last element of
 *jacobian_quantities*.
@@ -20421,14 +18936,12 @@ Default is to make no such tranformation at all.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianSetAffineTransformation(Workspace& ws,
-const Matrix& transformation_matrix,
-const Vector& offset_vector) {
-jacobianSetAffineTransformation(Var::jacobian_quantities(ws),
-transformation_matrix,
-offset_vector,
-Var::verbosity(ws));
+                                     const Matrix& transformation_matrix,
+                                     const Vector& offset_vector) {
+  jacobianSetAffineTransformation(Var::jacobian_quantities(ws),
+                                  transformation_matrix, offset_vector,
+                                  Var::verbosity(ws));
 }
-
 
 /*! Sets the functional transformation of the last element of
 *jacobian_quantities*.
@@ -20441,7 +18954,7 @@ activate the transformations.
 The following transformations can be selected (by *transformation_func*):
    log   : The natural logarithm
    log10 : The base-10 logarithm
-   atanh : Area hyperbolic tangent 
+   atanh : Area hyperbolic tangent
    none  : No transformation at all
 
 This method needs only to be called if a functional transformation
@@ -20468,7 +18981,7 @@ General handling of retrieval units and transformations:
 Default is that quantities are retrieved as defined in ARTS, but
 both some unit conversion and transformations are provided. These
 operations are applied as:
-   x = A * ( f(u(z)) - b ) 
+   x = A * ( f(u(z)) - b )
 where
    z is the quantity as defined ARTS
    u represents the change of unit
@@ -20479,7 +18992,7 @@ For example, this systen allows to retrive a principal component
 representation (A and b) of the log (f) of relative humidity (u).
 
 Change of unit is selected by the quantity specific jacobian-add
-methods (so far only at hand for gas species). 
+methods (so far only at hand for gas species).
 
 Activating a transformation function is done by this method. Note
 that the functions are defined as the transformation from z to x.
@@ -20497,16 +19010,13 @@ For more details on affine transformations, see
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void jacobianSetFuncTransformation(Workspace& ws,
-const String& transformation_func,
-const Numeric& z_min=0,
-const Numeric& z_max=-99e99) {
-jacobianSetFuncTransformation(Var::jacobian_quantities(ws),
-transformation_func,
-z_min,
-z_max,
-Var::verbosity(ws));
+                                   const String& transformation_func,
+                                   const Numeric& z_min = 0,
+                                   const Numeric& z_max = -99e99) {
+  jacobianSetFuncTransformation(Var::jacobian_quantities(ws),
+                                transformation_func, z_min, z_max,
+                                Var::verbosity(ws));
 }
-
 
 /*! Sets *lat_grid* according to given raw atmospheric field's lat_grid.
 Similar to *p_gridFromZRaw*, but acting on a generic *GriddedField3*
@@ -20519,13 +19029,9 @@ Similar to *p_gridFromZRaw*, but acting on a generic *GriddedField3*
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void lat_gridFromRawField(Workspace& ws,
-const GriddedField3& field_raw) {
-lat_gridFromRawField(Var::lat_grid(ws),
-field_raw,
-Var::verbosity(ws));
+void lat_gridFromRawField(Workspace& ws, const GriddedField3& field_raw) {
+  lat_gridFromRawField(Var::lat_grid(ws), field_raw, Var::verbosity(ws));
 }
-
 
 /*! Sets *lat_grid* according to input atmosphere's *z_field_raw*
 
@@ -20536,11 +19042,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void lat_gridFromZRaw(Workspace& ws) {
-lat_gridFromZRaw(Var::lat_grid(ws),
-Var::z_field_raw(ws),
-Var::verbosity(ws));
+  lat_gridFromZRaw(Var::lat_grid(ws), Var::z_field_raw(ws), Var::verbosity(ws));
 }
-
 
 /*! Checks that the line-by-line parameters are OK.
 
@@ -20557,14 +19060,10 @@ in later versions
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void lbl_checkedCalc(Workspace& ws) {
-lbl_checkedCalc(Var::lbl_checked(ws),
-Var::abs_lines_per_species(ws),
-Var::abs_species(ws),
-Var::isotopologue_ratios(ws),
-Var::partition_functions(ws),
-Var::verbosity(ws));
+  lbl_checkedCalc(Var::lbl_checked(ws), Var::abs_lines_per_species(ws),
+                  Var::abs_species(ws), Var::isotopologue_ratios(ws),
+                  Var::partition_functions(ws), Var::verbosity(ws));
 }
-
 
 /*! Computes the line irradiance and line transmission
 
@@ -20580,36 +19079,18 @@ Presently only works for 1D atmospheres
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void line_irradianceCalcForSingleSpeciesNonOverlappingLinesPseudo2D(Workspace& ws,
-const Numeric& df,
-const Index& nz,
-const Index& nf,
-const Numeric& r=1.0) {
-line_irradianceCalcForSingleSpeciesNonOverlappingLinesPseudo2D(ws,
-Var::line_irradiance(ws),
-Var::line_transmission(ws),
-Var::abs_species(ws),
-Var::abs_lines_per_species(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::p_grid(ws),
-Var::refellipsoid(ws),
-Var::surface_props_data(ws),
-Var::iy_main_agenda(ws),
-Var::ppath_agenda(ws),
-Var::iy_space_agenda(ws),
-Var::iy_surface_agenda(ws),
-Var::iy_cloudbox_agenda(ws),
-Var::propmat_clearsky_agenda(ws),
-df,
-nz,
-nf,
-r,
-Var::verbosity(ws));
+void line_irradianceCalcForSingleSpeciesNonOverlappingLinesPseudo2D(
+    Workspace& ws, const Numeric& df, const Index& nz, const Index& nf,
+    const Numeric& r = 1.0) {
+  line_irradianceCalcForSingleSpeciesNonOverlappingLinesPseudo2D(
+      ws, Var::line_irradiance(ws), Var::line_transmission(ws),
+      Var::abs_species(ws), Var::abs_lines_per_species(ws), Var::nlte_field(ws),
+      Var::vmr_field(ws), Var::t_field(ws), Var::z_field(ws), Var::p_grid(ws),
+      Var::refellipsoid(ws), Var::surface_props_data(ws),
+      Var::iy_main_agenda(ws), Var::ppath_agenda(ws), Var::iy_space_agenda(ws),
+      Var::iy_surface_agenda(ws), Var::iy_cloudbox_agenda(ws),
+      Var::propmat_clearsky_agenda(ws), df, nz, nf, r, Var::verbosity(ws));
 }
-
 
 /*! Sets *lon_grid* according to given raw atmospheric field's lat_grid.
 Similar to *p_gridFromZRaw*, but acting on a generic *GriddedField3*
@@ -20622,13 +19103,9 @@ Similar to *p_gridFromZRaw*, but acting on a generic *GriddedField3*
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void lon_gridFromRawField(Workspace& ws,
-const GriddedField3& field_raw) {
-lon_gridFromRawField(Var::lon_grid(ws),
-field_raw,
-Var::verbosity(ws));
+void lon_gridFromRawField(Workspace& ws, const GriddedField3& field_raw) {
+  lon_gridFromRawField(Var::lon_grid(ws), field_raw, Var::verbosity(ws));
 }
-
 
 /*! Sets *lon_grid* according to input atmosphere's *z_field_raw*
 
@@ -20639,11 +19116,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void lon_gridFromZRaw(Workspace& ws) {
-lon_gridFromZRaw(Var::lon_grid(ws),
-Var::z_field_raw(ws),
-Var::verbosity(ws));
+  lon_gridFromZRaw(Var::lon_grid(ws), Var::z_field_raw(ws), Var::verbosity(ws));
 }
-
 
 /*! Gives *mblock_dlos_grid* roughly circular coverage, with uniform spacing.
 
@@ -20670,17 +19144,12 @@ If you want to have (0,0) as a point in *mblock_dlos_grid*, change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void mblock_dlos_gridUniformCircular(Workspace& ws,
-const Numeric& spacing,
-const Numeric& width,
-const Index& centre=0) {
-mblock_dlos_gridUniformCircular(Var::mblock_dlos_grid(ws),
-spacing,
-width,
-centre,
-Var::verbosity(ws));
+void mblock_dlos_gridUniformCircular(Workspace& ws, const Numeric& spacing,
+                                     const Numeric& width,
+                                     const Index& centre = 0) {
+  mblock_dlos_gridUniformCircular(Var::mblock_dlos_grid(ws), spacing, width,
+                                  centre, Var::verbosity(ws));
 }
-
 
 /*! Gives *mblock_dlos_grid* rectangular coverage, with uniform spacing.
 
@@ -20703,19 +19172,14 @@ If you want to have (0,0) as a point in *mblock_dlos_grid*, change
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void mblock_dlos_gridUniformRectangular(Workspace& ws,
-const Numeric& spacing,
-const Numeric& za_width,
-const Numeric& aa_width,
-const Index& centre=0) {
-mblock_dlos_gridUniformRectangular(Var::mblock_dlos_grid(ws),
-spacing,
-za_width,
-aa_width,
-centre,
-Var::verbosity(ws));
+void mblock_dlos_gridUniformRectangular(Workspace& ws, const Numeric& spacing,
+                                        const Numeric& za_width,
+                                        const Numeric& aa_width,
+                                        const Index& centre = 0) {
+  mblock_dlos_gridUniformRectangular(Var::mblock_dlos_grid(ws), spacing,
+                                     za_width, aa_width, centre,
+                                     Var::verbosity(ws));
 }
-
 
 /*! Makes mc_antenna (used by MCGeneral) a 2D Gaussian pattern.
 
@@ -20731,15 +19195,11 @@ uncorrelated bivariate normal distribution.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void mc_antennaSetGaussian(Workspace& ws,
-const Numeric& za_sigma,
-const Numeric& aa_sigma) {
-mc_antennaSetGaussian(Var::mc_antenna(ws),
-za_sigma,
-aa_sigma,
-Var::verbosity(ws));
+void mc_antennaSetGaussian(Workspace& ws, const Numeric& za_sigma,
+                           const Numeric& aa_sigma) {
+  mc_antennaSetGaussian(Var::mc_antenna(ws), za_sigma, aa_sigma,
+                        Var::verbosity(ws));
 }
-
 
 /*! Makes mc_antenna (used by MCGeneral) a 2D Gaussian pattern.
 
@@ -20755,15 +19215,11 @@ of the antenna response, in the zenith and azimuthal planes.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void mc_antennaSetGaussianByFWHM(Workspace& ws,
-const Numeric& za_fwhm,
-const Numeric& aa_fwhm) {
-mc_antennaSetGaussianByFWHM(Var::mc_antenna(ws),
-za_fwhm,
-aa_fwhm,
-Var::verbosity(ws));
+void mc_antennaSetGaussianByFWHM(Workspace& ws, const Numeric& za_fwhm,
+                                 const Numeric& aa_fwhm) {
+  mc_antennaSetGaussianByFWHM(Var::mc_antenna(ws), za_fwhm, aa_fwhm,
+                              Var::verbosity(ws));
 }
-
 
 /*! Makes mc_antenna (used by MCGeneral) a pencil beam.
 
@@ -20777,10 +19233,67 @@ RT calculations.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void mc_antennaSetPencilBeam(Workspace& ws) {
-mc_antennaSetPencilBeam(Var::mc_antenna(ws),
-Var::verbosity(ws));
+  mc_antennaSetPencilBeam(Var::mc_antenna(ws), Var::verbosity(ws));
 }
 
+/*! Retrieve nbooks from given variable and store the value in the
+workspace variable *nbooks*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - Variable to get the number of books from.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void nbooksGet(Workspace& ws, const Any_0& v) {
+  nbooksGet(Var::nbooks(ws), v, Var::verbosity(ws));
+}
+
+/*! Retrieve ncols from given variable and store the value in the
+workspace variable *ncols*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - Variable to get the number of columns from.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void ncolsGet(Workspace& ws, const Any_0& v) {
+  ncolsGet(Var::ncols(ws), v, Var::verbosity(ws));
+}
+
+/*! Retrieve nelem from given variable and store the value in the
+variable *nelem*.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - Variable to get the number of elements from.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void nelemGet(Workspace& ws, const Any_0& v) {
+  nelemGet(Var::nelem(ws), v, Var::verbosity(ws));
+}
+
+/*! Retrieve nlibraries from given variable and store the value in the
+workspace variable *nlibraries*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - Variable to get the number of libraries from.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+void nlibrariesGet(Workspace& ws, const Tensor7& v) {
+  nlibrariesGet(Var::nlibraries(ws), v, Var::verbosity(ws));
+}
 
 /*! Disable Non-LTE calculations.
 
@@ -20795,12 +19308,9 @@ The variables are set as follows:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void nlteOff(Workspace& ws) {
-nlteOff(Var::nlte_do(ws),
-Var::nlte_field(ws),
-Var::nlte_level_identifiers(ws),
-Var::verbosity(ws));
+  nlteOff(Var::nlte_do(ws), Var::nlte_field(ws),
+          Var::nlte_level_identifiers(ws), Var::verbosity(ws));
 }
-
 
 /*! Turns on NTLE calculations.
 
@@ -20819,7 +19329,7 @@ later on while running deeper code.
 For now only vibrational energy states are assumed to be able to be in
 non-LTE conditions.  The *QuantumIdentifier* for an energy state in ARTS
 can look like:
-	"CO2-626 EN v1 0/1 v2 1/1 l2 1/1 v3 0/1 r 1/1"
+        "CO2-626 EN v1 0/1 v2 1/1 l2 1/1 v3 0/1 r 1/1"
 and the matching will match ALL lines with the above.  Note then that if, e.g.,
 the "v1 0/1" term was removed from the above, then ARTS will assume that
 "v1" is not part of the level of energy state of interest, so lines
@@ -20827,9 +19337,9 @@ of different "v1" will be matched as the same state.  If a line is matched
 to more than one energy state, errors should be thrown, but be careful.
 
 Set type of population to change computations and expected input as:
-	LTE: Compute population by ratios found from LTE temperatures
-	TV:  Compute population by ratios found from NLTE vibrational temperatures
-	ND:  Compute population by ratios found from NLTE number densities
+        LTE: Compute population by ratios found from LTE temperatures
+        TV:  Compute population by ratios found from NLTE vibrational
+temperatures ND:  Compute population by ratios found from NLTE number densities
 
 @author Richard Larsson
 
@@ -20838,12 +19348,9 @@ Set type of population to change computations and expected input as:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void nlteSetByQuantumIdentifiers(Workspace& ws) {
-nlteSetByQuantumIdentifiers(Var::nlte_do(ws),
-Var::abs_lines_per_species(ws),
-Var::nlte_field(ws),
-Var::verbosity(ws));
+  nlteSetByQuantumIdentifiers(Var::nlte_do(ws), Var::abs_lines_per_species(ws),
+                              Var::nlte_field(ws), Var::verbosity(ws));
 }
-
 
 /*! NLTE field for a simple setup.
 
@@ -20855,52 +19362,32 @@ is only a single species in the atmosphere.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] df - relative frequency to line center
-@param[in] convergence_limit - max relative change in ratio of level to stop iterations (default: 1e-6)
+@param[in] convergence_limit - max relative change in ratio of level to stop
+iterations (default: 1e-6)
 @param[in] nz - number of zenith angles
 @param[in] nf - number of frequency grid-points per line
 @param[in] dampened - use transmission dampening or not
-@param[in] iteration_limit - max number of iterations before defaul break of iterations (default: 20)
+@param[in] iteration_limit - max number of iterations before defaul break of
+iterations (default: 20)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void nlte_fieldForSingleSpeciesNonOverlappingLines(Workspace& ws,
-const Numeric& df,
-const Index& nz,
-const Index& nf,
-const Index& dampened,
-const Numeric& convergence_limit=1e-6,
-const Index& iteration_limit=20) {
-nlte_fieldForSingleSpeciesNonOverlappingLines(ws,
-Var::nlte_field(ws),
-Var::abs_species(ws),
-Var::abs_lines_per_species(ws),
-Var::collision_coefficients(ws),
-Var::collision_line_identifiers(ws),
-Var::isotopologue_ratios(ws),
-Var::iy_main_agenda(ws),
-Var::ppath_agenda(ws),
-Var::iy_space_agenda(ws),
-Var::iy_surface_agenda(ws),
-Var::iy_cloudbox_agenda(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::vmr_field(ws),
-Var::t_field(ws),
-Var::z_field(ws),
-Var::p_grid(ws),
-Var::atmosphere_dim(ws),
-Var::refellipsoid(ws),
-Var::surface_props_data(ws),
-Var::nlte_do(ws),
-df,
-convergence_limit,
-nz,
-nf,
-dampened,
-iteration_limit,
-Var::verbosity(ws));
+void nlte_fieldForSingleSpeciesNonOverlappingLines(
+    Workspace& ws, const Numeric& df, const Index& nz, const Index& nf,
+    const Index& dampened, const Numeric& convergence_limit = 1e-6,
+    const Index& iteration_limit = 20) {
+  nlte_fieldForSingleSpeciesNonOverlappingLines(
+      ws, Var::nlte_field(ws), Var::abs_species(ws),
+      Var::abs_lines_per_species(ws), Var::collision_coefficients(ws),
+      Var::collision_line_identifiers(ws), Var::isotopologue_ratios(ws),
+      Var::iy_main_agenda(ws), Var::ppath_agenda(ws), Var::iy_space_agenda(ws),
+      Var::iy_surface_agenda(ws), Var::iy_cloudbox_agenda(ws),
+      Var::propmat_clearsky_agenda(ws), Var::water_p_eq_agenda(ws),
+      Var::vmr_field(ws), Var::t_field(ws), Var::z_field(ws), Var::p_grid(ws),
+      Var::atmosphere_dim(ws), Var::refellipsoid(ws),
+      Var::surface_props_data(ws), Var::nlte_do(ws), df, convergence_limit, nz,
+      nf, dampened, iteration_limit, Var::verbosity(ws));
 }
-
 
 /*! Sets NLTE values manually
 
@@ -20913,15 +19400,11 @@ Touch
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void nlte_fieldFromRaw(Workspace& ws,
-const Tensor4& data) {
-nlte_fieldFromRaw(Var::nlte_field(ws),
-Var::nlte_level_identifiers(ws),
-Var::nlte_vibrational_energies(ws),
-data,
-Var::verbosity(ws));
+void nlte_fieldFromRaw(Workspace& ws, const Tensor4& data) {
+  nlte_fieldFromRaw(Var::nlte_field(ws), Var::nlte_level_identifiers(ws),
+                    Var::nlte_vibrational_energies(ws), data,
+                    Var::verbosity(ws));
 }
-
 
 /*! Rescale NLTE field to expected total distribution amongst levels
 
@@ -20932,13 +19415,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void nlte_fieldRescalePopulationLevels(Workspace& ws,
-const Numeric& s) {
-nlte_fieldRescalePopulationLevels(Var::nlte_field(ws),
-s,
-Var::verbosity(ws));
+void nlte_fieldRescalePopulationLevels(Workspace& ws, const Numeric& s) {
+  nlte_fieldRescalePopulationLevels(Var::nlte_field(ws), s, Var::verbosity(ws));
 }
-
 
 /*! Turns on NTLE calculations.
 
@@ -20952,15 +19431,11 @@ with a known partition function
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void nlte_fieldSetLteExternalPartitionFunction(Workspace& ws) {
-nlte_fieldSetLteExternalPartitionFunction(Var::nlte_do(ws),
-Var::nlte_field(ws),
-Var::abs_lines_per_species(ws),
-Var::nlte_level_identifiers(ws),
-Var::partition_functions(ws),
-Var::t_field(ws),
-Var::verbosity(ws));
+  nlte_fieldSetLteExternalPartitionFunction(
+      Var::nlte_do(ws), Var::nlte_field(ws), Var::abs_lines_per_species(ws),
+      Var::nlte_level_identifiers(ws), Var::partition_functions(ws),
+      Var::t_field(ws), Var::verbosity(ws));
 }
-
 
 /*! Turns on NTLE calculations.
 
@@ -20975,14 +19450,10 @@ states of a species
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void nlte_fieldSetLteInternalPartitionFunction(Workspace& ws) {
-nlte_fieldSetLteInternalPartitionFunction(Var::nlte_do(ws),
-Var::nlte_field(ws),
-Var::abs_lines_per_species(ws),
-Var::nlte_level_identifiers(ws),
-Var::t_field(ws),
-Var::verbosity(ws));
+  nlte_fieldSetLteInternalPartitionFunction(
+      Var::nlte_do(ws), Var::nlte_field(ws), Var::abs_lines_per_species(ws),
+      Var::nlte_level_identifiers(ws), Var::t_field(ws), Var::verbosity(ws));
 }
-
 
 /*! Turn NLTE absorption per species into the source function by multiplying
 NLTE absorption per species with the LTE Planck source function.
@@ -20994,17 +19465,72 @@ NLTE absorption per species with the LTE Planck source function.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void nlte_sourceFromTemperatureAndSrcCoefPerSpecies(Workspace& ws) {
-nlte_sourceFromTemperatureAndSrcCoefPerSpecies(Var::nlte_source(ws),
-Var::dnlte_dx_source(ws),
-Var::nlte_dsource_dx(ws),
-Var::src_coef_per_species(ws),
-Var::dsrc_coef_dx(ws),
-Var::jacobian_quantities(ws),
-Var::f_grid(ws),
-Var::rtp_temperature(ws),
-Var::verbosity(ws));
+  nlte_sourceFromTemperatureAndSrcCoefPerSpecies(
+      Var::nlte_source(ws), Var::dnlte_dx_source(ws), Var::nlte_dsource_dx(ws),
+      Var::src_coef_per_species(ws), Var::dsrc_coef_dx(ws),
+      Var::jacobian_quantities(ws), Var::f_grid(ws), Var::rtp_temperature(ws),
+      Var::verbosity(ws));
 }
 
+/*! Retrieve npages from given variable and store the value in the
+workspace variable *npages*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - Variable to get the number of pages from.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void npagesGet(Workspace& ws, const Any_0& v) {
+  npagesGet(Var::npages(ws), v, Var::verbosity(ws));
+}
+
+/*! Retrieve nrows from given variable and store the value in the
+workspace variable *nrows*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - Variable to get the number of rows from.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void nrowsGet(Workspace& ws, const Any_0& v) {
+  nrowsGet(Var::nrows(ws), v, Var::verbosity(ws));
+}
+
+/*! Retrieve nshelves from given variable and store the value in the
+workspace variable *nshelves*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - Variable to get the number of shelves from.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void nshelvesGet(Workspace& ws, const Any_0& v) {
+  nshelvesGet(Var::nshelves(ws), v, Var::verbosity(ws));
+}
+
+/*! Retrieve nvitrines from given variable and store the value in the
+workspace variable *nvitrines*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] v - Variable to get the number of vitrines from.
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+template <typename Any_0>
+void nvitrinesGet(Workspace& ws, const Any_0& v) {
+  nvitrinesGet(Var::nvitrines(ws), v, Var::verbosity(ws));
+}
 
 /*! Calculates bulk absorption extinction at one atmospheric grid point.
 
@@ -21024,17 +19550,11 @@ The resulting  extinction matrix is added to the workspace variable
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void opt_prop_bulkCalc(Workspace& ws) {
-opt_prop_bulkCalc(Var::ext_mat(ws),
-Var::abs_vec(ws),
-Var::ext_mat_spt(ws),
-Var::abs_vec_spt(ws),
-Var::pnd_field(ws),
-Var::scat_p_index(ws),
-Var::scat_lat_index(ws),
-Var::scat_lon_index(ws),
-Var::verbosity(ws));
+  opt_prop_bulkCalc(Var::ext_mat(ws), Var::abs_vec(ws), Var::ext_mat_spt(ws),
+                    Var::abs_vec_spt(ws), Var::pnd_field(ws),
+                    Var::scat_p_index(ws), Var::scat_lat_index(ws),
+                    Var::scat_lon_index(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates monochromatic optical properties for all scattering
 elements.
@@ -21056,23 +19576,13 @@ for each scattering element.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void opt_prop_sptFromData(Workspace& ws) {
-opt_prop_sptFromData(Var::ext_mat_spt(ws),
-Var::abs_vec_spt(ws),
-Var::scat_data(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::za_index(ws),
-Var::aa_index(ws),
-Var::f_index(ws),
-Var::f_grid(ws),
-Var::rtp_temperature(ws),
-Var::pnd_field(ws),
-Var::scat_p_index(ws),
-Var::scat_lat_index(ws),
-Var::scat_lon_index(ws),
-Var::verbosity(ws));
+  opt_prop_sptFromData(
+      Var::ext_mat_spt(ws), Var::abs_vec_spt(ws), Var::scat_data(ws),
+      Var::za_grid(ws), Var::aa_grid(ws), Var::za_index(ws), Var::aa_index(ws),
+      Var::f_index(ws), Var::f_grid(ws), Var::rtp_temperature(ws),
+      Var::pnd_field(ws), Var::scat_p_index(ws), Var::scat_lat_index(ws),
+      Var::scat_lon_index(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates optical properties for the scattering elements.
 
@@ -21087,21 +19597,12 @@ performed. The single scattering data is here obtained from
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void opt_prop_sptFromMonoData(Workspace& ws) {
-opt_prop_sptFromMonoData(Var::ext_mat_spt(ws),
-Var::abs_vec_spt(ws),
-Var::scat_data_mono(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::za_index(ws),
-Var::aa_index(ws),
-Var::rtp_temperature(ws),
-Var::pnd_field(ws),
-Var::scat_p_index(ws),
-Var::scat_lat_index(ws),
-Var::scat_lon_index(ws),
-Var::verbosity(ws));
+  opt_prop_sptFromMonoData(
+      Var::ext_mat_spt(ws), Var::abs_vec_spt(ws), Var::scat_data_mono(ws),
+      Var::za_grid(ws), Var::aa_grid(ws), Var::za_index(ws), Var::aa_index(ws),
+      Var::rtp_temperature(ws), Var::pnd_field(ws), Var::scat_p_index(ws),
+      Var::scat_lat_index(ws), Var::scat_lon_index(ws), Var::verbosity(ws));
 }
-
 
 /*! Derives monochromatic optical properties for all scattering
 elements.
@@ -21117,23 +19618,13 @@ interpolation is done anymore.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void opt_prop_sptFromScat_data(Workspace& ws) {
-opt_prop_sptFromScat_data(Var::ext_mat_spt(ws),
-Var::abs_vec_spt(ws),
-Var::scat_data(ws),
-Var::scat_data_checked(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::za_index(ws),
-Var::aa_index(ws),
-Var::f_index(ws),
-Var::rtp_temperature(ws),
-Var::pnd_field(ws),
-Var::scat_p_index(ws),
-Var::scat_lat_index(ws),
-Var::scat_lon_index(ws),
-Var::verbosity(ws));
+  opt_prop_sptFromScat_data(
+      Var::ext_mat_spt(ws), Var::abs_vec_spt(ws), Var::scat_data(ws),
+      Var::scat_data_checked(ws), Var::za_grid(ws), Var::aa_grid(ws),
+      Var::za_index(ws), Var::aa_index(ws), Var::f_index(ws),
+      Var::rtp_temperature(ws), Var::pnd_field(ws), Var::scat_p_index(ws),
+      Var::scat_lat_index(ws), Var::scat_lon_index(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets the output file format to ASCII.
 
@@ -21144,10 +19635,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void output_file_formatSetAscii(Workspace& ws) {
-output_file_formatSetAscii(Var::output_file_format(ws),
-Var::verbosity(ws));
+  output_file_formatSetAscii(Var::output_file_format(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets the output file format to binary.
 
@@ -21158,10 +19647,8 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void output_file_formatSetBinary(Workspace& ws) {
-output_file_formatSetBinary(Var::output_file_format(ws),
-Var::verbosity(ws));
+  output_file_formatSetBinary(Var::output_file_format(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets the output file format to zipped ASCII.
 
@@ -21172,10 +19659,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void output_file_formatSetZippedAscii(Workspace& ws) {
-output_file_formatSetZippedAscii(Var::output_file_format(ws),
-Var::verbosity(ws));
+  output_file_formatSetZippedAscii(Var::output_file_format(ws),
+                                   Var::verbosity(ws));
 }
-
 
 /*! A simple way to make *p_grid* more dense.
 
@@ -21195,23 +19681,19 @@ reset to 0 (unchecked).
 @author Patrick Eriksson, Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] p_grid_old - A copy of the current (the old) p_grid. Not allowed to be the same variable as the output *p_grid*.
-@param[in] nfill - Number of points to add between adjacent pressure points.The default value (-1) results in an error. (default: -1)
+@param[in] p_grid_old - A copy of the current (the old) p_grid. Not allowed to
+be the same variable as the output *p_grid*.
+@param[in] nfill - Number of points to add between adjacent pressure points.The
+default value (-1) results in an error. (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void p_gridDensify(Workspace& ws,
-const Vector& p_grid_old,
-const Index& nfill=-1) {
-p_gridDensify(Var::p_grid(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::cloudbox_checked(ws),
-p_grid_old,
-nfill,
-Var::verbosity(ws));
+void p_gridDensify(Workspace& ws, const Vector& p_grid_old,
+                   const Index& nfill = -1) {
+  p_gridDensify(Var::p_grid(ws), Var::atmfields_checked(ws),
+                Var::atmgeom_checked(ws), Var::cloudbox_checked(ws), p_grid_old,
+                nfill, Var::verbosity(ws));
 }
-
 
 /*! Sets *p_grid* to the pressure grid of *abs_lookup*.
 
@@ -21222,11 +19704,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void p_gridFromGasAbsLookup(Workspace& ws) {
-p_gridFromGasAbsLookup(Var::p_grid(ws),
-Var::abs_lookup(ws),
-Var::verbosity(ws));
+  p_gridFromGasAbsLookup(Var::p_grid(ws), Var::abs_lookup(ws),
+                         Var::verbosity(ws));
 }
-
 
 /*! Sets *p_grid* according to input atmosphere's raw z_field, derived
 e.g. from *AtmRawRead*.
@@ -21240,14 +19720,10 @@ extracted. If negative altitudes shall also be selected, set no_neg=0.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void p_gridFromZRaw(Workspace& ws,
-const Index& no_negZ=1) {
-p_gridFromZRaw(Var::p_grid(ws),
-Var::z_field_raw(ws),
-no_negZ,
-Var::verbosity(ws));
+void p_gridFromZRaw(Workspace& ws, const Index& no_negZ = 1) {
+  p_gridFromZRaw(Var::p_grid(ws), Var::z_field_raw(ws), no_negZ,
+                 Var::verbosity(ws));
 }
-
 
 /*! Provides refined pressure grid.
 
@@ -21262,23 +19738,20 @@ reset to 0 (unchecked).
 @author Stefan Buehler, Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] p_grid_old - A copy of the current (the old) p_grid. Not allowed to be the same variable as the output *p_grid*.
-@param[in] p_step - Maximum step in log10(p[Pa]). If the pressure grid is coarser than this, additional points are added until each log step is smaller than this.
+@param[in] p_grid_old - A copy of the current (the old) p_grid. Not allowed to
+be the same variable as the output *p_grid*.
+@param[in] p_step - Maximum step in log10(p[Pa]). If the pressure grid is
+coarser than this, additional points are added until each log step is smaller
+than this.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void p_gridRefine(Workspace& ws,
-const Vector& p_grid_old,
-const Numeric& p_step) {
-p_gridRefine(Var::p_grid(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::cloudbox_checked(ws),
-p_grid_old,
-p_step,
-Var::verbosity(ws));
+void p_gridRefine(Workspace& ws, const Vector& p_grid_old,
+                  const Numeric& p_step) {
+  p_gridRefine(Var::p_grid(ws), Var::atmfields_checked(ws),
+               Var::atmgeom_checked(ws), Var::cloudbox_checked(ws), p_grid_old,
+               p_step, Var::verbosity(ws));
 }
-
 
 /*! Clipping of *particle_bulkprop_field*.
 
@@ -21296,23 +19769,21 @@ properties.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] bulkprop_name - Name of bulk property to consider, or "ALL".
-@param[in] limit_low - Lower limit for clipping. (default: -std::numeric_limits<Numeric>::infinity())
-@param[in] limit_high - Upper limit for clipping. (default: std::numeric_limits<Numeric>::infinity())
+@param[in] limit_low - Lower limit for clipping. (default:
+-std::numeric_limits<Numeric>::infinity())
+@param[in] limit_high - Upper limit for clipping. (default:
+std::numeric_limits<Numeric>::infinity())
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void particle_bulkprop_fieldClip(Workspace& ws,
-const String& bulkprop_name,
-const Numeric& limit_low=-std::numeric_limits<Numeric>::infinity(),
-const Numeric& limit_high=std::numeric_limits<Numeric>::infinity()) {
-particle_bulkprop_fieldClip(Var::particle_bulkprop_field(ws),
-Var::particle_bulkprop_names(ws),
-bulkprop_name,
-limit_low,
-limit_high,
-Var::verbosity(ws));
+void particle_bulkprop_fieldClip(
+    Workspace& ws, const String& bulkprop_name,
+    const Numeric& limit_low = -std::numeric_limits<Numeric>::infinity(),
+    const Numeric& limit_high = std::numeric_limits<Numeric>::infinity()) {
+  particle_bulkprop_fieldClip(Var::particle_bulkprop_field(ws),
+                              Var::particle_bulkprop_names(ws), bulkprop_name,
+                              limit_low, limit_high, Var::verbosity(ws));
 }
-
 
 /*! Adds a perturbation to *particle_bulkprop_field*.
 
@@ -21325,36 +19796,27 @@ Works as *AtmFieldPerturb* but acts on *particle_bulkprop_field*.
 @param[in] p_ret_grid - Pressure retrieval grid.
 @param[in] lat_ret_grid - Latitude retrieval grid.
 @param[in] lon_ret_grid - Longitude retrieval grid.
-@param[in] pert_index - Index of position where the perturbation shall be performed.
+@param[in] pert_index - Index of position where the perturbation shall be
+performed.
 @param[in] pert_size - Size of perturbation.
-@param[in] pert_mode - Type of perturbation, ansolute or relative. (default: "absolute")
+@param[in] pert_mode - Type of perturbation, ansolute or relative. (default:
+"absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void particle_bulkprop_fieldPerturb(Workspace& ws,
-const String& particle_type,
-const Vector& p_ret_grid,
-const Vector& lat_ret_grid,
-const Vector& lon_ret_grid,
-const Index& pert_index,
-const Numeric& pert_size,
-const String& pert_mode="absolute") {
-particle_bulkprop_fieldPerturb(Var::particle_bulkprop_field(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::particle_bulkprop_names(ws),
-particle_type,
-p_ret_grid,
-lat_ret_grid,
-lon_ret_grid,
-pert_index,
-pert_size,
-pert_mode,
-Var::verbosity(ws));
+void particle_bulkprop_fieldPerturb(Workspace& ws, const String& particle_type,
+                                    const Vector& p_ret_grid,
+                                    const Vector& lat_ret_grid,
+                                    const Vector& lon_ret_grid,
+                                    const Index& pert_index,
+                                    const Numeric& pert_size,
+                                    const String& pert_mode = "absolute") {
+  particle_bulkprop_fieldPerturb(
+      Var::particle_bulkprop_field(ws), Var::atmosphere_dim(ws),
+      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+      Var::particle_bulkprop_names(ws), particle_type, p_ret_grid, lat_ret_grid,
+      lon_ret_grid, pert_index, pert_size, pert_mode, Var::verbosity(ws));
 }
-
 
 /*! Adds a perturbation to *particle_bulkprop_field*.
 
@@ -21364,30 +19826,23 @@ Works as *AtmFieldPerturbAtmGrids* but acts on *particle_bulkprop_field*.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] particle_type - Name of field to perturb, such as IWC.
-@param[in] pert_index - Index of position where the perturbation shall be performed.
+@param[in] pert_index - Index of position where the perturbation shall be
+performed.
 @param[in] pert_size - Size of perturbation.
-@param[in] pert_mode - Type of perturbation, ansolute or relative. (default: "absolute")
+@param[in] pert_mode - Type of perturbation, ansolute or relative. (default:
+"absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void particle_bulkprop_fieldPerturbAtmGrids(Workspace& ws,
-const String& particle_type,
-const Index& pert_index,
-const Numeric& pert_size,
-const String& pert_mode="absolute") {
-particle_bulkprop_fieldPerturbAtmGrids(Var::particle_bulkprop_field(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::particle_bulkprop_names(ws),
-particle_type,
-pert_index,
-pert_size,
-pert_mode,
-Var::verbosity(ws));
+void particle_bulkprop_fieldPerturbAtmGrids(
+    Workspace& ws, const String& particle_type, const Index& pert_index,
+    const Numeric& pert_size, const String& pert_mode = "absolute") {
+  particle_bulkprop_fieldPerturbAtmGrids(
+      Var::particle_bulkprop_field(ws), Var::atmosphere_dim(ws),
+      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+      Var::particle_bulkprop_names(ws), particle_type, pert_index, pert_size,
+      pert_mode, Var::verbosity(ws));
 }
-
 
 /*! Removes unrealistically small or erroneous data from particle fields.
 
@@ -21412,22 +19867,21 @@ atmopheric fields.
 @author Daniel Kreyling
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[out] particle_field_out - A particle property field, e.g. *particle_bulkprop_field* or *scat_species_mass_density_field*
-@param[in] particle_field_in - A particle property field, e.g. *particle_bulkprop_field* or *scat_species_mass_density_field*
-@param[in] threshold - Threshold below which the *particle_field* values are set to zero.
+@param[out] particle_field_out - A particle property field, e.g.
+*particle_bulkprop_field* or *scat_species_mass_density_field*
+@param[in] particle_field_in - A particle property field, e.g.
+*particle_bulkprop_field* or *scat_species_mass_density_field*
+@param[in] threshold - Threshold below which the *particle_field* values are set
+to zero.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void particle_fieldCleanup(Workspace& ws,
-Tensor4& particle_field_out,
-const Tensor4& particle_field_in,
-const Numeric& threshold) {
-particle_fieldCleanup(particle_field_out,
-particle_field_in,
-threshold,
-Var::verbosity(ws));
+void particle_fieldCleanup(Workspace& ws, Tensor4& particle_field_out,
+                           const Tensor4& particle_field_in,
+                           const Numeric& threshold) {
+  particle_fieldCleanup(particle_field_out, particle_field_in, threshold,
+                        Var::verbosity(ws));
 }
-
 
 /*! Derives *particle_masses* from *scat_meta*.
 
@@ -21449,11 +19903,9 @@ scattering species are present in *scat_meta*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void particle_massesFromMetaData(Workspace& ws) {
-particle_massesFromMetaData(Var::particle_masses(ws),
-Var::scat_meta(ws),
-Var::verbosity(ws));
+  particle_massesFromMetaData(Var::particle_masses(ws), Var::scat_meta(ws),
+                              Var::verbosity(ws));
 }
-
 
 /*! Sets *particle_masses* based on *scat_meta* assuming
 all particles are of the same mass category.
@@ -21479,11 +19931,9 @@ both ice and liquid phase.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void particle_massesFromMetaDataSingleCategory(Workspace& ws) {
-particle_massesFromMetaDataSingleCategory(Var::particle_masses(ws),
-Var::scat_meta(ws),
-Var::verbosity(ws));
+  particle_massesFromMetaDataSingleCategory(
+      Var::particle_masses(ws), Var::scat_meta(ws), Var::verbosity(ws));
 }
-
 
 /*! Initialize partition functions with default values from built-in
 species data.
@@ -21495,10 +19945,9 @@ species data.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void partition_functionsInitFromBuiltin(Workspace& ws) {
-partition_functionsInitFromBuiltin(Var::partition_functions(ws),
-Var::verbosity(ws));
+  partition_functionsInitFromBuiltin(Var::partition_functions(ws),
+                                     Var::verbosity(ws));
 }
-
 
 /*! Calculates the total phase matrix of all scattering elements.
 
@@ -21515,16 +19964,11 @@ within the cloudbox, given by *scat_p_index*, *scat_lat_index*, and
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void pha_matCalc(Workspace& ws) {
-pha_matCalc(Var::pha_mat(ws),
-Var::pha_mat_spt(ws),
-Var::pnd_field(ws),
-Var::atmosphere_dim(ws),
-Var::scat_p_index(ws),
-Var::scat_lat_index(ws),
-Var::scat_lon_index(ws),
-Var::verbosity(ws));
+  pha_matCalc(Var::pha_mat(ws), Var::pha_mat_spt(ws), Var::pnd_field(ws),
+              Var::atmosphere_dim(ws), Var::scat_p_index(ws),
+              Var::scat_lat_index(ws), Var::scat_lon_index(ws),
+              Var::verbosity(ws));
 }
-
 
 /*! Calculation of the phase matrix of the individual scattering elements.
 
@@ -21556,22 +20000,13 @@ modification. The selection is as follows:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void pha_mat_sptFromData(Workspace& ws) {
-pha_mat_sptFromData(Var::pha_mat_spt(ws),
-Var::scat_data(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::za_index(ws),
-Var::aa_index(ws),
-Var::f_index(ws),
-Var::f_grid(ws),
-Var::rtp_temperature(ws),
-Var::pnd_field(ws),
-Var::scat_p_index(ws),
-Var::scat_lat_index(ws),
-Var::scat_lon_index(ws),
-Var::verbosity(ws));
+  pha_mat_sptFromData(Var::pha_mat_spt(ws), Var::scat_data(ws),
+                      Var::za_grid(ws), Var::aa_grid(ws), Var::za_index(ws),
+                      Var::aa_index(ws), Var::f_index(ws), Var::f_grid(ws),
+                      Var::rtp_temperature(ws), Var::pnd_field(ws),
+                      Var::scat_p_index(ws), Var::scat_lat_index(ws),
+                      Var::scat_lon_index(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculation of the phase matrix of the individual scattering elements.
 
@@ -21589,21 +20024,13 @@ Temperature is considered as described for *pha_mat_sptFromData*
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void pha_mat_sptFromDataDOITOpt(Workspace& ws) {
-pha_mat_sptFromDataDOITOpt(Var::pha_mat_spt(ws),
-Var::pha_mat_sptDOITOpt(ws),
-Var::scat_data_mono(ws),
-Var::doit_za_grid_size(ws),
-Var::aa_grid(ws),
-Var::za_index(ws),
-Var::aa_index(ws),
-Var::rtp_temperature(ws),
-Var::pnd_field(ws),
-Var::scat_p_index(ws),
-Var::scat_lat_index(ws),
-Var::scat_lon_index(ws),
-Var::verbosity(ws));
+  pha_mat_sptFromDataDOITOpt(
+      Var::pha_mat_spt(ws), Var::pha_mat_sptDOITOpt(ws),
+      Var::scat_data_mono(ws), Var::doit_za_grid_size(ws), Var::aa_grid(ws),
+      Var::za_index(ws), Var::aa_index(ws), Var::rtp_temperature(ws),
+      Var::pnd_field(ws), Var::scat_p_index(ws), Var::scat_lat_index(ws),
+      Var::scat_lon_index(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculation of the phase matrix of the individual scattering elements.
 
@@ -21616,20 +20043,12 @@ This function is the monochromatic version of *pha_mat_sptFromData*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void pha_mat_sptFromMonoData(Workspace& ws) {
-pha_mat_sptFromMonoData(Var::pha_mat_spt(ws),
-Var::scat_data_mono(ws),
-Var::doit_za_grid_size(ws),
-Var::aa_grid(ws),
-Var::za_index(ws),
-Var::aa_index(ws),
-Var::rtp_temperature(ws),
-Var::pnd_field(ws),
-Var::scat_p_index(ws),
-Var::scat_lat_index(ws),
-Var::scat_lon_index(ws),
-Var::verbosity(ws));
+  pha_mat_sptFromMonoData(
+      Var::pha_mat_spt(ws), Var::scat_data_mono(ws), Var::doit_za_grid_size(ws),
+      Var::aa_grid(ws), Var::za_index(ws), Var::aa_index(ws),
+      Var::rtp_temperature(ws), Var::pnd_field(ws), Var::scat_p_index(ws),
+      Var::scat_lat_index(ws), Var::scat_lon_index(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculation of the phase matrix of the individual scattering elements.
 
@@ -21644,22 +20063,13 @@ interpolation is done anymore.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void pha_mat_sptFromScat_data(Workspace& ws) {
-pha_mat_sptFromScat_data(Var::pha_mat_spt(ws),
-Var::scat_data(ws),
-Var::scat_data_checked(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::za_index(ws),
-Var::aa_index(ws),
-Var::f_index(ws),
-Var::rtp_temperature(ws),
-Var::pnd_field(ws),
-Var::scat_p_index(ws),
-Var::scat_lat_index(ws),
-Var::scat_lon_index(ws),
-Var::verbosity(ws));
+  pha_mat_sptFromScat_data(
+      Var::pha_mat_spt(ws), Var::scat_data(ws), Var::scat_data_checked(ws),
+      Var::za_grid(ws), Var::aa_grid(ws), Var::za_index(ws), Var::aa_index(ws),
+      Var::f_index(ws), Var::rtp_temperature(ws), Var::pnd_field(ws),
+      Var::scat_p_index(ws), Var::scat_lat_index(ws), Var::scat_lon_index(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Calculates *pnd_data* from given *psd_data* for one scattering species.
 
@@ -21698,36 +20108,29 @@ thresholds will decrease the reliability of the bulk properties).
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] quad_order - Order of bin quadrature. (default: 1)
-@param[in] scat_index - Take data from scattering species of this index (0-based) in *scat_data*.
-@param[in] threshold_se_ext - Maximum allowed extinction fraction in each of the edge size bins. (default: 0.02)
-@param[in] threshold_ss_ext - Minimum bulk extinction in the processed scattering species for which to apply size grid representation checks. (default: 1e-8)
-@param[in] threshold_se_pnd - Minimum ratio of edge point pnd to maximum pnd of this scattering element over all pressure levels. (default: 0.02)
+@param[in] scat_index - Take data from scattering species of this index
+(0-based) in *scat_data*.
+@param[in] threshold_se_ext - Maximum allowed extinction fraction in each of the
+edge size bins. (default: 0.02)
+@param[in] threshold_ss_ext - Minimum bulk extinction in the processed
+scattering species for which to apply size grid representation checks. (default:
+1e-8)
+@param[in] threshold_se_pnd - Minimum ratio of edge point pnd to maximum pnd of
+this scattering element over all pressure levels. (default: 0.02)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void pndFromPsd(Workspace& ws,
-const Index& scat_index,
-const Index& quad_order=1,
-const Numeric& threshold_se_ext=0.02,
-const Numeric& threshold_ss_ext=1e-8,
-const Numeric& threshold_se_pnd=0.02) {
-pndFromPsd(Var::pnd_data(ws),
-Var::dpnd_data_dx(ws),
-Var::pnd_size_grid(ws),
-Var::psd_data(ws),
-Var::psd_size_grid(ws),
-Var::dpsd_data_dx(ws),
-Var::scat_data(ws),
-Var::f_grid(ws),
-Var::scat_data_checked(ws),
-quad_order,
-scat_index,
-threshold_se_ext,
-threshold_ss_ext,
-threshold_se_pnd,
-Var::verbosity(ws));
+void pndFromPsd(Workspace& ws, const Index& scat_index,
+                const Index& quad_order = 1,
+                const Numeric& threshold_se_ext = 0.02,
+                const Numeric& threshold_ss_ext = 1e-8,
+                const Numeric& threshold_se_pnd = 0.02) {
+  pndFromPsd(Var::pnd_data(ws), Var::dpnd_data_dx(ws), Var::pnd_size_grid(ws),
+             Var::psd_data(ws), Var::psd_size_grid(ws), Var::dpsd_data_dx(ws),
+             Var::scat_data(ws), Var::f_grid(ws), Var::scat_data_checked(ws),
+             quad_order, scat_index, threshold_se_ext, threshold_ss_ext,
+             threshold_se_pnd, Var::verbosity(ws));
 }
-
 
 /*! Calculates *pnd_data* from given *psd_data*.
 
@@ -21741,18 +20144,12 @@ checks.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void pndFromPsdBasic(Workspace& ws,
-const Index& quad_order=1) {
-pndFromPsdBasic(Var::pnd_data(ws),
-Var::dpnd_data_dx(ws),
-Var::pnd_size_grid(ws),
-Var::psd_data(ws),
-Var::psd_size_grid(ws),
-Var::dpsd_data_dx(ws),
-quad_order,
-Var::verbosity(ws));
+void pndFromPsdBasic(Workspace& ws, const Index& quad_order = 1) {
+  pndFromPsdBasic(Var::pnd_data(ws), Var::dpnd_data_dx(ws),
+                  Var::pnd_size_grid(ws), Var::psd_data(ws),
+                  Var::psd_size_grid(ws), Var::dpsd_data_dx(ws), quad_order,
+                  Var::verbosity(ws));
 }
-
 
 /*! Converts particle bulk property data to *pnd_field*.
 
@@ -21773,28 +20170,15 @@ just inside the cloudbox.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void pnd_fieldCalcFromParticleBulkProps(Workspace& ws) {
-pnd_fieldCalcFromParticleBulkProps(ws,
-Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::t_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::scat_species(ws),
-Var::scat_data(ws),
-Var::scat_meta(ws),
-Var::particle_bulkprop_field(ws),
-Var::particle_bulkprop_names(ws),
-Var::pnd_agenda_array(ws),
-Var::pnd_agenda_array_input_names(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  pnd_fieldCalcFromParticleBulkProps(
+      ws, Var::pnd_field(ws), Var::dpnd_field_dx(ws), Var::atmosphere_dim(ws),
+      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws), Var::t_field(ws),
+      Var::cloudbox_on(ws), Var::cloudbox_limits(ws), Var::scat_species(ws),
+      Var::scat_data(ws), Var::scat_meta(ws), Var::particle_bulkprop_field(ws),
+      Var::particle_bulkprop_names(ws), Var::pnd_agenda_array(ws),
+      Var::pnd_agenda_array_input_names(ws), Var::jacobian_do(ws),
+      Var::jacobian_quantities(ws), Var::verbosity(ws));
 }
-
 
 /*! Interpolation of particle number density fields to calculation grid
 inside cloudbox.
@@ -21818,20 +20202,13 @@ zeropadding=0, which throws an error if the calculation pressure grid
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void pnd_fieldCalcFrompnd_field_raw(Workspace& ws,
-const Index& zeropadding=0) {
-pnd_fieldCalcFrompnd_field_raw(Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::pnd_field_raw(ws),
-Var::atmosphere_dim(ws),
-Var::cloudbox_limits(ws),
-Var::jacobian_quantities(ws),
-zeropadding,
-Var::verbosity(ws));
+                                    const Index& zeropadding = 0) {
+  pnd_fieldCalcFrompnd_field_raw(
+      Var::pnd_field(ws), Var::dpnd_field_dx(ws), Var::p_grid(ws),
+      Var::lat_grid(ws), Var::lon_grid(ws), Var::pnd_field_raw(ws),
+      Var::atmosphere_dim(ws), Var::cloudbox_limits(ws),
+      Var::jacobian_quantities(ws), zeropadding, Var::verbosity(ws));
 }
-
 
 /*! Maps a 1D pnd_field to a (homogeneous) 2D or 3D pnd_field.
 
@@ -21857,16 +20234,11 @@ See further *AtmFieldsExpand1D*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void pnd_fieldExpand1D(Workspace& ws,
-const Index& nzero=1) {
-pnd_fieldExpand1D(Var::pnd_field(ws),
-Var::atmosphere_dim(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-nzero,
-Var::verbosity(ws));
+void pnd_fieldExpand1D(Workspace& ws, const Index& nzero = 1) {
+  pnd_fieldExpand1D(Var::pnd_field(ws), Var::atmosphere_dim(ws),
+                    Var::cloudbox_on(ws), Var::cloudbox_limits(ws), nzero,
+                    Var::verbosity(ws));
 }
-
 
 /*! Sets *pnd_field* to zero.
 
@@ -21895,16 +20267,11 @@ a cloudbox with no particles.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void pnd_fieldZero(Workspace& ws) {
-pnd_fieldZero(Var::pnd_field(ws),
-Var::dpnd_field_dx(ws),
-Var::scat_data(ws),
-Var::atmosphere_dim(ws),
-Var::f_grid(ws),
-Var::cloudbox_limits(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  pnd_fieldZero(Var::pnd_field(ws), Var::dpnd_field_dx(ws), Var::scat_data(ws),
+                Var::atmosphere_dim(ws), Var::f_grid(ws),
+                Var::cloudbox_limits(ws), Var::jacobian_quantities(ws),
+                Var::verbosity(ws));
 }
-
 
 /*! Stand-alone calculation of propagation paths.
 
@@ -21924,22 +20291,12 @@ of calling e.g.*ppathStepByStep directly.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ppathCalc(Workspace& ws) {
-ppathCalc(ws,
-Var::ppath(ws),
-Var::ppath_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::atmgeom_checked(ws),
-Var::f_grid(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::ppath_inside_cloudbox_do(ws),
-Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::rte_pos2(ws),
-Var::verbosity(ws));
+  ppathCalc(ws, Var::ppath(ws), Var::ppath_agenda(ws), Var::ppath_lmax(ws),
+            Var::ppath_lraytrace(ws), Var::atmgeom_checked(ws), Var::f_grid(ws),
+            Var::cloudbox_on(ws), Var::cloudbox_checked(ws),
+            Var::ppath_inside_cloudbox_do(ws), Var::rte_pos(ws),
+            Var::rte_los(ws), Var::rte_pos2(ws), Var::verbosity(ws));
 }
-
 
 /*! Moves *rte_pos* forwards to near altitude before calling *ppathCalc*
 to compute a different *ppath*.  The accuracy-variable gives minimum
@@ -21964,27 +20321,15 @@ Throws error if no altitude is in line of sight.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ppathCalcFromAltitude(Workspace& ws,
-const Numeric& altitude,
-const Numeric& accuracy=0.5) {
-ppathCalcFromAltitude(ws,
-Var::ppath(ws),
-Var::ppath_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::atmgeom_checked(ws),
-Var::f_grid(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::ppath_inside_cloudbox_do(ws),
-Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::rte_pos2(ws),
-altitude,
-accuracy,
-Var::verbosity(ws));
+void ppathCalcFromAltitude(Workspace& ws, const Numeric& altitude,
+                           const Numeric& accuracy = 0.5) {
+  ppathCalcFromAltitude(
+      ws, Var::ppath(ws), Var::ppath_agenda(ws), Var::ppath_lmax(ws),
+      Var::ppath_lraytrace(ws), Var::atmgeom_checked(ws), Var::f_grid(ws),
+      Var::cloudbox_on(ws), Var::cloudbox_checked(ws),
+      Var::ppath_inside_cloudbox_do(ws), Var::rte_pos(ws), Var::rte_los(ws),
+      Var::rte_pos2(ws), altitude, accuracy, Var::verbosity(ws));
 }
-
 
 /*! Determines the propagation path from *rte_pos2* to *rte_pos*.
 
@@ -21994,7 +20339,7 @@ manner, where a simple algorithm is applied. The task is to find
 the value of *rte_los* (at *rte_pos*) linking the two positions.
 
 See the user guide for a description of the search algorithm,
-including a more detailed definition of *za_accuracy*, 
+including a more detailed definition of *za_accuracy*,
 *pplrt_factor* and *pplrt_lowest*.
 
 The standard application of this method should be to radio link
@@ -22007,38 +20352,26 @@ as usual.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] za_accuracy - Required accuracy, in form of the maximum allowed angular off-set [deg]. (default: 2e-5)
-@param[in] pplrt_factor - The factor with which ppath_lraytrace is decreased if no solution is found. (default: 5)
-@param[in] pplrt_lowest - Lowest value ppath_lraytrace to consider. The calculations are halted if this length is passed. (default: 0.5)
+@param[in] za_accuracy - Required accuracy, in form of the maximum allowed
+angular off-set [deg]. (default: 2e-5)
+@param[in] pplrt_factor - The factor with which ppath_lraytrace is decreased if
+no solution is found. (default: 5)
+@param[in] pplrt_lowest - Lowest value ppath_lraytrace to consider. The
+calculations are halted if this length is passed. (default: 0.5)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ppathFromRtePos2(Workspace& ws,
-const Numeric& za_accuracy=2e-5,
-const Numeric& pplrt_factor=5,
-const Numeric& pplrt_lowest=0.5) {
-ppathFromRtePos2(ws,
-Var::ppath(ws),
-Var::rte_los(ws),
-Var::ppath_lraytrace(ws),
-Var::ppath_step_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::f_grid(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-Var::rte_pos(ws),
-Var::rte_pos2(ws),
-Var::ppath_lmax(ws),
-za_accuracy,
-pplrt_factor,
-pplrt_lowest,
-Var::verbosity(ws));
+void ppathFromRtePos2(Workspace& ws, const Numeric& za_accuracy = 2e-5,
+                      const Numeric& pplrt_factor = 5,
+                      const Numeric& pplrt_lowest = 0.5) {
+  ppathFromRtePos2(ws, Var::ppath(ws), Var::rte_los(ws),
+                   Var::ppath_lraytrace(ws), Var::ppath_step_agenda(ws),
+                   Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+                   Var::lon_grid(ws), Var::z_field(ws), Var::f_grid(ws),
+                   Var::refellipsoid(ws), Var::z_surface(ws), Var::rte_pos(ws),
+                   Var::rte_pos2(ws), Var::ppath_lmax(ws), za_accuracy,
+                   pplrt_factor, pplrt_lowest, Var::verbosity(ws));
 }
-
 
 /*! Propagation path calculations for a plane parallel atmosphere.
 
@@ -22062,19 +20395,12 @@ the standard path calculations.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ppathPlaneParallel(Workspace& ws) {
-ppathPlaneParallel(Var::ppath(ws),
-Var::atmosphere_dim(ws),
-Var::z_field(ws),
-Var::z_surface(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::ppath_inside_cloudbox_do(ws),
-Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::ppath_lmax(ws),
-Var::verbosity(ws));
+  ppathPlaneParallel(Var::ppath(ws), Var::atmosphere_dim(ws), Var::z_field(ws),
+                     Var::z_surface(ws), Var::cloudbox_on(ws),
+                     Var::cloudbox_limits(ws),
+                     Var::ppath_inside_cloudbox_do(ws), Var::rte_pos(ws),
+                     Var::rte_los(ws), Var::ppath_lmax(ws), Var::verbosity(ws));
 }
-
 
 /*! Standard method for calculation of propagation paths.
 
@@ -22096,27 +20422,15 @@ if you want to extract propagation paths.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ppathStepByStep(Workspace& ws) {
-ppathStepByStep(ws,
-Var::ppath(ws),
-Var::ppath_step_agenda(ws),
-Var::ppath_inside_cloudbox_do(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::f_grid(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::verbosity(ws));
+  ppathStepByStep(ws, Var::ppath(ws), Var::ppath_step_agenda(ws),
+                  Var::ppath_inside_cloudbox_do(ws), Var::atmosphere_dim(ws),
+                  Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                  Var::z_field(ws), Var::f_grid(ws), Var::refellipsoid(ws),
+                  Var::z_surface(ws), Var::cloudbox_on(ws),
+                  Var::cloudbox_limits(ws), Var::rte_pos(ws), Var::rte_los(ws),
+                  Var::ppath_lmax(ws), Var::ppath_lraytrace(ws),
+                  Var::verbosity(ws));
 }
-
 
 /*! WSM to only write a reduced Ppath, omitting grid positions.
 
@@ -22139,16 +20453,11 @@ extension. Omitting filename works as for *WriteXML*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ppathWriteXMLPartial(Workspace& ws,
-const String& filename="",
-const Index& file_index=-1) {
-ppathWriteXMLPartial(Var::output_file_format(ws),
-Var::ppath(ws),
-filename,
-file_index,
-Var::verbosity(ws));
+void ppathWriteXMLPartial(Workspace& ws, const String& filename = "",
+                          const Index& file_index = -1) {
+  ppathWriteXMLPartial(Var::output_file_format(ws), Var::ppath(ws), filename,
+                       file_index, Var::verbosity(ws));
 }
-
 
 /*! Stand-alone calculation of propagation path field from sensors.
 
@@ -22161,22 +20470,13 @@ Uses *ppathCalc* internally.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ppath_fieldCalc(Workspace& ws) {
-ppath_fieldCalc(ws,
-Var::ppath_field(ws),
-Var::ppath_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::atmgeom_checked(ws),
-Var::f_grid(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::ppath_inside_cloudbox_do(ws),
-Var::sensor_pos(ws),
-Var::sensor_los(ws),
-Var::rte_pos2(ws),
-Var::verbosity(ws));
+  ppath_fieldCalc(ws, Var::ppath_field(ws), Var::ppath_agenda(ws),
+                  Var::ppath_lmax(ws), Var::ppath_lraytrace(ws),
+                  Var::atmgeom_checked(ws), Var::f_grid(ws),
+                  Var::cloudbox_on(ws), Var::cloudbox_checked(ws),
+                  Var::ppath_inside_cloudbox_do(ws), Var::sensor_pos(ws),
+                  Var::sensor_los(ws), Var::rte_pos2(ws), Var::verbosity(ws));
 }
-
 
 /*! Computes ppath_field from "standalone" sensors looking upwards from
 0 m altitude with zenith angles range [0, 90], downwards from the top
@@ -22203,28 +20503,15 @@ Only works for *atmosphere_dim* 1, spherical planets, and *ppath_lmax*<0
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ppath_fieldFromDownUpLimbGeoms(Workspace& ws,
-const Index& nz=3) {
-ppath_fieldFromDownUpLimbGeoms(ws,
-Var::ppath_field(ws),
-Var::ppath_agenda(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::atmgeom_checked(ws),
-Var::z_field(ws),
-Var::f_grid(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::ppath_inside_cloudbox_do(ws),
-Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::rte_pos2(ws),
-Var::refellipsoid(ws),
-Var::atmosphere_dim(ws),
-nz,
-Var::verbosity(ws));
+void ppath_fieldFromDownUpLimbGeoms(Workspace& ws, const Index& nz = 3) {
+  ppath_fieldFromDownUpLimbGeoms(
+      ws, Var::ppath_field(ws), Var::ppath_agenda(ws), Var::ppath_lmax(ws),
+      Var::ppath_lraytrace(ws), Var::atmgeom_checked(ws), Var::z_field(ws),
+      Var::f_grid(ws), Var::cloudbox_on(ws), Var::cloudbox_checked(ws),
+      Var::ppath_inside_cloudbox_do(ws), Var::rte_pos(ws), Var::rte_los(ws),
+      Var::rte_pos2(ws), Var::refellipsoid(ws), Var::atmosphere_dim(ws), nz,
+      Var::verbosity(ws));
 }
-
 
 /*! Calculates a geometrical propagation path step.
 
@@ -22247,17 +20534,11 @@ For further information, type see the on-line information for
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ppath_stepGeometric(Workspace& ws) {
-ppath_stepGeometric(Var::ppath_step(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-Var::ppath_lmax(ws),
-Var::verbosity(ws));
+  ppath_stepGeometric(Var::ppath_step(ws), Var::atmosphere_dim(ws),
+                      Var::lat_grid(ws), Var::lon_grid(ws), Var::z_field(ws),
+                      Var::refellipsoid(ws), Var::z_surface(ws),
+                      Var::ppath_lmax(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates a propagation path step, considering refraction by a
 basic approach.
@@ -22285,24 +20566,13 @@ for *ppath_stepGeometric*, this including the functionality of
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ppath_stepRefractionBasic(Workspace& ws) {
-ppath_stepRefractionBasic(ws,
-Var::ppath_step(ws),
-Var::refr_index_air_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::z_field(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-Var::f_grid(ws),
-Var::ppath_lmax(ws),
-Var::ppath_lraytrace(ws),
-Var::verbosity(ws));
+  ppath_stepRefractionBasic(
+      ws, Var::ppath_step(ws), Var::refr_index_air_agenda(ws),
+      Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), Var::z_field(ws), Var::t_field(ws), Var::vmr_field(ws),
+      Var::refellipsoid(ws), Var::z_surface(ws), Var::f_grid(ws),
+      Var::ppath_lmax(ws), Var::ppath_lraytrace(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets *ppvar_optical_depth* according to provided transmission data.
 
@@ -22316,11 +20586,10 @@ The values in ppvar_optical_depth are set to
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ppvar_optical_depthFromPpvar_trans_cumulat(Workspace& ws) {
-ppvar_optical_depthFromPpvar_trans_cumulat(Var::ppvar_optical_depth(ws),
-Var::ppvar_trans_cumulat(ws),
-Var::verbosity(ws));
+  ppvar_optical_depthFromPpvar_trans_cumulat(Var::ppvar_optical_depth(ws),
+                                             Var::ppvar_trans_cumulat(ws),
+                                             Var::verbosity(ws));
 }
-
 
 /*! Calculates absorption matrix describing Faraday rotation.
 
@@ -22345,26 +20614,18 @@ but adds further contributions.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearskyAddFaraday(Workspace& ws) {
-propmat_clearskyAddFaraday(Var::propmat_clearsky(ws),
-Var::dpropmat_clearsky_dx(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::f_grid(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::rtp_vmr(ws),
-Var::rtp_los(ws),
-Var::rtp_mag(ws),
-Var::verbosity(ws));
+  propmat_clearskyAddFaraday(
+      Var::propmat_clearsky(ws), Var::dpropmat_clearsky_dx(ws),
+      Var::stokes_dim(ws), Var::atmosphere_dim(ws), Var::f_grid(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws), Var::rtp_vmr(ws),
+      Var::rtp_los(ws), Var::rtp_mag(ws), Var::verbosity(ws));
 }
 
-
-/*! Copy *propmat_clearsky* from *abs_coef_per_species*. This is handy for putting an
-explicit line-by-line calculation into the
-*propmat_clearsky_agenda*. This method is also used internally by.
-*propmat_clearskyAddOnTheFly*.
-Like all other propmat_clearsky methods, this method does not overwrite
-prior content of *propmat_clearsky*, but adds to it.
+/*! Copy *propmat_clearsky* from *abs_coef_per_species*. This is handy for
+putting an explicit line-by-line calculation into the *propmat_clearsky_agenda*.
+This method is also used internally by. *propmat_clearskyAddOnTheFly*. Like all
+other propmat_clearsky methods, this method does not overwrite prior content of
+*propmat_clearsky*, but adds to it.
 
 @author Stefan Buehler
 
@@ -22373,13 +20634,10 @@ prior content of *propmat_clearsky*, but adds to it.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearskyAddFromAbsCoefPerSpecies(Workspace& ws) {
-propmat_clearskyAddFromAbsCoefPerSpecies(Var::propmat_clearsky(ws),
-Var::dpropmat_clearsky_dx(ws),
-Var::abs_coef_per_species(ws),
-Var::dabs_coef_dx(ws),
-Var::verbosity(ws));
+  propmat_clearskyAddFromAbsCoefPerSpecies(
+      Var::propmat_clearsky(ws), Var::dpropmat_clearsky_dx(ws),
+      Var::abs_coef_per_species(ws), Var::dabs_coef_dx(ws), Var::verbosity(ws));
 }
-
 
 /*! Extract gas absorption coefficients from lookup table.
 
@@ -22419,37 +20677,31 @@ See also: *propmat_clearskyAddOnTheFly*.
 @author Stefan Buehler, Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] extpolfac - Extrapolation factor (for temperature and VMR grid edges). (default: 0.5)
+@param[in] extpolfac - Extrapolation factor (for temperature and VMR grid
+edges). (default: 0.5)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearskyAddFromLookup(Workspace& ws,
-const Numeric& extpolfac=0.5) {
-propmat_clearskyAddFromLookup(Var::propmat_clearsky(ws),
-Var::dpropmat_clearsky_dx(ws),
-Var::abs_lookup(ws),
-Var::abs_lookup_is_adapted(ws),
-Var::abs_p_interp_order(ws),
-Var::abs_t_interp_order(ws),
-Var::abs_nls_interp_order(ws),
-Var::abs_f_interp_order(ws),
-Var::f_grid(ws),
-Var::rtp_pressure(ws),
-Var::rtp_temperature(ws),
-Var::rtp_vmr(ws),
-Var::jacobian_quantities(ws),
-extpolfac,
-Var::verbosity(ws));
+                                   const Numeric& extpolfac = 0.5) {
+  propmat_clearskyAddFromLookup(
+      Var::propmat_clearsky(ws), Var::dpropmat_clearsky_dx(ws),
+      Var::abs_lookup(ws), Var::abs_lookup_is_adapted(ws),
+      Var::abs_p_interp_order(ws), Var::abs_t_interp_order(ws),
+      Var::abs_nls_interp_order(ws), Var::abs_f_interp_order(ws),
+      Var::f_grid(ws), Var::rtp_pressure(ws), Var::rtp_temperature(ws),
+      Var::rtp_vmr(ws), Var::jacobian_quantities(ws), extpolfac,
+      Var::verbosity(ws));
 }
 
-
-/*! Calculates gas absorption coefficients line-by-line for HITRAN line mixed data.
+/*! Calculates gas absorption coefficients line-by-line for HITRAN line mixed
+data.
 
 *Wigner6Init* or *Wigner3Init* must be called before this function.
 
 
 Please ensure you cite the original authors when you use this function:
-	J. Lamouroux, L. Realia, X. Thomas, et al., J.Q.S.R.T. 151 (2015), 88-96
+        J. Lamouroux, L. Realia, X. Thomas, et al., J.Q.S.R.T. 151 (2015), 88-96
 
 @author Richard Larsson
 
@@ -22458,19 +20710,13 @@ Please ensure you cite the original authors when you use this function:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearskyAddHitranLineMixingLines(Workspace& ws) {
-propmat_clearskyAddHitranLineMixingLines(Var::propmat_clearsky(ws),
-Var::abs_hitran_relmat_data(ws),
-Var::abs_lines_per_species(ws),
-Var::f_grid(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::partition_functions(ws),
-Var::rtp_pressure(ws),
-Var::rtp_temperature(ws),
-Var::rtp_vmr(ws),
-Var::verbosity(ws));
+  propmat_clearskyAddHitranLineMixingLines(
+      Var::propmat_clearsky(ws), Var::abs_hitran_relmat_data(ws),
+      Var::abs_lines_per_species(ws), Var::f_grid(ws), Var::abs_species(ws),
+      Var::jacobian_quantities(ws), Var::partition_functions(ws),
+      Var::rtp_pressure(ws), Var::rtp_temperature(ws), Var::rtp_vmr(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Calculates gas absorption coefficients line-by-line.
 
@@ -22493,23 +20739,14 @@ of pressure, temperature, and VMR values.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearskyAddOnTheFly(Workspace& ws) {
-propmat_clearskyAddOnTheFly(ws,
-Var::propmat_clearsky(ws),
-Var::nlte_source(ws),
-Var::dpropmat_clearsky_dx(ws),
-Var::dnlte_dx_source(ws),
-Var::nlte_dsource_dx(ws),
-Var::f_grid(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::rtp_pressure(ws),
-Var::rtp_temperature(ws),
-Var::rtp_nlte(ws),
-Var::rtp_vmr(ws),
-Var::abs_xsec_agenda(ws),
-Var::verbosity(ws));
+  propmat_clearskyAddOnTheFly(
+      ws, Var::propmat_clearsky(ws), Var::nlte_source(ws),
+      Var::dpropmat_clearsky_dx(ws), Var::dnlte_dx_source(ws),
+      Var::nlte_dsource_dx(ws), Var::f_grid(ws), Var::abs_species(ws),
+      Var::jacobian_quantities(ws), Var::rtp_pressure(ws),
+      Var::rtp_temperature(ws), Var::rtp_nlte(ws), Var::rtp_vmr(ws),
+      Var::abs_xsec_agenda(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates absorption coefficients of particles to be used in
 clearsky (non-cloudbox) calculations.
@@ -22555,12 +20792,11 @@ but adds further contributions.
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] use_abs_as_ext - A flag with value 1 or 0. If set to one, particle absorption
-is used in extinction and emission parts of the RT equation,
-and scattering out of LOS as well as into LOS is neglected.
-Otherwise, particle extinction (absorption+scattering) is
-applied in both the extinction as well as the emission part
-of the RT equation. That is, true extinction is applied, but
+@param[in] use_abs_as_ext - A flag with value 1 or 0. If set to one, particle
+absorption is used in extinction and emission parts of the RT equation, and
+scattering out of LOS as well as into LOS is neglected. Otherwise, particle
+extinction (absorption+scattering) is applied in both the extinction as well as
+the emission part of the RT equation. That is, true extinction is applied, but
 emission also includes a pseudo-emission contribution from
 the scattering coefficient.
  (default: 1)
@@ -22568,23 +20804,14 @@ the scattering coefficient.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearskyAddParticles(Workspace& ws,
-const Index& use_abs_as_ext=1) {
-propmat_clearskyAddParticles(Var::propmat_clearsky(ws),
-Var::dpropmat_clearsky_dx(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::f_grid(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::rtp_vmr(ws),
-Var::rtp_los(ws),
-Var::rtp_temperature(ws),
-Var::scat_data(ws),
-Var::scat_data_checked(ws),
-use_abs_as_ext,
-Var::verbosity(ws));
+                                  const Index& use_abs_as_ext = 1) {
+  propmat_clearskyAddParticles(
+      Var::propmat_clearsky(ws), Var::dpropmat_clearsky_dx(ws),
+      Var::stokes_dim(ws), Var::atmosphere_dim(ws), Var::f_grid(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws), Var::rtp_vmr(ws),
+      Var::rtp_los(ws), Var::rtp_temperature(ws), Var::scat_data(ws),
+      Var::scat_data_checked(ws), use_abs_as_ext, Var::verbosity(ws));
 }
-
 
 /*! Calculates Zeeman-affected polarized propagation matrix and its
 derivatives.
@@ -22595,43 +20822,30 @@ Otherwise as *propmat_clearskyAddFromLookup*
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] manual_zeeman_tag - Manual angles tag (default: 0)
-@param[in] manual_zeeman_magnetic_field_strength - Manual Magnetic Field Strength (default: 1.0)
+@param[in] manual_zeeman_magnetic_field_strength - Manual Magnetic Field
+Strength (default: 1.0)
 @param[in] manual_zeeman_theta - Manual theta given positive tag (default: 0.0)
 @param[in] manual_zeeman_eta - Manual eta given positive tag (default: 0.0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void propmat_clearskyAddZeeman(Workspace& ws,
-const Index& manual_zeeman_tag=0,
-const Numeric& manual_zeeman_magnetic_field_strength=1.0,
-const Numeric& manual_zeeman_theta=0.0,
-const Numeric& manual_zeeman_eta=0.0) {
-propmat_clearskyAddZeeman(Var::propmat_clearsky(ws),
-Var::nlte_source(ws),
-Var::dpropmat_clearsky_dx(ws),
-Var::dnlte_dx_source(ws),
-Var::nlte_dsource_dx(ws),
-Var::abs_lines_per_species(ws),
-Var::f_grid(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::isotopologue_ratios(ws),
-Var::partition_functions(ws),
-Var::rtp_pressure(ws),
-Var::rtp_temperature(ws),
-Var::rtp_nlte(ws),
-Var::rtp_vmr(ws),
-Var::rtp_mag(ws),
-Var::rtp_los(ws),
-Var::atmosphere_dim(ws),
-Var::lbl_checked(ws),
-manual_zeeman_tag,
-manual_zeeman_magnetic_field_strength,
-manual_zeeman_theta,
-manual_zeeman_eta,
-Var::verbosity(ws));
+void propmat_clearskyAddZeeman(
+    Workspace& ws, const Index& manual_zeeman_tag = 0,
+    const Numeric& manual_zeeman_magnetic_field_strength = 1.0,
+    const Numeric& manual_zeeman_theta = 0.0,
+    const Numeric& manual_zeeman_eta = 0.0) {
+  propmat_clearskyAddZeeman(
+      Var::propmat_clearsky(ws), Var::nlte_source(ws),
+      Var::dpropmat_clearsky_dx(ws), Var::dnlte_dx_source(ws),
+      Var::nlte_dsource_dx(ws), Var::abs_lines_per_species(ws), Var::f_grid(ws),
+      Var::abs_species(ws), Var::jacobian_quantities(ws),
+      Var::isotopologue_ratios(ws), Var::partition_functions(ws),
+      Var::rtp_pressure(ws), Var::rtp_temperature(ws), Var::rtp_nlte(ws),
+      Var::rtp_vmr(ws), Var::rtp_mag(ws), Var::rtp_los(ws),
+      Var::atmosphere_dim(ws), Var::lbl_checked(ws), manual_zeeman_tag,
+      manual_zeeman_magnetic_field_strength, manual_zeeman_theta,
+      manual_zeeman_eta, Var::verbosity(ws));
 }
-
 
 /*! Sets *propmat_clearsky* to match zero attenuation
 if negative value.  Useful for line mixing in some cases.
@@ -22645,10 +20859,9 @@ Use this method just if you know what you are doing!
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearskyForceNegativeToZero(Workspace& ws) {
-propmat_clearskyForceNegativeToZero(Var::propmat_clearsky(ws),
-Var::verbosity(ws));
+  propmat_clearskyForceNegativeToZero(Var::propmat_clearsky(ws),
+                                      Var::verbosity(ws));
 }
-
 
 /*! Initialize *propmat_clearsky* and *nlte_source*.
 
@@ -22662,20 +20875,14 @@ be called first.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearskyInit(Workspace& ws) {
-propmat_clearskyInit(Var::propmat_clearsky(ws),
-Var::nlte_source(ws),
-Var::dpropmat_clearsky_dx(ws),
-Var::dnlte_dx_source(ws),
-Var::nlte_dsource_dx(ws),
-Var::abs_species(ws),
-Var::jacobian_quantities(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::propmat_clearsky_agenda_checked(ws),
-Var::nlte_do(ws),
-Var::verbosity(ws));
+  propmat_clearskyInit(Var::propmat_clearsky(ws), Var::nlte_source(ws),
+                       Var::dpropmat_clearsky_dx(ws), Var::dnlte_dx_source(ws),
+                       Var::nlte_dsource_dx(ws), Var::abs_species(ws),
+                       Var::jacobian_quantities(ws), Var::f_grid(ws),
+                       Var::stokes_dim(ws),
+                       Var::propmat_clearsky_agenda_checked(ws),
+                       Var::nlte_do(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets *propmat_clearsky* to match zero attenuation.
 
@@ -22692,12 +20899,9 @@ Ignore statements (don't include *propmat_clearskyInit*).
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearskyZero(Workspace& ws) {
-propmat_clearskyZero(Var::propmat_clearsky(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::verbosity(ws));
+  propmat_clearskyZero(Var::propmat_clearsky(ws), Var::f_grid(ws),
+                       Var::stokes_dim(ws), Var::verbosity(ws));
 }
-
 
 /*! Checks if the *propmat_clearsky_agenda* contains all necessary
 methods to calculate all the species in *abs_species*.
@@ -22712,13 +20916,10 @@ is used, e.g. *DoitGetIncoming*, *ybatchCalc*, *yCalc*
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void propmat_clearsky_agenda_checkedCalc(Workspace& ws) {
-propmat_clearsky_agenda_checkedCalc(ws,
-Var::propmat_clearsky_agenda_checked(ws),
-Var::abs_species(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::verbosity(ws));
+  propmat_clearsky_agenda_checkedCalc(
+      ws, Var::propmat_clearsky_agenda_checked(ws), Var::abs_species(ws),
+      Var::propmat_clearsky_agenda(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculate (vector) gas absorption coefficients for all points in the
 atmosphere.
@@ -22739,39 +20940,26 @@ The calculation itself is performed by the
 @author Stefan Buehler, Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] doppler - A vector of doppler shift values in Hz. Must either be empty or have same dimension as p_grid. (default: {})
+@param[in] doppler - A vector of doppler shift values in Hz. Must either be
+empty or have same dimension as p_grid. (default: {})
 @param[in] los - Line of sight (default: {})
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void propmat_clearsky_fieldCalc(Workspace& ws,
-const Vector& doppler={},
-const Vector& los={}) {
-propmat_clearsky_fieldCalc(ws,
-Var::propmat_clearsky_field(ws),
-Var::nlte_source_field(ws),
-Var::atmfields_checked(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::nlte_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::propmat_clearsky_agenda(ws),
-doppler,
-los,
-Var::verbosity(ws));
+void propmat_clearsky_fieldCalc(Workspace& ws, const Vector& doppler = {},
+                                const Vector& los = {}) {
+  propmat_clearsky_fieldCalc(
+      ws, Var::propmat_clearsky_field(ws), Var::nlte_source_field(ws),
+      Var::atmfields_checked(ws), Var::f_grid(ws), Var::stokes_dim(ws),
+      Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws), Var::t_field(ws),
+      Var::vmr_field(ws), Var::nlte_field(ws), Var::mag_u_field(ws),
+      Var::mag_v_field(ws), Var::mag_w_field(ws),
+      Var::propmat_clearsky_agenda(ws), doppler, los, Var::verbosity(ws));
 }
-
 
 /*! Abel and Boutle [2012] particle size distribution for rain.
 
-Reference: Abel and Boutle, An improved representation of the 
+Reference: Abel and Boutle, An improved representation of the
 raindrop size distribution for single-moment microphysics schemes,
 QJRMS, 2012.
 
@@ -22800,29 +20988,20 @@ picky=0, or an error is thrown if picky=1.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] t_min - Low temperature limit to calculate a psd. (default: 273)
 @param[in] t_max - High temperature limit to calculate a psd. (default: 373)
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdAbelBoutle12(Workspace& ws,
-const Numeric& t_min=273,
-const Numeric& t_max=373,
-const Index& picky=0) {
-psdAbelBoutle12(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdAbelBoutle12(Workspace& ws, const Numeric& t_min = 273,
+                     const Numeric& t_max = 373, const Index& picky = 0) {
+  psdAbelBoutle12(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+                  Var::psd_size_grid(ws), Var::pnd_agenda_input_t(ws),
+                  Var::pnd_agenda_input(ws), Var::pnd_agenda_input_names(ws),
+                  Var::dpnd_data_dx_names(ws), Var::scat_species_a(ws),
+                  Var::scat_species_b(ws), t_min, t_max, picky,
+                  Var::verbosity(ws));
 }
-
 
 /*! Normalized PSD as proposed in Delanoë et al. ((2014)),
 
@@ -22848,50 +21027,38 @@ provided by *dm_min*.
 @author Simon Pfreundschuh
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] iwc - Ice water content (default: std::numeric_limits<Numeric>::quiet_NaN())
-@param[in] n0Star - Intercept parameter (default: std::numeric_limits<Numeric>::quiet_NaN())
-@param[in] Dm - Volume weighted diameter (default: std::numeric_limits<Numeric>::quiet_NaN())
+@param[in] iwc - Ice water content (default:
+std::numeric_limits<Numeric>::quiet_NaN())
+@param[in] n0Star - Intercept parameter (default:
+std::numeric_limits<Numeric>::quiet_NaN())
+@param[in] Dm - Volume weighted diameter (default:
+std::numeric_limits<Numeric>::quiet_NaN())
 @param[in] rho - Density of ice (default: 917.6)
 @param[in] alpha - *alpha* parameter of the shape function (default: -0.237)
 @param[in] beta - *beta* paramter of the shape function (default: 1.839)
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] dm_min - Lower threshold for *Dm* below which an error is thrown. (default: -1.0)
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] dm_min - Lower threshold for *Dm* below which an error is thrown.
+(default: -1.0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdDelanoeEtAl14(Workspace& ws,
-const Numeric& t_min,
-const Numeric& t_max,
-const Numeric& iwc=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& n0Star=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& Dm=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& rho=917.6,
-const Numeric& alpha=-0.237,
-const Numeric& beta=1.839,
-const Numeric& dm_min=-1.0,
-const Index& picky=0) {
-psdDelanoeEtAl14(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-iwc,
-n0Star,
-Dm,
-rho,
-alpha,
-beta,
-t_min,
-t_max,
-dm_min,
-picky,
-Var::verbosity(ws));
+void psdDelanoeEtAl14(
+    Workspace& ws, const Numeric& t_min, const Numeric& t_max,
+    const Numeric& iwc = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& n0Star = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& Dm = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& rho = 917.6, const Numeric& alpha = -0.237,
+    const Numeric& beta = 1.839, const Numeric& dm_min = -1.0,
+    const Index& picky = 0) {
+  psdDelanoeEtAl14(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+                   Var::psd_size_grid(ws), Var::pnd_agenda_input_t(ws),
+                   Var::pnd_agenda_input(ws), Var::pnd_agenda_input_names(ws),
+                   Var::dpnd_data_dx_names(ws), iwc, n0Star, Dm, rho, alpha,
+                   beta, t_min, t_max, dm_min, picky, Var::verbosity(ws));
 }
-
 
 /*! The Field et al. [2007] particle size distribution for snow and
 cloud ice.
@@ -22937,43 +21104,30 @@ Errors are thrown if:
 @param[in] regime - Parametrization regime ("TR"=tropical or "ML"=midlatitude).
 @param[in] t_min - Low temperature limit to calculate a psd. (default: 0)
 @param[in] t_max - High temperature limit to calculate a psd. (default: 290.)
-@param[in] t_min_psd - Low temperature limit to use as paramtrization temperature. (default: 200.)
-@param[in] t_max_psd - High temperature limit to use as paramtrization temperature. (default: 273.15)
+@param[in] t_min_psd - Low temperature limit to use as paramtrization
+temperature. (default: 200.)
+@param[in] t_max_psd - High temperature limit to use as paramtrization
+temperature. (default: 273.15)
 @param[in] beta_min - Low *b* limit (only if picky). (default: 1.01)
 @param[in] beta_max - High *b* limit (only if picky). (default: 4)
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdFieldEtAl07(Workspace& ws,
-const String& regime,
-const Numeric& t_min=0,
-const Numeric& t_max=290.,
-const Numeric& t_min_psd=200.,
-const Numeric& t_max_psd=273.15,
-const Numeric& beta_min=1.01,
-const Numeric& beta_max=4,
-const Index& picky=0) {
-psdFieldEtAl07(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-regime,
-t_min,
-t_max,
-t_min_psd,
-t_max_psd,
-beta_min,
-beta_max,
-picky,
-Var::verbosity(ws));
+void psdFieldEtAl07(Workspace& ws, const String& regime,
+                    const Numeric& t_min = 0, const Numeric& t_max = 290.,
+                    const Numeric& t_min_psd = 200.,
+                    const Numeric& t_max_psd = 273.15,
+                    const Numeric& beta_min = 1.01, const Numeric& beta_max = 4,
+                    const Index& picky = 0) {
+  psdFieldEtAl07(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+                 Var::psd_size_grid(ws), Var::pnd_agenda_input_t(ws),
+                 Var::pnd_agenda_input(ws), Var::pnd_agenda_input_names(ws),
+                 Var::dpnd_data_dx_names(ws), Var::scat_species_a(ws),
+                 Var::scat_species_b(ws), regime, t_min, t_max, t_min_psd,
+                 t_max_psd, beta_min, beta_max, picky, Var::verbosity(ws));
 }
-
 
 /*! The Field [2019] particle size distribution for hail.
 
@@ -23002,29 +21156,20 @@ picky=0, or an error is thrown if picky=1.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdFieldEtAl19(Workspace& ws,
-const Numeric& t_min,
-const Numeric& t_max,
-const Index& picky=0) {
-psdFieldEtAl19(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdFieldEtAl19(Workspace& ws, const Numeric& t_min, const Numeric& t_max,
+                    const Index& picky = 0) {
+  psdFieldEtAl19(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+                 Var::psd_size_grid(ws), Var::pnd_agenda_input_t(ws),
+                 Var::pnd_agenda_input(ws), Var::pnd_agenda_input_names(ws),
+                 Var::dpnd_data_dx_names(ws), Var::scat_species_a(ws),
+                 Var::scat_species_b(ws), t_min, t_max, picky,
+                 Var::verbosity(ws));
 }
-
 
 /*! McFarquahar and Heymsfield [1997] particle size distribution
 for cloud ice.
@@ -23063,38 +21208,29 @@ derivatives (ie. when *dpnd_data_dx_names* is not empty).
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] t_min - Low temperature limit to calculate a psd. (default: 0)
 @param[in] t_max - High temperature limit to calculate a psd. (default: 280.)
-@param[in] t_min_psd - Low temperature limit to use as paramtrization temperature. (default: 180)
-@param[in] t_max_psd - High temperature limit to use as paramtrization temperature. (default: 273.15)
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] t_min_psd - Low temperature limit to use as paramtrization
+temperature. (default: 180)
+@param[in] t_max_psd - High temperature limit to use as paramtrization
+temperature. (default: 273.15)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 @param[in] noisy - Distribution parameter perturbance flag (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdMcFarquaharHeymsfield97(Workspace& ws,
-const Numeric& t_min=0,
-const Numeric& t_max=280.,
-const Numeric& t_min_psd=180,
-const Numeric& t_max_psd=273.15,
-const Index& picky=0,
-const Index& noisy=0) {
-psdMcFarquaharHeymsfield97(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-t_min,
-t_max,
-t_min_psd,
-t_max_psd,
-picky,
-noisy,
-Var::verbosity(ws));
+void psdMcFarquaharHeymsfield97(Workspace& ws, const Numeric& t_min = 0,
+                                const Numeric& t_max = 280.,
+                                const Numeric& t_min_psd = 180,
+                                const Numeric& t_max_psd = 273.15,
+                                const Index& picky = 0,
+                                const Index& noisy = 0) {
+  psdMcFarquaharHeymsfield97(
+      Var::psd_data(ws), Var::dpsd_data_dx(ws), Var::psd_size_grid(ws),
+      Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+      Var::pnd_agenda_input_names(ws), Var::dpnd_data_dx_names(ws),
+      Var::scat_species_a(ws), Var::scat_species_b(ws), t_min, t_max, t_min_psd,
+      t_max_psd, picky, noisy, Var::verbosity(ws));
 }
-
 
 /*! Calculates *psd_data* and  *dpsd_data_dx* following Milbrandt and Yau (2005)
 two moment particle size distribution for cloud water, cloud ice,
@@ -23113,20 +21249,20 @@ ie. units of [kg/m3]. N_tot in terms of number density, ie. units of [1/m3] .
 Derivatives with respect to WC and N_tot are obtained analytically.
 
 Six particle size distributions for the different hydrometeors are handled,
-governed by setting of *hydrometeor_type*, where 
-    "cloud_water" selects cloud liquid water , 
-    "cloud_ice" selects cloud ice, 
-    "snow" selects snow, 
-    "rain" selects rain, 
-    "graupel" selects graupel, and 
-    "hail" selects hail, 
+governed by setting of *hydrometeor_type*, where
+    "cloud_water" selects cloud liquid water ,
+    "cloud_ice" selects cloud ice,
+    "snow" selects snow,
+    "rain" selects rain,
+    "graupel" selects graupel, and
+    "hail" selects hail,
 
 Requirements:
 
 *pnd_agenda_input_names* must include :
     ["X-mass_density", "X-number_density" ]. "X" is an arbitrary name
 The entries in  *dpnd_data_dx_names* (ie. the allowed
-independent variablea ) can be "X-mass_density" and\or 
+independent variablea ) can be "X-mass_density" and\or
 "X-number_density".
 
 The validity range of WC is not limited. Negative WC will produce
@@ -23142,29 +21278,20 @@ picky=0, or an error is thrown if picky=1.
 @param[in] hydrometeor_type - Hydrometeor type (see above description).
 @param[in] t_min - Low temperature limit to calculate a psd. (default: 0)
 @param[in] t_max - High temperature limit to calculate a psd. (default: 999)
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdMilbrandtYau05(Workspace& ws,
-const String& hydrometeor_type,
-const Numeric& t_min=0,
-const Numeric& t_max=999,
-const Index& picky=0) {
-psdMilbrandtYau05(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-hydrometeor_type,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdMilbrandtYau05(Workspace& ws, const String& hydrometeor_type,
+                       const Numeric& t_min = 0, const Numeric& t_max = 999,
+                       const Index& picky = 0) {
+  psdMilbrandtYau05(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+                    Var::psd_size_grid(ws), Var::pnd_agenda_input_t(ws),
+                    Var::pnd_agenda_input(ws), Var::pnd_agenda_input_names(ws),
+                    Var::dpnd_data_dx_names(ws), hydrometeor_type, t_min, t_max,
+                    picky, Var::verbosity(ws));
 }
-
 
 /*! Modified gamma distribution PSD using n0, mu, la and ga as parameters.
 
@@ -23218,35 +21345,24 @@ These requirements apply to the MGD parameters:
 @param[in] ga - ga (default: std::numeric_limits<Numeric>::quiet_NaN())
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdModifiedGamma(Workspace& ws,
-const Numeric& t_min,
-const Numeric& t_max,
-const Numeric& n0=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& mu=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& la=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& ga=std::numeric_limits<Numeric>::quiet_NaN(),
-const Index& picky=0) {
-psdModifiedGamma(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-n0,
-mu,
-la,
-ga,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdModifiedGamma(
+    Workspace& ws, const Numeric& t_min, const Numeric& t_max,
+    const Numeric& n0 = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& mu = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& la = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& ga = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Index& picky = 0) {
+  psdModifiedGamma(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+                   Var::psd_size_grid(ws), Var::pnd_agenda_input_t(ws),
+                   Var::pnd_agenda_input(ws), Var::pnd_agenda_input_names(ws),
+                   Var::dpnd_data_dx_names(ws), n0, mu, la, ga, t_min, t_max,
+                   picky, Var::verbosity(ws));
 }
-
 
 /*! Modified gamma distribution (MGD) PSD, with mass content as input.
 
@@ -23284,37 +21400,25 @@ These requirements apply to the MGD parameters:
 @param[in] ga - ga (default: std::numeric_limits<Numeric>::quiet_NaN())
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdModifiedGammaMass(Workspace& ws,
-const Numeric& t_min,
-const Numeric& t_max,
-const Numeric& n0=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& mu=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& la=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& ga=std::numeric_limits<Numeric>::quiet_NaN(),
-const Index& picky=0) {
-psdModifiedGammaMass(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-n0,
-mu,
-la,
-ga,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdModifiedGammaMass(
+    Workspace& ws, const Numeric& t_min, const Numeric& t_max,
+    const Numeric& n0 = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& mu = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& la = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& ga = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Index& picky = 0) {
+  psdModifiedGammaMass(
+      Var::psd_data(ws), Var::dpsd_data_dx(ws), Var::psd_size_grid(ws),
+      Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+      Var::pnd_agenda_input_names(ws), Var::dpnd_data_dx_names(ws),
+      Var::scat_species_a(ws), Var::scat_species_b(ws), n0, mu, la, ga, t_min,
+      t_max, picky, Var::verbosity(ws));
 }
-
 
 /*! Modified gamma distribution PSD, with mass content and mean particle
 mass (Mmean) as inputs.
@@ -23343,37 +21447,25 @@ These requirements apply to the MGD parameters:
 @param[in] ga - ga (default: std::numeric_limits<Numeric>::quiet_NaN())
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdModifiedGammaMassMeanParticleMass(Workspace& ws,
-const Numeric& t_min,
-const Numeric& t_max,
-const Numeric& n0=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& mu=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& la=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& ga=std::numeric_limits<Numeric>::quiet_NaN(),
-const Index& picky=0) {
-psdModifiedGammaMassMeanParticleMass(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-n0,
-mu,
-la,
-ga,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdModifiedGammaMassMeanParticleMass(
+    Workspace& ws, const Numeric& t_min, const Numeric& t_max,
+    const Numeric& n0 = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& mu = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& la = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& ga = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Index& picky = 0) {
+  psdModifiedGammaMassMeanParticleMass(
+      Var::psd_data(ws), Var::dpsd_data_dx(ws), Var::psd_size_grid(ws),
+      Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+      Var::pnd_agenda_input_names(ws), Var::dpnd_data_dx_names(ws),
+      Var::scat_species_a(ws), Var::scat_species_b(ws), n0, mu, la, ga, t_min,
+      t_max, picky, Var::verbosity(ws));
 }
-
 
 /*! Modified gamma distribution PSD, with mass content and total number
 density (Ntot) as inputs.
@@ -23399,37 +21491,25 @@ These requirements apply:
 @param[in] ga - ga (default: std::numeric_limits<Numeric>::quiet_NaN())
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdModifiedGammaMassNtot(Workspace& ws,
-const Numeric& t_min,
-const Numeric& t_max,
-const Numeric& n0=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& mu=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& la=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& ga=std::numeric_limits<Numeric>::quiet_NaN(),
-const Index& picky=0) {
-psdModifiedGammaMassNtot(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-n0,
-mu,
-la,
-ga,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdModifiedGammaMassNtot(
+    Workspace& ws, const Numeric& t_min, const Numeric& t_max,
+    const Numeric& n0 = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& mu = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& la = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& ga = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Index& picky = 0) {
+  psdModifiedGammaMassNtot(
+      Var::psd_data(ws), Var::dpsd_data_dx(ws), Var::psd_size_grid(ws),
+      Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+      Var::pnd_agenda_input_names(ws), Var::dpnd_data_dx_names(ws),
+      Var::scat_species_a(ws), Var::scat_species_b(ws), n0, mu, la, ga, t_min,
+      t_max, picky, Var::verbosity(ws));
 }
-
 
 /*! Modified gamma distribution PSD, with mass content as input.
 
@@ -23451,37 +21531,24 @@ mass content data. The dependent parameter is assumed to be lambda.
 @param[in] gamma - gamma
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdModifiedGammaMassSingleMoment(Workspace& ws,
-const Numeric& n_alpha,
-const Numeric& n_b,
-const Numeric& mu,
-const Numeric& gamma,
-const Numeric& t_min,
-const Numeric& t_max,
-const Index& picky=0) {
-psdModifiedGammaMassSingleMoment(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-n_alpha,
-n_b,
-mu,
-gamma,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdModifiedGammaMassSingleMoment(Workspace& ws, const Numeric& n_alpha,
+                                      const Numeric& n_b, const Numeric& mu,
+                                      const Numeric& gamma,
+                                      const Numeric& t_min,
+                                      const Numeric& t_max,
+                                      const Index& picky = 0) {
+  psdModifiedGammaMassSingleMoment(
+      Var::psd_data(ws), Var::dpsd_data_dx(ws), Var::psd_size_grid(ws),
+      Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+      Var::pnd_agenda_input_names(ws), Var::dpnd_data_dx_names(ws),
+      Var::scat_species_a(ws), Var::scat_species_b(ws), n_alpha, n_b, mu, gamma,
+      t_min, t_max, picky, Var::verbosity(ws));
 }
-
 
 /*! Modified gamma distribution PSD, with mass content and mean size
 (Xmean) as inputs.
@@ -23511,37 +21578,25 @@ These requirements apply to the MGD parameters:
 @param[in] ga - ga (default: std::numeric_limits<Numeric>::quiet_NaN())
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdModifiedGammaMassXmean(Workspace& ws,
-const Numeric& t_min,
-const Numeric& t_max,
-const Numeric& n0=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& mu=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& la=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& ga=std::numeric_limits<Numeric>::quiet_NaN(),
-const Index& picky=0) {
-psdModifiedGammaMassXmean(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-n0,
-mu,
-la,
-ga,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdModifiedGammaMassXmean(
+    Workspace& ws, const Numeric& t_min, const Numeric& t_max,
+    const Numeric& n0 = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& mu = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& la = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& ga = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Index& picky = 0) {
+  psdModifiedGammaMassXmean(
+      Var::psd_data(ws), Var::dpsd_data_dx(ws), Var::psd_size_grid(ws),
+      Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+      Var::pnd_agenda_input_names(ws), Var::dpnd_data_dx_names(ws),
+      Var::scat_species_a(ws), Var::scat_species_b(ws), n0, mu, la, ga, t_min,
+      t_max, picky, Var::verbosity(ws));
 }
-
 
 /*! Modified gamma distribution PSD, with mass content and median size
 (Xmedian) as inputs.
@@ -23568,37 +21623,25 @@ These requirements apply to the MGD parameters:
 @param[in] ga - ga (default: std::numeric_limits<Numeric>::quiet_NaN())
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdModifiedGammaMassXmedian(Workspace& ws,
-const Numeric& t_min,
-const Numeric& t_max,
-const Numeric& n0=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& mu=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& la=std::numeric_limits<Numeric>::quiet_NaN(),
-const Numeric& ga=std::numeric_limits<Numeric>::quiet_NaN(),
-const Index& picky=0) {
-psdModifiedGammaMassXmedian(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-n0,
-mu,
-la,
-ga,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdModifiedGammaMassXmedian(
+    Workspace& ws, const Numeric& t_min, const Numeric& t_max,
+    const Numeric& n0 = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& mu = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& la = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Numeric& ga = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Index& picky = 0) {
+  psdModifiedGammaMassXmedian(
+      Var::psd_data(ws), Var::dpsd_data_dx(ws), Var::psd_size_grid(ws),
+      Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+      Var::pnd_agenda_input_names(ws), Var::dpnd_data_dx_names(ws),
+      Var::scat_species_a(ws), Var::scat_species_b(ws), n0, mu, la, ga, t_min,
+      t_max, picky, Var::verbosity(ws));
 }
-
 
 /*! Mono-dispersive PSD, with number density given.
 
@@ -23619,32 +21662,24 @@ picky=0, or an error is thrown if picky=1.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] species_index - The index of the scattering species of concern (0-based).
+@param[in] species_index - The index of the scattering species of concern
+(0-based).
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdMonoDispersive(Workspace& ws,
-const Index& species_index,
-const Numeric& t_min,
-const Numeric& t_max,
-const Index& picky=0) {
-psdMonoDispersive(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_meta(ws),
-species_index,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdMonoDispersive(Workspace& ws, const Index& species_index,
+                       const Numeric& t_min, const Numeric& t_max,
+                       const Index& picky = 0) {
+  psdMonoDispersive(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+                    Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+                    Var::pnd_agenda_input_names(ws),
+                    Var::dpnd_data_dx_names(ws), Var::scat_meta(ws),
+                    species_index, t_min, t_max, picky, Var::verbosity(ws));
 }
-
 
 /*! Mono-dispersive PSD, with mass content given.
 
@@ -23666,32 +21701,24 @@ picky=0, or an error is thrown if picky=1.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] species_index - The index of the scattering species of concern (0-based).
+@param[in] species_index - The index of the scattering species of concern
+(0-based).
 @param[in] t_min - Low temperature limit to calculate a psd.
 @param[in] t_max - High temperature limit to calculate a psd.
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdMonoMass(Workspace& ws,
-const Index& species_index,
-const Numeric& t_min,
-const Numeric& t_max,
-const Index& picky=0) {
-psdMonoMass(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_meta(ws),
-species_index,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdMonoMass(Workspace& ws, const Index& species_index,
+                 const Numeric& t_min, const Numeric& t_max,
+                 const Index& picky = 0) {
+  psdMonoMass(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+              Var::pnd_agenda_input_t(ws), Var::pnd_agenda_input(ws),
+              Var::pnd_agenda_input_names(ws), Var::dpnd_data_dx_names(ws),
+              Var::scat_meta(ws), species_index, t_min, t_max, picky,
+              Var::verbosity(ws));
 }
-
 
 /*! Calculates *psd_data* and *dpsd_data_dx* following Seifert and Beheng (2006)
 two moment particle size distribution for cloud water, cloud ice,
@@ -23710,20 +21737,20 @@ ie. units of [kg/m3]. N_tot in terms of number density, ie. units of [1/m3] .
 Derivatives with respect to WC and N_tot are obtained analytically.
 
 Six particle size distributions for the different hydrometeors are handled,
-governed by setting of *hydrometeor_type*, where 
-    "cloud_water" selects cloud liquid water , 
-    "cloud_ice" selects cloud ice, 
-    "snow" selects snow, 
-    "rain" selects rain, 
-    "graupel" selects graupel, and 
-    "hail" selects hail, 
+governed by setting of *hydrometeor_type*, where
+    "cloud_water" selects cloud liquid water ,
+    "cloud_ice" selects cloud ice,
+    "snow" selects snow,
+    "rain" selects rain,
+    "graupel" selects graupel, and
+    "hail" selects hail,
 
 Requirements:
 
 *pnd_agenda_input_names* must include :
     ["X-mass_density", "X-number_density" ]. "X" is an arbitrary name
 The entries in  *dpnd_data_dx_names* (ie. the allowed
-independent variablea ) can be "X-mass_density" and\or 
+independent variablea ) can be "X-mass_density" and\or
 "X-number_density".
 
 The validity range of WC is not limited. Negative WC will produce
@@ -23739,29 +21766,20 @@ picky=0, or an error is thrown if picky=1.
 @param[in] hydrometeor_type - Hydrometeor type (see above description).
 @param[in] t_min - Low temperature limit to calculate a psd. (default: 0)
 @param[in] t_max - High temperature limit to calculate a psd. (default: 999)
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdSeifertBeheng06(Workspace& ws,
-const String& hydrometeor_type,
-const Numeric& t_min=0,
-const Numeric& t_max=999,
-const Index& picky=0) {
-psdSeifertBeheng06(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-hydrometeor_type,
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdSeifertBeheng06(Workspace& ws, const String& hydrometeor_type,
+                        const Numeric& t_min = 0, const Numeric& t_max = 999,
+                        const Index& picky = 0) {
+  psdSeifertBeheng06(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+                     Var::psd_size_grid(ws), Var::pnd_agenda_input_t(ws),
+                     Var::pnd_agenda_input(ws), Var::pnd_agenda_input_names(ws),
+                     Var::dpnd_data_dx_names(ws), hydrometeor_type, t_min,
+                     t_max, picky, Var::verbosity(ws));
 }
-
 
 /*! Wang et al. [2016] particle size distribution for rain.
 
@@ -23794,29 +21812,20 @@ picky=0, or an error is thrown if picky=1.
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] t_min - Low temperature limit to calculate a psd. (default: 273)
 @param[in] t_max - High temperature limit to calculate a psd. (default: 373)
-@param[in] picky - Flag whether to be strict with parametrization value checks. (default: 0)
+@param[in] picky - Flag whether to be strict with parametrization value checks.
+(default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void psdWangEtAl16(Workspace& ws,
-const Numeric& t_min=273,
-const Numeric& t_max=373,
-const Index& picky=0) {
-psdWangEtAl16(Var::psd_data(ws),
-Var::dpsd_data_dx(ws),
-Var::psd_size_grid(ws),
-Var::pnd_agenda_input_t(ws),
-Var::pnd_agenda_input(ws),
-Var::pnd_agenda_input_names(ws),
-Var::dpnd_data_dx_names(ws),
-Var::scat_species_a(ws),
-Var::scat_species_b(ws),
-t_min,
-t_max,
-picky,
-Var::verbosity(ws));
+void psdWangEtAl16(Workspace& ws, const Numeric& t_min = 273,
+                   const Numeric& t_max = 373, const Index& picky = 0) {
+  psdWangEtAl16(Var::psd_data(ws), Var::dpsd_data_dx(ws),
+                Var::psd_size_grid(ws), Var::pnd_agenda_input_t(ws),
+                Var::pnd_agenda_input(ws), Var::pnd_agenda_input_names(ws),
+                Var::dpnd_data_dx_names(ws), Var::scat_species_a(ws),
+                Var::scat_species_b(ws), t_min, t_max, picky,
+                Var::verbosity(ws));
 }
-
 
 /*! Earth reference ellipsoids.
 
@@ -23832,17 +21841,14 @@ following different models. The options are:
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] model - Model ellipsoid to use. Options listed above. (default: "Sphere")
+@param[in] model - Model ellipsoid to use. Options listed above. (default:
+"Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidEarth(Workspace& ws,
-const String& model="Sphere") {
-refellipsoidEarth(Var::refellipsoid(ws),
-model,
-Var::verbosity(ws));
+void refellipsoidEarth(Workspace& ws, const String& model = "Sphere") {
+  refellipsoidEarth(Var::refellipsoid(ws), model, Var::verbosity(ws));
 }
-
 
 /*! Io reference ellipsoids.
 
@@ -23855,17 +21861,14 @@ folowing different models. The options are:
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] model - Model ellipsoid to use. Options listed above. (default: "Sphere")
+@param[in] model - Model ellipsoid to use. Options listed above. (default:
+"Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidEuropa(Workspace& ws,
-const String& model="Sphere") {
-refellipsoidEuropa(Var::refellipsoid(ws),
-model,
-Var::verbosity(ws));
+void refellipsoidEuropa(Workspace& ws, const String& model = "Sphere") {
+  refellipsoidEuropa(Var::refellipsoid(ws), model, Var::verbosity(ws));
 }
-
 
 /*! Conversion of 3D ellipsoid to 1D curvature radius.
 
@@ -23886,15 +21889,11 @@ an approximation.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidForAzimuth(Workspace& ws,
-const Numeric& latitude,
-const Numeric& azimuth) {
-refellipsoidForAzimuth(Var::refellipsoid(ws),
-latitude,
-azimuth,
-Var::verbosity(ws));
+void refellipsoidForAzimuth(Workspace& ws, const Numeric& latitude,
+                            const Numeric& azimuth) {
+  refellipsoidForAzimuth(Var::refellipsoid(ws), latitude, azimuth,
+                         Var::verbosity(ws));
 }
-
 
 /*! Ganymede reference ellipsoids.
 
@@ -23903,17 +21902,14 @@ From Wikipedia
 @author Takayoshi Yamada
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] model - Model ellipsoid to use. Options listed above. (default: "Sphere")
+@param[in] model - Model ellipsoid to use. Options listed above. (default:
+"Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidGanymede(Workspace& ws,
-const String& model="Sphere") {
-refellipsoidGanymede(Var::refellipsoid(ws),
-model,
-Var::verbosity(ws));
+void refellipsoidGanymede(Workspace& ws, const String& model = "Sphere") {
+  refellipsoidGanymede(Var::refellipsoid(ws), model, Var::verbosity(ws));
 }
-
 
 /*! Io reference ellipsoids.
 
@@ -23926,17 +21922,14 @@ folowing different models. The options are:
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] model - Model ellipsoid to use. Options listed above. (default: "Sphere")
+@param[in] model - Model ellipsoid to use. Options listed above. (default:
+"Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidIo(Workspace& ws,
-const String& model="Sphere") {
-refellipsoidIo(Var::refellipsoid(ws),
-model,
-Var::verbosity(ws));
+void refellipsoidIo(Workspace& ws, const String& model = "Sphere") {
+  refellipsoidIo(Var::refellipsoid(ws), model, Var::verbosity(ws));
 }
-
 
 /*! Jupiter reference ellipsoids.
 
@@ -23952,17 +21945,14 @@ folowing different models. The options are:
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] model - Model ellipsoid to use. Options listed above. (default: "Sphere")
+@param[in] model - Model ellipsoid to use. Options listed above. (default:
+"Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidJupiter(Workspace& ws,
-const String& model="Sphere") {
-refellipsoidJupiter(Var::refellipsoid(ws),
-model,
-Var::verbosity(ws));
+void refellipsoidJupiter(Workspace& ws, const String& model = "Sphere") {
+  refellipsoidJupiter(Var::refellipsoid(ws), model, Var::verbosity(ws));
 }
-
 
 /*! Mars reference ellipsoids.
 
@@ -23978,17 +21968,14 @@ folowing different models. The options are:
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] model - Model ellipsoid to use. Options listed above. (default: "Sphere")
+@param[in] model - Model ellipsoid to use. Options listed above. (default:
+"Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidMars(Workspace& ws,
-const String& model="Sphere") {
-refellipsoidMars(Var::refellipsoid(ws),
-model,
-Var::verbosity(ws));
+void refellipsoidMars(Workspace& ws, const String& model = "Sphere") {
+  refellipsoidMars(Var::refellipsoid(ws), model, Var::verbosity(ws));
 }
-
 
 /*! Moon reference ellipsoids.
 
@@ -24005,17 +21992,14 @@ folowing different models. The options are:
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] model - Model ellipsoid to use. Options listed above. (default: "Sphere")
+@param[in] model - Model ellipsoid to use. Options listed above. (default:
+"Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidMoon(Workspace& ws,
-const String& model="Sphere") {
-refellipsoidMoon(Var::refellipsoid(ws),
-model,
-Var::verbosity(ws));
+void refellipsoidMoon(Workspace& ws, const String& model = "Sphere") {
+  refellipsoidMoon(Var::refellipsoid(ws), model, Var::verbosity(ws));
 }
-
 
 /*! Conversion of 3D ellipsoid to 2D orbit track geometry.
 
@@ -24033,13 +22017,9 @@ for polar sun-synchronous orbits.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidOrbitPlane(Workspace& ws,
-const Numeric& orbitinc) {
-refellipsoidOrbitPlane(Var::refellipsoid(ws),
-orbitinc,
-Var::verbosity(ws));
+void refellipsoidOrbitPlane(Workspace& ws, const Numeric& orbitinc) {
+  refellipsoidOrbitPlane(Var::refellipsoid(ws), orbitinc, Var::verbosity(ws));
 }
-
 
 /*! Manual setting of the reference ellipsoid.
 
@@ -24055,15 +22035,9 @@ arguments correspond directly to first and second element of
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidSet(Workspace& ws,
-const Numeric& re,
-const Numeric& e=0) {
-refellipsoidSet(Var::refellipsoid(ws),
-re,
-e,
-Var::verbosity(ws));
+void refellipsoidSet(Workspace& ws, const Numeric& re, const Numeric& e = 0) {
+  refellipsoidSet(Var::refellipsoid(ws), re, e, Var::verbosity(ws));
 }
-
 
 /*! Venus reference ellipsoids.
 
@@ -24079,17 +22053,14 @@ eccentricity and no further models should be required.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] model - Model ellipsoid to use. Options listed above. (default: "Sphere")
+@param[in] model - Model ellipsoid to use. Options listed above. (default:
+"Sphere")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refellipsoidVenus(Workspace& ws,
-const String& model="Sphere") {
-refellipsoidVenus(Var::refellipsoid(ws),
-model,
-Var::verbosity(ws));
+void refellipsoidVenus(Workspace& ws, const String& model = "Sphere") {
+  refellipsoidVenus(Var::refellipsoid(ws), model, Var::verbosity(ws));
 }
-
 
 /*! Microwave refractive index due to free electrons.
 
@@ -24115,21 +22086,18 @@ with care.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] demand_vmr_value - Flag to control if it is demanded that free electrons are in *abs_species*. Default is that this is demanded. (default: 1)
+@param[in] demand_vmr_value - Flag to control if it is demanded that free
+electrons are in *abs_species*. Default is that this is demanded. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void refr_index_airFreeElectrons(Workspace& ws,
-const Index& demand_vmr_value=1) {
-refr_index_airFreeElectrons(Var::refr_index_air(ws),
-Var::refr_index_air_group(ws),
-Var::f_grid(ws),
-Var::abs_species(ws),
-Var::rtp_vmr(ws),
-demand_vmr_value,
-Var::verbosity(ws));
+                                 const Index& demand_vmr_value = 1) {
+  refr_index_airFreeElectrons(Var::refr_index_air(ws),
+                              Var::refr_index_air_group(ws), Var::f_grid(ws),
+                              Var::abs_species(ws), Var::rtp_vmr(ws),
+                              demand_vmr_value, Var::verbosity(ws));
 }
-
 
 /*! Calculates the IR refractive index due to gases in the
 Earth's atmosphere.
@@ -24151,13 +22119,10 @@ The expression used is non-dispersive. Hence, *refr_index_air* and
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void refr_index_airInfraredEarth(Workspace& ws) {
-refr_index_airInfraredEarth(Var::refr_index_air(ws),
-Var::refr_index_air_group(ws),
-Var::rtp_pressure(ws),
-Var::rtp_temperature(ws),
-Var::verbosity(ws));
+  refr_index_airInfraredEarth(
+      Var::refr_index_air(ws), Var::refr_index_air_group(ws),
+      Var::rtp_pressure(ws), Var::rtp_temperature(ws), Var::verbosity(ws));
 }
-
 
 /*! Microwave refractive index in Earth's atmosphere.
 
@@ -24195,22 +22160,14 @@ and k1, k2 and k3 must be adjusted accordingly.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void refr_index_airMicrowavesEarth(Workspace& ws,
-const Numeric& k1=77.6e-8,
-const Numeric& k2=70.4e-8,
-const Numeric& k3=3.739e-3) {
-refr_index_airMicrowavesEarth(Var::refr_index_air(ws),
-Var::refr_index_air_group(ws),
-Var::rtp_pressure(ws),
-Var::rtp_temperature(ws),
-Var::rtp_vmr(ws),
-Var::abs_species(ws),
-k1,
-k2,
-k3,
-Var::verbosity(ws));
+void refr_index_airMicrowavesEarth(Workspace& ws, const Numeric& k1 = 77.6e-8,
+                                   const Numeric& k2 = 70.4e-8,
+                                   const Numeric& k3 = 3.739e-3) {
+  refr_index_airMicrowavesEarth(
+      Var::refr_index_air(ws), Var::refr_index_air_group(ws),
+      Var::rtp_pressure(ws), Var::rtp_temperature(ws), Var::rtp_vmr(ws),
+      Var::abs_species(ws), k1, k2, k3, Var::verbosity(ws));
 }
-
 
 /*! Microwave refractive index due to gases in planetary atmospheres.
 
@@ -24239,27 +22196,24 @@ can be taken into account.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void refr_index_airMicrowavesGeneral(Workspace& ws) {
-refr_index_airMicrowavesGeneral(Var::refr_index_air(ws),
-Var::refr_index_air_group(ws),
-Var::rtp_pressure(ws),
-Var::rtp_temperature(ws),
-Var::rtp_vmr(ws),
-Var::abs_species(ws),
-Var::verbosity(ws));
+  refr_index_airMicrowavesGeneral(
+      Var::refr_index_air(ws), Var::refr_index_air_group(ws),
+      Var::rtp_pressure(ws), Var::rtp_temperature(ws), Var::rtp_vmr(ws),
+      Var::abs_species(ws), Var::verbosity(ws));
 }
-
 
 /*! Adds an absorption species to the retrieval quantities.
 
 Similar to *jacobianAddAbsSpecies* but also sets the corresponding block in
 *covmat_sx* to the matrices provided in *covmat_block* and *covmat_inv_block*.
-The dimensions of *covmat_block* are required to agree with the dimensions of the
-retrieval grid.
+The dimensions of *covmat_block* are required to agree with the dimensions of
+the retrieval grid.
 
 *covmat_inv_block* must be either empty or the same dimension as *covmat_block*.
-If provided, this matrix will be used as the inverse for the covariance matrix block
-and numerical inversion of this block is thus avoided. Note, however, that this is
-only effective if this block is uncorrelated with any other retrieval quantity.
+If provided, this matrix will be used as the inverse for the covariance matrix
+block and numerical inversion of this block is thus avoided. Note, however, that
+this is only effective if this block is uncorrelated with any other retrieval
+quantity.
 
 For number and order of elements added to *x*, see *jacobianAddAbsSpecies*.
 
@@ -24271,36 +22225,22 @@ For number and order of elements added to *x*, see *jacobianAddAbsSpecies*.
 @param[in] g3 - Longitude retreival grid.
 @param[in] species - The species tag of the retrieval quantity.
 @param[in] unit - Retrieval unit. See above. (default: "rel")
-@param[in] for_species_tag - Index-bool for acting on species tags or species. (default: 1)
+@param[in] for_species_tag - Index-bool for acting on species tags or species.
+(default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddAbsSpecies(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& species,
-const String& unit="rel",
-const Index& for_species_tag=1) {
-retrievalAddAbsSpecies(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-species,
-unit,
-for_species_tag,
-Var::verbosity(ws));
+void retrievalAddAbsSpecies(Workspace& ws, const Vector& g1, const Vector& g2,
+                            const Vector& g3, const String& species,
+                            const String& unit = "rel",
+                            const Index& for_species_tag = 1) {
+  retrievalAddAbsSpecies(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                         Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                         Var::covmat_block(ws), Var::covmat_inv_block(ws),
+                         Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                         g1, g2, g3, species, unit, for_species_tag,
+                         Var::verbosity(ws));
 }
-
 
 /*! Similar to *jacobianAddBasicCatalogParameter* but also adds a corresponding
 block to *covmat_sx* with the given *var* as variance value.
@@ -24318,19 +22258,14 @@ see *jacobianAddBasicCatalogParameter*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void retrievalAddCatalogParameter(Workspace& ws,
-const QuantumIdentifier& catalog_identity,
-const String& catalog_parameter,
-const Numeric& var) {
-retrievalAddCatalogParameter(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-catalog_identity,
-catalog_parameter,
-var,
-Var::verbosity(ws));
+                                  const QuantumIdentifier& catalog_identity,
+                                  const String& catalog_parameter,
+                                  const Numeric& var) {
+  retrievalAddCatalogParameter(ws, Var::covmat_sx(ws),
+                               Var::jacobian_quantities(ws),
+                               Var::jacobian_agenda(ws), catalog_identity,
+                               catalog_parameter, var, Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddBasicCatalogParameters* but also adds a new
 block to *covmat_sx* using the matrices in *covmat_block* and
@@ -24346,24 +22281,20 @@ see *jacobianAddBasicCatalogParameters*.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] catalog_identities - The catalog line matching informations.
-@param[in] catalog_parameters - The catalog parameters of the retrieval quantity.
+@param[in] catalog_parameters - The catalog parameters of the retrieval
+quantity.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddCatalogParameters(Workspace& ws,
-const ArrayOfQuantumIdentifier& catalog_identities,
-const ArrayOfString& catalog_parameters) {
-retrievalAddCatalogParameters(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-catalog_identities,
-catalog_parameters,
-Var::verbosity(ws));
+void retrievalAddCatalogParameters(
+    Workspace& ws, const ArrayOfQuantumIdentifier& catalog_identities,
+    const ArrayOfString& catalog_parameters) {
+  retrievalAddCatalogParameters(ws, Var::covmat_sx(ws),
+                                Var::jacobian_quantities(ws),
+                                Var::jacobian_agenda(ws), Var::covmat_block(ws),
+                                Var::covmat_inv_block(ws), catalog_identities,
+                                catalog_parameters, Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddFreqShift* but also adds the correlation block
 contained in *covmat_block* and *covmat_inv_block* to *covmat_sx*.
@@ -24377,19 +22308,12 @@ For number and order of elements added to *x*, see *jacobianAddFreqShift*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddFreqShift(Workspace& ws,
-const Numeric& df=100e3) {
-retrievalAddFreqShift(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::f_grid(ws),
-df,
-Var::verbosity(ws));
+void retrievalAddFreqShift(Workspace& ws, const Numeric& df = 100e3) {
+  retrievalAddFreqShift(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                        Var::jacobian_agenda(ws), Var::covmat_block(ws),
+                        Var::covmat_inv_block(ws), Var::f_grid(ws), df,
+                        Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddFreqShift* but also adds the correlation block
 contained in *covmat_block* and *covmat_inv_block* to *covmat_sx*.
@@ -24403,19 +22327,12 @@ For number and order of elements added to *x*, see *jacobianAddFreqStretch*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddFreqStretch(Workspace& ws,
-const Numeric& df=100e3) {
-retrievalAddFreqStretch(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::f_grid(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-df,
-Var::verbosity(ws));
+void retrievalAddFreqStretch(Workspace& ws, const Numeric& df = 100e3) {
+  retrievalAddFreqStretch(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                          Var::jacobian_agenda(ws), Var::f_grid(ws),
+                          Var::covmat_block(ws), Var::covmat_inv_block(ws), df,
+                          Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddMagField* but also adds a new block to *covmat_sx*
 using the matrices in *covmat_block* and *covmat_inv_block*.
@@ -24436,30 +22353,15 @@ For number and order of elements added to *x*, see *jacobianAddMagField*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddMagField(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& component="v",
-const Numeric& dB=1.0e-7) {
-retrievalAddMagField(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-component,
-dB,
-Var::verbosity(ws));
+void retrievalAddMagField(Workspace& ws, const Vector& g1, const Vector& g2,
+                          const Vector& g3, const String& component = "v",
+                          const Numeric& dB = 1.0e-7) {
+  retrievalAddMagField(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                       Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                       Var::covmat_block(ws), Var::covmat_inv_block(ws),
+                       Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                       g1, g2, g3, component, dB, Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddPointingZa* but also adds a new block to *covmat_sx*
 using the matrices in *covmat_block* and *covmat_inv_block*.
@@ -24472,30 +22374,23 @@ For number and order of elements added to *x*, see *jacobianAddPointingZa*.
 @author Simon Pfreundschuh
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] poly_order - Order of polynomial to describe the time variation of pointing off-sets. (default: 0)
+@param[in] poly_order - Order of polynomial to describe the time variation of
+pointing off-sets. (default: 0)
 @param[in] calcmode - Calculation method. See above (default: "recalc")
-@param[in] dza - Size of perturbation to apply (when applicable). (default: 0.01)
+@param[in] dza - Size of perturbation to apply (when applicable). (default:
+0.01)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddPointingZa(Workspace& ws,
-const Index& poly_order=0,
-const String& calcmode="recalc",
-const Numeric& dza=0.01) {
-retrievalAddPointingZa(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::sensor_pos(ws),
-Var::sensor_time(ws),
-poly_order,
-calcmode,
-dza,
-Var::verbosity(ws));
+void retrievalAddPointingZa(Workspace& ws, const Index& poly_order = 0,
+                            const String& calcmode = "recalc",
+                            const Numeric& dza = 0.01) {
+  retrievalAddPointingZa(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                         Var::jacobian_agenda(ws), Var::covmat_block(ws),
+                         Var::covmat_inv_block(ws), Var::sensor_pos(ws),
+                         Var::sensor_time(ws), poly_order, calcmode, dza,
+                         Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddPolyfit* but also adds a new block to *covmat_sx*
 using the matrices in *covmat_block* and *covmat_inv_block*.
@@ -24509,33 +22404,27 @@ For number and order of elements added to *x*, see *jacobianAddPolyfit*.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] poly_order - Polynomial order to use for the fit.
-@param[in] no_pol_variation - Set to 1 if the baseline off-set is the same for all Stokes components. (default: 0)
-@param[in] no_los_variation - Set to 1 if the baseline off-set is the same for all line-of-sights (inside each measurement block). (default: 0)
-@param[in] no_mblock_variation - Set to 1 if the baseline off-set is the same for all measurement blocks. (default: 0)
+@param[in] no_pol_variation - Set to 1 if the baseline off-set is the same for
+all Stokes components. (default: 0)
+@param[in] no_los_variation - Set to 1 if the baseline off-set is the same for
+all line-of-sights (inside each measurement block). (default: 0)
+@param[in] no_mblock_variation - Set to 1 if the baseline off-set is the same
+for all measurement blocks. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddPolyfit(Workspace& ws,
-const Index& poly_order,
-const Index& no_pol_variation=0,
-const Index& no_los_variation=0,
-const Index& no_mblock_variation=0) {
-retrievalAddPolyfit(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::sensor_pos(ws),
-poly_order,
-no_pol_variation,
-no_los_variation,
-no_mblock_variation,
-Var::verbosity(ws));
+void retrievalAddPolyfit(Workspace& ws, const Index& poly_order,
+                         const Index& no_pol_variation = 0,
+                         const Index& no_los_variation = 0,
+                         const Index& no_mblock_variation = 0) {
+  retrievalAddPolyfit(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                      Var::jacobian_agenda(ws), Var::covmat_block(ws),
+                      Var::covmat_inv_block(ws),
+                      Var::sensor_response_pol_grid(ws),
+                      Var::sensor_response_dlos_grid(ws), Var::sensor_pos(ws),
+                      poly_order, no_pol_variation, no_los_variation,
+                      no_mblock_variation, Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddPolyfit* but also adds a new block to *covmat_sx*
 using the matrices in *covmat_block* and *covmat_inv_block*.
@@ -24551,35 +22440,21 @@ For number and order of elements added to *x*, see *jacobianAddScatSpecies*.
 @param[in] g1 - Pressure retrieval grid.
 @param[in] g2 - Latitude retrieval grid.
 @param[in] g3 - Longitude retreival grid.
-@param[in] species - Name of scattering species, must match one element in *scat_species*.
+@param[in] species - Name of scattering species, must match one element in
+*scat_species*.
 @param[in] quantity - Retrieval quantity, e.g. "IWC".
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddScatSpecies(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& species,
-const String& quantity) {
-retrievalAddScatSpecies(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-species,
-quantity,
-Var::verbosity(ws));
+void retrievalAddScatSpecies(Workspace& ws, const Vector& g1, const Vector& g2,
+                             const Vector& g3, const String& species,
+                             const String& quantity) {
+  retrievalAddScatSpecies(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                          Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                          Var::covmat_block(ws), Var::covmat_inv_block(ws),
+                          Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                          g1, g2, g3, species, quantity, Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddSinefit* but also adds a new block to *covmat_sx*
 using the matrices in *covmat_block* and *covmat_inv_block*.
@@ -24593,33 +22468,27 @@ For number and order of elements added to *x*, see *jacobianAddSinefit*.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] period_lengths - Period lengths of the fit.
-@param[in] no_pol_variation - Set to 1 if the baseline off-set is the same for all Stokes components. (default: 0)
-@param[in] no_los_variation - Set to 1 if the baseline off-set is the same for all line-of-sights (inside each measurement block). (default: 0)
-@param[in] no_mblock_variation - Set to 1 if the baseline off-set is the same for all measurement blocks. (default: 0)
+@param[in] no_pol_variation - Set to 1 if the baseline off-set is the same for
+all Stokes components. (default: 0)
+@param[in] no_los_variation - Set to 1 if the baseline off-set is the same for
+all line-of-sights (inside each measurement block). (default: 0)
+@param[in] no_mblock_variation - Set to 1 if the baseline off-set is the same
+for all measurement blocks. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddSinefit(Workspace& ws,
-const Vector& period_lengths,
-const Index& no_pol_variation=0,
-const Index& no_los_variation=0,
-const Index& no_mblock_variation=0) {
-retrievalAddSinefit(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::sensor_pos(ws),
-period_lengths,
-no_pol_variation,
-no_los_variation,
-no_mblock_variation,
-Var::verbosity(ws));
+void retrievalAddSinefit(Workspace& ws, const Vector& period_lengths,
+                         const Index& no_pol_variation = 0,
+                         const Index& no_los_variation = 0,
+                         const Index& no_mblock_variation = 0) {
+  retrievalAddSinefit(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                      Var::jacobian_agenda(ws), Var::covmat_block(ws),
+                      Var::covmat_inv_block(ws),
+                      Var::sensor_response_pol_grid(ws),
+                      Var::sensor_response_dlos_grid(ws), Var::sensor_pos(ws),
+                      period_lengths, no_pol_variation, no_los_variation,
+                      no_mblock_variation, Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddSpecialSpecies* but also adds a new block to *covmat_sx*
 using the matrices in *covmat_block* and *covmat_inv_block*.
@@ -24639,31 +22508,18 @@ For number and order of elements added to *x*, see *jacobianAddSpecialSpecies*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddSpecialSpecies(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& species) {
-retrievalAddSpecialSpecies(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-species,
-Var::verbosity(ws));
+void retrievalAddSpecialSpecies(Workspace& ws, const Vector& g1,
+                                const Vector& g2, const Vector& g3,
+                                const String& species) {
+  retrievalAddSpecialSpecies(
+      ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+      Var::jacobian_agenda(ws), Var::atmosphere_dim(ws), Var::covmat_block(ws),
+      Var::covmat_inv_block(ws), Var::p_grid(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), g1, g2, g3, species, Var::verbosity(ws));
 }
 
-
-/*! Same as *jacobianAddSurfaceQuantity* but also adds a new block to *covmat_sx*
-using the matrices in *covmat_block* and *covmat_inv_block*.
+/*! Same as *jacobianAddSurfaceQuantity* but also adds a new block to
+*covmat_sx* using the matrices in *covmat_block* and *covmat_inv_block*.
 
 If *covmat_inv_block* is non-empty, it is used as inverse for the added block
 which avoids its numerical computation.
@@ -24679,25 +22535,14 @@ For number and order of elements added to *x*, see *jacobianAddSurfaceQuantity*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddSurfaceQuantity(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const String& quantity) {
-retrievalAddSurfaceQuantity(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-quantity,
-Var::verbosity(ws));
+void retrievalAddSurfaceQuantity(Workspace& ws, const Vector& g1,
+                                 const Vector& g2, const String& quantity) {
+  retrievalAddSurfaceQuantity(
+      ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+      Var::jacobian_agenda(ws), Var::covmat_block(ws),
+      Var::covmat_inv_block(ws), Var::atmosphere_dim(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), g1, g2, quantity, Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddTemperature* but also adds a new block to *covmat_sx*
 using the matrices in *covmat_block* and *covmat_inv_block*.
@@ -24717,28 +22562,14 @@ For number and order of elements added to *x*, see *jacobianAddTemperature*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddTemperature(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& hse="on") {
-retrievalAddTemperature(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-hse,
-Var::verbosity(ws));
+void retrievalAddTemperature(Workspace& ws, const Vector& g1, const Vector& g2,
+                             const Vector& g3, const String& hse = "on") {
+  retrievalAddTemperature(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                          Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                          Var::covmat_block(ws), Var::covmat_inv_block(ws),
+                          Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                          g1, g2, g3, hse, Var::verbosity(ws));
 }
-
 
 /*! Same as *jacobianAddWind* but also adds a new block to *covmat_sx*
 using the matrices in *covmat_block* and *covmat_inv_block*.
@@ -24759,30 +22590,15 @@ For number and order of elements added to *x*, see *jacobianAddWind*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalAddWind(Workspace& ws,
-const Vector& g1,
-const Vector& g2,
-const Vector& g3,
-const String& component="v",
-const Numeric& dfrequency=0.1) {
-retrievalAddWind(ws,
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-Var::atmosphere_dim(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-g1,
-g2,
-g3,
-component,
-dfrequency,
-Var::verbosity(ws));
+void retrievalAddWind(Workspace& ws, const Vector& g1, const Vector& g2,
+                      const Vector& g3, const String& component = "v",
+                      const Numeric& dfrequency = 0.1) {
+  retrievalAddWind(ws, Var::covmat_sx(ws), Var::jacobian_quantities(ws),
+                   Var::jacobian_agenda(ws), Var::atmosphere_dim(ws),
+                   Var::covmat_block(ws), Var::covmat_inv_block(ws),
+                   Var::p_grid(ws), Var::lat_grid(ws), Var::lon_grid(ws), g1,
+                   g2, g3, component, dfrequency, Var::verbosity(ws));
 }
-
 
 /*! Closes the definition of retrieval quantities and correlations and
 prepares related WSVs for the retrieval.
@@ -24797,15 +22613,10 @@ are consistent with the Jacobian.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void retrievalDefClose(Workspace& ws) {
-retrievalDefClose(ws,
-Var::jacobian_do(ws),
-Var::jacobian_agenda(ws),
-Var::retrieval_checked(ws),
-Var::covmat_sx(ws),
-Var::jacobian_quantities(ws),
-Var::verbosity(ws));
+  retrievalDefClose(ws, Var::jacobian_do(ws), Var::jacobian_agenda(ws),
+                    Var::retrieval_checked(ws), Var::covmat_sx(ws),
+                    Var::jacobian_quantities(ws), Var::verbosity(ws));
 }
-
 
 /*! Begin retrieval definition section.
 
@@ -24819,23 +22630,18 @@ otherwise the quantities will be discarded.
 @author Simon Pfreundschuh
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] initialize_jacobian - Flag whether or not to (re)initialize Jacobian-related
-quantities. Set to 0 if Jacobian is already defined. (default: 1)
+@param[in] initialize_jacobian - Flag whether or not to (re)initialize
+Jacobian-related quantities. Set to 0 if Jacobian is already defined. (default:
+1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void retrievalDefInit(Workspace& ws,
-const Index& initialize_jacobian=1) {
-retrievalDefInit(Var::covmat_se(ws),
-Var::covmat_sx(ws),
-Var::covmat_block(ws),
-Var::covmat_inv_block(ws),
-Var::jacobian_quantities(ws),
-Var::jacobian_agenda(ws),
-initialize_jacobian,
-Var::verbosity(ws));
+void retrievalDefInit(Workspace& ws, const Index& initialize_jacobian = 1) {
+  retrievalDefInit(Var::covmat_se(ws), Var::covmat_sx(ws),
+                   Var::covmat_block(ws), Var::covmat_inv_block(ws),
+                   Var::jacobian_quantities(ws), Var::jacobian_agenda(ws),
+                   initialize_jacobian, Var::verbosity(ws));
 }
-
 
 /*! Extract retrieval error from covariance matrices.
 
@@ -24843,7 +22649,7 @@ Extracts the error estimates for the retrieved quantities from the covariance
 matrices for the error due to measurement noise *covmat_so* and the error due
 to limited resolution of the observation system *covmat_ss* and stores them in
 the vectors *retrieval_eo* and *retrieval_ss*, respectively.
-To etract these errors, first the convariance matrices of which the errors 
+To etract these errors, first the convariance matrices of which the errors
 should be extracted have to be computed using the WSMs *covmat_soCalc*
 and *covmat_ssCalc* or set to be empty in order to be ignored. Note, however,
 that this will also set the corresponding error vector to be empty.
@@ -24855,13 +22661,10 @@ that this will also set the corresponding error vector to be empty.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void retrievalErrorsExtract(Workspace& ws) {
-retrievalErrorsExtract(Var::retrieval_eo(ws),
-Var::retrieval_ss(ws),
-Var::covmat_so(ws),
-Var::covmat_ss(ws),
-Var::verbosity(ws));
+  retrievalErrorsExtract(Var::retrieval_eo(ws), Var::retrieval_ss(ws),
+                         Var::covmat_so(ws), Var::covmat_ss(ws),
+                         Var::verbosity(ws));
 }
-
 
 /*! The geometric line-of-sight between two points.
 
@@ -24879,16 +22682,11 @@ transmitter, and *rte_pos* to the receiver/sensor.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void rte_losGeometricFromRtePosToRtePos2(Workspace& ws) {
-rte_losGeometricFromRtePosToRtePos2(Var::rte_los(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::refellipsoid(ws),
-Var::rte_pos(ws),
-Var::rte_pos2(ws),
-Var::verbosity(ws));
+  rte_losGeometricFromRtePosToRtePos2(Var::rte_los(ws), Var::atmosphere_dim(ws),
+                                      Var::lat_grid(ws), Var::lon_grid(ws),
+                                      Var::refellipsoid(ws), Var::rte_pos(ws),
+                                      Var::rte_pos2(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets *rte_los* to the given angles.
 
@@ -24902,20 +22700,14 @@ The azimuth angle is ignored for 1D and 2D.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void rte_losSet(Workspace& ws,
-const Numeric& za,
-const Numeric& aa) {
-rte_losSet(Var::rte_los(ws),
-Var::atmosphere_dim(ws),
-za,
-aa,
-Var::verbosity(ws));
+void rte_losSet(Workspace& ws, const Numeric& za, const Numeric& aa) {
+  rte_losSet(Var::rte_los(ws), Var::atmosphere_dim(ws), za, aa,
+             Var::verbosity(ws));
 }
-
 
 /*! Sets *rte_pos* to the given co-ordinates.
 
-The longitude is ignored for 1D and 2D, and the latitude is also 
+The longitude is ignored for 1D and 2D, and the latitude is also
 ignored for 1D.
 
 @author Patrick Eriksson
@@ -24927,18 +22719,11 @@ ignored for 1D.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void rte_posSet(Workspace& ws,
-const Numeric& z,
-const Numeric& lat,
-const Numeric& lon) {
-rte_posSet(Var::rte_pos(ws),
-Var::atmosphere_dim(ws),
-z,
-lat,
-lon,
-Var::verbosity(ws));
+void rte_posSet(Workspace& ws, const Numeric& z, const Numeric& lat,
+                const Numeric& lon) {
+  rte_posSet(Var::rte_pos(ws), Var::atmosphere_dim(ws), z, lat, lon,
+             Var::verbosity(ws));
 }
-
 
 /*! Sets *rte_pos* and *rte_los* to values for last point in *ppath*.
 
@@ -24953,13 +22738,10 @@ surface.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void rte_pos_losMoveToStartOfPpath(Workspace& ws) {
-rte_pos_losMoveToStartOfPpath(Var::rte_pos(ws),
-Var::rte_los(ws),
-Var::atmosphere_dim(ws),
-Var::ppath(ws),
-Var::verbosity(ws));
+  rte_pos_losMoveToStartOfPpath(Var::rte_pos(ws), Var::rte_los(ws),
+                                Var::atmosphere_dim(ws), Var::ppath(ws),
+                                Var::verbosity(ws));
 }
-
 
 /*! Sets NLTE values manually
 
@@ -24972,15 +22754,10 @@ Touch
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void rtp_nlteFromRaw(Workspace& ws,
-const Vector& data) {
-rtp_nlteFromRaw(Var::rtp_nlte(ws),
-Var::nlte_level_identifiers(ws),
-Var::nlte_vibrational_energies(ws),
-data,
-Var::verbosity(ws));
+void rtp_nlteFromRaw(Workspace& ws, const Vector& data) {
+  rtp_nlteFromRaw(Var::rtp_nlte(ws), Var::nlte_level_identifiers(ws),
+                  Var::nlte_vibrational_energies(ws), data, Var::verbosity(ws));
 }
-
 
 /*! Prepares *scat_data* for the scattering solver.
 
@@ -24995,15 +22772,10 @@ the actual WSV *f_grid* or a single-element Vector.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void scat_dataCalc(Workspace& ws,
-const Index& interp_order=1) {
-scat_dataCalc(Var::scat_data(ws),
-Var::scat_data_raw(ws),
-Var::f_grid(ws),
-interp_order,
-Var::verbosity(ws));
+void scat_dataCalc(Workspace& ws, const Index& interp_order = 1) {
+  scat_dataCalc(Var::scat_data(ws), Var::scat_data_raw(ws), Var::f_grid(ws),
+                interp_order, Var::verbosity(ws));
 }
-
 
 /*! Method for checking the validity and consistency of the single
 scattering properties in *scat_data*.
@@ -25028,20 +22800,18 @@ The check is skipped if *check_type* is 'sane'.
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] check_type - The level of checks to apply on scat_data ('sane' or 'all'; see above). (default: "all")
-@param[in] sca_mat_threshold - Threshold for allowed albedo deviation (see above). (default: 5e-2)
+@param[in] check_type - The level of checks to apply on scat_data ('sane' or
+'all'; see above). (default: "all")
+@param[in] sca_mat_threshold - Threshold for allowed albedo deviation (see
+above). (default: 5e-2)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void scat_dataCheck(Workspace& ws,
-const String& check_type="all",
-const Numeric& sca_mat_threshold=5e-2) {
-scat_dataCheck(Var::scat_data(ws),
-check_type,
-sca_mat_threshold,
-Var::verbosity(ws));
+void scat_dataCheck(Workspace& ws, const String& check_type = "all",
+                    const Numeric& sca_mat_threshold = 5e-2) {
+  scat_dataCheck(Var::scat_data(ws), check_type, sca_mat_threshold,
+                 Var::verbosity(ws));
 }
-
 
 /*! Reduces temperature dimension of single scattering to a single entry.
 
@@ -25053,29 +22823,24 @@ the actual WSV *f_grid* or a single-element Vector.
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] scat_index - Apply on *scat_data* from scattering species of this index (0-based).
+@param[in] scat_index - Apply on *scat_data* from scattering species of this
+index (0-based).
 @param[in] temperature - Temperature to interpolate *scat_data* to.
 @param[in] interp_order - Interpolation order. (default: 1)
-@param[in] phamat_only - Flag whether to apply temperture reduction on phase matrix data only (1) or on all single scattering properties (0). (default: 1)
-@param[in] sca_mat_threshold - Threshold for allowed albedo deviation. (default: 5e-2)
+@param[in] phamat_only - Flag whether to apply temperture reduction on phase
+matrix data only (1) or on all single scattering properties (0). (default: 1)
+@param[in] sca_mat_threshold - Threshold for allowed albedo deviation. (default:
+5e-2)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void scat_dataReduceT(Workspace& ws,
-const Index& scat_index,
-const Numeric& temperature,
-const Index& interp_order=1,
-const Index& phamat_only=1,
-const Numeric& sca_mat_threshold=5e-2) {
-scat_dataReduceT(Var::scat_data(ws),
-scat_index,
-temperature,
-interp_order,
-phamat_only,
-sca_mat_threshold,
-Var::verbosity(ws));
+void scat_dataReduceT(Workspace& ws, const Index& scat_index,
+                      const Numeric& temperature, const Index& interp_order = 1,
+                      const Index& phamat_only = 1,
+                      const Numeric& sca_mat_threshold = 5e-2) {
+  scat_dataReduceT(Var::scat_data(ws), scat_index, temperature, interp_order,
+                   phamat_only, sca_mat_threshold, Var::verbosity(ws));
 }
-
 
 /*! Checks dimensions, grids and single scattering properties of all
 scattering elements in *scat_data*.
@@ -25107,25 +22872,22 @@ of data before, e.g. in a separate ARTS run.
 @author Jana Mendrok
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] dfrel_threshold - Maximum relative frequency deviation between (single entry) scattering element f_grid values and the RT calculation's *f_grid*. (default: 0.1)
+@param[in] dfrel_threshold - Maximum relative frequency deviation between
+(single entry) scattering element f_grid values and the RT calculation's
+*f_grid*. (default: 0.1)
 @param[in] check_level - See *check_level* in *scat_dataCheck*. (default: "all")
-@param[in] sca_mat_threshold - See *sca_mat_threshold* in *scat_dataCheck*. (default: 5e-2)
+@param[in] sca_mat_threshold - See *sca_mat_threshold* in *scat_dataCheck*.
+(default: 5e-2)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void scat_data_checkedCalc(Workspace& ws,
-const Numeric& dfrel_threshold=0.1,
-const String& check_level="all",
-const Numeric& sca_mat_threshold=5e-2) {
-scat_data_checkedCalc(Var::scat_data_checked(ws),
-Var::scat_data(ws),
-Var::f_grid(ws),
-dfrel_threshold,
-check_level,
-sca_mat_threshold,
-Var::verbosity(ws));
+void scat_data_checkedCalc(Workspace& ws, const Numeric& dfrel_threshold = 0.1,
+                           const String& check_level = "all",
+                           const Numeric& sca_mat_threshold = 5e-2) {
+  scat_data_checkedCalc(Var::scat_data_checked(ws), Var::scat_data(ws),
+                        Var::f_grid(ws), dfrel_threshold, check_level,
+                        sca_mat_threshold, Var::verbosity(ws));
 }
-
 
 /*! Interpolates *scat_data* by frequency to give *scat_data_mono*.
 
@@ -25136,13 +22898,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void scat_data_monoCalc(Workspace& ws) {
-scat_data_monoCalc(Var::scat_data_mono(ws),
-Var::scat_data(ws),
-Var::f_grid(ws),
-Var::f_index(ws),
-Var::verbosity(ws));
+  scat_data_monoCalc(Var::scat_data_mono(ws), Var::scat_data(ws),
+                     Var::f_grid(ws), Var::f_index(ws), Var::verbosity(ws));
 }
-
 
 /*! Extracts data at *f_index* from *scat_data* to give *scat_data_mono*.
 
@@ -25153,12 +22911,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void scat_data_monoExtract(Workspace& ws) {
-scat_data_monoExtract(Var::scat_data_mono(ws),
-Var::scat_data(ws),
-Var::f_index(ws),
-Var::verbosity(ws));
+  scat_data_monoExtract(Var::scat_data_mono(ws), Var::scat_data(ws),
+                        Var::f_index(ws), Var::verbosity(ws));
 }
-
 
 /*! A basic interface to Mishchenko's T-matrix code linked to ARTS.
 
@@ -25205,57 +22960,45 @@ Regarding *ndgs*, we refer to the this comment from the documentation:
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] shape - Particle shape. Options listed above.
-@param[in] diameter_volume_equ - Particle volume equivalent diameter [m]. See defintion above.
+@param[in] diameter_volume_equ - Particle volume equivalent diameter [m]. See
+defintion above.
 @param[in] aspect_ratio - Particle aspect ratio.
-@param[in] mass - Particle mass. This information is just included in the meta data, and does not affect the T-matrix calculations. (default: std::numeric_limits<Numeric>::quiet_NaN())
+@param[in] mass - Particle mass. This information is just included in the meta
+data, and does not affect the T-matrix calculations. (default:
+std::numeric_limits<Numeric>::quiet_NaN())
 @param[in] ptype - Particle type/orientation. Options listed above.
 @param[in] data_f_grid - Frequency grid of the scattering data to be calculated.
-@param[in] data_t_grid - Temperature grid of the scattering data to be calculated.
-@param[in] data_za_grid - Zenith angle grid of the scattering data to be calculated.
-@param[in] data_aa_grid - Azimuth angle grid of the scattering data to be calculated. (default: {})
+@param[in] data_t_grid - Temperature grid of the scattering data to be
+calculated.
+@param[in] data_za_grid - Zenith angle grid of the scattering data to be
+calculated.
+@param[in] data_aa_grid - Azimuth angle grid of the scattering data to be
+calculated. (default: {})
 @param[in] precision - Accuracy of the computations. (default: 0.001)
-@param[in] cri_source - String describing the source of *complex_refr_index*, for inclusion in meta data. (default: "Set by user, unknown source.")
-@param[in] ndgs - See above. So far only applied for random orientation. (default: 2)
-@param[in] robust - Continue even if individual T-matrix calculations fail. Respective scattering element data will be NAN. (default: 0)
+@param[in] cri_source - String describing the source of *complex_refr_index*,
+for inclusion in meta data. (default: "Set by user, unknown source.")
+@param[in] ndgs - See above. So far only applied for random orientation.
+(default: 2)
+@param[in] robust - Continue even if individual T-matrix calculations fail.
+Respective scattering element data will be NAN. (default: 0)
 @param[in] quiet - Suppress print output from tmatrix fortran code. (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void scat_data_singleTmatrix(Workspace& ws,
-const String& shape,
-const Numeric& diameter_volume_equ,
-const Numeric& aspect_ratio,
-const String& ptype,
-const Vector& data_f_grid,
-const Vector& data_t_grid,
-const Vector& data_za_grid,
-const Numeric& mass=std::numeric_limits<Numeric>::quiet_NaN(),
-const Vector& data_aa_grid={},
-const Numeric& precision=0.001,
-const String& cri_source="Set by user, unknown source.",
-const Index& ndgs=2,
-const Index& robust=0,
-const Index& quiet=1) {
-scat_data_singleTmatrix(Var::scat_data_single(ws),
-Var::scat_meta_single(ws),
-Var::complex_refr_index(ws),
-shape,
-diameter_volume_equ,
-aspect_ratio,
-mass,
-ptype,
-data_f_grid,
-data_t_grid,
-data_za_grid,
-data_aa_grid,
-precision,
-cri_source,
-ndgs,
-robust,
-quiet,
-Var::verbosity(ws));
+void scat_data_singleTmatrix(
+    Workspace& ws, const String& shape, const Numeric& diameter_volume_equ,
+    const Numeric& aspect_ratio, const String& ptype, const Vector& data_f_grid,
+    const Vector& data_t_grid, const Vector& data_za_grid,
+    const Numeric& mass = std::numeric_limits<Numeric>::quiet_NaN(),
+    const Vector& data_aa_grid = {}, const Numeric& precision = 0.001,
+    const String& cri_source = "Set by user, unknown source.",
+    const Index& ndgs = 2, const Index& robust = 0, const Index& quiet = 1) {
+  scat_data_singleTmatrix(
+      Var::scat_data_single(ws), Var::scat_meta_single(ws),
+      Var::complex_refr_index(ws), shape, diameter_volume_equ, aspect_ratio,
+      mass, ptype, data_f_grid, data_t_grid, data_za_grid, data_aa_grid,
+      precision, cri_source, ndgs, robust, quiet, Var::verbosity(ws));
 }
-
 
 /*! Sets sensor WSVs to obtain monochromatic pencil beam values.
 
@@ -25270,19 +23013,12 @@ The variables are set as follows:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensorOff(Workspace& ws) {
-sensorOff(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::mblock_dlos_grid(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::verbosity(ws));
+  sensorOff(Var::sensor_response(ws), Var::sensor_response_f(ws),
+            Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+            Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+            Var::sensor_response_dlos_grid(ws), Var::mblock_dlos_grid(ws),
+            Var::stokes_dim(ws), Var::f_grid(ws), Var::verbosity(ws));
 }
-
 
 /*! Checks consistency of the sensor variables.
 
@@ -25308,21 +23044,13 @@ is set to 1.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_checkedCalc(Workspace& ws) {
-sensor_checkedCalc(Var::sensor_checked(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::sensor_pos(ws),
-Var::sensor_los(ws),
-Var::transmitter_pos(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::verbosity(ws));
+  sensor_checkedCalc(Var::sensor_checked(ws), Var::atmosphere_dim(ws),
+                     Var::stokes_dim(ws), Var::f_grid(ws), Var::sensor_pos(ws),
+                     Var::sensor_los(ws), Var::transmitter_pos(ws),
+                     Var::mblock_dlos_grid(ws), Var::sensor_response(ws),
+                     Var::sensor_response_f(ws), Var::sensor_response_pol(ws),
+                     Var::sensor_response_dlos(ws), Var::verbosity(ws));
 }
-
 
 /*! The geometric line-of-sight between pair of points.
 
@@ -25343,18 +23071,13 @@ method for each pair of positions, where values in *sensor_pos* matches
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void sensor_losGeometricFromSensorPosToOtherPositions(Workspace& ws,
-const Matrix& target_pos) {
-sensor_losGeometricFromSensorPosToOtherPositions(Var::sensor_los(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::refellipsoid(ws),
-Var::sensor_pos(ws),
-target_pos,
-Var::verbosity(ws));
+void sensor_losGeometricFromSensorPosToOtherPositions(
+    Workspace& ws, const Matrix& target_pos) {
+  sensor_losGeometricFromSensorPosToOtherPositions(
+      Var::sensor_los(ws), Var::atmosphere_dim(ws), Var::lat_grid(ws),
+      Var::lon_grid(ws), Var::refellipsoid(ws), Var::sensor_pos(ws), target_pos,
+      Var::verbosity(ws));
 }
-
 
 /*! Includes response of the antenna.
 
@@ -25382,15 +23105,14 @@ see below (if 2D, the GIN *option_2d* must be set, the default results
 in an error). A normalisation is always applied for 2D antennas (i.e.
 *sensor-norm* is ignored).
 
-"interp_response"For this option, each direction defined by *mblock_dlos_grid* is
-considered to represent the same size in terms of solid beam angle,
-and the antenna pattern is interpolated to these directions. There is
-no check on how well *mblock_dlos_grid* covers the antenna response.
-The response is treated to be zero outside the ranges of its  anular
-grids
+"interp_response"For this option, each direction defined by *mblock_dlos_grid*
+is considered to represent the same size in terms of solid beam angle, and the
+antenna pattern is interpolated to these directions. There is no check on how
+well *mblock_dlos_grid* covers the antenna response. The response is treated to
+be zero outside the ranges of its  anular grids
 
-"gridded_dlos"This option is more similar to the 1D case. The radiances are treated
-as a bi-linear function, but the antenna response is treated as step-
+"gridded_dlos"This option is more similar to the 1D case. The radiances are
+treated as a bi-linear function, but the antenna response is treated as step-
 wise constant function (in contrast to 1D). For this option
 *mblock_dlos_grid* must match a combination of zenith and azimuth
 grids, and this for a particular order. If the zenith and azimuth
@@ -25403,28 +23125,20 @@ the antenna response completely.
 @author Mattias Ekstrom
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] option_2d - Calculation option for 2D antenna cases. See above for details. (default: "-")
+@param[in] option_2d - Calculation option for 2D antenna cases. See above for
+details. (default: "-")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void sensor_responseAntenna(Workspace& ws,
-const String& option_2d="-") {
-sensor_responseAntenna(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::atmosphere_dim(ws),
-Var::antenna_dim(ws),
-Var::antenna_dlos(ws),
-Var::antenna_response(ws),
-Var::sensor_norm(ws),
-option_2d,
-Var::verbosity(ws));
+void sensor_responseAntenna(Workspace& ws, const String& option_2d = "-") {
+  sensor_responseAntenna(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_dlos_grid(ws), Var::sensor_response_f_grid(ws),
+      Var::sensor_response_pol_grid(ws), Var::atmosphere_dim(ws),
+      Var::antenna_dim(ws), Var::antenna_dlos(ws), Var::antenna_response(ws),
+      Var::sensor_norm(ws), option_2d, Var::verbosity(ws));
 }
-
 
 /*! Includes response of the backend (spectrometer).
 
@@ -25442,19 +23156,14 @@ details on how to specify the backend response.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responseBackend(Workspace& ws) {
-sensor_responseBackend(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::f_backend(ws),
-Var::backend_channel_response(ws),
-Var::sensor_norm(ws),
-Var::verbosity(ws));
+  sensor_responseBackend(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::f_backend(ws),
+      Var::backend_channel_response(ws), Var::sensor_norm(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Frequency switching for a pure SSB reciever.
 
@@ -25484,24 +23193,16 @@ The method has the same general functionality as, and can replace,
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void sensor_responseBackendFrequencySwitching(Workspace& ws,
-const Numeric& df1,
-const Numeric& df2) {
-sensor_responseBackendFrequencySwitching(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::f_backend(ws),
-Var::backend_channel_response(ws),
-Var::sensor_norm(ws),
-df1,
-df2,
-Var::verbosity(ws));
+void sensor_responseBackendFrequencySwitching(Workspace& ws, const Numeric& df1,
+                                              const Numeric& df2) {
+  sensor_responseBackendFrequencySwitching(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::f_backend(ws),
+      Var::backend_channel_response(ws), Var::sensor_norm(ws), df1, df2,
+      Var::verbosity(ws));
 }
-
 
 /*! Simulation of "beam switching".
 
@@ -25524,21 +23225,14 @@ values of the second direction.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void sensor_responseBeamSwitching(Workspace& ws,
-const Numeric& w1=-1,
-const Numeric& w2=1) {
-sensor_responseBeamSwitching(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-w1,
-w2,
-Var::verbosity(ws));
+void sensor_responseBeamSwitching(Workspace& ws, const Numeric& w1 = -1,
+                                  const Numeric& w2 = 1) {
+  sensor_responseBeamSwitching(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_dlos_grid(ws), Var::sensor_response_f_grid(ws),
+      Var::sensor_response_pol_grid(ws), w1, w2, Var::verbosity(ws));
 }
-
 
 /*! Polynomial frequency interpolation of spectra.
 
@@ -25572,21 +23266,14 @@ Between each neighbouring points of *f_grid*, this method adds
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void sensor_responseFillFgrid(Workspace& ws,
-const Index& polyorder=3,
-const Index& nfill=2) {
-sensor_responseFillFgrid(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-polyorder,
-nfill,
-Var::verbosity(ws));
+void sensor_responseFillFgrid(Workspace& ws, const Index& polyorder = 3,
+                              const Index& nfill = 2) {
+  sensor_responseFillFgrid(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), polyorder, nfill, Var::verbosity(ws));
 }
-
 
 /*! Simulation of "frequency switching".
 
@@ -25610,23 +23297,19 @@ Output frequency grids are taken from the second spectrum.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responseFrequencySwitching(Workspace& ws) {
-sensor_responseFrequencySwitching(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::verbosity(ws));
+  sensor_responseFrequencySwitching(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::verbosity(ws));
 }
-
 
 /*! Simplified sensor setup for an AMSU-type instrument.
 
-This function is derived from 'sensor_responseSimpleAMSU' 
-but is more generalized since the number of passbands in each 
+This function is derived from 'sensor_responseSimpleAMSU'
+but is more generalized since the number of passbands in each
 can be in the range from 1 to 4 - in order to correctly simulate
-AMSU-A type sensors 
+AMSU-A type sensors
 
 This method allows quick and simple definition of AMSU-type
 sensors. Assumptions:
@@ -25647,26 +23330,16 @@ in sensor_description_amsu.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void sensor_responseGenericAMSU(Workspace& ws,
-const Numeric& spacing=.1e9) {
-sensor_responseGenericAMSU(Var::f_grid(ws),
-Var::antenna_dim(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::sensor_norm(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::sensor_description_amsu(ws),
-spacing,
-Var::verbosity(ws));
+void sensor_responseGenericAMSU(Workspace& ws, const Numeric& spacing = .1e9) {
+  sensor_responseGenericAMSU(
+      Var::f_grid(ws), Var::antenna_dim(ws), Var::mblock_dlos_grid(ws),
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::sensor_norm(ws),
+      Var::atmosphere_dim(ws), Var::stokes_dim(ws),
+      Var::sensor_description_amsu(ws), spacing, Var::verbosity(ws));
 }
-
 
 /*! Converts sensor response variables from IF to RF.
 
@@ -25686,13 +23359,10 @@ sorted in any way.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responseIF2RF(Workspace& ws) {
-sensor_responseIF2RF(Var::sensor_response_f(ws),
-Var::sensor_response_f_grid(ws),
-Var::lo(ws),
-Var::sideband_mode(ws),
-Var::verbosity(ws));
+  sensor_responseIF2RF(Var::sensor_response_f(ws),
+                       Var::sensor_response_f_grid(ws), Var::lo(ws),
+                       Var::sideband_mode(ws), Var::verbosity(ws));
 }
-
 
 /*! Initialises the variables summarising the sensor response.
 
@@ -25719,22 +23389,14 @@ The variables are set as follows:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responseInit(Workspace& ws) {
-sensor_responseInit(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::f_grid(ws),
-Var::mblock_dlos_grid(ws),
-Var::antenna_dim(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::sensor_norm(ws),
-Var::verbosity(ws));
+  sensor_responseInit(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::f_grid(ws),
+      Var::mblock_dlos_grid(ws), Var::antenna_dim(ws), Var::atmosphere_dim(ws),
+      Var::stokes_dim(ws), Var::sensor_norm(ws), Var::verbosity(ws));
 }
-
 
 /*! Sensor setup for meteorological millimeter instruments.
 
@@ -25776,38 +23438,24 @@ cover both sides of the swath.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] use_antenna - Flag to enable (1) or disable (0) antenna. (default: 0)
-@param[in] mirror_dza - Flag to include second part of swath (only 3D, see above). (default: 0)
+@param[in] mirror_dza - Flag to include second part of swath (only 3D, see
+above). (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void sensor_responseMetMM(Workspace& ws,
-const Index& use_antenna=0,
-const Index& mirror_dza=0) {
-sensor_responseMetMM(Var::antenna_dim(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::sensor_norm(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::f_backend(ws),
-Var::channel2fgrid_indexes(ws),
-Var::channel2fgrid_weights(ws),
-Var::iy_unit(ws),
-Var::antenna_dlos(ws),
-Var::met_mm_polarisation(ws),
-Var::met_mm_antenna(ws),
-use_antenna,
-mirror_dza,
-Var::verbosity(ws));
+void sensor_responseMetMM(Workspace& ws, const Index& use_antenna = 0,
+                          const Index& mirror_dza = 0) {
+  sensor_responseMetMM(
+      Var::antenna_dim(ws), Var::mblock_dlos_grid(ws), Var::sensor_response(ws),
+      Var::sensor_response_f(ws), Var::sensor_response_pol(ws),
+      Var::sensor_response_dlos(ws), Var::sensor_response_f_grid(ws),
+      Var::sensor_response_pol_grid(ws), Var::sensor_response_dlos_grid(ws),
+      Var::sensor_norm(ws), Var::atmosphere_dim(ws), Var::stokes_dim(ws),
+      Var::f_grid(ws), Var::f_backend(ws), Var::channel2fgrid_indexes(ws),
+      Var::channel2fgrid_weights(ws), Var::iy_unit(ws), Var::antenna_dlos(ws),
+      Var::met_mm_polarisation(ws), Var::met_mm_antenna(ws), use_antenna,
+      mirror_dza, Var::verbosity(ws));
 }
-
 
 /*! Includes response of the mixer of a heterodyne system.
 
@@ -25828,19 +23476,13 @@ mixer response
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responseMixer(Workspace& ws) {
-sensor_responseMixer(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::lo(ws),
-Var::sideband_response(ws),
-Var::sensor_norm(ws),
-Var::verbosity(ws));
+  sensor_responseMixer(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::lo(ws),
+      Var::sideband_response(ws), Var::sensor_norm(ws), Var::verbosity(ws));
 }
-
 
 /*! Includes pre-calculated response covering mixer and backend.
 
@@ -25865,19 +23507,14 @@ to be common for all viewing directions.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responseMixerBackendPrecalcWeights(Workspace& ws) {
-sensor_responseMixerBackendPrecalcWeights(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::f_backend(ws),
-Var::channel2fgrid_indexes(ws),
-Var::channel2fgrid_weights(ws),
-Var::verbosity(ws));
+  sensor_responseMixerBackendPrecalcWeights(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::f_backend(ws),
+      Var::channel2fgrid_indexes(ws), Var::channel2fgrid_weights(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Handles mixer and backend parts for an instrument having multiple
 mixer chains.
@@ -25899,22 +23536,15 @@ will be in absolute frequency (RF).
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responseMultiMixerBackend(Workspace& ws) {
-sensor_responseMultiMixerBackend(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::lo_multi(ws),
-Var::sideband_response_multi(ws),
-Var::sideband_mode_multi(ws),
-Var::f_backend_multi(ws),
-Var::backend_channel_response_multi(ws),
-Var::sensor_norm(ws),
-Var::verbosity(ws));
+  sensor_responseMultiMixerBackend(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::lo_multi(ws),
+      Var::sideband_response_multi(ws), Var::sideband_mode_multi(ws),
+      Var::f_backend_multi(ws), Var::backend_channel_response_multi(ws),
+      Var::sensor_norm(ws), Var::verbosity(ws));
 }
-
 
 /*! Extraction of non-default polarisation components.
 
@@ -25927,7 +23557,7 @@ matrix set-up.
 The method can only be applied on data for I, Q, U and V. The value
 of *stokes_dim* must be sufficiently large for the selected
 components. For example, I+45 requires that *stokes_dim* is at
-least 3. 
+least 3.
 
 See *instrument_pol* for coding of polarisation states.
 
@@ -25945,19 +23575,13 @@ method.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responsePolarisation(Workspace& ws) {
-sensor_responsePolarisation(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::stokes_dim(ws),
-Var::iy_unit(ws),
-Var::instrument_pol(ws),
-Var::verbosity(ws));
+  sensor_responsePolarisation(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_pol_grid(ws), Var::sensor_response_f_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::stokes_dim(ws), Var::iy_unit(ws),
+      Var::instrument_pol(ws), Var::verbosity(ws));
 }
-
 
 /*! Simplified sensor setup for an AMSU-type instrument.
 
@@ -25980,26 +23604,16 @@ in sensor_description_amsu.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void sensor_responseSimpleAMSU(Workspace& ws,
-const Numeric& spacing=.1e9) {
-sensor_responseSimpleAMSU(Var::f_grid(ws),
-Var::antenna_dim(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::sensor_norm(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::sensor_description_amsu(ws),
-spacing,
-Var::verbosity(ws));
+void sensor_responseSimpleAMSU(Workspace& ws, const Numeric& spacing = .1e9) {
+  sensor_responseSimpleAMSU(
+      Var::f_grid(ws), Var::antenna_dim(ws), Var::mblock_dlos_grid(ws),
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::sensor_norm(ws),
+      Var::atmosphere_dim(ws), Var::stokes_dim(ws),
+      Var::sensor_description_amsu(ws), spacing, Var::verbosity(ws));
 }
-
 
 /*! Includes a rotation of the Stokes H and V directions.
 
@@ -26019,15 +23633,11 @@ of the rotation can not be determibed with lower *stokes_dim*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responseStokesRotation(Workspace& ws) {
-sensor_responseStokesRotation(Var::sensor_response(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::stokes_dim(ws),
-Var::stokes_rotation(ws),
-Var::verbosity(ws));
+  sensor_responseStokesRotation(
+      Var::sensor_response(ws), Var::sensor_response_f_grid(ws),
+      Var::sensor_response_pol_grid(ws), Var::sensor_response_dlos_grid(ws),
+      Var::stokes_dim(ws), Var::stokes_rotation(ws), Var::verbosity(ws));
 }
-
 
 /*! Adds WMRF weights to sensor response.
 
@@ -26042,23 +23652,18 @@ consists of a set of selected frequencies, and associated weights.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void sensor_responseWMRF(Workspace& ws) {
-sensor_responseWMRF(Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::wmrf_weights(ws),
-Var::f_backend(ws),
-Var::verbosity(ws));
+  sensor_responseWMRF(
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::wmrf_weights(ws),
+      Var::f_backend(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculates the spectral irradiance from *spectral_radiance_field* .
 by integrating over the angular grids according to the grids set
-by *AngularGridsSetFluxCalc* 
-See *AngularGridsSetFluxCalc to set 
+by *AngularGridsSetFluxCalc*
+See *AngularGridsSetFluxCalc to set
 *za_grid, aa_grid, and za_grid_weights*
 
 @author Manfred Brath
@@ -26068,14 +23673,11 @@ See *AngularGridsSetFluxCalc to set
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void spectral_irradiance_fieldFromSpectralRadianceField(Workspace& ws) {
-spectral_irradiance_fieldFromSpectralRadianceField(Var::spectral_irradiance_field(ws),
-Var::spectral_radiance_field(ws),
-Var::za_grid(ws),
-Var::aa_grid(ws),
-Var::za_grid_weights(ws),
-Var::verbosity(ws));
+  spectral_irradiance_fieldFromSpectralRadianceField(
+      Var::spectral_irradiance_field(ws), Var::spectral_radiance_field(ws),
+      Var::za_grid(ws), Var::aa_grid(ws), Var::za_grid_weights(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Clear-sky radiance field of a plane parallel atmosphere.
 
@@ -26099,47 +23701,28 @@ down to the surface.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[out] trans_field - Dimensions: [f_grid,p_grid,za_grid]. See further above.
+@param[out] trans_field - Dimensions: [f_grid,p_grid,za_grid]. See further
+above.
 @param[in] use_parallel_iy - 0: Parallelize over zenith angles
 1: Use more memory intensiv iyEmissionStandardParallel* (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void spectral_radiance_fieldClearskyPlaneParallel(Workspace& ws,
-Tensor3& trans_field,
-const Index& use_parallel_iy=0) {
-spectral_radiance_fieldClearskyPlaneParallel(ws,
-Var::spectral_radiance_field(ws),
-trans_field,
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::iy_space_agenda(ws),
-Var::iy_surface_agenda(ws),
-Var::iy_cloudbox_agenda(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::z_field(ws),
-Var::t_field(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::z_surface(ws),
-Var::ppath_lmax(ws),
-Var::rte_alonglos_v(ws),
-Var::surface_props_data(ws),
-Var::za_grid(ws),
-use_parallel_iy,
-Var::verbosity(ws));
+void spectral_radiance_fieldClearskyPlaneParallel(
+    Workspace& ws, Tensor3& trans_field, const Index& use_parallel_iy = 0) {
+  spectral_radiance_fieldClearskyPlaneParallel(
+      ws, Var::spectral_radiance_field(ws), trans_field,
+      Var::propmat_clearsky_agenda(ws), Var::water_p_eq_agenda(ws),
+      Var::iy_space_agenda(ws), Var::iy_surface_agenda(ws),
+      Var::iy_cloudbox_agenda(ws), Var::stokes_dim(ws), Var::f_grid(ws),
+      Var::atmosphere_dim(ws), Var::p_grid(ws), Var::z_field(ws),
+      Var::t_field(ws), Var::nlte_field(ws), Var::vmr_field(ws),
+      Var::abs_species(ws), Var::wind_u_field(ws), Var::wind_v_field(ws),
+      Var::wind_w_field(ws), Var::mag_u_field(ws), Var::mag_v_field(ws),
+      Var::mag_w_field(ws), Var::z_surface(ws), Var::ppath_lmax(ws),
+      Var::rte_alonglos_v(ws), Var::surface_props_data(ws), Var::za_grid(ws),
+      use_parallel_iy, Var::verbosity(ws));
 }
-
 
 /*! Set *spectral_radiance_field* to be a copy of *cloudbox_field*.
 
@@ -26154,15 +23737,11 @@ cover the same atmospheric volume and a direct copying can be made.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void spectral_radiance_fieldCopyCloudboxField(Workspace& ws) {
-spectral_radiance_fieldCopyCloudboxField(Var::spectral_radiance_field(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::cloudbox_field(ws),
-Var::verbosity(ws));
+  spectral_radiance_fieldCopyCloudboxField(
+      Var::spectral_radiance_field(ws), Var::atmosphere_dim(ws),
+      Var::p_grid(ws), Var::cloudbox_on(ws), Var::cloudbox_limits(ws),
+      Var::cloudbox_field(ws), Var::verbosity(ws));
 }
-
 
 /*! Uses and expands *cloudbox_field* to set *spectral_radiance_field*.
 
@@ -26188,42 +23767,21 @@ interpolation of the cloudbox field.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void spectral_radiance_fieldExpandCloudboxField(Workspace& ws,
-const Index& use_parallel_iy=0) {
-spectral_radiance_fieldExpandCloudboxField(ws,
-Var::spectral_radiance_field(ws),
-Var::propmat_clearsky_agenda(ws),
-Var::water_p_eq_agenda(ws),
-Var::iy_space_agenda(ws),
-Var::iy_surface_agenda(ws),
-Var::iy_cloudbox_agenda(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::z_field(ws),
-Var::t_field(ws),
-Var::nlte_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::z_surface(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_limits(ws),
-Var::cloudbox_field(ws),
-Var::ppath_lmax(ws),
-Var::rte_alonglos_v(ws),
-Var::surface_props_data(ws),
-Var::za_grid(ws),
-use_parallel_iy,
-Var::verbosity(ws));
+void spectral_radiance_fieldExpandCloudboxField(
+    Workspace& ws, const Index& use_parallel_iy = 0) {
+  spectral_radiance_fieldExpandCloudboxField(
+      ws, Var::spectral_radiance_field(ws), Var::propmat_clearsky_agenda(ws),
+      Var::water_p_eq_agenda(ws), Var::iy_space_agenda(ws),
+      Var::iy_surface_agenda(ws), Var::iy_cloudbox_agenda(ws),
+      Var::stokes_dim(ws), Var::f_grid(ws), Var::atmosphere_dim(ws),
+      Var::p_grid(ws), Var::z_field(ws), Var::t_field(ws), Var::nlte_field(ws),
+      Var::vmr_field(ws), Var::abs_species(ws), Var::wind_u_field(ws),
+      Var::wind_v_field(ws), Var::wind_w_field(ws), Var::mag_u_field(ws),
+      Var::mag_v_field(ws), Var::mag_w_field(ws), Var::z_surface(ws),
+      Var::cloudbox_on(ws), Var::cloudbox_limits(ws), Var::cloudbox_field(ws),
+      Var::ppath_lmax(ws), Var::rte_alonglos_v(ws), Var::surface_props_data(ws),
+      Var::za_grid(ws), use_parallel_iy, Var::verbosity(ws));
 }
-
 
 /*! Calculates the specular direction of surface reflections.
 
@@ -26245,25 +23803,18 @@ the surface (i.e. no topography).
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] ignore_surface_slope - Flag to control if surface slope is consdered or not. (default: 0)
+@param[in] ignore_surface_slope - Flag to control if surface slope is consdered
+or not. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void specular_losCalc(Workspace& ws,
-const Index& ignore_surface_slope=0) {
-specular_losCalc(Var::specular_los(ws),
-Var::surface_normal(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-ignore_surface_slope,
-Var::verbosity(ws));
+void specular_losCalc(Workspace& ws, const Index& ignore_surface_slope = 0) {
+  specular_losCalc(Var::specular_los(ws), Var::surface_normal(ws),
+                   Var::rtp_pos(ws), Var::rtp_los(ws), Var::atmosphere_dim(ws),
+                   Var::lat_grid(ws), Var::lon_grid(ws), Var::refellipsoid(ws),
+                   Var::z_surface(ws), ignore_surface_slope,
+                   Var::verbosity(ws));
 }
-
 
 /*! Calculates the specular direction of surface reflections for horisontal
 surfaces.
@@ -26281,14 +23832,10 @@ oceans).
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void specular_losCalcNoTopography(Workspace& ws) {
-specular_losCalcNoTopography(Var::specular_los(ws),
-Var::surface_normal(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::atmosphere_dim(ws),
-Var::verbosity(ws));
+  specular_losCalcNoTopography(Var::specular_los(ws), Var::surface_normal(ws),
+                               Var::rtp_pos(ws), Var::rtp_los(ws),
+                               Var::atmosphere_dim(ws), Var::verbosity(ws));
 }
-
 
 /*! Creates variables to mimic a blackbody surface.
 
@@ -26304,18 +23851,12 @@ to hold blackbody radiation for a temperature of *surface_skin_t*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void surfaceBlackbody(Workspace& ws) {
-surfaceBlackbody(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::atmosphere_dim(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::surface_skin_t(ws),
-Var::verbosity(ws));
+  surfaceBlackbody(Var::surface_los(ws), Var::surface_rmatrix(ws),
+                   Var::surface_emission(ws), Var::atmosphere_dim(ws),
+                   Var::f_grid(ws), Var::stokes_dim(ws), Var::rtp_pos(ws),
+                   Var::rtp_los(ws), Var::surface_skin_t(ws),
+                   Var::verbosity(ws));
 }
-
 
 /*! Usage of FASTEM together with MC and DOIT.
 
@@ -26338,37 +23879,27 @@ arguments.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] salinity - Salinity, 0-1. That is, 3% is given as 0.03. (default: 0.035)
+@param[in] salinity - Salinity, 0-1. That is, 3% is given as 0.03. (default:
+0.035)
 @param[in] wind_speed - Wind speed.
 @param[in] wind_direction - Wind direction. See futher above. (default: 0)
-@param[in] transmittance - Transmittance along path of downwelling radiation. A vector with the same length as *f_grid*.
+@param[in] transmittance - Transmittance along path of downwelling radiation. A
+vector with the same length as *f_grid*.
 @param[in] fastem_version - The version of FASTEM to use. (default: 6)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void surfaceFastem(Workspace& ws,
-const Numeric& wind_speed,
-const Vector& transmittance,
-const Numeric& salinity=0.035,
-const Numeric& wind_direction=0,
-const Index& fastem_version=6) {
-surfaceFastem(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::surface_skin_t(ws),
-salinity,
-wind_speed,
-wind_direction,
-transmittance,
-fastem_version,
-Var::verbosity(ws));
+void surfaceFastem(Workspace& ws, const Numeric& wind_speed,
+                   const Vector& transmittance, const Numeric& salinity = 0.035,
+                   const Numeric& wind_direction = 0,
+                   const Index& fastem_version = 6) {
+  surfaceFastem(Var::surface_los(ws), Var::surface_rmatrix(ws),
+                Var::surface_emission(ws), Var::atmosphere_dim(ws),
+                Var::stokes_dim(ws), Var::f_grid(ws), Var::rtp_pos(ws),
+                Var::rtp_los(ws), Var::surface_skin_t(ws), salinity, wind_speed,
+                wind_direction, transmittance, fastem_version,
+                Var::verbosity(ws));
 }
-
 
 /*! Creates variables to mimic specular reflection by a (flat) surface
 where *surface_reflectivity* is specified.
@@ -26386,20 +23917,13 @@ the ARTS theory document (ATD) for details around how
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void surfaceFlatReflectivity(Workspace& ws) {
-surfaceFlatReflectivity(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::specular_los(ws),
-Var::surface_skin_t(ws),
-Var::surface_reflectivity(ws),
-Var::verbosity(ws));
+  surfaceFlatReflectivity(Var::surface_los(ws), Var::surface_rmatrix(ws),
+                          Var::surface_emission(ws), Var::f_grid(ws),
+                          Var::stokes_dim(ws), Var::atmosphere_dim(ws),
+                          Var::rtp_pos(ws), Var::rtp_los(ws),
+                          Var::specular_los(ws), Var::surface_skin_t(ws),
+                          Var::surface_reflectivity(ws), Var::verbosity(ws));
 }
-
 
 /*! Creates variables to mimic specular reflection by a (flat) surface
 where the complex refractive index is specified.
@@ -26420,20 +23944,13 @@ that the reflection and emission coefficients add up to 1.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void surfaceFlatRefractiveIndex(Workspace& ws) {
-surfaceFlatRefractiveIndex(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::specular_los(ws),
-Var::surface_skin_t(ws),
-Var::surface_complex_refr_index(ws),
-Var::verbosity(ws));
+  surfaceFlatRefractiveIndex(
+      Var::surface_los(ws), Var::surface_rmatrix(ws), Var::surface_emission(ws),
+      Var::f_grid(ws), Var::stokes_dim(ws), Var::atmosphere_dim(ws),
+      Var::rtp_pos(ws), Var::rtp_los(ws), Var::specular_los(ws),
+      Var::surface_skin_t(ws), Var::surface_complex_refr_index(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Creates variables to mimic specular reflection by a (flat) surface
 where *surface_rv_rh* is specified.
@@ -26454,20 +23971,12 @@ U and V, and that all diagonal elementsof  *surface_rmatrix* are equal
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void surfaceFlatRvRh(Workspace& ws) {
-surfaceFlatRvRh(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::specular_los(ws),
-Var::surface_skin_t(ws),
-Var::surface_rv_rh(ws),
-Var::verbosity(ws));
+  surfaceFlatRvRh(
+      Var::surface_los(ws), Var::surface_rmatrix(ws), Var::surface_emission(ws),
+      Var::f_grid(ws), Var::stokes_dim(ws), Var::atmosphere_dim(ws),
+      Var::rtp_pos(ws), Var::rtp_los(ws), Var::specular_los(ws),
+      Var::surface_skin_t(ws), Var::surface_rv_rh(ws), Var::verbosity(ws));
 }
-
 
 /*! Creates variables to mimic specular reflection by a (flat) surface
 where *surface_scalar_reflectivity* is specified.
@@ -26486,20 +23995,13 @@ all elements on the diagonal equal to the specified reflectivity).
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void surfaceFlatScalarReflectivity(Workspace& ws) {
-surfaceFlatScalarReflectivity(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::specular_los(ws),
-Var::surface_skin_t(ws),
-Var::surface_scalar_reflectivity(ws),
-Var::verbosity(ws));
+  surfaceFlatScalarReflectivity(
+      Var::surface_los(ws), Var::surface_rmatrix(ws), Var::surface_emission(ws),
+      Var::f_grid(ws), Var::stokes_dim(ws), Var::atmosphere_dim(ws),
+      Var::rtp_pos(ws), Var::rtp_los(ws), Var::specular_los(ws),
+      Var::surface_skin_t(ws), Var::surface_scalar_reflectivity(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Creates variables to mimic a Lambertian surface.
 
@@ -26514,7 +24016,7 @@ over each zenith angle range. See AUG.
 
 Default is to select the zenith angles for *sensor_los* to be placed
 centrally in the grid ranges. For example, if *lambertian_nza* is set
-to 9, down-welling radiation will be calculated for zenith angles = 
+to 9, down-welling radiation will be calculated for zenith angles =
 5, 15, ..., 85. The position of these angles can be shifted by
 *za_pos*. This variable specifies the fractional distance inside the
 ranges. For example, a *za_pos* of 0.7 (np still 9) gives the angles
@@ -26536,29 +24038,20 @@ but 90-abs(surface_normal[0]).
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] lambertian_nza - Number of downwelling streams. (default: 9)
-@param[in] za_pos - Position of angle in *surface_los* inside ranges of zenith angle grid. See above. (default: 0.5)
+@param[in] za_pos - Position of angle in *surface_los* inside ranges of zenith
+angle grid. See above. (default: 0.5)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void surfaceLambertianSimple(Workspace& ws,
-const Index& lambertian_nza=9,
-const Numeric& za_pos=0.5) {
-surfaceLambertianSimple(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::f_grid(ws),
-Var::stokes_dim(ws),
-Var::atmosphere_dim(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::surface_normal(ws),
-Var::surface_skin_t(ws),
-Var::surface_scalar_reflectivity(ws),
-lambertian_nza,
-za_pos,
-Var::verbosity(ws));
+void surfaceLambertianSimple(Workspace& ws, const Index& lambertian_nza = 9,
+                             const Numeric& za_pos = 0.5) {
+  surfaceLambertianSimple(
+      Var::surface_los(ws), Var::surface_rmatrix(ws), Var::surface_emission(ws),
+      Var::f_grid(ws), Var::stokes_dim(ws), Var::atmosphere_dim(ws),
+      Var::rtp_pos(ws), Var::rtp_los(ws), Var::surface_normal(ws),
+      Var::surface_skin_t(ws), Var::surface_scalar_reflectivity(ws),
+      lambertian_nza, za_pos, Var::verbosity(ws));
 }
-
 
 /*! A simplistic treatment of semi-specular surfaces.
 
@@ -26590,29 +24083,22 @@ with this method.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] specular_factor - The weight given to the specular direction. Denoted as w above. A value between 1/3 and 1.
-@param[in] dza - Zenith angle seperation to each secondary direction. A between 0 and 45 degrees.
+@param[in] specular_factor - The weight given to the specular direction. Denoted
+as w above. A value between 1/3 and 1.
+@param[in] dza - Zenith angle seperation to each secondary direction. A between
+0 and 45 degrees.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void surfaceSemiSpecularBy3beams(Workspace& ws,
-const Numeric& specular_factor,
-const Numeric& dza) {
-surfaceSemiSpecularBy3beams(ws,
-Var::surface_skin_t(ws),
-Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::atmosphere_dim(ws),
-Var::f_grid(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::surface_rtprop_sub_agenda(ws),
-specular_factor,
-dza,
-Var::verbosity(ws));
+void surfaceSemiSpecularBy3beams(Workspace& ws, const Numeric& specular_factor,
+                                 const Numeric& dza) {
+  surfaceSemiSpecularBy3beams(
+      ws, Var::surface_skin_t(ws), Var::surface_los(ws),
+      Var::surface_rmatrix(ws), Var::surface_emission(ws),
+      Var::atmosphere_dim(ws), Var::f_grid(ws), Var::rtp_pos(ws),
+      Var::rtp_los(ws), Var::surface_rtprop_sub_agenda(ws), specular_factor,
+      dza, Var::verbosity(ws));
 }
-
 
 /*! A very simple approximation of a semi-specular surface.
 
@@ -26632,29 +24118,25 @@ it is merged with the main beam.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] specular_factor - The weight given to the specular direction. Denoted as w above. A value between 1/3 and 1.
-@param[in] dza - Zenith angle seperation to each secondary direction. A between 0 and 45 degrees.
+@param[in] specular_factor - The weight given to the specular direction. Denoted
+as w above. A value between 1/3 and 1.
+@param[in] dza - Zenith angle seperation to each secondary direction. A between
+0 and 45 degrees.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void surfaceSplitSpecularTo3beams(Workspace& ws,
-const Numeric& specular_factor,
-const Numeric& dza) {
-surfaceSplitSpecularTo3beams(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::atmosphere_dim(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-specular_factor,
-dza,
-Var::verbosity(ws));
+void surfaceSplitSpecularTo3beams(Workspace& ws, const Numeric& specular_factor,
+                                  const Numeric& dza) {
+  surfaceSplitSpecularTo3beams(Var::surface_los(ws), Var::surface_rmatrix(ws),
+                               Var::atmosphere_dim(ws), Var::rtp_pos(ws),
+                               Var::rtp_los(ws), specular_factor, dza,
+                               Var::verbosity(ws));
 }
-
 
 /*! Compute surface emissivities using the TELSEM 2 model.
 
 This method uses second version of the TELSEM model for calculating
-land surface emissivities (F. Aires et al, "A Tool to Estimate 
+land surface emissivities (F. Aires et al, "A Tool to Estimate
  Land‐Surface Emissivities at Microwave frequencies (TELSEM) for use
  in numerical weather prediction" Quarterly Journal of the Royal
 Meteorological Society, vol. 137, (656), pp. 690-699, 2011.)
@@ -26687,34 +24169,22 @@ To extract a land-sea mask from a given telsem atlas see the WSM
 @param[in] atlas - The Telsem atlas to use for the emissivity calculation.
 @param[in] r_min - Minimum allowed value for reflectivity to apply. (default: 0)
 @param[in] r_max - Maximum allowed value for reflectivity to apply. (default: 1)
-@param[in] d_max - Maximum allowed distance in meters for nearest neighbor interpolation in meters. Set to a negative value or zero  to disable interpolation. (default: -1.0)
+@param[in] d_max - Maximum allowed distance in meters for nearest neighbor
+interpolation in meters. Set to a negative value or zero  to disable
+interpolation. (default: -1.0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void surfaceTelsem(Workspace& ws,
-const TelsemAtlas& atlas,
-const Numeric& r_min=0,
-const Numeric& r_max=1,
-const Numeric& d_max=-1.0) {
-surfaceTelsem(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::lat_grid(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::surface_skin_t(ws),
-atlas,
-r_min,
-r_max,
-d_max,
-Var::verbosity(ws));
+void surfaceTelsem(Workspace& ws, const TelsemAtlas& atlas,
+                   const Numeric& r_min = 0, const Numeric& r_max = 1,
+                   const Numeric& d_max = -1.0) {
+  surfaceTelsem(Var::surface_los(ws), Var::surface_rmatrix(ws),
+                Var::surface_emission(ws), Var::atmosphere_dim(ws),
+                Var::stokes_dim(ws), Var::f_grid(ws), Var::lat_grid(ws),
+                Var::lat_true(ws), Var::lon_true(ws), Var::rtp_pos(ws),
+                Var::rtp_los(ws), Var::surface_skin_t(ws), atlas, r_min, r_max,
+                d_max, Var::verbosity(ws));
 }
-
 
 /*! TESSEM sea surface microwave emissivity parametrization.
 
@@ -26733,30 +24203,20 @@ The model itself is represented by the neural networks in
 @author Simon Pfreundschuh
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] salinity - Salinity, 0-1. That is, 3% is given as 0.03. (default: 0.035)
+@param[in] salinity - Salinity, 0-1. That is, 3% is given as 0.03. (default:
+0.035)
 @param[in] wind_speed - Wind speed.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void surfaceTessem(Workspace& ws,
-const Numeric& wind_speed,
-const Numeric& salinity=0.035) {
-surfaceTessem(Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::atmosphere_dim(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::surface_skin_t(ws),
-Var::tessem_neth(ws),
-Var::tessem_netv(ws),
-salinity,
-wind_speed,
-Var::verbosity(ws));
+void surfaceTessem(Workspace& ws, const Numeric& wind_speed,
+                   const Numeric& salinity = 0.035) {
+  surfaceTessem(Var::surface_los(ws), Var::surface_rmatrix(ws),
+                Var::surface_emission(ws), Var::atmosphere_dim(ws),
+                Var::stokes_dim(ws), Var::f_grid(ws), Var::rtp_pos(ws),
+                Var::rtp_los(ws), Var::surface_skin_t(ws), Var::tessem_neth(ws),
+                Var::tessem_netv(ws), salinity, wind_speed, Var::verbosity(ws));
 }
-
 
 /*! Extracts complex refractive index from a field of such data.
 
@@ -26788,18 +24248,13 @@ simply returned as *surface_complex_refr_index*.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void surface_complex_refr_indexFromGriddedField5(Workspace& ws,
-const GriddedField5& complex_refr_index_field) {
-surface_complex_refr_indexFromGriddedField5(Var::surface_complex_refr_index(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::rtp_pos(ws),
-complex_refr_index_field,
-Var::verbosity(ws));
+void surface_complex_refr_indexFromGriddedField5(
+    Workspace& ws, const GriddedField5& complex_refr_index_field) {
+  surface_complex_refr_indexFromGriddedField5(
+      Var::surface_complex_refr_index(ws), Var::atmosphere_dim(ws),
+      Var::lat_grid(ws), Var::lat_true(ws), Var::lon_true(ws), Var::rtp_pos(ws),
+      complex_refr_index_field, Var::verbosity(ws));
 }
-
 
 /*! Extracts surface reflectivities from a field of such data.
 
@@ -26842,20 +24297,13 @@ The interpolation is done in steps:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void surface_reflectivityFromGriddedField6(Workspace& ws,
-const GriddedField6& r_field) {
-surface_reflectivityFromGriddedField6(Var::surface_reflectivity(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-r_field,
-Var::verbosity(ws));
+                                           const GriddedField6& r_field) {
+  surface_reflectivityFromGriddedField6(
+      Var::surface_reflectivity(ws), Var::stokes_dim(ws), Var::f_grid(ws),
+      Var::atmosphere_dim(ws), Var::lat_grid(ws), Var::lat_true(ws),
+      Var::lon_true(ws), Var::rtp_pos(ws), Var::rtp_los(ws), r_field,
+      Var::verbosity(ws));
 }
-
 
 /*! Switch between the elements of *surface_rtprop_agenda_array*.
 
@@ -26870,20 +24318,12 @@ with index *surface_type* (0-based) is called.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void surface_rtpropCallAgendaX(Workspace& ws) {
-surface_rtpropCallAgendaX(ws,
-Var::surface_skin_t(ws),
-Var::surface_los(ws),
-Var::surface_rmatrix(ws),
-Var::surface_emission(ws),
-Var::f_grid(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-Var::surface_rtprop_agenda_array(ws),
-Var::surface_type(ws),
-Var::surface_type_aux(ws),
-Var::verbosity(ws));
+  surface_rtpropCallAgendaX(
+      ws, Var::surface_skin_t(ws), Var::surface_los(ws),
+      Var::surface_rmatrix(ws), Var::surface_emission(ws), Var::f_grid(ws),
+      Var::rtp_pos(ws), Var::rtp_los(ws), Var::surface_rtprop_agenda_array(ws),
+      Var::surface_type(ws), Var::surface_type_aux(ws), Var::verbosity(ws));
 }
-
 
 /*! Extracts scalar surface reflectivities from a field of such data.
 
@@ -26919,21 +24359,14 @@ The interpolation is done in steps:
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void surface_scalar_reflectivityFromGriddedField4(Workspace& ws,
-const GriddedField4& r_field) {
-surface_scalar_reflectivityFromGriddedField4(Var::surface_scalar_reflectivity(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::rtp_pos(ws),
-Var::rtp_los(ws),
-r_field,
-Var::verbosity(ws));
+void surface_scalar_reflectivityFromGriddedField4(
+    Workspace& ws, const GriddedField4& r_field) {
+  surface_scalar_reflectivityFromGriddedField4(
+      Var::surface_scalar_reflectivity(ws), Var::stokes_dim(ws),
+      Var::f_grid(ws), Var::atmosphere_dim(ws), Var::lat_grid(ws),
+      Var::lat_true(ws), Var::lon_true(ws), Var::rtp_pos(ws), Var::rtp_los(ws),
+      r_field, Var::verbosity(ws));
 }
-
 
 /*! Sets *surface_scalar_reflectivity* based on *surface_rmatrix*.
 
@@ -26947,11 +24380,10 @@ the sum of surface_rmatrix(joker,f,0,0).
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void surface_scalar_reflectivityFromSurface_rmatrix(Workspace& ws) {
-surface_scalar_reflectivityFromSurface_rmatrix(Var::surface_scalar_reflectivity(ws),
-Var::surface_rmatrix(ws),
-Var::verbosity(ws));
+  surface_scalar_reflectivityFromSurface_rmatrix(
+      Var::surface_scalar_reflectivity(ws), Var::surface_rmatrix(ws),
+      Var::verbosity(ws));
 }
-
 
 /*! Closest neighbour interpolation of surface type mask.
 
@@ -26972,17 +24404,11 @@ The altitude in *rtp_pos* is ignored.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void surface_typeInterpTypeMask(Workspace& ws) {
-surface_typeInterpTypeMask(Var::surface_type(ws),
-Var::surface_type_aux(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::rtp_pos(ws),
-Var::surface_type_mask(ws),
-Var::verbosity(ws));
+  surface_typeInterpTypeMask(
+      Var::surface_type(ws), Var::surface_type_aux(ws), Var::atmosphere_dim(ws),
+      Var::lat_grid(ws), Var::lat_true(ws), Var::lon_true(ws), Var::rtp_pos(ws),
+      Var::surface_type_mask(ws), Var::verbosity(ws));
 }
-
 
 /*! Lookup SSMI emissivities from Telsem Atlas.
 
@@ -27003,18 +24429,10 @@ vector is returned.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void telsemAtlasLookup(Workspace& ws,
-Vector& emissivities,
-const Numeric& lat,
-const Numeric& lon,
-const TelsemAtlas& atlas) {
-telsemAtlasLookup(emissivities,
-lat,
-lon,
-atlas,
-Var::verbosity(ws));
+void telsemAtlasLookup(Workspace& ws, Vector& emissivities, const Numeric& lat,
+                       const Numeric& lon, const TelsemAtlas& atlas) {
+  telsemAtlasLookup(emissivities, lat, lon, atlas, Var::verbosity(ws));
 }
-
 
 /*! Stand-alone evaluation of the Telsem model.
 
@@ -27038,28 +24456,17 @@ exceeds the given *d_max* value.
 @param[in] theta - The incidence angle.
 @param[in] f - The frequencies for which to compute the emissivities.
 @param[in] ta - The Telsem atlas to use.
-@param[in] d_max - The maximum allowed distance for nearest neighbor interpolation in meters. (default: -1)
+@param[in] d_max - The maximum allowed distance for nearest neighbor
+interpolation in meters. (default: -1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void telsemStandalone(Workspace& ws,
-Matrix& emissivities,
-const Numeric& lat,
-const Numeric& lon,
-const Numeric& theta,
-const Vector& f,
-const TelsemAtlas& ta,
-const Numeric& d_max=-1) {
-telsemStandalone(emissivities,
-lat,
-lon,
-theta,
-f,
-ta,
-d_max,
-Var::verbosity(ws));
+void telsemStandalone(Workspace& ws, Matrix& emissivities, const Numeric& lat,
+                      const Numeric& lon, const Numeric& theta, const Vector& f,
+                      const TelsemAtlas& ta, const Numeric& d_max = -1) {
+  telsemStandalone(emissivities, lat, lon, theta, f, ta, d_max,
+                   Var::verbosity(ws));
 }
-
 
 /*! TELSEM based land sea mask.
 
@@ -27077,18 +24484,12 @@ properties.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void telsemSurfaceTypeLandSea(Workspace& ws,
-const TelsemAtlas& atlas) {
-telsemSurfaceTypeLandSea(Var::surface_type(ws),
-Var::atmosphere_dim(ws),
-Var::lat_grid(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::rtp_pos(ws),
-atlas,
-Var::verbosity(ws));
+void telsemSurfaceTypeLandSea(Workspace& ws, const TelsemAtlas& atlas) {
+  telsemSurfaceTypeLandSea(Var::surface_type(ws), Var::atmosphere_dim(ws),
+                           Var::lat_grid(ws), Var::lat_true(ws),
+                           Var::lon_true(ws), Var::rtp_pos(ws), atlas,
+                           Var::verbosity(ws));
 }
-
 
 /*! Reads single TELSEM atlas.
 
@@ -27102,22 +24503,18 @@ month and stores the result in the provided output atlas.
 @param[out] atlas - The atlas into which to store the loaded atlas.
 @param[in] directory - Directory with TELSEM 2 SSMI atlas files.
 @param[in] month - The month for which the atlas should be read.
-@param[in] filename_pattern - Filename pattern (@MM@ gets replaced by month number) (default: "ssmi_mean_emis_climato_@MM@_cov_interpol_M2")
+@param[in] filename_pattern - Filename pattern (@MM@ gets replaced by month
+number) (default: "ssmi_mean_emis_climato_@MM@_cov_interpol_M2")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void telsem_atlasReadAscii(Workspace& ws,
-TelsemAtlas& atlas,
-const String& directory,
-const Index& month,
-const String& filename_pattern="ssmi_mean_emis_climato_@MM@_cov_interpol_M2") {
-telsem_atlasReadAscii(atlas,
-directory,
-month,
-filename_pattern,
-Var::verbosity(ws));
+void telsem_atlasReadAscii(Workspace& ws, TelsemAtlas& atlas,
+                           const String& directory, const Index& month,
+                           const String& filename_pattern =
+                               "ssmi_mean_emis_climato_@MM@_cov_interpol_M2") {
+  telsem_atlasReadAscii(atlas, directory, month, filename_pattern,
+                        Var::verbosity(ws));
 }
-
 
 /*! Reads TELSEM atlas files.
 
@@ -27129,19 +24526,18 @@ The whole data is combined into the WSV *telsem_atlases*
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] directory - Directory with TELSEM 2 SSMI atlas files.
-@param[in] filename_pattern - Filename pattern (@MM@ gets replaced by month number) (default: "ssmi_mean_emis_climato_@MM@_cov_interpol_M2")
+@param[in] filename_pattern - Filename pattern (@MM@ gets replaced by month
+number) (default: "ssmi_mean_emis_climato_@MM@_cov_interpol_M2")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void telsem_atlasesReadAscii(Workspace& ws,
-const String& directory,
-const String& filename_pattern="ssmi_mean_emis_climato_@MM@_cov_interpol_M2") {
-telsem_atlasesReadAscii(Var::telsem_atlases(ws),
-directory,
-filename_pattern,
-Var::verbosity(ws));
+void telsem_atlasesReadAscii(
+    Workspace& ws, const String& directory,
+    const String& filename_pattern =
+        "ssmi_mean_emis_climato_@MM@_cov_interpol_M2") {
+  telsem_atlasesReadAscii(Var::telsem_atlases(ws), directory, filename_pattern,
+                          Var::verbosity(ws));
 }
-
 
 /*! Sets time to system_clock::now().
 
@@ -27151,11 +24547,7 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void timeNow(Workspace& ws) {
-timeNow(Var::time(ws),
-Var::verbosity(ws));
-}
-
+void timeNow(Workspace& ws) { timeNow(Var::time(ws), Var::verbosity(ws)); }
 
 /*! Offsets time for some seconds
 
@@ -27166,13 +24558,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void timeOffset(Workspace& ws,
-const Numeric& offset) {
-timeOffset(Var::time(ws),
-offset,
-Var::verbosity(ws));
+void timeOffset(Workspace& ws, const Numeric& offset) {
+  timeOffset(Var::time(ws), offset, Var::verbosity(ws));
 }
-
 
 /*! Sleeps until time has been reached.
 
@@ -27182,11 +24570,7 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void timeSleep(Workspace& ws) {
-timeSleep(Var::time(ws),
-Var::verbosity(ws));
-}
-
+void timeSleep(Workspace& ws) { timeSleep(Var::time(ws), Var::verbosity(ws)); }
 
 /*! Offsets a time grid by some seconds.
 
@@ -27197,13 +24581,9 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void time_gridOffset(Workspace& ws,
-const Numeric& dt) {
-time_gridOffset(Var::time_grid(ws),
-dt,
-Var::verbosity(ws));
+void time_gridOffset(Workspace& ws, const Numeric& dt) {
+  time_gridOffset(Var::time_grid(ws), dt, Var::verbosity(ws));
 }
-
 
 /*! Sort *in* by *time_stamps* into *out*.
 
@@ -27216,15 +24596,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 template <typename Any_0, typename Any_1>
-void time_stampsSort(Workspace& ws,
-Any_0& out,
-const Any_1& in) {
-time_stampsSort(out,
-Var::time_stamps(ws),
-in,
-Var::verbosity(ws));
+void time_stampsSort(Workspace& ws, Any_0& out, const Any_1& in) {
+  time_stampsSort(out, Var::time_stamps(ws), in, Var::verbosity(ws));
 }
-
 
 /*! Initializes the CPU timer.
 Use *timerStop* to stop the timer.
@@ -27242,10 +24616,8 @@ Usage example:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void timerStart(Workspace& ws) {
-timerStart(Var::timer(ws),
-Var::verbosity(ws));
+  timerStart(Var::timer(ws), Var::verbosity(ws));
 }
-
 
 /*! Stops the CPU timer.
 See *timerStart* for example usage.
@@ -27256,11 +24628,7 @@ See *timerStart* for example usage.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void timerStop(Workspace& ws) {
-timerStop(Var::timer(ws),
-Var::verbosity(ws));
-}
-
+void timerStop(Workspace& ws) { timerStop(Var::timer(ws), Var::verbosity(ws)); }
 
 /*! Creates a vector of transmittance values.
 
@@ -27277,14 +24645,88 @@ as input to some of the FASTEM methods.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void transmittanceFromIy_aux(Workspace& ws,
-Vector& transmittance) {
-transmittanceFromIy_aux(transmittance,
-Var::iy_aux_vars(ws),
-Var::iy_aux(ws),
-Var::verbosity(ws));
+void transmittanceFromIy_aux(Workspace& ws, Vector& transmittance) {
+  transmittanceFromIy_aux(transmittance, Var::iy_aux_vars(ws), Var::iy_aux(ws),
+                          Var::verbosity(ws));
 }
 
+/*! Initializes the verbosity levels.
+
+Sets verbosity to defaults or the levels specified by -r on the command line.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+void verbosityInit(Workspace& ws) { verbosityInit(Var::verbosity(ws)); }
+
+/*! Sets the verbosity levels.
+
+Sets the reporting level for agenda calls, screen and file.
+All reporting levels can reach from 0 (only error messages)
+to 3 (everything). The agenda setting applies in addition
+to both screen and file output.
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] agenda - Agenda verbosity level
+@param[in] screen - Screen verbosity level
+@param[in] file - Report file verbosity level
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+void verbositySet(Workspace& ws, const Index& agenda, const Index& screen,
+                  const Index& file) {
+  verbositySet(Var::verbosity(ws), agenda, screen, file);
+}
+
+/*! Sets the verbosity level for agenda output.
+
+See *verbositySet*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] level - Agenda verbosity level
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+void verbositySetAgenda(Workspace& ws, const Index& level) {
+  verbositySetAgenda(Var::verbosity(ws), level);
+}
+
+/*! Sets the verbosity level for report file output.
+
+See *verbositySet*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] level - Report file verbosity level
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+void verbositySetFile(Workspace& ws, const Index& level) {
+  verbositySetFile(Var::verbosity(ws), level);
+}
+
+/*! Sets the verbosity level for screen output.
+
+See *verbositySet*
+
+@author Oliver Lemke
+
+@param[in,out] Workspace ws - An ARTS workspace
+@param[in] level - Screen verbosity level
+
+Use the ARTS documentation to read more on how the workspace is manipulated
+*/
+void verbositySetScreen(Workspace& ws, const Index& level) {
+  verbositySetScreen(Var::verbosity(ws), level);
+}
 
 /*! Clipping of *vmr_field*.
 
@@ -27301,23 +24743,20 @@ species.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] species - Name of species to consider, or "ALL".
-@param[in] limit_low - Lower limit for clipping. (default: -std::numeric_limits<Numeric>::infinity())
-@param[in] limit_high - Upper limit for clipping. (default: std::numeric_limits<Numeric>::infinity())
+@param[in] limit_low - Lower limit for clipping. (default:
+-std::numeric_limits<Numeric>::infinity())
+@param[in] limit_high - Upper limit for clipping. (default:
+std::numeric_limits<Numeric>::infinity())
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void vmr_fieldClip(Workspace& ws,
-const String& species,
-const Numeric& limit_low=-std::numeric_limits<Numeric>::infinity(),
-const Numeric& limit_high=std::numeric_limits<Numeric>::infinity()) {
-vmr_fieldClip(Var::vmr_field(ws),
-Var::abs_species(ws),
-species,
-limit_low,
-limit_high,
-Var::verbosity(ws));
+void vmr_fieldClip(
+    Workspace& ws, const String& species,
+    const Numeric& limit_low = -std::numeric_limits<Numeric>::infinity(),
+    const Numeric& limit_high = std::numeric_limits<Numeric>::infinity()) {
+  vmr_fieldClip(Var::vmr_field(ws), Var::abs_species(ws), species, limit_low,
+                limit_high, Var::verbosity(ws));
 }
-
 
 /*! Adds a perturbation to *vmr_field*.
 
@@ -27330,36 +24769,24 @@ Works as *AtmFieldPerturb* but acts on *vmr_field*.
 @param[in] p_ret_grid - Pressure retrieval grid.
 @param[in] lat_ret_grid - Latitude retrieval grid.
 @param[in] lon_ret_grid - Longitude retrieval grid.
-@param[in] pert_index - Index of position where the perturbation shall be performed.
+@param[in] pert_index - Index of position where the perturbation shall be
+performed.
 @param[in] pert_size - Size of perturbation.
-@param[in] pert_mode - Type of perturbation, ansolute or relative. (default: "absolute")
+@param[in] pert_mode - Type of perturbation, ansolute or relative. (default:
+"absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void vmr_fieldPerturb(Workspace& ws,
-const String& species,
-const Vector& p_ret_grid,
-const Vector& lat_ret_grid,
-const Vector& lon_ret_grid,
-const Index& pert_index,
-const Numeric& pert_size,
-const String& pert_mode="absolute") {
-vmr_fieldPerturb(Var::vmr_field(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::abs_species(ws),
-species,
-p_ret_grid,
-lat_ret_grid,
-lon_ret_grid,
-pert_index,
-pert_size,
-pert_mode,
-Var::verbosity(ws));
+void vmr_fieldPerturb(Workspace& ws, const String& species,
+                      const Vector& p_ret_grid, const Vector& lat_ret_grid,
+                      const Vector& lon_ret_grid, const Index& pert_index,
+                      const Numeric& pert_size,
+                      const String& pert_mode = "absolute") {
+  vmr_fieldPerturb(Var::vmr_field(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+                   Var::lat_grid(ws), Var::lon_grid(ws), Var::abs_species(ws),
+                   species, p_ret_grid, lat_ret_grid, lon_ret_grid, pert_index,
+                   pert_size, pert_mode, Var::verbosity(ws));
 }
-
 
 /*! Adds a perturbation to *vmr_field*.
 
@@ -27369,30 +24796,22 @@ Works as *AtmFieldPerturbAtmGrids* but acts on *vmr_field*.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] species - Name of species to perturb.
-@param[in] pert_index - Index of position where the perturbation shall be performed.
+@param[in] pert_index - Index of position where the perturbation shall be
+performed.
 @param[in] pert_size - Size of perturbation.
-@param[in] pert_mode - Type of perturbation, ansolute or relative. (default: "absolute")
+@param[in] pert_mode - Type of perturbation, ansolute or relative. (default:
+"absolute")
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void vmr_fieldPerturbAtmGrids(Workspace& ws,
-const String& species,
-const Index& pert_index,
-const Numeric& pert_size,
-const String& pert_mode="absolute") {
-vmr_fieldPerturbAtmGrids(Var::vmr_field(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::abs_species(ws),
-species,
-pert_index,
-pert_size,
-pert_mode,
-Var::verbosity(ws));
+void vmr_fieldPerturbAtmGrids(Workspace& ws, const String& species,
+                              const Index& pert_index, const Numeric& pert_size,
+                              const String& pert_mode = "absolute") {
+  vmr_fieldPerturbAtmGrids(
+      Var::vmr_field(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+      Var::lat_grid(ws), Var::lon_grid(ws), Var::abs_species(ws), species,
+      pert_index, pert_size, pert_mode, Var::verbosity(ws));
 }
-
 
 /*! Sets the VMR of all species to a select constant value.
 
@@ -27406,14 +24825,10 @@ The length of vmr_values and of abs_species must match.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void vmr_fieldSetAllConstant(Workspace& ws,
-const Vector& vmr_values) {
-vmr_fieldSetAllConstant(Var::vmr_field(ws),
-Var::abs_species(ws),
-vmr_values,
-Var::verbosity(ws));
+void vmr_fieldSetAllConstant(Workspace& ws, const Vector& vmr_values) {
+  vmr_fieldSetAllConstant(Var::vmr_field(ws), Var::abs_species(ws), vmr_values,
+                          Var::verbosity(ws));
 }
-
 
 /*! Sets the VMR of a species to a constant value.
 
@@ -27427,16 +24842,11 @@ The *vmr_field* WSM must have a correct size before calling this method.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void vmr_fieldSetConstant(Workspace& ws,
-const String& species,
-const Numeric& vmr_value) {
-vmr_fieldSetConstant(Var::vmr_field(ws),
-Var::abs_species(ws),
-species,
-vmr_value,
-Var::verbosity(ws));
+void vmr_fieldSetConstant(Workspace& ws, const String& species,
+                          const Numeric& vmr_value) {
+  vmr_fieldSetConstant(Var::vmr_field(ws), Var::abs_species(ws), species,
+                       vmr_value, Var::verbosity(ws));
 }
-
 
 /*! Calculates *water_p_eq_field* according to Murphy and Koop, 2005.
 
@@ -27456,11 +24866,9 @@ Journal of the Royal Meteorological Society, 131(608), 1539-1565.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void water_p_eq_fieldMK05(Workspace& ws) {
-water_p_eq_fieldMK05(Var::water_p_eq_field(ws),
-Var::t_field(ws),
-Var::verbosity(ws));
+  water_p_eq_fieldMK05(Var::water_p_eq_field(ws), Var::t_field(ws),
+                       Var::verbosity(ws));
 }
-
 
 /*! Maps the planet's rotation to an imaginary wind.
 
@@ -27479,17 +24887,11 @@ The rotation of the planet is not causing any Doppler shift for
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void wind_u_fieldIncludePlanetRotation(Workspace& ws) {
-wind_u_fieldIncludePlanetRotation(Var::wind_u_field(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::refellipsoid(ws),
-Var::z_field(ws),
-Var::planet_rotation_period(ws),
-Var::verbosity(ws));
+  wind_u_fieldIncludePlanetRotation(
+      Var::wind_u_field(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+      Var::lat_grid(ws), Var::lon_grid(ws), Var::refellipsoid(ws),
+      Var::z_field(ws), Var::planet_rotation_period(ws), Var::verbosity(ws));
 }
-
 
 /*! Maps *x* to atmospheric and surface variables.
 
@@ -27514,34 +24916,18 @@ Should only be used inside *inversion_iterate_agenda*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void x2artsAtmAndSurf(Workspace& ws) {
-x2artsAtmAndSurf(ws,
-Var::vmr_field(ws),
-Var::t_field(ws),
-Var::particle_bulkprop_field(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::surface_props_data(ws),
-Var::jacobian_quantities(ws),
-Var::x(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::abs_species(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::particle_bulkprop_names(ws),
-Var::surface_props_names(ws),
-Var::water_p_eq_agenda(ws),
-Var::verbosity(ws));
+  x2artsAtmAndSurf(
+      ws, Var::vmr_field(ws), Var::t_field(ws),
+      Var::particle_bulkprop_field(ws), Var::wind_u_field(ws),
+      Var::wind_v_field(ws), Var::wind_w_field(ws), Var::mag_u_field(ws),
+      Var::mag_v_field(ws), Var::mag_w_field(ws), Var::surface_props_data(ws),
+      Var::jacobian_quantities(ws), Var::x(ws), Var::atmfields_checked(ws),
+      Var::atmgeom_checked(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+      Var::lat_grid(ws), Var::lon_grid(ws), Var::abs_species(ws),
+      Var::cloudbox_on(ws), Var::cloudbox_checked(ws),
+      Var::particle_bulkprop_names(ws), Var::surface_props_names(ws),
+      Var::water_p_eq_agenda(ws), Var::verbosity(ws));
 }
-
 
 /*! Maps *x* to sensor variables.
 
@@ -27571,26 +24957,15 @@ correction.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void x2artsSensor(Workspace& ws) {
-x2artsSensor(ws,
-Var::sensor_los(ws),
-Var::f_backend(ws),
-Var::y_baseline(ws),
-Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::sensor_response_f_grid(ws),
-Var::sensor_response_pol_grid(ws),
-Var::sensor_response_dlos_grid(ws),
-Var::mblock_dlos_grid(ws),
-Var::jacobian_quantities(ws),
-Var::x(ws),
-Var::sensor_response_agenda(ws),
-Var::sensor_checked(ws),
-Var::sensor_time(ws),
-Var::verbosity(ws));
+  x2artsSensor(
+      ws, Var::sensor_los(ws), Var::f_backend(ws), Var::y_baseline(ws),
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::sensor_response_f_grid(ws), Var::sensor_response_pol_grid(ws),
+      Var::sensor_response_dlos_grid(ws), Var::mblock_dlos_grid(ws),
+      Var::jacobian_quantities(ws), Var::x(ws), Var::sensor_response_agenda(ws),
+      Var::sensor_checked(ws), Var::sensor_time(ws), Var::verbosity(ws));
 }
-
 
 /*! Just defined to indicate a future extensiom.
 
@@ -27603,9 +24978,8 @@ Don't call the method, it will just generate an error.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void x2artsSpectroscopy(Workspace& ws) {
-x2artsSpectroscopy(Var::verbosity(ws));
+  x2artsSpectroscopy(Var::verbosity(ws));
 }
-
 
 /*! Clipping of the state vector.
 
@@ -27625,23 +24999,20 @@ Notice that limits must be specified in the unit used in *x*.
 
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] ijq - Retrieval quantity index (zero-based)
-@param[in] limit_low - Lower limit for clipping. (default: -std::numeric_limits<Numeric>::infinity())
-@param[in] limit_high - Upper limit for clipping. (default: std::numeric_limits<Numeric>::infinity())
+@param[in] limit_low - Lower limit for clipping. (default:
+-std::numeric_limits<Numeric>::infinity())
+@param[in] limit_high - Upper limit for clipping. (default:
+std::numeric_limits<Numeric>::infinity())
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void xClip(Workspace& ws,
-const Index& ijq,
-const Numeric& limit_low=-std::numeric_limits<Numeric>::infinity(),
-const Numeric& limit_high=std::numeric_limits<Numeric>::infinity()) {
-xClip(Var::x(ws),
-Var::jacobian_quantities(ws),
-ijq,
-limit_low,
-limit_high,
-Var::verbosity(ws));
+void xClip(
+    Workspace& ws, const Index& ijq,
+    const Numeric& limit_low = -std::numeric_limits<Numeric>::infinity(),
+    const Numeric& limit_high = std::numeric_limits<Numeric>::infinity()) {
+  xClip(Var::x(ws), Var::jacobian_quantities(ws), ijq, limit_low, limit_high,
+        Var::verbosity(ws));
 }
-
 
 /*! Standard function for creating *xa*.
 
@@ -27663,34 +25034,18 @@ are handled:
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void xaStandard(Workspace& ws) {
-xaStandard(ws,
-Var::xa(ws),
-Var::jacobian_quantities(ws),
-Var::atmfields_checked(ws),
-Var::atmgeom_checked(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::abs_species(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::particle_bulkprop_field(ws),
-Var::particle_bulkprop_names(ws),
-Var::wind_u_field(ws),
-Var::wind_v_field(ws),
-Var::wind_w_field(ws),
-Var::mag_u_field(ws),
-Var::mag_v_field(ws),
-Var::mag_w_field(ws),
-Var::surface_props_data(ws),
-Var::surface_props_names(ws),
-Var::water_p_eq_agenda(ws),
-Var::verbosity(ws));
+  xaStandard(ws, Var::xa(ws), Var::jacobian_quantities(ws),
+             Var::atmfields_checked(ws), Var::atmgeom_checked(ws),
+             Var::atmosphere_dim(ws), Var::p_grid(ws), Var::lat_grid(ws),
+             Var::lon_grid(ws), Var::t_field(ws), Var::vmr_field(ws),
+             Var::abs_species(ws), Var::cloudbox_on(ws),
+             Var::cloudbox_checked(ws), Var::particle_bulkprop_field(ws),
+             Var::particle_bulkprop_names(ws), Var::wind_u_field(ws),
+             Var::wind_v_field(ws), Var::wind_w_field(ws), Var::mag_u_field(ws),
+             Var::mag_v_field(ws), Var::mag_w_field(ws),
+             Var::surface_props_data(ws), Var::surface_props_names(ws),
+             Var::water_p_eq_agenda(ws), Var::verbosity(ws));
 }
-
 
 /*! Replaces *yCalc* for radar/lidar calculations.
 
@@ -27727,7 +25082,7 @@ where sum(sigma) = 4 * pi * b, and b is the backscatter coefficient.
 
 The reference dielectric factor can either specified directly by
 the argument *k2*. For example, to mimic the CloudSat data, *k2*
-shall be set to 0.75 (citaion needed). If *k2* is set to be 
+shall be set to 0.75 (citaion needed). If *k2* is set to be
 negative (which is defualt), k2 is calculated as:
    k2 = abs( (n^2-1)/(n^2+2) )^2,
 where n is the refractive index of liquid water at temperature
@@ -27741,50 +25096,26 @@ clip value when Ze < 10^(dbze_min/10).
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] ze_tref - Reference temperature for conversion to Ze. (default: 273.15)
+@param[in] ze_tref - Reference temperature for conversion to Ze. (default:
+273.15)
 @param[in] k2 - Reference dielectric factor. (default: -1)
 @param[in] dbze_min - Clip value for dBZe. (default: -99)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void yActive(Workspace& ws,
-const Numeric& ze_tref=273.15,
-const Numeric& k2=-1,
-const Numeric& dbze_min=-99) {
-yActive(ws,
-Var::y(ws),
-Var::y_f(ws),
-Var::y_pol(ws),
-Var::y_pos(ws),
-Var::y_los(ws),
-Var::y_aux(ws),
-Var::y_geo(ws),
-Var::jacobian(ws),
-Var::atmgeom_checked(ws),
-Var::atmfields_checked(ws),
-Var::iy_unit(ws),
-Var::iy_aux_vars(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::atmosphere_dim(ws),
-Var::nlte_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::sensor_pos(ws),
-Var::sensor_los(ws),
-Var::sensor_checked(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::iy_main_agenda(ws),
-Var::geo_pos_agenda(ws),
-Var::instrument_pol_array(ws),
-Var::range_bins(ws),
-ze_tref,
-k2,
-dbze_min,
-Var::verbosity(ws));
+void yActive(Workspace& ws, const Numeric& ze_tref = 273.15,
+             const Numeric& k2 = -1, const Numeric& dbze_min = -99) {
+  yActive(ws, Var::y(ws), Var::y_f(ws), Var::y_pol(ws), Var::y_pos(ws),
+          Var::y_los(ws), Var::y_aux(ws), Var::y_geo(ws), Var::jacobian(ws),
+          Var::atmgeom_checked(ws), Var::atmfields_checked(ws),
+          Var::iy_unit(ws), Var::iy_aux_vars(ws), Var::stokes_dim(ws),
+          Var::f_grid(ws), Var::atmosphere_dim(ws), Var::nlte_field(ws),
+          Var::cloudbox_on(ws), Var::cloudbox_checked(ws), Var::sensor_pos(ws),
+          Var::sensor_los(ws), Var::sensor_checked(ws), Var::jacobian_do(ws),
+          Var::jacobian_quantities(ws), Var::iy_main_agenda(ws),
+          Var::geo_pos_agenda(ws), Var::instrument_pol_array(ws),
+          Var::range_bins(ws), ze_tref, k2, dbze_min, Var::verbosity(ws));
 }
-
 
 /*! Extraction of arbitrary linear polarisation.
 
@@ -27806,21 +25137,11 @@ set to the value matching the first Stokes element.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void yApplySensorPol(Workspace& ws) {
-yApplySensorPol(Var::y(ws),
-Var::y_f(ws),
-Var::y_pol(ws),
-Var::y_pos(ws),
-Var::y_los(ws),
-Var::y_aux(ws),
-Var::y_geo(ws),
-Var::jacobian(ws),
-Var::stokes_dim(ws),
-Var::jacobian_do(ws),
-Var::sensor_pos(ws),
-Var::sensor_pol(ws),
-Var::verbosity(ws));
+  yApplySensorPol(Var::y(ws), Var::y_f(ws), Var::y_pol(ws), Var::y_pos(ws),
+                  Var::y_los(ws), Var::y_aux(ws), Var::y_geo(ws),
+                  Var::jacobian(ws), Var::stokes_dim(ws), Var::jacobian_do(ws),
+                  Var::sensor_pos(ws), Var::sensor_pol(ws), Var::verbosity(ws));
 }
-
 
 /*! Conversion of *y* to other spectral units.
 
@@ -27857,14 +25178,9 @@ Conversion of *y_aux* is not supported.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void yApplyUnit(Workspace& ws) {
-yApplyUnit(Var::y(ws),
-Var::jacobian(ws),
-Var::y_f(ws),
-Var::y_pol(ws),
-Var::iy_unit(ws),
-Var::verbosity(ws));
+  yApplyUnit(Var::y(ws), Var::jacobian(ws), Var::y_f(ws), Var::y_pol(ws),
+             Var::iy_unit(ws), Var::verbosity(ws));
 }
-
 
 /*! Calculation of complete measurement vectors (y).
 
@@ -27903,43 +25219,20 @@ included by calling *jacobianAdjustAndTransform*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void yCalc(Workspace& ws) {
-yCalc(ws,
-Var::y(ws),
-Var::y_f(ws),
-Var::y_pol(ws),
-Var::y_pos(ws),
-Var::y_los(ws),
-Var::y_aux(ws),
-Var::y_geo(ws),
-Var::jacobian(ws),
-Var::atmgeom_checked(ws),
-Var::atmfields_checked(ws),
-Var::atmosphere_dim(ws),
-Var::nlte_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::scat_data_checked(ws),
-Var::sensor_checked(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::sensor_pos(ws),
-Var::sensor_los(ws),
-Var::transmitter_pos(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::iy_unit(ws),
-Var::iy_main_agenda(ws),
-Var::geo_pos_agenda(ws),
-Var::jacobian_agenda(ws),
-Var::jacobian_do(ws),
-Var::jacobian_quantities(ws),
-Var::iy_aux_vars(ws),
-Var::verbosity(ws));
+  yCalc(ws, Var::y(ws), Var::y_f(ws), Var::y_pol(ws), Var::y_pos(ws),
+        Var::y_los(ws), Var::y_aux(ws), Var::y_geo(ws), Var::jacobian(ws),
+        Var::atmgeom_checked(ws), Var::atmfields_checked(ws),
+        Var::atmosphere_dim(ws), Var::nlte_field(ws), Var::cloudbox_on(ws),
+        Var::cloudbox_checked(ws), Var::scat_data_checked(ws),
+        Var::sensor_checked(ws), Var::stokes_dim(ws), Var::f_grid(ws),
+        Var::sensor_pos(ws), Var::sensor_los(ws), Var::transmitter_pos(ws),
+        Var::mblock_dlos_grid(ws), Var::sensor_response(ws),
+        Var::sensor_response_f(ws), Var::sensor_response_pol(ws),
+        Var::sensor_response_dlos(ws), Var::iy_unit(ws),
+        Var::iy_main_agenda(ws), Var::geo_pos_agenda(ws),
+        Var::jacobian_agenda(ws), Var::jacobian_do(ws),
+        Var::jacobian_quantities(ws), Var::iy_aux_vars(ws), Var::verbosity(ws));
 }
-
 
 /*! Replaces *yCalc* if a measurement shall be appended to an
 existing one.
@@ -27984,55 +25277,35 @@ when the complete Jacobian is at hand.
 @author Patrick Eriksson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] jacobian_quantities_copy - Copy of *jacobian_quantities* of first measurement.
-@param[in] append_instrument_wfs - Flag controlling if instrumental weighting functions are appended or treated as different retrieval quantities. (default: 0)
+@param[in] jacobian_quantities_copy - Copy of *jacobian_quantities* of first
+measurement.
+@param[in] append_instrument_wfs - Flag controlling if instrumental weighting
+functions are appended or treated as different retrieval quantities. (default:
+0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void yCalcAppend(Workspace& ws,
-const ArrayOfRetrievalQuantity& jacobian_quantities_copy,
-const Index& append_instrument_wfs=0) {
-yCalcAppend(ws,
-Var::y(ws),
-Var::y_f(ws),
-Var::y_pol(ws),
-Var::y_pos(ws),
-Var::y_los(ws),
-Var::y_aux(ws),
-Var::y_geo(ws),
-Var::jacobian(ws),
-Var::jacobian_quantities(ws),
-Var::atmgeom_checked(ws),
-Var::atmfields_checked(ws),
-Var::atmosphere_dim(ws),
-Var::nlte_field(ws),
-Var::cloudbox_on(ws),
-Var::cloudbox_checked(ws),
-Var::scat_data_checked(ws),
-Var::sensor_checked(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-Var::sensor_pos(ws),
-Var::sensor_los(ws),
-Var::transmitter_pos(ws),
-Var::mblock_dlos_grid(ws),
-Var::sensor_response(ws),
-Var::sensor_response_f(ws),
-Var::sensor_response_pol(ws),
-Var::sensor_response_dlos(ws),
-Var::iy_unit(ws),
-Var::iy_main_agenda(ws),
-Var::geo_pos_agenda(ws),
-Var::jacobian_agenda(ws),
-Var::jacobian_do(ws),
-Var::iy_aux_vars(ws),
-jacobian_quantities_copy,
-append_instrument_wfs,
-Var::verbosity(ws));
+                 const ArrayOfRetrievalQuantity& jacobian_quantities_copy,
+                 const Index& append_instrument_wfs = 0) {
+  yCalcAppend(
+      ws, Var::y(ws), Var::y_f(ws), Var::y_pol(ws), Var::y_pos(ws),
+      Var::y_los(ws), Var::y_aux(ws), Var::y_geo(ws), Var::jacobian(ws),
+      Var::jacobian_quantities(ws), Var::atmgeom_checked(ws),
+      Var::atmfields_checked(ws), Var::atmosphere_dim(ws), Var::nlte_field(ws),
+      Var::cloudbox_on(ws), Var::cloudbox_checked(ws),
+      Var::scat_data_checked(ws), Var::sensor_checked(ws), Var::stokes_dim(ws),
+      Var::f_grid(ws), Var::sensor_pos(ws), Var::sensor_los(ws),
+      Var::transmitter_pos(ws), Var::mblock_dlos_grid(ws),
+      Var::sensor_response(ws), Var::sensor_response_f(ws),
+      Var::sensor_response_pol(ws), Var::sensor_response_dlos(ws),
+      Var::iy_unit(ws), Var::iy_main_agenda(ws), Var::geo_pos_agenda(ws),
+      Var::jacobian_agenda(ws), Var::jacobian_do(ws), Var::iy_aux_vars(ws),
+      jacobian_quantities_copy, append_instrument_wfs, Var::verbosity(ws));
 }
 
-
-/*! Computes *y* from input using standard calibration scheme of cold-atm-hot observations
+/*! Computes *y* from input using standard calibration scheme of cold-atm-hot
+observations
 
 If calib evaluates as true:
     y = cold_temp + (hot_temp - cold_temp) * (atm - cold) / (hot - cold)
@@ -28048,27 +25321,17 @@ If calib evaluates as false:
 @param[in] hot - N-elem Vector of hot load linear power
 @param[in] cold_temp - Cold load temperature
 @param[in] hot_temp - Hot load temperature
-@param[in] calib - Flag for calibration scheme, false means system temperature is computed (default: 1)
+@param[in] calib - Flag for calibration scheme, false means system temperature
+is computed (default: 1)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void yColdAtmHot(Workspace& ws,
-const Vector& cold,
-const Vector& atm,
-const Vector& hot,
-const Numeric& cold_temp,
-const Numeric& hot_temp,
-const Index& calib=1) {
-yColdAtmHot(Var::y(ws),
-cold,
-atm,
-hot,
-cold_temp,
-hot_temp,
-calib,
-Var::verbosity(ws));
+void yColdAtmHot(Workspace& ws, const Vector& cold, const Vector& atm,
+                 const Vector& hot, const Numeric& cold_temp,
+                 const Numeric& hot_temp, const Index& calib = 1) {
+  yColdAtmHot(Var::y(ws), cold, atm, hot, cold_temp, hot_temp, calib,
+              Var::verbosity(ws));
 }
-
 
 /*! Converts *iy* to *y* assuming a fixed frequency resolution.
 
@@ -28089,17 +25352,11 @@ Auxiliary variables and *jacobian*s are not handled.
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ySimpleSpectrometer(Workspace& ws,
-const Numeric& df) {
-ySimpleSpectrometer(Var::y(ws),
-Var::y_f(ws),
-Var::iy(ws),
-Var::stokes_dim(ws),
-Var::f_grid(ws),
-df,
-Var::verbosity(ws));
+void ySimpleSpectrometer(Workspace& ws, const Numeric& df) {
+  ySimpleSpectrometer(Var::y(ws), Var::y_f(ws), Var::iy(ws),
+                      Var::stokes_dim(ws), Var::f_grid(ws), df,
+                      Var::verbosity(ws));
 }
-
 
 /*! Performs batch calculations for the measurement vector y.
 
@@ -28136,7 +25393,7 @@ could look like this:
       yCalc
    }
 
-Jacobians are also collected, and stored in output variable *ybatch_jacobians*. 
+Jacobians are also collected, and stored in output variable *ybatch_jacobians*.
 (This will be empty if yCalc produces empty Jacobians.)
 
 See the user guide for further practical examples.
@@ -28152,19 +25409,12 @@ failed job in *ybatch* is left empty. (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ybatchCalc(Workspace& ws,
-const Index& robust=0) {
-ybatchCalc(ws,
-Var::ybatch(ws),
-Var::ybatch_aux(ws),
-Var::ybatch_jacobians(ws),
-Var::ybatch_start(ws),
-Var::ybatch_n(ws),
-Var::ybatch_calc_agenda(ws),
-robust,
-Var::verbosity(ws));
+void ybatchCalc(Workspace& ws, const Index& robust = 0) {
+  ybatchCalc(ws, Var::ybatch(ws), Var::ybatch_aux(ws),
+             Var::ybatch_jacobians(ws), Var::ybatch_start(ws),
+             Var::ybatch_n(ws), Var::ybatch_calc_agenda(ws), robust,
+             Var::verbosity(ws));
 }
-
 
 /*! This method is used for simulating ARTS for metoffice model fields
 This method reads in *met_amsu_data* which contains the
@@ -28176,12 +25426,12 @@ field, humidity field, and particle number density field. The
 temperature field and altitude field are stored in the same dimensions
 as *t_field_raw* and *z_field_raw*. The oxygen and nitrogen VMRs are
 set to constant values of 0.209 and 0.782, respectively and are used
-along with humidity field to generate *vmr_field_raw*. 
+along with humidity field to generate *vmr_field_raw*.
 
 The three fields *t_field_raw*, *z_field_raw*, and *vmr_field_raw* are
 given as input to *met_profile_calc_agenda* which is called in this
 method. See documentation of WSM *met_profile_calc_agenda* for more
-information on this agenda. 
+information on this agenda.
 
 The method also converts satellite zenith angle to appropriate
 *sensor_los*. It also sets the *p_grid* and *cloudbox_limits*
@@ -28196,28 +25446,16 @@ from the profiles inside the function
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ybatchMetProfiles(Workspace& ws,
-const Index& nelem_p_grid,
-const String& met_profile_path,
-const String& met_profile_pnd_path) {
-ybatchMetProfiles(ws,
-Var::ybatch(ws),
-Var::abs_species(ws),
-Var::met_profile_calc_agenda(ws),
-Var::f_grid(ws),
-Var::met_amsu_data(ws),
-Var::sensor_pos(ws),
-Var::refellipsoid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::atmosphere_dim(ws),
-Var::scat_data(ws),
-nelem_p_grid,
-met_profile_path,
-met_profile_pnd_path,
-Var::verbosity(ws));
+void ybatchMetProfiles(Workspace& ws, const Index& nelem_p_grid,
+                       const String& met_profile_path,
+                       const String& met_profile_pnd_path) {
+  ybatchMetProfiles(ws, Var::ybatch(ws), Var::abs_species(ws),
+                    Var::met_profile_calc_agenda(ws), Var::f_grid(ws),
+                    Var::met_amsu_data(ws), Var::sensor_pos(ws),
+                    Var::refellipsoid(ws), Var::lat_grid(ws), Var::lon_grid(ws),
+                    Var::atmosphere_dim(ws), Var::scat_data(ws), nelem_p_grid,
+                    met_profile_path, met_profile_pnd_path, Var::verbosity(ws));
 }
-
 
 /*! This method is used for simulating ARTS for metoffice model fields
 for clear sky conditions.
@@ -28231,12 +25469,12 @@ field, humidity field, and particle number density field. The
 temperature field and altitude field are stored in the same dimensions
 as *t_field_raw* and *z_field_raw*. The oxygen and nitrogen VMRs are
 set to constant values of 0.209 and 0.782, respectively and are used
-along with humidity field to generate *vmr_field_raw*. 
+along with humidity field to generate *vmr_field_raw*.
 
 The three fields *t_field_raw*, *z_field_raw*, and *vmr_field_raw* are
 given as input to *met_profile_calc_agenda* which is called in this
 method. See documentation of WSM *met_profile_calc_agenda* for more
-information on this agenda. 
+information on this agenda.
 
 The method also converts satellite zenith angle to appropriate
 *sensor_los*. It also sets the *p_grid* and *cloudbox_limits*
@@ -28250,22 +25488,14 @@ from the profiles inside the function
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ybatchMetProfilesClear(Workspace& ws,
-const Index& nelem_p_grid,
-const String& met_profile_path) {
-ybatchMetProfilesClear(ws,
-Var::ybatch(ws),
-Var::abs_species(ws),
-Var::met_profile_calc_agenda(ws),
-Var::f_grid(ws),
-Var::met_amsu_data(ws),
-Var::sensor_pos(ws),
-Var::refellipsoid(ws),
-nelem_p_grid,
-met_profile_path,
-Var::verbosity(ws));
+void ybatchMetProfilesClear(Workspace& ws, const Index& nelem_p_grid,
+                            const String& met_profile_path) {
+  ybatchMetProfilesClear(ws, Var::ybatch(ws), Var::abs_species(ws),
+                         Var::met_profile_calc_agenda(ws), Var::f_grid(ws),
+                         Var::met_amsu_data(ws), Var::sensor_pos(ws),
+                         Var::refellipsoid(ws), nelem_p_grid, met_profile_path,
+                         Var::verbosity(ws));
 }
-
 
 /*! Time average of *ybatch* and *time_grid*
 
@@ -28275,26 +25505,22 @@ stores the number of elements per averaging in *counts*
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] time_step - Time step in the form "INDEX SCALE", where SCALE is "h", "min", or "s" for hours, minutes or seconds
-@param[in] disregard_first - Flag to remove first time step (e.g., if it is an incomplete step) (default: 0)
-@param[in] disregard_last - Flag to remove last time step (e.g., if it is an incomplete step) (default: 0)
+@param[in] time_step - Time step in the form "INDEX SCALE", where SCALE is "h",
+"min", or "s" for hours, minutes or seconds
+@param[in] disregard_first - Flag to remove first time step (e.g., if it is an
+incomplete step) (default: 0)
+@param[in] disregard_last - Flag to remove last time step (e.g., if it is an
+incomplete step) (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ybatchTimeAveraging(Workspace& ws,
-const String& time_step,
-const Index& disregard_first=0,
-const Index& disregard_last=0) {
-ybatchTimeAveraging(Var::ybatch(ws),
-Var::time_grid(ws),
-Var::covmat_sepsbatch(ws),
-Var::counts(ws),
-time_step,
-disregard_first,
-disregard_last,
-Var::verbosity(ws));
+void ybatchTimeAveraging(Workspace& ws, const String& time_step,
+                         const Index& disregard_first = 0,
+                         const Index& disregard_last = 0) {
+  ybatchTimeAveraging(Var::ybatch(ws), Var::time_grid(ws),
+                      Var::covmat_sepsbatch(ws), Var::counts(ws), time_step,
+                      disregard_first, disregard_last, Var::verbosity(ws));
 }
-
 
 /*! Performs naive tropospheric corrections on *ybatch*
 
@@ -28304,24 +25530,20 @@ each array-element with 3 entries as [median, part_trans, trop_temp]
 @author Richard Larsson
 
 @param[in,out] Workspace ws - An ARTS workspace
-@param[in] range - Positions where the median of the baseline is computed, if empty all is used
+@param[in] range - Positions where the median of the baseline is computed, if
+empty all is used
 @param[in] trop_temp - Radiative temperature of the troposphere
 @param[in] targ_temp - Temperature target of the baseline (default: 2.73)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void ybatchTroposphericCorrectionNaiveMedianForward(Workspace& ws,
-const ArrayOfIndex& range,
-const Vector& trop_temp,
-const Numeric& targ_temp=2.73) {
-ybatchTroposphericCorrectionNaiveMedianForward(Var::ybatch_corr(ws),
-Var::ybatch(ws),
-range,
-trop_temp,
-targ_temp,
-Var::verbosity(ws));
+void ybatchTroposphericCorrectionNaiveMedianForward(
+    Workspace& ws, const ArrayOfIndex& range, const Vector& trop_temp,
+    const Numeric& targ_temp = 2.73) {
+  ybatchTroposphericCorrectionNaiveMedianForward(
+      Var::ybatch_corr(ws), Var::ybatch(ws), range, trop_temp, targ_temp,
+      Var::verbosity(ws));
 }
-
 
 /*! Performs inverse of naive tropospheric corrections on *ybatch*
 
@@ -28332,11 +25554,9 @@ Var::verbosity(ws));
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void ybatchTroposphericCorrectionNaiveMedianInverse(Workspace& ws) {
-ybatchTroposphericCorrectionNaiveMedianInverse(Var::ybatch(ws),
-Var::ybatch_corr(ws),
-Var::verbosity(ws));
+  ybatchTroposphericCorrectionNaiveMedianInverse(
+      Var::ybatch(ws), Var::ybatch_corr(ws), Var::verbosity(ws));
 }
-
 
 /*! Force altitudes to fulfil hydrostatic equilibrium.
 
@@ -28366,27 +25586,14 @@ and *lon_true*.
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
 void z_fieldFromHSE(Workspace& ws) {
-z_fieldFromHSE(ws,
-Var::z_field(ws),
-Var::atmosphere_dim(ws),
-Var::p_grid(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-Var::lat_true(ws),
-Var::lon_true(ws),
-Var::abs_species(ws),
-Var::t_field(ws),
-Var::vmr_field(ws),
-Var::refellipsoid(ws),
-Var::z_surface(ws),
-Var::atmfields_checked(ws),
-Var::g0_agenda(ws),
-Var::molarmass_dry_air(ws),
-Var::p_hse(ws),
-Var::z_hse_accuracy(ws),
-Var::verbosity(ws));
+  z_fieldFromHSE(ws, Var::z_field(ws), Var::atmosphere_dim(ws), Var::p_grid(ws),
+                 Var::lat_grid(ws), Var::lon_grid(ws), Var::lat_true(ws),
+                 Var::lon_true(ws), Var::abs_species(ws), Var::t_field(ws),
+                 Var::vmr_field(ws), Var::refellipsoid(ws), Var::z_surface(ws),
+                 Var::atmfields_checked(ws), Var::g0_agenda(ws),
+                 Var::molarmass_dry_air(ws), Var::p_hse(ws),
+                 Var::z_hse_accuracy(ws), Var::verbosity(ws));
 }
-
 
 /*! Sets the surface altitude to a constant. Defaults to zero.
 
@@ -28397,15 +25604,10 @@ Var::verbosity(ws));
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void z_surfaceConstantAltitude(Workspace& ws,
-const Numeric& altitude=0) {
-z_surfaceConstantAltitude(Var::z_surface(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-altitude,
-Var::verbosity(ws));
+void z_surfaceConstantAltitude(Workspace& ws, const Numeric& altitude = 0) {
+  z_surfaceConstantAltitude(Var::z_surface(ws), Var::lat_grid(ws),
+                            Var::lon_grid(ws), altitude, Var::verbosity(ws));
 }
-
 
 /*! Sets the surface altitude for a given latitude and longitude grid.
 
@@ -28414,23 +25616,17 @@ Var::verbosity(ws));
 @param[in,out] Workspace ws - An ARTS workspace
 @param[in] filename - File of GriddedField2 with surface altitudes gridded
 @param[in] interp_order - Interpolation order (default: 1)
-@param[in] set_lowest_altitude_to_zero - Index that sets the lowest altitude to 0 to ignore sub-surface pressures/altitudes (default: 0)
+@param[in] set_lowest_altitude_to_zero - Index that sets the lowest altitude to
+0 to ignore sub-surface pressures/altitudes (default: 0)
 
 Use the ARTS documentation to read more on how the workspace is manipulated
 */
-void z_surfaceFromFileAndGrid(Workspace& ws,
-const String& filename,
-const Index& interp_order=1,
-const Index& set_lowest_altitude_to_zero=0) {
-z_surfaceFromFileAndGrid(Var::z_surface(ws),
-Var::lat_grid(ws),
-Var::lon_grid(ws),
-filename,
-interp_order,
-set_lowest_altitude_to_zero,
-Var::verbosity(ws));
+void z_surfaceFromFileAndGrid(Workspace& ws, const String& filename,
+                              const Index& interp_order = 1,
+                              const Index& set_lowest_altitude_to_zero = 0) {
+  z_surfaceFromFileAndGrid(Var::z_surface(ws), Var::lat_grid(ws),
+                           Var::lon_grid(ws), filename, interp_order,
+                           set_lowest_altitude_to_zero, Var::verbosity(ws));
 }
 
-
-}  // ARTS::Method 
-
+}  // namespace ARTS::Method

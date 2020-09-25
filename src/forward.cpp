@@ -220,7 +220,9 @@ void compute_convolution_single_path(
     weights[ip] = antenna.path[ip].ip.Weights();
 
   // FIXME: COMPUTE INITIAL RADIATION BETTER!
-  const auto [bkweight, rad0] = background.compute<N>(antenna.background, antenna.path.front().nav.ellipsoidPos(), sensor_f_grid);
+  const auto [bkweight, rad0] = background.compute<N>(
+      antenna.background, antenna.path.front().nav.ellipsoidPos(),
+      sensor_f_grid);
 
   auto forward_results =
       Forward::compute(rad0, sensor_f_grid, derivs, bands, antenna.path);
@@ -256,21 +258,21 @@ Convolution compute_convolution(
   // separately)
   for (auto& single_path : paths) {
     if (sensor_prop.stokes_dim == 4) {
-      compute_convolution_single_path<4>(out, background, bands, sensor_prop.f_grid, derivs,
-                                         sensor_prop.polar, single_path,
-                                         sensor_prop.unit);
+      compute_convolution_single_path<4>(
+          out, background, bands, sensor_prop.f_grid, derivs, sensor_prop.polar,
+          single_path, sensor_prop.unit);
     } else if (sensor_prop.stokes_dim == 3) {
-      compute_convolution_single_path<3>(out, background, bands, sensor_prop.f_grid, derivs,
-                                         sensor_prop.polar, single_path,
-                                         sensor_prop.unit);
+      compute_convolution_single_path<3>(
+          out, background, bands, sensor_prop.f_grid, derivs, sensor_prop.polar,
+          single_path, sensor_prop.unit);
     } else if (sensor_prop.stokes_dim == 2) {
-      compute_convolution_single_path<2>(out, background, bands, sensor_prop.f_grid, derivs,
-                                         sensor_prop.polar, single_path,
-                                         sensor_prop.unit);
+      compute_convolution_single_path<2>(
+          out, background, bands, sensor_prop.f_grid, derivs, sensor_prop.polar,
+          single_path, sensor_prop.unit);
     } else if (sensor_prop.stokes_dim == 1) {
-      compute_convolution_single_path<1>(out, background, bands, sensor_prop.f_grid, derivs,
-                                         sensor_prop.polar, single_path,
-                                         sensor_prop.unit);
+      compute_convolution_single_path<1>(
+          out, background, bands, sensor_prop.f_grid, derivs, sensor_prop.polar,
+          single_path, sensor_prop.unit);
     } else {
       std::cerr << "Bad Stokes Dim\n";
       std::terminate();

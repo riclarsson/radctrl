@@ -124,33 +124,41 @@ class Surface {
   Grid<Temperature<TemperatureType::K>, 3> temps;  // tid, lat, lon
 
  public:
-   Surface (const Atmosphere::Atm& atm) noexcept : tid(atm.tidvec()), lat(atm.latvec()), lon(atm.lonvec()), temps(0, atm.ntid(), atm.nlat(), atm.nlon()) {
-     for (std::size_t itid=0; itid<atm.ntid(); itid++)
-       for (std::size_t ilat=0; ilat<atm.nlat(); ilat++)
-         for (std::size_t ilon=0; ilon<atm.nlon(); ilon++)
-           temps(itid, ilat, ilon) = atm(itid, 0, ilat, ilon).Temp();
-   }
-  
+  Surface(const Atmosphere::Atm &atm) noexcept
+      : tid(atm.tidvec()),
+        lat(atm.latvec()),
+        lon(atm.lonvec()),
+        temps(0, atm.ntid(), atm.nlat(), atm.nlon()) {
+    for (std::size_t itid = 0; itid < atm.ntid(); itid++)
+      for (std::size_t ilat = 0; ilat < atm.nlat(); ilat++)
+        for (std::size_t ilon = 0; ilon < atm.nlon(); ilon++)
+          temps(itid, ilat, ilon) = atm(itid, 0, ilat, ilon).Temp();
+  }
+
   InterPoints interpPoints(
-    const Time newtid, const Coordinate<CoordinateType::lat> newlat,
-    const Coordinate<CoordinateType::lon> newlon) const noexcept;
-    
+      const Time newtid, const Coordinate<CoordinateType::lat> newlat,
+      const Coordinate<CoordinateType::lon> newlon) const noexcept;
+
   template <std::size_t N>
-  std::pair<InterPoints, std::vector<RTE::RadVec<N>>> compute(const Time newtid, const Coordinate<CoordinateType::lat> newlat,
-                                                              const Coordinate<CoordinateType::lon> newlon,
-                                                              const std::vector<Frequency<FrequencyType::Freq>> &f) const noexcept {
-      const InterPoints ip = interpPoints(newtid, newlat, newlon);
-      const auto weights = ip.Weights();
-      std::vector<RTE::RadVec<N>> out=RTE::source_vec_planck<N>(temps(weights[0].tid(), weights[0].lat(), weights[0].lon()), f);
-      for (auto& x : out) x = weights[0].weight() * x;
-      for (std::size_t i=1; i<InterPoints::Output::size(); i++) {
-        if (const double w=weights[i].weight(); w not_eq 0) {
-          const std::vector<RTE::RadVec<N>> tmp=RTE::source_vec_planck<N>(temps(weights[i].tid(), weights[i].lat(), weights[i].lon()), f);
-          std::transform(tmp.cbegin(), tmp.cend(), out.begin(), out.begin(), [w](auto& t, auto& o){return t*w + o;});
-        }
+  std::pair<InterPoints, std::vector<RTE::RadVec<N>>> compute(
+      const Time newtid, const Coordinate<CoordinateType::lat> newlat,
+      const Coordinate<CoordinateType::lon> newlon,
+      const std::vector<Frequency<FrequencyType::Freq>> &f) const noexcept {
+    const InterPoints ip = interpPoints(newtid, newlat, newlon);
+    const auto weights = ip.Weights();
+    std::vector<RTE::RadVec<N>> out = RTE::source_vec_planck<N>(
+        temps(weights[0].tid(), weights[0].lat(), weights[0].lon()), f);
+    for (auto &x : out) x = weights[0].weight() * x;
+    for (std::size_t i = 1; i < InterPoints::Output::size(); i++) {
+      if (const double w = weights[i].weight(); w not_eq 0) {
+        const std::vector<RTE::RadVec<N>> tmp = RTE::source_vec_planck<N>(
+            temps(weights[i].tid(), weights[i].lat(), weights[i].lon()), f);
+        std::transform(tmp.cbegin(), tmp.cend(), out.begin(), out.begin(),
+                       [w](auto &t, auto &o) { return t * w + o; });
       }
-      return {ip, out};
     }
+    return {ip, out};
+  }
 };
 
 struct Space {
@@ -160,18 +168,22 @@ struct Space {
 
 class Background {
   Surface surface;
-public:
-  Background(const Surface& surf) noexcept : surface(surf) {}
-  
+
+ public:
+  Background(const Surface &surf) noexcept : surface(surf) {}
+
   template <std::size_t N>
-  std::pair<InterPoints, std::vector<RTE::RadVec<N>>> compute(Path::BackgroundType type, const Geom::Pos<Geom::PosType::Ellipsoidal>& pos,
-                                                              const std::vector<Frequency<FrequencyType::Freq>> &f) const noexcept {
-    switch(type) {
+  std::pair<InterPoints, std::vector<RTE::RadVec<N>>> compute(
+      Path::BackgroundType type,
+      const Geom::Pos<Geom::PosType::Ellipsoidal> &pos,
+      const std::vector<Frequency<FrequencyType::Freq>> &f) const noexcept {
+    switch (type) {
       case Path::BackgroundType::Surface:
         return surface.compute<N>(pos.t(), pos.lat(), pos.lon(), f);
       case Path::BackgroundType::Space:
         return {InterPoints(), RTE::source_vec_planck<N>(Space::temp, f)};
-      case Path::BackgroundType::FINAL: {/*leave last*/}
+      case Path::BackgroundType::FINAL: { /*leave last*/
+      }
     }
     return {};
   }

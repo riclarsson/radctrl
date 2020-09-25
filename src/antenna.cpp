@@ -29,14 +29,17 @@ std::vector<Sensor::Antenna::Output> calc_airy_disk(
   y[0] = 1.0;  // div-0, but x / sinx is 1
   const double invsumy = 1.0 / sum(y);
   const double invsumy_azimuth = invsumy / azimuthals;
-  
-  auto [first_nav, first_bg] = Path::calc_single_geometric_path(pos_los, atm, dist, alt_of_atm);
+
+  auto [first_nav, first_bg] =
+      Path::calc_single_geometric_path(pos_los, atm, dist, alt_of_atm);
   out.push_back(Sensor::Antenna::Output{first_nav, first_bg, invsumy});
   for (std::size_t i = 1; i < num; i++) {
     for (std::size_t j = 0; j < azimuthals; j++) {
       const Geom::Nav new_pos_los(pos_los, x[i], arot[j]);
-      auto [this_nav, this_bg] = Path::calc_single_geometric_path(pos_los, atm, dist, alt_of_atm);
-      out.push_back(Sensor::Antenna::Output{this_nav, this_bg, invsumy_azimuth * y[i]});
+      auto [this_nav, this_bg] =
+          Path::calc_single_geometric_path(pos_los, atm, dist, alt_of_atm);
+      out.push_back(
+          Sensor::Antenna::Output{this_nav, this_bg, invsumy_azimuth * y[i]});
     }
   }
 
@@ -50,7 +53,8 @@ std::vector<Sensor::Antenna::Output> Sensor::Antenna::calc(
     const Frequency<FrequencyType::Freq> mean_freq) const {
   switch (mtype) {
     case BeamType::PencilBeam: {
-      auto [path, backg] = Path::calc_single_geometric_path(pos_los, atm, dist, alt_of_atm);
+      auto [path, backg] =
+          Path::calc_single_geometric_path(pos_los, atm, dist, alt_of_atm);
       return std::vector<Sensor::Antenna::Output>(1, Output{path, backg, 1});
     }
     case BeamType::AiryDisk:
