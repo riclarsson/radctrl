@@ -38,6 +38,7 @@ struct Method {
     std::vector<std::size_t> varpos;
   };
 
+  std::size_t pos;
   std::string desc;
   std::vector<std::string> authors;
   bool set_method;
@@ -129,6 +130,8 @@ std::map<std::string, Method> methods() {
   for (auto& x : global_data::WsvGroupMap) vargroup[x.first] = x.second;
   std::map<std::string, std::size_t> varpos;
   for (auto& x : Workspace::WsvMap) varpos[x.first] = x.second;
+  std::map<std::string, std::size_t> methodpos;
+  for (auto& x : global_data::MdMap) methodpos[x.first] = x.second;
 
   std::map<std::string, std::vector<std::size_t>> gin_group;
   for (auto& x : global_data::md_data_raw)
@@ -196,6 +199,7 @@ std::map<std::string, Method> methods() {
   std::map<std::string, Method> retval;
   for (auto& x : desc) {
     Method m;
+    m.pos = methodpos[x.first];
     m.desc = x.second;
     m.authors = authors[x.first];
 
@@ -415,15 +419,55 @@ int main() {
   }
   std::cout << "}  // ARTS::Var \n\n";
 
+  std::cout << "namespace ARTS::AgendaVar {\n";
+  for (auto& x : artsname.group) {
+    std::cout << "struct Workspace" << x.first << ' ' << '{' << '\n';
+    std::cout << "using type = " << x.first << ";\n";
+    std::cout << "std::size_t pos;\n";
+    std::cout << "type* value;\n";
+    std::cout << '}' << ';' << '\n' << '\n';
+  }
+  for (auto& x : artsname.varname_group) {
+    std::cout << "/*! " << x.second.varname_desc << '\n';
+    std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n*/\n";
+    std::cout << "[[nodiscard]] ";
+    std::cout << "Workspace" << x.second.varname_group << ' ' << x.first
+              << "(Workspace& ws) "
+                 "noexcept { "
+                 "return {"
+              << x.second.artspos << ", static_cast<" << x.second.varname_group
+              << " *>(ws[" << x.second.artspos
+              << "])}; "
+                 "}\n\n";
+  }
+  std::cout << "}  // ARTS::AgendaVar \n\n";
+
+  std::cout << "namespace ARTS::AgendaVar {\n";
+  for (auto& x : artsname.group) {
+    std::cout << "/*! Creates in, and returns from, Workspace a/an " << x.first
+              << '\n'
+              << '\n';
+    std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n";
+    std::cout << "@param[in] String name - The name the variable will have in "
+                 "the workspace\n";
+    std::cout << "@param[in] String desc - The description the variable will "
+                 "have in the workspace (default: \"nodescription\")\n";
+    std::cout << "*/\n";
+    std::cout << "[[nodiscard]] ";
+    std::cout << "Workspace" << x.first << ' ' << x.first
+              << "Create(Workspace& ws, const String& name, const String& "
+                 "desc=\"nodescription\") {\n";
+    std::cout << "const std::size_t ind = "
+                 "std::size_t(ws.add_wsv({name.c_str(), desc.c_str(), "
+              << x.second << "}));";
+    std::cout << "return {ind, static_cast<" << x.first << "*>(ws[ind])};\n"
+              << "}\n\n";
+  }
+  std::cout << "}  // ARTS::AgendaVar \n\n";
+
   std::cout << "namespace ARTS::Method {\n";
 
   for (auto& x : artsname.methodname_method) {
-    if (x.second.agenda_method) std::cerr << "Agenda Method; ";
-    if (x.second.set_method) std::cerr << "Set Method; ";
-    if (x.second.pass_workspace) std::cerr << "Pass Workspace Method; ";
-    if (x.second.pass_wsv_names) std::cerr << "Pass Names Method; ";
-    std::cerr << x.first << '\n';
-
     // Skip methods using verbosity and Agenda methods (for now)
     if (x.second.agenda_method) continue;
 
@@ -662,8 +706,153 @@ int main() {
     // Close the function call and the function itself
     std::cout << ')' << ';' << '\n' << '}' << '\n' << '\n' << '\n';
   }
-
   std::cout << "}  // ARTS::Method \n\n";
+
+  std::cout << "namespace ARTS::AgendaMethod  {\n";
+
+  for (auto& x : artsname.methodname_method) {
+    // Skip methods using verbosity and Agenda methods (for now)
+    if (x.second.agenda_method) continue;
+
+    // Describe the method
+    std::cout << "/*! " << x.second.desc << '\n';
+    for (auto a : x.second.authors) std::cout << "@author " << a << '\n';
+    std::cout << "\n"
+                 "@param[in,out] Workspace ws - An ARTS workspace\n";
+    for (std::size_t i = 0; i < x.second.gout.name.size(); i++)
+      std::cout << "@param[out] " << x.second.gout.name[i] << " - "
+                << x.second.gout.desc[i] << "\n";
+    for (std::size_t i = 0; i < x.second.gin.name.size(); i++) {
+      std::cout << "@param[in] " << x.second.gin.name[i] << " - "
+                << x.second.gin.desc[i];
+      if (x.second.gin.hasdefs[i])
+        std::cout << " (default: " << x.second.gin.defs[i] << ")";
+      std::cout << '\n';
+    }
+    std::cout << "\nUse the ARTS documentation to read more on how the "
+                 "workspace is manipulated\n";
+    std::cout << "This interface function has been automatically generated\n";
+    std::cout << "\n"
+              << "@return MRecord to call this method\n";
+    std::cout << "*/" << '\n';
+
+    // Count how many anys we need
+    std::size_t anys = 0;
+    for (auto& name : x.second.gout.group)
+      if (name == "Any") anys++;
+    for (auto& name : x.second.gin.group)
+      if (name == "Any") anys++;
+
+    // Make it a template if we need any anys
+    if (anys) {
+      std::cout << "template <";
+      for (std::size_t i = 0; i < anys; i++) {
+        std::cout << "typename Any_" << i;
+        if (i not_eq anys - 1) std::cout << ", ";
+      }
+      std::cout << ">\n";
+    }
+
+    // Now we keep track of our current any count
+    std::size_t iany = 0;
+
+    // Make the function
+    std::cout << "MRecord " << x.first << "([[maybe_unused]] Workspace& ws";
+
+    // Check if we have the first input
+    for (std::size_t i = 0; i < x.second.gout.group.size(); i++) {
+      if (x.second.gout.group[i] == "Any") {
+        std::cout << ',' << '\n';
+        std::cout << "Any_" << iany << '&' << ' ' << x.second.gout.name[i];
+        iany++;
+      } else {
+        std::cout << ',' << '\n';
+        std::cout << "AgendaVar::Workspace" << x.second.gout.group[i] << '&'
+                  << ' ' << x.second.gout.name[i];
+      }
+    }
+
+    // Second put all GIN variables that have no default argument
+    for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
+      if (not x.second.gin.hasdefs[i]) {
+        if (x.second.gin.group[i] == "Any") {
+          std::cout << ',' << '\n';
+          std::cout << "const Any_" << iany << '&' << ' '
+                    << x.second.gin.name[i];
+          iany++;
+        } else {
+          std::cout << ',' << "\n";
+          std::cout << "const AgendaVar::Workspace" << x.second.gin.group[i]
+                    << '&' << ' ' << x.second.gin.name[i];
+        }
+      }
+    }
+
+    // Lastly put all GIN variables that have a default argument
+    for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
+      if (x.second.gin.hasdefs[i]) {
+        if (x.second.gin.group[i] == "Any") {
+          std::cout << ',' << "\n";
+          std::cout << "const Any_" << iany << '&' << ' '
+                    << x.second.gin.name[i] << '='
+                    << "{std::numeric_limits<std::size_t>::max(), nullptr}";
+          iany++;
+        } else {
+          std::cout << ',' << "\n";
+          std::cout << "const AgendaVar::Workspace" << x.second.gin.group[i]
+                    << '&' << ' ' << x.second.gin.name[i] << '='
+                    << "{std::numeric_limits<std::size_t>::max(), nullptr}";
+        }
+      }
+    }
+
+    // End of function definition and open function block
+    std::cout << ')' << ' ' << '{' << '\n';
+
+    for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
+      if (x.second.gin.hasdefs[i]) {
+        std::cout << "static const auto " << x.second.gin.name[i]
+                  << "_default = AgendaVar::" << x.second.gin.group[i]
+                  << "Create(ws, \"" << x.first << '_' << x.second.gin.name[i]
+                  << "_autodefault"
+                  << "\");\n";
+      }
+    }
+
+    // Call the ARTS auto_md.h function
+    std::cout << "return MRecord(" << x.second.pos << ',' << ' '
+              << "ArrayOfIndex(" << '{';
+
+    // First are all the outputs
+    for (std::size_t i = 0; i < x.second.out.varpos.size(); i++) {
+      std::cout << x.second.out.varpos[i] << ',' << ' ';
+    }
+
+    // Second comes all the generic outputs
+    for (std::size_t i = 0; i < x.second.gout.name.size(); i++) {
+      std::cout << "Index(" << x.second.gout.name[i] << ".pos)" << ',' << ' ';
+    }
+    std::cout << '}' << ')' << ',' << ' ' << "ArrayOfIndex(" << '{';
+
+    // Then come all the inputs that are not also outputs
+    for (std::size_t i = 0; i < x.second.in.varpos.size(); i++) {
+      std::cout << x.second.in.varpos[i] << ',' << ' ';
+    }
+
+    // Lastly are all the generic inputs, which cannot also be outputs
+    for (std::size_t i = 0; i < x.second.gin.name.size(); i++) {
+      if (x.second.gin.hasdefs[i])
+        std::cout << x.second.gin.name[i] << ".value == nullptr ? Index("
+                  << x.second.gin.name[i] << "_default.pos) : ";
+      std::cout << "Index(" << x.second.gin.name[i] << ".pos)" << ',' << ' ';
+    }
+
+    std::cout << '}' << ')' << ',' << ' ' << "TokVal{}, Agenda{}";
+
+    // Close the function call and the function itself
+    std::cout << ')' << ';' << '\n' << '}' << '\n' << '\n' << '\n';
+  }
+  std::cout << "}  // ARTS::AgendaMethod \n\n";
 
   std::cout << "namespace ARTS::AgendaExecute { \n\n";
   for (auto& x : artsname.agendaname_agenda) {
@@ -684,7 +873,30 @@ int main() {
   }
   std::cout << "}  // ARTS::AgendaExecute \n\n";
 
-  std::cout << "namespace ARTS::AgendaDefine { \n\n";
+  std::cout << "namespace ARTS::AgendaDefine { \n";
+  std::cout << "/*! Append Records to an agenda */\n";
+  std::cout << "template <typename ... Records> void Append(Agenda& ag, "
+               "const Records ... records) {\n"
+            << "const std::array<MRecord, "
+               "sizeof...(Records)> rec{MRecord(records)...};\n"
+            << "for (auto& x: rec) ag.push_back(x);\n}\n\n";
+  for (auto& x : artsname.agendaname_agenda) {
+    if (artsname.varname_group.at(x.first).varname_group == "ArrayOfAgenda")
+      continue;
+    std::cout << "/*! " << x.second.desc << '\n'
+              << "@param[in,out] Workspace ws - An ARTS workspace\n"
+              << "@param[in] MRecords records - Any number of ARTS methods "
+                 "from ARTS::AgendaMethod\n"
+              << "*/\n"
+              << "template <typename ... Records> "
+              << "void " << x.first
+              << "(Workspace& ws, const Records ... records) {\n"
+              << "ARTS::Var::" << x.first << "(ws).resize(0);"
+              << "ARTS::Var::" << x.first << "(ws).set_name(\"" << x.first
+              << "\");"
+              << "Append(ARTS::Var::" << x.first << "(ws), records...);"
+              << "\n}\n\n";
+  }
   std::cout << "}  // ARTS::AgendaDefine \n\n";
 
   std::cout << "#endif  // autoarts_h\n\n";

@@ -34,9 +34,9 @@ double test() {
 
   Workspace ws;
   ws.initialize();
-  Var::verbosity(ws).set_screen_verbosity(0);
-  Var::verbosity(ws).set_agenda_verbosity(0);
-  Var::verbosity(ws).set_file_verbosity(0);
+  Var::verbosity(ws).set_screen_verbosity(3);
+  Var::verbosity(ws).set_agenda_verbosity(3);
+  Var::verbosity(ws).set_file_verbosity(3);
   Var::verbosity(ws).set_main_agenda(1);
   Var::aa_grid(ws) = Vector(5, 1);
   std::cout << Var::aa_grid(ws) << '\n';
@@ -48,13 +48,17 @@ double test() {
   Method::WriteXML(ws, std::make_pair(Var::aa_grid(ws), String("aa_grid")),
                    std::make_pair(String("TEST.xml"), String("TEST.xml")));
 
-  auto& iy_main_agenda = ARTS::Var::iy_main_agenda(ws);
-  iy_main_agenda.append("ppathCalc", "ppath_agenda=\"iy_main_agenda\"");
-  iy_main_agenda.append("iyEmissionStandard", "");
-  Var::iy_main_agenda(ws).set_name("iy_main_agenda");
-  Var::iy_main_agenda(ws).check(ws, Var::verbosity(ws));
-  AgendaExecute::iy_main_agenda(ws);
-  std::cout << iy_main_agenda.checked() << '\n';
+  auto numout = AgendaVar::g0(ws);
+  auto numin = AgendaVar::lat(ws);
+  auto numign = AgendaVar::lon(ws);
+  Method::NumericSet(ws, Var::lat(ws), 1336.0);
+  Method::NumericSet(ws, Var::lon(ws), 3336.0);
+  std::cout << Var::lat(ws) << "\n";
+  AgendaDefine::g0_agenda(ws, AgendaMethod::NumericSet(ws, numout, numin), AgendaMethod::NumericAdd(ws, numout, numout, numign));
+  Var::g0_agenda(ws).check(ws, Var::verbosity(ws));
+  AgendaExecute::g0_agenda(ws);
+  std::cout << Var::g0(ws) << '\n';
+
   std::cout << "\n\n\n\n\n\n\n\n\n";
 
   return 1;
