@@ -54,7 +54,8 @@ double test() {
   Method::NumericSet(ws, Var::lat(ws), 1336.0);
   Method::NumericSet(ws, Var::lon(ws), 3336.0);
   std::cout << Var::lat(ws) << "\n";
-  AgendaDefine::g0_agenda(ws, AgendaMethod::NumericSet(ws, numout, numin), AgendaMethod::NumericAdd(ws, numout, numout, numign));
+  AgendaDefine::g0_agenda(ws, AgendaMethod::NumericSet(ws, numout, numin),
+                          AgendaMethod::Ignore(ws, numign));
   Var::g0_agenda(ws).check(ws, Var::verbosity(ws));
   AgendaExecute::g0_agenda(ws);
   std::cout << Var::g0(ws) << '\n';

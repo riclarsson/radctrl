@@ -38,6 +38,7 @@ struct Method {
     std::vector<std::size_t> varpos;
   };
 
+  std::string name;
   std::size_t pos;
   std::string desc;
   std::vector<std::string> authors;
@@ -125,7 +126,7 @@ std::pair<std::vector<std::string>, std::vector<bool>> fixed_defaults(
   return {defaults, hasdefaults};
 }
 
-std::map<std::string, Method> methods() {
+std::vector<Method> methods() {
   std::map<std::string, std::size_t> vargroup;
   for (auto& x : global_data::WsvGroupMap) vargroup[x.first] = x.second;
   std::map<std::string, std::size_t> varpos;
@@ -133,79 +134,87 @@ std::map<std::string, Method> methods() {
   std::map<std::string, std::size_t> methodpos;
   for (auto& x : global_data::MdMap) methodpos[x.first] = x.second;
 
-  std::map<std::string, std::vector<std::size_t>> gin_group;
-  for (auto& x : global_data::md_data_raw)
-    gin_group[x.Name()] = {x.GInType().cbegin(), x.GInType().cend()};
-  std::map<std::string, std::vector<std::string>> gin_names;
-  for (auto& x : global_data::md_data_raw)
-    gin_names[x.Name()] = {x.GIn().cbegin(), x.GIn().cend()};
-  std::map<std::string, std::vector<std::string>> gin_defaults;
-  for (auto& x : global_data::md_data_raw)
-    gin_defaults[x.Name()] = {x.GInDefault().cbegin(), x.GInDefault().cend()};
-  std::map<std::string, std::vector<std::string>> gin_desc;
-  for (auto& x : global_data::md_data_raw)
-    gin_desc[x.Name()] = {x.GInDescription().cbegin(),
-                          x.GInDescription().cend()};
-  std::map<std::string, std::vector<std::size_t>> gout_group;
-  for (auto& x : global_data::md_data_raw)
-    gout_group[x.Name()] = {x.GOutType().cbegin(), x.GOutType().cend()};
-  std::map<std::string, std::vector<std::string>> gout_names;
-  for (auto& x : global_data::md_data_raw)
-    gout_names[x.Name()] = {x.GOut().cbegin(), x.GOut().cend()};
-  std::map<std::string, std::vector<std::string>> gout_desc;
-  for (auto& x : global_data::md_data_raw)
-    gout_desc[x.Name()] = {x.GOutDescription().cbegin(),
-                           x.GOutDescription().cend()};
-  std::map<std::string, std::vector<std::size_t>> in_wspace;
-  for (auto& x : global_data::md_data_raw)
-    in_wspace[x.Name()] = {x.In().cbegin(), x.In().cend()};
-  std::map<std::string, std::vector<std::size_t>> out_wspace;
-  for (auto& x : global_data::md_data_raw)
-    out_wspace[x.Name()] = {x.Out().cbegin(), x.Out().cend()};
-  std::map<std::string, std::string> desc;
-  for (auto& x : global_data::md_data_raw) desc[x.Name()] = x.Description();
-  std::map<std::string, std::vector<std::string>> authors;
-  for (auto& x : global_data::md_data_raw)
-    authors[x.Name()] = {x.Authors().cbegin(), x.Authors().cend()};
+  std::vector<std::string> metname;
+  for (auto& x : global_data::md_data) metname.push_back(x.Name());
+  std::vector<std::string> actual_groups;
+  for (auto& x : global_data::md_data)
+    actual_groups.push_back(x.ActualGroups());
+  std::vector<std::vector<std::size_t>> gin_group;
+  for (auto& x : global_data::md_data)
+    gin_group.push_back({x.GInType().cbegin(), x.GInType().cend()});
+  std::vector<std::vector<std::string>> gin_names;
+  for (auto& x : global_data::md_data)
+    gin_names.push_back({x.GIn().cbegin(), x.GIn().cend()});
+  std::vector<std::vector<std::string>> gin_defaults;
+  for (auto& x : global_data::md_data)
+    gin_defaults.push_back({x.GInDefault().cbegin(), x.GInDefault().cend()});
+  std::vector<std::vector<std::string>> gin_desc;
+  for (auto& x : global_data::md_data)
+    gin_desc.push_back(
+        {x.GInDescription().cbegin(), x.GInDescription().cend()});
+  std::vector<std::vector<std::size_t>> gout_group;
+  for (auto& x : global_data::md_data)
+    gout_group.push_back({x.GOutType().cbegin(), x.GOutType().cend()});
+  std::vector<std::vector<std::string>> gout_names;
+  for (auto& x : global_data::md_data)
+    gout_names.push_back({x.GOut().cbegin(), x.GOut().cend()});
+  std::vector<std::vector<std::string>> gout_desc;
+  for (auto& x : global_data::md_data)
+    gout_desc.push_back(
+        {x.GOutDescription().cbegin(), x.GOutDescription().cend()});
+  std::vector<std::vector<std::size_t>> in_wspace;
+  for (auto& x : global_data::md_data)
+    in_wspace.push_back({x.In().cbegin(), x.In().cend()});
+  std::vector<std::vector<std::size_t>> out_wspace;
+  for (auto& x : global_data::md_data)
+    out_wspace.push_back({x.Out().cbegin(), x.Out().cend()});
+  std::vector<std::string> desc;
+  for (auto& x : global_data::md_data) desc.push_back(x.Description());
+  std::vector<std::vector<std::string>> authors;
+  for (auto& x : global_data::md_data)
+    authors.push_back({x.Authors().cbegin(), x.Authors().cend()});
 
-  std::map<std::string, bool> set_method;
-  for (auto& x : global_data::md_data_raw) set_method[x.Name()] = x.SetMethod();
-  std::map<std::string, bool> agenda_method;
-  for (auto& x : global_data::md_data_raw)
-    agenda_method[x.Name()] = x.AgendaMethod();
-  std::map<std::string, bool> supergeneric;
-  for (auto& x : global_data::md_data_raw)
-    supergeneric[x.Name()] = x.Supergeneric();
-  std::map<std::string, bool> uses_templates;
-  for (auto& x : global_data::md_data_raw)
-    uses_templates[x.Name()] = x.UsesTemplates();
-  std::map<std::string, bool> pass_workspace;
-  for (auto& x : global_data::md_data_raw)
-    pass_workspace[x.Name()] = x.PassWorkspace();
-  std::map<std::string, bool> pass_wsv_names;
-  for (auto& x : global_data::md_data_raw)
-    pass_wsv_names[x.Name()] = x.PassWsvNames();
+  std::vector<bool> set_method;
+  for (auto& x : global_data::md_data) set_method.push_back(x.SetMethod());
+  std::vector<bool> agenda_method;
+  for (auto& x : global_data::md_data)
+    agenda_method.push_back(x.AgendaMethod());
+  std::vector<bool> supergeneric;
+  for (auto& x : global_data::md_data) supergeneric.push_back(x.Supergeneric());
+  std::vector<bool> uses_templates;
+  for (auto& x : global_data::md_data)
+    uses_templates.push_back(x.UsesTemplates());
+  std::vector<bool> pass_workspace;
+  for (auto& x : global_data::md_data)
+    pass_workspace.push_back(x.PassWorkspace());
+  std::vector<bool> pass_wsv_names;
+  for (auto& x : global_data::md_data)
+    pass_wsv_names.push_back(x.PassWsvNames());
 
-  std::map<std::string, std::vector<std::size_t>> inoutvarpos;
-  for (auto& x : global_data::md_data_raw)
-    inoutvarpos[x.Name()] = {x.InOut().cbegin(), x.InOut().cend()};
-  std::map<std::string, std::vector<std::size_t>> invarpos;
-  for (auto& x : global_data::md_data_raw)
-    invarpos[x.Name()] = {x.InOnly().cbegin(), x.InOnly().cend()};
-  std::map<std::string, std::vector<std::size_t>> outvarpos;
-  for (auto& x : global_data::md_data_raw)
-    outvarpos[x.Name()] = {x.OutOnly().cbegin(), x.OutOnly().cend()};
+  std::vector<std::vector<std::size_t>> inoutvarpos;
+  for (auto& x : global_data::md_data)
+    inoutvarpos.push_back({x.InOut().cbegin(), x.InOut().cend()});
+  std::vector<std::vector<std::size_t>> invarpos;
+  for (auto& x : global_data::md_data)
+    invarpos.push_back({x.InOnly().cbegin(), x.InOnly().cend()});
+  std::vector<std::vector<std::size_t>> outvarpos;
+  for (auto& x : global_data::md_data)
+    outvarpos.push_back({x.OutOnly().cbegin(), x.OutOnly().cend()});
 
-  std::map<std::string, Method> retval;
-  for (auto& x : desc) {
+  std::vector<Method> retval;
+  for (std::size_t i = 0; i < desc.size(); i++) {
     Method m;
-    m.pos = methodpos[x.first];
-    m.desc = x.second;
-    m.authors = authors[x.first];
+    m.name = metname[i];
+    if (supergeneric[i])
+      m.pos = methodpos[metname[i] + String("_sg_") + actual_groups[i]];
+    else
+      m.pos = methodpos[metname[i]];
+    m.desc = desc[i];
+    m.authors = authors[i];
 
     Method::Gin gin;
-    gin.desc = gin_desc[x.first];
-    for (auto g : gin_group[x.first]) {
+    gin.desc = gin_desc[i];
+    for (auto g : gin_group[i]) {
       bool found = false;
       for (auto& y : vargroup) {
         if (y.second == g) {
@@ -219,15 +228,15 @@ std::map<std::string, Method> methods() {
         std::terminate();
       }
     }
-    gin.name = gin_names[x.first];
-    auto fixgin = fixed_defaults(gin.group, gin_defaults[x.first]);
+    gin.name = gin_names[i];
+    auto fixgin = fixed_defaults(gin.group, gin_defaults[i]);
     gin.defs = fixgin.first;
     gin.hasdefs = fixgin.second;
     m.gin = gin;
 
     Method::Gout gout;
-    gout.desc = gout_desc[x.first];
-    for (auto g : gout_group[x.first]) {
+    gout.desc = gout_desc[i];
+    for (auto g : gout_group[i]) {
       bool found = false;
       for (auto& y : vargroup) {
         if (y.second == g) {
@@ -241,11 +250,11 @@ std::map<std::string, Method> methods() {
         std::terminate();
       }
     }
-    gout.name = gout_names[x.first];
+    gout.name = gout_names[i];
     m.gout = gout;
 
     Method::In in;
-    for (auto v : in_wspace[x.first]) {
+    for (auto v : in_wspace[i]) {
       bool found = false;
       for (auto& y : varpos) {
         if (v == y.second) {
@@ -259,11 +268,11 @@ std::map<std::string, Method> methods() {
         std::terminate();
       }
     }
-    in.varpos = invarpos[x.first];
+    in.varpos = invarpos[i];
     m.in = in;
 
     Method::Out out;
-    for (auto v : out_wspace[x.first]) {
+    for (auto v : out_wspace[i]) {
       bool found = false;
       for (auto& y : varpos) {
         if (v == y.second) {
@@ -277,17 +286,17 @@ std::map<std::string, Method> methods() {
         std::terminate();
       }
     }
-    out.varpos = outvarpos[x.first];
+    out.varpos = outvarpos[i];
     m.out = out;
 
-    m.set_method = set_method[x.first];
-    m.agenda_method = agenda_method[x.first];
-    m.supergeneric = supergeneric[x.first];
-    m.uses_templates = uses_templates[x.first];
-    m.pass_workspace = pass_workspace[x.first];
-    m.pass_wsv_names = pass_wsv_names[x.first];
-    m.inoutvarpos = inoutvarpos[x.first];
-    retval[x.first] = m;
+    m.set_method = set_method[i];
+    m.agenda_method = agenda_method[i];
+    m.supergeneric = supergeneric[i];
+    m.uses_templates = uses_templates[i];
+    m.pass_workspace = pass_workspace[i];
+    m.pass_wsv_names = pass_wsv_names[i];
+    m.inoutvarpos = inoutvarpos[i];
+    retval.push_back(m);
   }
 
   return retval;
@@ -336,7 +345,7 @@ std::map<std::string, AgendaData> agendas() {
 
 struct NameMaps {
   std::map<std::string, AgendaData> agendaname_agenda;
-  std::map<std::string, Method> methodname_method;
+  std::vector<Method> methodname_method;
   std::map<std::string, Group> varname_group;
   std::map<std::string, std::size_t> group;
 
@@ -469,28 +478,26 @@ int main() {
 
   for (auto& x : artsname.methodname_method) {
     // Skip methods using verbosity and Agenda methods (for now)
-    if (x.second.agenda_method) continue;
+    if (x.agenda_method) continue;
 
     // Also skip create methods since these are created in the groups above
     if (std::any_of(artsname.group.cbegin(), artsname.group.cend(),
-                    [metname = x.first](auto& y) {
+                    [metname = x.name](auto& y) {
                       return (y.first + String("Create")) == metname;
                     }))
       continue;
 
     // Describe the method
-    std::cout << "/*! " << x.second.desc << '\n';
-    for (auto a : x.second.authors) std::cout << "@author " << a << '\n';
+    std::cout << "/*! " << x.desc << '\n';
+    for (auto a : x.authors) std::cout << "@author " << a << '\n';
     std::cout << "\n"
                  "@param[in,out] Workspace ws - An ARTS workspace\n";
-    for (std::size_t i = 0; i < x.second.gout.name.size(); i++)
-      std::cout << "@param[out] " << x.second.gout.name[i] << " - "
-                << x.second.gout.desc[i] << "\n";
-    for (std::size_t i = 0; i < x.second.gin.name.size(); i++) {
-      std::cout << "@param[in] " << x.second.gin.name[i] << " - "
-                << x.second.gin.desc[i];
-      if (x.second.gin.hasdefs[i])
-        std::cout << " (default: " << x.second.gin.defs[i] << ")";
+    for (std::size_t i = 0; i < x.gout.name.size(); i++)
+      std::cout << "@param[out] " << x.gout.name[i] << " - " << x.gout.desc[i]
+                << "\n";
+    for (std::size_t i = 0; i < x.gin.name.size(); i++) {
+      std::cout << "@param[in] " << x.gin.name[i] << " - " << x.gin.desc[i];
+      if (x.gin.hasdefs[i]) std::cout << " (default: " << x.gin.defs[i] << ")";
       std::cout << '\n';
     }
     std::cout << "\nUse the ARTS documentation to read more on how the "
@@ -498,118 +505,54 @@ int main() {
     std::cout << "This interface function has been automatically generated\n";
     std::cout << "*/" << '\n';
 
-    // Count how many anys we need
-    std::size_t anys = 0;
-    for (auto& name : x.second.gout.group)
-      if (name == "Any") anys++;
-    for (auto& name : x.second.gin.group)
-      if (name == "Any") anys++;
-
-    // Make it a template if we need any anys
-    if (anys) {
-      std::cout << "template <";
-      for (std::size_t i = 0; i < anys; i++) {
-        std::cout << "typename Any_" << i;
-        if (i not_eq anys - 1) std::cout << ", ";
-      }
-      std::cout << ">\n";
-    }
-
-    // Now we keep track of our current any count
-    std::size_t iany = 0;
-
     // Make the function
-    std::cout << "void " << x.first << "(Workspace& ws";
+    std::cout << "void " << x.name << "(Workspace& ws";
 
     // First put all GOUT variables
-    if (x.second.pass_wsv_names) {
-      for (std::size_t i = 0; i < x.second.gout.group.size(); i++) {
-        if (x.second.gout.group[i] == "Any") {
-          std::cout << ',' << '\n'
-                    << "std::pair<Any_" << iany << ", String>" << '&' << ' '
-                    << x.second.gout.name[i];
-          iany++;
-        } else {
-          std::cout << ',' << '\n'
-                    << "std::pair<" << x.second.gout.group[i] << ", String>"
-                    << '&' << ' ' << x.second.gout.name[i];
-        }
+    if (x.pass_wsv_names) {
+      for (std::size_t i = 0; i < x.gout.group.size(); i++) {
+        std::cout << ',' << '\n'
+                  << "std::pair<" << x.gout.group[i] << ", String>" << '&'
+                  << ' ' << x.gout.name[i];
       }
     } else {
-      for (std::size_t i = 0; i < x.second.gout.group.size(); i++) {
-        if (x.second.gout.group[i] == "Any") {
-          std::cout << ',' << '\n'
-                    << "Any_" << iany << '&' << ' ' << x.second.gout.name[i];
-          iany++;
-        } else {
-          std::cout << ',' << '\n'
-                    << x.second.gout.group[i] << '&' << ' '
-                    << x.second.gout.name[i];
-        }
+      for (std::size_t i = 0; i < x.gout.group.size(); i++) {
+        std::cout << ',' << '\n'
+                  << x.gout.group[i] << '&' << ' ' << x.gout.name[i];
       }
     }
 
     // Second put all GIN variables that have no default argument
-    if (x.second.pass_wsv_names) {
-      for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
-        if (not x.second.gin.hasdefs[i]) {
-          if (x.second.gin.group[i] == "Any") {
-            std::cout << ',' << '\n'
-                      << "const std::pair<Any_" << iany << ", String>" << '&'
-                      << ' ' << x.second.gin.name[i];
-            iany++;
-          } else {
-            std::cout << ',' << "\nconst std::pair<" << x.second.gin.group[i]
-                      << ", String>" << '&' << ' ' << x.second.gin.name[i];
-          }
+    if (x.pass_wsv_names) {
+      for (std::size_t i = 0; i < x.gin.group.size(); i++) {
+        if (not x.gin.hasdefs[i]) {
+          std::cout << ',' << "\nconst std::pair<" << x.gin.group[i]
+                    << ", String>" << '&' << ' ' << x.gin.name[i];
         }
       }
     } else {
-      for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
-        if (not x.second.gin.hasdefs[i]) {
-          if (x.second.gin.group[i] == "Any") {
-            std::cout << ',' << '\n'
-                      << "const Any_" << iany << '&' << ' '
-                      << x.second.gin.name[i];
-            iany++;
-          } else {
-            std::cout << ',' << "\nconst " << x.second.gin.group[i] << '&'
-                      << ' ' << x.second.gin.name[i];
-          }
+      for (std::size_t i = 0; i < x.gin.group.size(); i++) {
+        if (not x.gin.hasdefs[i]) {
+          std::cout << ',' << "\nconst " << x.gin.group[i] << '&' << ' '
+                    << x.gin.name[i];
         }
       }
     }
 
     // Lastly put all GIN variables that have a default argument
-    if (x.second.pass_wsv_names) {
-      for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
-        if (x.second.gin.hasdefs[i]) {
-          if (x.second.gin.group[i] == "Any") {
-            std::cout << ',' << "\nconst std::pair<Any_" << iany << ", String>"
-                      << '&' << ' ' << x.second.gin.name[i] << '=' << '{'
-                      << x.second.gin.defs[i] << ", \"" << x.second.gin.name[i]
-                      << "\"}";
-            iany++;
-          } else {
-            std::cout << ',' << "\nconst std::pair<" << x.second.gin.group[i]
-                      << ", String>" << '&' << ' ' << x.second.gin.name[i]
-                      << '=' << '{' << x.second.gin.defs[i] << ", \""
-                      << x.second.gin.name[i] << "\"}";
-          }
+    if (x.pass_wsv_names) {
+      for (std::size_t i = 0; i < x.gin.group.size(); i++) {
+        if (x.gin.hasdefs[i]) {
+          std::cout << ',' << "\nconst std::pair<" << x.gin.group[i]
+                    << ", String>" << '&' << ' ' << x.gin.name[i] << '=' << '{'
+                    << x.gin.defs[i] << ", \"" << x.gin.name[i] << "\"}";
         }
       }
     } else {
-      for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
-        if (x.second.gin.hasdefs[i]) {
-          if (x.second.gin.group[i] == "Any") {
-            std::cout << ',' << "\nconst Any_" << iany << '&' << ' '
-                      << x.second.gin.name[i] << '=' << x.second.gin.defs[i];
-            iany++;
-          } else {
-            std::cout << ',' << "\nconst " << x.second.gin.group[i] << '&'
-                      << ' ' << x.second.gin.name[i] << '='
-                      << x.second.gin.defs[i];
-          }
+      for (std::size_t i = 0; i < x.gin.group.size(); i++) {
+        if (x.gin.hasdefs[i]) {
+          std::cout << ',' << "\nconst " << x.gin.group[i] << '&' << ' '
+                    << x.gin.name[i] << '=' << x.gin.defs[i];
         }
       }
     }
@@ -618,82 +561,77 @@ int main() {
     std::cout << ')' << ' ' << '{' << '\n';
 
     // Call the ARTS auto_md.h function
-    std::cout << x.first << '(';
+    std::cout << x.name << '(';
 
     // We need the workspace if we input an Agenda or simply pass the workspace
     bool has_any = false;
-    if (x.second.pass_workspace or x.second.agenda_method or
+    if (x.pass_workspace or x.agenda_method or
         std::any_of(
-            x.second.gin.group.cbegin(), x.second.gin.group.cend(),
+            x.gin.group.cbegin(), x.gin.group.cend(),
             [](auto& g) { return g == "Agenda" or g == "ArrayOfAgenda"; }) or
-        std::any_of(x.second.in.varname.cbegin(), x.second.in.varname.cend(),
-                    [&](auto& g) {
-                      return artsname.varname_group.at(g).varname_group ==
-                                 "Agenda" or
-                             artsname.varname_group.at(g).varname_group ==
-                                 "ArrayOfAgenda";
-                    })) {
+        std::any_of(x.in.varname.cbegin(), x.in.varname.cend(), [&](auto& g) {
+          return artsname.varname_group.at(g).varname_group == "Agenda" or
+                 artsname.varname_group.at(g).varname_group == "ArrayOfAgenda";
+        })) {
       std::cout << "ws";
       has_any = true;
     }
 
     // First are all the outputs
-    for (std::size_t i = 0; i < x.second.out.varname.size(); i++) {
+    for (std::size_t i = 0; i < x.out.varname.size(); i++) {
       if (has_any) std::cout << ',';
       has_any = true;
-      std::cout << "Var::" << x.second.out.varname[i] << "(ws)";
+      std::cout << "Var::" << x.out.varname[i] << "(ws)";
     }
 
     // Second comes all the generic outputs
-    for (std::size_t i = 0; i < x.second.gout.name.size(); i++) {
+    for (std::size_t i = 0; i < x.gout.name.size(); i++) {
       if (has_any) std::cout << ",";
       has_any = true;
-      std::cout << x.second.gout.name[i];
-      if (x.second.pass_wsv_names) std::cout << ".first";
+      std::cout << x.gout.name[i];
+      if (x.pass_wsv_names) std::cout << ".first";
     }
 
     // And their filenames if relevant
-    if (x.second.pass_wsv_names) {
-      for (std::size_t i = 0; i < x.second.gout.name.size(); i++) {
+    if (x.pass_wsv_names) {
+      for (std::size_t i = 0; i < x.gout.name.size(); i++) {
         if (has_any) std::cout << ",";
         has_any = true;
-        std::cout << x.second.gout.name[i] << ".second";
+        std::cout << x.gout.name[i] << ".second";
       }
     }
 
     // Then come all the inputs that are not also outputs
-    for (std::size_t i = 0; i < x.second.in.varname.size(); i++) {
-      if (std::any_of(x.second.out.varname.cbegin(),
-                      x.second.out.varname.cend(),
-                      [in = x.second.in.varname[i]](const auto& out) {
-                        return in == out;
-                      }))
+    for (std::size_t i = 0; i < x.in.varname.size(); i++) {
+      if (std::any_of(
+              x.out.varname.cbegin(), x.out.varname.cend(),
+              [in = x.in.varname[i]](const auto& out) { return in == out; }))
         continue;
       if (has_any) std::cout << ",";
       has_any = true;
-      std::cout << "Var::" << x.second.in.varname[i] << "(ws)";
+      std::cout << "Var::" << x.in.varname[i] << "(ws)";
     }
 
     // Lastly are all the generic inputs, which cannot also be outputs
-    for (std::size_t i = 0; i < x.second.gin.name.size(); i++) {
+    for (std::size_t i = 0; i < x.gin.name.size(); i++) {
       if (has_any) std::cout << ",";
       has_any = true;
-      std::cout << x.second.gin.name[i];
-      if (x.second.pass_wsv_names) std::cout << ".first";
+      std::cout << x.gin.name[i];
+      if (x.pass_wsv_names) std::cout << ".first";
     }
 
     // And their filenames if relevant
-    if (x.second.pass_wsv_names) {
-      for (std::size_t i = 0; i < x.second.gin.name.size(); i++) {
+    if (x.pass_wsv_names) {
+      for (std::size_t i = 0; i < x.gin.name.size(); i++) {
         if (has_any) std::cout << ",";
         has_any = true;
-        std::cout << x.second.gin.name[i] << ".second";
+        std::cout << x.gin.name[i] << ".second";
       }
     }
 
     // Check verbosity
     const bool has_verbosity =
-        std::any_of(x.second.in.varname.cbegin(), x.second.in.varname.cend(),
+        std::any_of(x.in.varname.cbegin(), x.in.varname.cend(),
                     [](auto& name) { return name == "verbosity"; });
 
     // Add verbosity of it does not exist
@@ -712,21 +650,19 @@ int main() {
 
   for (auto& x : artsname.methodname_method) {
     // Skip methods using verbosity and Agenda methods (for now)
-    if (x.second.agenda_method) continue;
+    if (x.agenda_method) continue;
 
     // Describe the method
-    std::cout << "/*! " << x.second.desc << '\n';
-    for (auto a : x.second.authors) std::cout << "@author " << a << '\n';
+    std::cout << "/*! " << x.desc << '\n';
+    for (auto a : x.authors) std::cout << "@author " << a << '\n';
     std::cout << "\n"
                  "@param[in,out] Workspace ws - An ARTS workspace\n";
-    for (std::size_t i = 0; i < x.second.gout.name.size(); i++)
-      std::cout << "@param[out] " << x.second.gout.name[i] << " - "
-                << x.second.gout.desc[i] << "\n";
-    for (std::size_t i = 0; i < x.second.gin.name.size(); i++) {
-      std::cout << "@param[in] " << x.second.gin.name[i] << " - "
-                << x.second.gin.desc[i];
-      if (x.second.gin.hasdefs[i])
-        std::cout << " (default: " << x.second.gin.defs[i] << ")";
+    for (std::size_t i = 0; i < x.gout.name.size(); i++)
+      std::cout << "@param[out] " << x.gout.name[i] << " - " << x.gout.desc[i]
+                << "\n";
+    for (std::size_t i = 0; i < x.gin.name.size(); i++) {
+      std::cout << "@param[in] " << x.gin.name[i] << " - " << x.gin.desc[i];
+      if (x.gin.hasdefs[i]) std::cout << " (default: " << x.gin.defs[i] << ")";
       std::cout << '\n';
     }
     std::cout << "\nUse the ARTS documentation to read more on how the "
@@ -736,118 +672,84 @@ int main() {
               << "@return MRecord to call this method\n";
     std::cout << "*/" << '\n';
 
-    // Count how many anys we need
-    std::size_t anys = 0;
-    for (auto& name : x.second.gout.group)
-      if (name == "Any") anys++;
-    for (auto& name : x.second.gin.group)
-      if (name == "Any") anys++;
-
-    // Make it a template if we need any anys
-    if (anys) {
-      std::cout << "template <";
-      for (std::size_t i = 0; i < anys; i++) {
-        std::cout << "typename Any_" << i;
-        if (i not_eq anys - 1) std::cout << ", ";
-      }
-      std::cout << ">\n";
-    }
-
-    // Now we keep track of our current any count
-    std::size_t iany = 0;
-
     // Make the function
-    std::cout << "MRecord " << x.first << "([[maybe_unused]] Workspace& ws";
+    std::cout << "MRecord " << x.name << "(Workspace& ws";
 
     // Check if we have the first input
-    for (std::size_t i = 0; i < x.second.gout.group.size(); i++) {
-      if (x.second.gout.group[i] == "Any") {
-        std::cout << ',' << '\n';
-        std::cout << "Any_" << iany << '&' << ' ' << x.second.gout.name[i];
-        iany++;
-      } else {
-        std::cout << ',' << '\n';
-        std::cout << "AgendaVar::Workspace" << x.second.gout.group[i] << '&'
-                  << ' ' << x.second.gout.name[i];
-      }
+    for (std::size_t i = 0; i < x.gout.group.size(); i++) {
+      std::cout << ',' << '\n';
+      std::cout << "AgendaVar::Workspace" << x.gout.group[i] << '&' << ' '
+                << x.gout.name[i];
     }
 
     // Second put all GIN variables that have no default argument
-    for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
-      if (not x.second.gin.hasdefs[i]) {
-        if (x.second.gin.group[i] == "Any") {
-          std::cout << ',' << '\n';
-          std::cout << "const Any_" << iany << '&' << ' '
-                    << x.second.gin.name[i];
-          iany++;
-        } else {
-          std::cout << ',' << "\n";
-          std::cout << "const AgendaVar::Workspace" << x.second.gin.group[i]
-                    << '&' << ' ' << x.second.gin.name[i];
-        }
+    for (std::size_t i = 0; i < x.gin.group.size(); i++) {
+      if (not x.gin.hasdefs[i]) {
+        std::cout << ',' << "\n";
+        std::cout << "const AgendaVar::Workspace" << x.gin.group[i] << '&'
+                  << ' ' << x.gin.name[i];
       }
     }
 
     // Lastly put all GIN variables that have a default argument
-    for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
-      if (x.second.gin.hasdefs[i]) {
-        if (x.second.gin.group[i] == "Any") {
-          std::cout << ',' << "\n";
-          std::cout << "const Any_" << iany << '&' << ' '
-                    << x.second.gin.name[i] << '='
-                    << "{std::numeric_limits<std::size_t>::max(), nullptr}";
-          iany++;
-        } else {
-          std::cout << ',' << "\n";
-          std::cout << "const AgendaVar::Workspace" << x.second.gin.group[i]
-                    << '&' << ' ' << x.second.gin.name[i] << '='
-                    << "{std::numeric_limits<std::size_t>::max(), nullptr}";
-        }
+    for (std::size_t i = 0; i < x.gin.group.size(); i++) {
+      if (x.gin.hasdefs[i]) {
+        std::cout << ',' << "\n";
+        std::cout << "const AgendaVar::Workspace" << x.gin.group[i] << '&'
+                  << ' ' << x.gin.name[i] << '='
+                  << "{std::numeric_limits<std::size_t>::max(), nullptr}";
       }
     }
 
     // End of function definition and open function block
     std::cout << ')' << ' ' << '{' << '\n';
 
-    for (std::size_t i = 0; i < x.second.gin.group.size(); i++) {
-      if (x.second.gin.hasdefs[i]) {
-        std::cout << "static const auto " << x.second.gin.name[i]
-                  << "_default = AgendaVar::" << x.second.gin.group[i]
-                  << "Create(ws, \"" << x.first << '_' << x.second.gin.name[i]
+    for (std::size_t i = 0; i < x.gin.group.size(); i++) {
+      if (x.gin.hasdefs[i]) {
+        std::cout << "static const auto " << x.gin.name[i]
+                  << "_default = AgendaVar::" << x.gin.group[i]
+                  << "Create(ws, \"" << x.name << '_' << x.gin.name[i]
                   << "_autodefault"
                   << "\");\n";
       }
     }
 
     // Call the ARTS auto_md.h function
-    std::cout << "return MRecord(" << x.second.pos << ',' << ' '
-              << "ArrayOfIndex(" << '{';
+    std::cout << "return MRecord(" << x.pos << ',' << ' ' << "ArrayOfIndex("
+              << '{';
 
     // First are all the outputs
-    for (std::size_t i = 0; i < x.second.out.varpos.size(); i++) {
-      std::cout << x.second.out.varpos[i] << ',' << ' ';
+    for (std::size_t i = 0; i < x.out.varpos.size(); i++) {
+      std::cout << x.out.varpos[i] << ',' << ' ';
     }
 
     // Second comes all the generic outputs
-    for (std::size_t i = 0; i < x.second.gout.name.size(); i++) {
-      std::cout << "Index(" << x.second.gout.name[i] << ".pos)" << ',' << ' ';
+    for (std::size_t i = 0; i < x.gout.name.size(); i++) {
+      std::cout << "Index(" << x.gout.name[i] << ".pos)" << ',' << ' ';
     }
     std::cout << '}' << ')' << ',' << ' ' << "ArrayOfIndex(" << '{';
 
     // Then come all the inputs that are not also outputs
-    for (std::size_t i = 0; i < x.second.in.varpos.size(); i++) {
-      std::cout << x.second.in.varpos[i] << ',' << ' ';
+    for (std::size_t i = 0; i < x.in.varpos.size(); i++) {
+      std::cout << x.in.varpos[i] << ',' << ' ';
     }
 
     // Lastly are all the generic inputs, which cannot also be outputs
-    for (std::size_t i = 0; i < x.second.gin.name.size(); i++) {
-      if (x.second.gin.hasdefs[i])
-        std::cout << x.second.gin.name[i] << ".value == nullptr ? Index("
-                  << x.second.gin.name[i] << "_default.pos) : ";
-      std::cout << "Index(" << x.second.gin.name[i] << ".pos)" << ',' << ' ';
+    for (std::size_t i = 0; i < x.gin.name.size(); i++) {
+      if (x.gin.hasdefs[i])
+        std::cout << x.gin.name[i] << ".value == nullptr ? Index("
+                  << x.gin.name[i] << "_default.pos) : ";
+      std::cout << "Index(" << x.gin.name[i] << ".pos)" << ',' << ' ';
     }
 
-    std::cout << '}' << ')' << ',' << ' ' << "TokVal{}, Agenda{}";
+    std::cout << '}' << ')' << ',' << ' ';
+
+    if (x.set_method)
+      std::cout << "TokVal{*" << x.gin.name[0] << ".value}";
+    else
+      std::cout << "TokVal{}";
+
+    std::cout << ", Agenda{}";
 
     // Close the function call and the function itself
     std::cout << ')' << ';' << '\n' << '}' << '\n' << '\n' << '\n';
