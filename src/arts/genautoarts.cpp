@@ -673,7 +673,7 @@ int main() {
     std::cout << "*/" << '\n';
 
     // Make the function
-    std::cout << "MRecord " << x.name << "(Workspace& ws";
+    std::cout << "MRecord " << x.name << "([[maybe_unused]] Workspace& ws";
 
     // Check if we have the first input
     for (std::size_t i = 0; i < x.gout.group.size(); i++) {
