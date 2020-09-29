@@ -48,17 +48,17 @@ double test() {
   Method::WriteXML(ws, std::make_pair(Var::aa_grid(ws), String("aa_grid")),
                    std::make_pair(String("TEST.xml"), String("TEST.xml")));
 
-  auto numout = AgendaVar::g0(ws);
-  auto numin = AgendaVar::lat(ws);
-  auto numign = AgendaVar::lon(ws);
-  Method::NumericSet(ws, Var::lat(ws), 1336.0);
-  Method::NumericSet(ws, Var::lon(ws), 3336.0);
+//   auto autovar = AgendaVar::lat(ws);
+//   Method::NumericSet(ws, Var::lat(ws), 1336.0);
   std::cout << Var::lat(ws) << "\n";
-  AgendaDefine::g0_agenda(ws, AgendaMethod::NumericSet(ws, numout, numin),
-                          AgendaMethod::Ignore(ws, numign));
-  Var::g0_agenda(ws).check(ws, Var::verbosity(ws));
+  AgendaDefine::g0_agenda(
+      ws, AgendaMethod::NumericSet(ws, AgendaVar::g0(ws), AgendaVar::lat(ws)),
+      AgendaMethod::Ignore(ws, AgendaVar::lon(ws)));
   AgendaExecute::g0_agenda(ws);
   std::cout << Var::g0(ws) << '\n';
+
+  AgendaDefine::iy_main_agenda(ws, AgendaMethod::ppathCalc(ws),
+                               AgendaMethod::iyEmissionStandard(ws));
 
   std::cout << "\n\n\n\n\n\n\n\n\n";
 

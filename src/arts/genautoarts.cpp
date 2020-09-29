@@ -196,10 +196,10 @@ std::vector<Method> methods() {
     inoutvarpos.push_back({x.InOut().cbegin(), x.InOut().cend()});
   std::vector<std::vector<std::size_t>> invarpos;
   for (auto& x : global_data::md_data)
-    invarpos.push_back({x.InOnly().cbegin(), x.InOnly().cend()});
+    invarpos.push_back({x.In().cbegin(), x.In().cend()});
   std::vector<std::vector<std::size_t>> outvarpos;
   for (auto& x : global_data::md_data)
-    outvarpos.push_back({x.OutOnly().cbegin(), x.OutOnly().cend()});
+    outvarpos.push_back({x.Out().cbegin(), x.Out().cend()});
 
   std::vector<Method> retval;
   for (std::size_t i = 0; i < desc.size(); i++) {
@@ -449,9 +449,6 @@ int main() {
               << "])}; "
                  "}\n\n";
   }
-  std::cout << "}  // ARTS::AgendaVar \n\n";
-
-  std::cout << "namespace ARTS::AgendaVar {\n";
   for (auto& x : artsname.group) {
     std::cout << "/*! Creates in, and returns from, Workspace a/an " << x.first
               << '\n'
@@ -675,10 +672,19 @@ int main() {
     // Make the function
     std::cout << "MRecord " << x.name << "([[maybe_unused]] Workspace& ws";
 
+    if (x.name == "iyEmissionStandard") {
+      std::cerr << "HEJ!\n";
+      for (auto y : x.inoutvarpos) std::cerr << y << '\n';
+      std::cerr << "HEJ!\n";
+      for (auto y : x.in.varpos) std::cerr << y << '\n';
+      std::cerr << "HEJ!\n";
+      for (auto y : x.out.varpos) std::cerr << y << '\n';
+    }
+
     // Check if we have the first input
     for (std::size_t i = 0; i < x.gout.group.size(); i++) {
       std::cout << ',' << '\n';
-      std::cout << "AgendaVar::Workspace" << x.gout.group[i] << '&' << ' '
+      std::cout << "AgendaVar::Workspace" << x.gout.group[i] << ' '
                 << x.gout.name[i];
     }
 
@@ -686,8 +692,8 @@ int main() {
     for (std::size_t i = 0; i < x.gin.group.size(); i++) {
       if (not x.gin.hasdefs[i]) {
         std::cout << ',' << "\n";
-        std::cout << "const AgendaVar::Workspace" << x.gin.group[i] << '&'
-                  << ' ' << x.gin.name[i];
+        std::cout << "const AgendaVar::Workspace" << x.gin.group[i] << ' '
+                  << x.gin.name[i];
       }
     }
 
@@ -778,10 +784,8 @@ int main() {
   std::cout << "namespace ARTS::AgendaDefine { \n";
   std::cout << "/*! Append Records to an agenda */\n";
   std::cout << "template <typename ... Records> void Append(Agenda& ag, "
-               "const Records ... records) {\n"
-            << "const std::array<MRecord, "
-               "sizeof...(Records)> rec{MRecord(records)...};\n"
-            << "for (auto& x: rec) ag.push_back(x);\n}\n\n";
+               "Records ... records) {\n"
+            << "for (auto& x: {MRecord(records)...}) ag.push_back(x);\n}\n\n";
   for (auto& x : artsname.agendaname_agenda) {
     if (artsname.varname_group.at(x.first).varname_group == "ArrayOfAgenda")
       continue;
@@ -792,12 +796,14 @@ int main() {
               << "*/\n"
               << "template <typename ... Records> "
               << "void " << x.first
-              << "(Workspace& ws, const Records ... records) {\n"
+              << "(Workspace& ws, Records ... records) {\n"
               << "ARTS::Var::" << x.first << "(ws).resize(0);"
               << "ARTS::Var::" << x.first << "(ws).set_name(\"" << x.first
               << "\");"
               << "Append(ARTS::Var::" << x.first << "(ws), records...);"
-              << "\n}\n\n";
+              << "\n"
+              << "Var::" << x.first
+              << "(ws).check(ws, Var::verbosity(ws));\n}\n\n";
   }
   std::cout << "}  // ARTS::AgendaDefine \n\n";
 
