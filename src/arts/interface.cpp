@@ -1,8 +1,5 @@
 #include "interface.h"
 
-#include <limits>
-#include <memory>
-
 #include "autoarts.h"
 
 namespace ARTS {
@@ -48,8 +45,8 @@ double test() {
   Method::WriteXML(ws, std::make_pair(Var::aa_grid(ws), String("aa_grid")),
                    std::make_pair(String("TEST.xml"), String("TEST.xml")));
 
-//   auto autovar = AgendaVar::lat(ws);
-//   Method::NumericSet(ws, Var::lat(ws), 1336.0);
+  //   auto autovar = AgendaVar::lat(ws);
+  //   Method::NumericSet(ws, Var::lat(ws), 1336.0);
   std::cout << Var::lat(ws) << "\n";
   AgendaDefine::g0_agenda(
       ws, AgendaMethod::NumericSet(ws, AgendaVar::g0(ws), AgendaVar::lat(ws)),

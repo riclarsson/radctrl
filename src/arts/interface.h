@@ -1,10 +1,6 @@
 #ifndef arts_interface_h
 #define arts_interface_h
 
-#include <map>
-#include <string>
-#include <vector>
-
 namespace ARTS {
 void init();
 

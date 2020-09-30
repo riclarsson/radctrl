@@ -430,10 +430,24 @@ int main() {
 
   std::cout << "namespace ARTS::AgendaVar {\n";
   for (auto& x : artsname.group) {
-    std::cout << "struct Workspace" << x.first << ' ' << '{' << '\n';
+    std::cout << "class Workspace" << x.first << ' ' << '{' << '\n';
     std::cout << "using type = " << x.first << ";\n";
-    std::cout << "std::size_t pos;\n";
-    std::cout << "type* value;\n";
+    std::cout << "std::size_t p;\n";
+    std::cout << "type* v;\n";
+    std::cout << "public:\n";
+    std::cout << "Workspace" << x.first
+              << "() noexcept : p(std::numeric_limits<std::size_t>::max()), "
+                 "v(nullptr) {}\n";
+    std::cout << "Workspace" << x.first
+              << "(std::size_t i, void * x) noexcept : p(i), "
+                 "v(static_cast<type *>(x)) {}\n";
+    std::cout << "type& value() noexcept {return *v;}\n";
+    std::cout << "const type& value() const noexcept {return *v;}\n";
+    std::cout
+        << "Workspace" << x.first
+        << "& operator=(const type& t) noexcept {value() = t; return *this;}\n";
+    std::cout << "std::size_t pos() const noexcept {return p;}\n";
+    std::cout << "bool isnull() const noexcept {return v == nullptr;}\n";
     std::cout << '}' << ';' << '\n' << '\n';
   }
   for (auto& x : artsname.varname_group) {
@@ -672,15 +686,6 @@ int main() {
     // Make the function
     std::cout << "MRecord " << x.name << "([[maybe_unused]] Workspace& ws";
 
-    if (x.name == "iyEmissionStandard") {
-      std::cerr << "HEJ!\n";
-      for (auto y : x.inoutvarpos) std::cerr << y << '\n';
-      std::cerr << "HEJ!\n";
-      for (auto y : x.in.varpos) std::cerr << y << '\n';
-      std::cerr << "HEJ!\n";
-      for (auto y : x.out.varpos) std::cerr << y << '\n';
-    }
-
     // Check if we have the first input
     for (std::size_t i = 0; i < x.gout.group.size(); i++) {
       std::cout << ',' << '\n';
@@ -702,8 +707,7 @@ int main() {
       if (x.gin.hasdefs[i]) {
         std::cout << ',' << "\n";
         std::cout << "const AgendaVar::Workspace" << x.gin.group[i] << '&'
-                  << ' ' << x.gin.name[i] << '='
-                  << "{std::numeric_limits<std::size_t>::max(), nullptr}";
+                  << ' ' << x.gin.name[i] << '=' << "{}";
       }
     }
 
@@ -731,7 +735,7 @@ int main() {
 
     // Second comes all the generic outputs
     for (std::size_t i = 0; i < x.gout.name.size(); i++) {
-      std::cout << "Index(" << x.gout.name[i] << ".pos)" << ',' << ' ';
+      std::cout << "Index(" << x.gout.name[i] << ".pos())" << ',' << ' ';
     }
     std::cout << '}' << ')' << ',' << ' ' << "ArrayOfIndex(" << '{';
 
@@ -743,15 +747,15 @@ int main() {
     // Lastly are all the generic inputs, which cannot also be outputs
     for (std::size_t i = 0; i < x.gin.name.size(); i++) {
       if (x.gin.hasdefs[i])
-        std::cout << x.gin.name[i] << ".value == nullptr ? Index("
-                  << x.gin.name[i] << "_default.pos) : ";
-      std::cout << "Index(" << x.gin.name[i] << ".pos)" << ',' << ' ';
+        std::cout << x.gin.name[i] << ".isnull() ? Index(" << x.gin.name[i]
+                  << "_default.pos()) : ";
+      std::cout << "Index(" << x.gin.name[i] << ".pos())" << ',' << ' ';
     }
 
     std::cout << '}' << ')' << ',' << ' ';
 
     if (x.set_method)
-      std::cout << "TokVal{*" << x.gin.name[0] << ".value}";
+      std::cout << "TokVal{" << x.gin.name[0] << ".value()}";
     else
       std::cout << "TokVal{}";
 
