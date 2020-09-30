@@ -1,9 +1,7 @@
 #include "interface.h"
 
-#include "autoarts.h"
-
 namespace ARTS {
-void init() {
+Workspace init(std::size_t screen, std::size_t file, std::size_t agenda) {
   define_wsv_group_names();
   Workspace::define_wsv_data();
   Workspace::define_wsv_map();
@@ -14,6 +12,19 @@ void init() {
   define_agenda_map();
   define_species_data();
   define_species_map();
+
+  Workspace ws;
+  ws.initialize();
+  Var::verbosity(ws).set_screen_verbosity(screen);
+  Var::verbosity(ws).set_agenda_verbosity(agenda);
+  Var::verbosity(ws).set_file_verbosity(file);
+  Var::verbosity(ws).set_main_agenda(1);
+
+#ifndef NDEBUG
+  ws.context = "";
+#endif
+
+  return ws;
 }
 
 double test() {
@@ -27,14 +38,7 @@ double test() {
   using global_data::wsv_group_names;
   using global_data::WsvGroupMap;
 
-  init();
-
-  Workspace ws;
-  ws.initialize();
-  Var::verbosity(ws).set_screen_verbosity(3);
-  Var::verbosity(ws).set_agenda_verbosity(3);
-  Var::verbosity(ws).set_file_verbosity(3);
-  Var::verbosity(ws).set_main_agenda(1);
+  auto ws = init();
   Var::aa_grid(ws) = Vector(5, 1);
   std::cout << Var::aa_grid(ws) << '\n';
   Method::nelemGet(ws, Var::aa_grid(ws));
@@ -46,7 +50,7 @@ double test() {
                    std::make_pair(String("TEST.xml"), String("TEST.xml")));
 
   //   auto autovar = AgendaVar::lat(ws);
-  //   Method::NumericSet(ws, Var::lat(ws), 1336.0);
+  Method::NumericSet(ws, Var::lat(ws), 1336.0);
   std::cout << Var::lat(ws) << "\n";
   AgendaDefine::g0_agenda(
       ws, AgendaMethod::NumericSet(ws, AgendaVar::g0(ws), AgendaVar::lat(ws)),
@@ -57,7 +61,7 @@ double test() {
   AgendaDefine::iy_main_agenda(ws, AgendaMethod::ppathCalc(ws),
                                AgendaMethod::iyEmissionStandard(ws));
 
-  std::cout << "\n\n\n\n\n\n\n\n\n";
+  std::cout << "\n\n";
 
   return 1;
 }

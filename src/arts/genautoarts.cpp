@@ -398,7 +398,7 @@ int main() {
   for (auto& x : artsname.varname_group) {
     std::cout << "/*! " << x.second.varname_desc << '\n';
     std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n*/\n";
-    std::cout << "[[nodiscard]] ";
+    std::cout << "[[nodiscard]] inline ";
     std::cout << x.second.varname_group << '&' << ' ' << x.first
               << "(Workspace& ws) "
                  "noexcept { "
@@ -417,7 +417,7 @@ int main() {
     std::cout << "@param[in] String desc - The description the variable will "
                  "have in the workspace (default: \"nodescription\")\n";
     std::cout << "*/\n";
-    std::cout << "[[nodiscard]] ";
+    std::cout << "[[nodiscard]] inline ";
     std::cout << x.first << '&' << ' ' << x.first
               << "Create(Workspace& ws, const String& name, const String& "
                  "desc=\"nodescription\") {\n";
@@ -453,7 +453,7 @@ int main() {
   for (auto& x : artsname.varname_group) {
     std::cout << "/*! " << x.second.varname_desc << '\n';
     std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n*/\n";
-    std::cout << "[[nodiscard]] ";
+    std::cout << "[[nodiscard]] inline ";
     std::cout << "Workspace" << x.second.varname_group << ' ' << x.first
               << "(Workspace& ws) "
                  "noexcept { "
@@ -473,7 +473,7 @@ int main() {
     std::cout << "@param[in] String desc - The description the variable will "
                  "have in the workspace (default: \"nodescription\")\n";
     std::cout << "*/\n";
-    std::cout << "[[nodiscard]] ";
+    std::cout << "[[nodiscard]] inline ";
     std::cout << "Workspace" << x.first << ' ' << x.first
               << "Create(Workspace& ws, const String& name, const String& "
                  "desc=\"nodescription\") {\n";
@@ -517,7 +517,7 @@ int main() {
     std::cout << "*/" << '\n';
 
     // Make the function
-    std::cout << "void " << x.name << "(Workspace& ws";
+    std::cout << "inline void " << x.name << "(Workspace& ws";
 
     // First put all GOUT variables
     if (x.pass_wsv_names) {
@@ -684,7 +684,8 @@ int main() {
     std::cout << "*/" << '\n';
 
     // Make the function
-    std::cout << "MRecord " << x.name << "([[maybe_unused]] Workspace& ws";
+    std::cout << "[[nodiscard]] inline MRecord " << x.name
+              << "([[maybe_unused]] Workspace& ws";
 
     // Check if we have the first input
     for (std::size_t i = 0; i < x.gout.group.size(); i++) {
@@ -771,7 +772,7 @@ int main() {
     std::cout << "/*! " << x.second.desc << '\n'
               << "@param[in,out] Workspace ws - An ARTS workspace\n"
               << "*/\n"
-              << "void " << x.first << "(Workspace& ws) {\n"
+              << "inline void " << x.first << "(Workspace& ws) {\n"
               << x.first << "Execute(ws";
     for (auto& name : x.second.outs) {
       std::cout << ',' << ' ' << "Var::" << name << "(ws)";
@@ -799,7 +800,7 @@ int main() {
                  "from ARTS::AgendaMethod\n"
               << "*/\n"
               << "template <typename ... Records> "
-              << "void " << x.first
+              << "inline void " << x.first
               << "(Workspace& ws, Records ... records) {\n"
               << "ARTS::Var::" << x.first << "(ws).resize(0);"
               << "ARTS::Var::" << x.first << "(ws).set_name(\"" << x.first
