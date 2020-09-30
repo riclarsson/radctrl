@@ -1,7 +1,7 @@
 #ifndef arts_agendas_h
 #define arts_agendas_h
 
-#include "autoarts.h"
+#include <autoarts.h>
 namespace ARTS::Agenda {
 Workspace& iy_main_agenda_emission(Workspace& ws);
 Workspace& iy_main_agenda_transmission(Workspace& ws);
