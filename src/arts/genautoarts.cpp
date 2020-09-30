@@ -468,6 +468,9 @@ int main() {
               << '\n'
               << '\n';
     std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n";
+    std::cout << "@param[in] " << x.first
+              << " inval - The default value the variable will have in "
+                 "the workspace\n";
     std::cout << "@param[in] String name - The name the variable will have in "
                  "the workspace\n";
     std::cout << "@param[in] String desc - The description the variable will "
@@ -475,12 +478,14 @@ int main() {
     std::cout << "*/\n";
     std::cout << "[[nodiscard]] inline ";
     std::cout << "Workspace" << x.first << ' ' << x.first
-              << "Create(Workspace& ws, const String& name, const String& "
+              << "Create(Workspace& ws, const " << x.first
+              << "& inval, const String& name, const String& "
                  "desc=\"nodescription\") {\n";
     std::cout << "const std::size_t ind = "
-                 "std::size_t(ws.add_wsv({name.c_str(), desc.c_str(), "
+                 "std::size_t(ws.add_wsv_inplace({name.c_str(), desc.c_str(), "
               << x.second << "}));";
-    std::cout << "return {ind, static_cast<" << x.first << "*>(ws[ind])};\n"
+    std::cout << "Workspace" << x.first << ' ' << "val{ind, ws[ind]};\n";
+    std::cout << "return val = inval;\n"
               << "}\n\n";
   }
   std::cout << "}  // ARTS::AgendaVar \n\n";
@@ -718,10 +723,11 @@ int main() {
     for (std::size_t i = 0; i < x.gin.group.size(); i++) {
       if (x.gin.hasdefs[i]) {
         std::cout << "static const auto " << x.gin.name[i]
-                  << "_default = AgendaVar::" << x.gin.group[i]
-                  << "Create(ws, \"" << x.name << '_' << x.gin.name[i]
+                  << "_default = AgendaVar::" << x.gin.group[i] << "Create(ws, "
+                  << x.gin.defs[i] << ", \"" << x.name << '_' << x.gin.name[i]
                   << "_autodefault"
-                  << "\");\n";
+                  << "\", \"auto generated variable with default from method "
+                     "definition\");\n";
       }
     }
 

@@ -16,7 +16,7 @@ target_include_directories(arts_api_static PUBLIC ${ARTS_BINARY_DIR}
                                                    
 ########################################################################################
 # ARTS Library: For ARTS usage
-add_library (arts_interface STATIC interface.cpp)
+add_library (arts_interface STATIC interface.cpp arts_agenda.cpp)
 target_link_libraries(arts_interface PUBLIC arts_api_static)
 ########################################################################################
 

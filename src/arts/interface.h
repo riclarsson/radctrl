@@ -1,6 +1,7 @@
-#ifndef arts_interface_h
-#define arts_interface_h
+#ifndef interface_h
+#define interface_h
 
+#include "arts_agenda.h"
 #include "autoarts.h"
 
 namespace ARTS {
@@ -10,4 +11,4 @@ Workspace init(std::size_t screen = 0, std::size_t file = 0,
 double test();
 }  // namespace ARTS
 
-#endif  // arts_interface_h
+#endif  // interface_h
