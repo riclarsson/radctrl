@@ -128,7 +128,8 @@ Workspace& geo_pos_agenda_empty(Workspace& ws) {
   using namespace AgendaMethod;
   using namespace AgendaDefine;
   using namespace AgendaVar;
-  geo_pos_agenda(ws, Ignore(ws, ppath(ws)), VectorSet(ws, geo_pos(ws), VectorCreate(ws, {}, "Default")));
+  geo_pos_agenda(ws, Ignore(ws, ppath(ws)),
+                 VectorSet(ws, geo_pos(ws), VectorCreate(ws, {}, "Default")));
   return ws;
 }
 }  // namespace ARTS::Agenda

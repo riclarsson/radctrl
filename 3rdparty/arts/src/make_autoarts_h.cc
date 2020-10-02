@@ -375,7 +375,6 @@ int main() {
             << "#define autoarts_h\n"
             << '\n'
             << "#include <auto_md.h>" << '\n'
-            << "#include <auto_workspace.h>" << '\n'
             << "#include <arts.h>" << '\n'
             << "#include <global_data.h>" << '\n'
             << "#include <m_basic_types.h>" << '\n'
@@ -393,7 +392,7 @@ int main() {
             << "#include <m_ignore.h>" << '\n'
             << '\n'
             << '\n';
-
+            
   std::cout << "namespace ARTS::Var {\n";
   for (auto& x : artsname.varname_group) {
     std::cout << "/*! " << x.second.varname_desc << '\n';
@@ -413,6 +412,8 @@ int main() {
 
   std::cout << "namespace ARTS::AgendaVar {\n";
   for (auto& x : artsname.group) {
+    if (x.first == "Any") continue;
+    
     std::cout << "class Workspace" << x.first << ' ' << '{' << '\n';
     std::cout << "  using type = " << x.first << ";\n";
     std::cout << "  std::size_t p;\n";
@@ -448,6 +449,8 @@ int main() {
                  "}\n\n";
   }
   for (auto& x : artsname.group) {
+    if (x.first == "Any") continue;
+    
     std::cout << "/*! Creates in, and returns from, Workspace a/an " << x.first
               << '\n'
               << '\n';
@@ -814,12 +817,43 @@ int main() {
               << "  ARTS::Var::" << x.first << "(ws).resize(0);\n"
               << "  ARTS::Var::" << x.first << "(ws).set_name(\"" << x.first
               << "\");\n"
-              << "  Append(ARTS::Var::" << x.first << "(ws), records...);"
-              << "\n"
+              << "  Append(ARTS::Var::" << x.first << "(ws), records...);\n"
+              << "  Var::" << x.first << "(ws).set_main_agenda();\n"
               << "  Var::" << x.first
               << "(ws).check(ws, Var::verbosity(ws));\n}\n\n";
   }
   std::cout << "}  // ARTS::AgendaDefine \n\n";
+  
+  // Make the main "startup"
+  std::cout << "namespace ARTS {\n";
+  std::cout <<
+    "inline Workspace init(std::size_t screen=0, std::size_t file=0, std::size_t agenda=0) {\n"
+    "  define_wsv_group_names();\n"
+    "  Workspace::define_wsv_data();\n"
+    "  Workspace::define_wsv_map();\n"
+    "  define_md_data_raw();\n"
+    "  expand_md_data_raw_to_md_data();\n"
+    "  define_md_map();\n"
+    "  define_agenda_data();\n"
+    "  define_agenda_map();\n"
+    "  define_species_data();\n"
+    "  define_species_map();\n"
+    "  global_data::workspace_memory_handler.initialize();\n"
+    "\n"
+    "  Workspace ws;\n"
+    "  ws.initialize();\n"
+    "  Var::verbosity(ws).set_screen_verbosity(screen);\n"
+    "  Var::verbosity(ws).set_agenda_verbosity(agenda);\n"
+    "  Var::verbosity(ws).set_file_verbosity(file);\n"
+    "  Var::verbosity(ws).set_main_agenda(1);\n"
+    "\n"
+    "  #ifndef NDEBUG\n"
+    "  ws.context = "";\n"
+  "  #endif\n"
+  "\n"
+  "  return ws;"
+  "}\n";
+  std::cout << "}  // namespace::ARTS\n\n";
 
   std::cout << "#endif  // autoarts_h\n\n";
 }

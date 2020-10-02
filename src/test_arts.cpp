@@ -182,7 +182,7 @@ int main() try {
   Method::AtmFieldsCalc(ws, 1, 1);
   
   Method::refellipsoidVenus(ws, "Sphere");
-  Method::z_surfaceConstantAltitude(ws, 0.0);
+  Var::z_surface(ws) = Matrix(1, 1, 0.0);
   Var::t_surface(ws) = Matrix(1, 1, 735.29999);
   
   std::pair x2 = {Var::partition_functions(ws), String{"partition_functions"}};
@@ -227,6 +227,7 @@ int main() try {
     Method::abs_xsec_agenda_checkedCalc(ws);
     Method::lbl_checkedCalc(ws);
     
+    std::cout << "got here\n";
     Method::yCalc(ws);
     
     std::cout << Var::y(ws)<< '\n';
