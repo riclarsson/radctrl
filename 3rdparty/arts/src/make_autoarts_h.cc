@@ -801,8 +801,8 @@ int main() {
   std::cout << "/*! Append Records to an agenda */\n";
   std::cout << "template <typename ... Records>\nvoid Append(Agenda& ag, "
                "Records ... records) {\n"
-            << "  for (auto& x: { MRecord(records)... })\n    "
-               "ag.push_back(x);\n}\n\n";
+            << "  for (auto& x: { MRecord(records)... })\n"
+               "    ag.push_back(x);\n}\n\n";
   for (auto& x : artsname.agendaname_agenda) {
     if (artsname.varname_group.at(x.first).varname_group == "ArrayOfAgenda")
       continue;
@@ -814,11 +814,10 @@ int main() {
               << "template <typename ... Records> "
               << "inline\nvoid " << x.first
               << "(Workspace& ws, Records ... records) {\n"
-              << "  ARTS::Var::" << x.first << "(ws).resize(0);\n"
+              << "  ARTS::Var::" << x.first << "(ws)=Agenda();\n"
               << "  ARTS::Var::" << x.first << "(ws).set_name(\"" << x.first
               << "\");\n"
               << "  Append(ARTS::Var::" << x.first << "(ws), records...);\n"
-              << "  Var::" << x.first << "(ws).set_main_agenda();\n"
               << "  Var::" << x.first
               << "(ws).check(ws, Var::verbosity(ws));\n}\n\n";
   }
@@ -849,10 +848,10 @@ int main() {
     "\n"
     "  #ifndef NDEBUG\n"
     "  ws.context = "";\n"
-  "  #endif\n"
-  "\n"
-  "  return ws;"
-  "}\n";
+    "  #endif\n"
+    "\n"
+    "  return ws;"
+    "}\n";
   std::cout << "}  // namespace::ARTS\n\n";
 
   std::cout << "#endif  // autoarts_h\n\n";

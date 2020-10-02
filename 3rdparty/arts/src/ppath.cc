@@ -5226,6 +5226,18 @@ void ppath_calc(Workspace& ws,
   // For that reason, this function does not repeat input checks that are
   // performed in yCalc, it only performs checks regarding the sensor
   // position and LOS.
+  
+  std::cout << "atmosphere_dim " << atmosphere_dim << '\n';
+  std::cout << "lat_grid "<< lat_grid << '\n';
+  std::cout << "lon_grid "<< lon_grid << '\n';
+  std::cout << "refellipsoid "<< refellipsoid << '\n';
+  std::cout << "z_surface "<< z_surface << '\n';
+  std::cout << "cloudbox_on "<< cloudbox_on << '\n';
+  std::cout << "rte_pos "<< rte_pos << '\n';
+  std::cout << "rte_los "<< rte_los << '\n';
+  std::cout << "ppath_lmax "<< ppath_lmax << '\n';
+  std::cout << "ppath_lraytrace "<< ppath_lraytrace << '\n';
+  std::cout << "ppath_inside_cloudbox_do "<< ppath_inside_cloudbox_do << '\n';
 
   //--- Check input -----------------------------------------------------------
   chk_rte_pos(atmosphere_dim, rte_pos);
@@ -5235,7 +5247,6 @@ void ppath_calc(Workspace& ws,
         "The WSV *ppath_inside_cloudbox_do* can only be set "
         "to 1 if also *cloudbox_on* is 1.");
   //--- End: Check input ------------------------------------------------------
-
   // Initiate the partial Ppath structure.
   // The function doing the work sets ppath_step to the point of the path
   // inside the atmosphere closest to the sensor, if the path is at all inside

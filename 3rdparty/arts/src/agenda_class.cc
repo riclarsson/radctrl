@@ -192,7 +192,7 @@ void Agenda::execute(Workspace& ws) const {
     aout1 << "Executing " << name() << "\n"
           << "{\n";
   }
-
+std::cout << mname << " " << "HI inside test\n";
   for (Index i = 0; i < mml.nelem(); ++i) {
     const Verbosity& verbosity = *((Verbosity*)ws[wsv_id_verbosity]);
     CREATE_OUT1;

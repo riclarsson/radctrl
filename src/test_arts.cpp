@@ -34,7 +34,7 @@ int main() try {
   Method::Touch(ws, Var::abs_cont_models(ws));
   Method::Touch(ws, Var::surface_props_names(ws));
   
-  Method::abs_speciesSet(ws, {"PH3", "SO2", "CO2", "CO", "HCl", "HF", "N2", "O", "O2", "OCS", "SO",
+  Method::abs_speciesSet(ws, {"PH3", "SO2", "CO2", "CO", "HCl", "HF", "N2", "O", "O2", "OCS", "SO", "H2O",
                               "N2-CIA-N2-0", "CO2-CIA-CO2-0"});
   
   Var::p_grid(ws) = {9.2100000e+06, 8.6342200e+06, 8.0944300e+06, 7.5883900e+06,
@@ -182,7 +182,7 @@ int main() try {
   Method::AtmFieldsCalc(ws, 1, 1);
   
   Method::refellipsoidVenus(ws, "Sphere");
-  Var::z_surface(ws) = Matrix(1, 1, 0.0);
+  Method::z_surfaceConstantAltitude(ws, 0.0);
   Var::t_surface(ws) = Matrix(1, 1, 735.29999);
   
   std::pair x2 = {Var::partition_functions(ws), String{"partition_functions"}};

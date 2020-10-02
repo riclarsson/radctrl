@@ -204,6 +204,12 @@ void ppathCalc(Workspace& ws,
                const Vector& rte_los,
                const Vector& rte_pos2,
                const Verbosity&) {
+  std::cout<<"Hi everyone!\n";
+  std::cout << "ppath_lmax: " << ppath_lmax << '\n';
+  std::cout << "ppath_lraytrace: " << ppath_lraytrace << '\n';
+  std::cout << "rte_pos: " << rte_pos << '\n';
+  std::cout << "rte_los: " << rte_los << '\n';
+  std::cout << "rte_pos2: " << rte_pos2 << '\n';
   // Basics
   //
   if (atmgeom_checked != 1)
@@ -1286,9 +1292,16 @@ void ppath_stepGeometric(  // WS Output:
     const Matrix& z_surface,
     const Numeric& ppath_lmax,
     const Verbosity&) {
+  std::cout << "ppath_stepGeometric\n";
   // Input checks here would be rather costly as this function is called
   // many times. So we perform asserts in the sub-functions, but no checks
   // here.
+  
+  std::cout << "atmosphere_dim: " << atmosphere_dim << '\n';
+  std::cout << "lat_grid: " << lat_grid << '\n';
+  std::cout << "lon_grid: " << lon_grid << '\n';
+  std::cout << "refellipsoid: " << refellipsoid << '\n';
+  std::cout << "ppath_lmax: " << ppath_lmax << '\n';
 
   // A call with background set, just wants to obtain the refractive index for
   // complete ppaths consistent of a single point.
