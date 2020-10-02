@@ -177,20 +177,22 @@ int main() try {
   Method::Touch(ws, Var::rte_alonglos_v(ws));
   Method::Touch(ws, Var::surface_props_data(ws));
   Method::AtmRawRead(ws, "/home/larsson/Work/arts-xml-data/planets/Venus/MPS/Venus.vira.day/Venus.vira.day");
-  std::pair x1{Var::abs_cia_data(ws), String{"abs_cia_data"}};
-  Method::ReadXML(ws, x1, {String{"/home/larsson/Work/arts-xml-data/spectroscopy/cia/hitran2011/hitran_cia2012_adapted.xml.gz"}, String{"/home/larsson/Work/arts-xml-data/spectroscopy/cia/hitran2011/hitran_cia2012_adapted.xml.gz"}});
-  Method::AtmFieldsCalc(ws, 1, 1);
+  auto filename = Var::StringCreate(ws, "/home/larsson/Work/arts-xml-data/spectroscopy/cia/hitran2011/hitran_cia2012_adapted.xml.gz", "filename");
+  Method::ReadXML(ws, Var::abs_cia_data(ws), filename);
   
-  Method::refellipsoidVenus(ws, "Sphere");
-  Method::z_surfaceConstantAltitude(ws, 0.0);
+  auto interp_order = Var::IndexCreate(ws, 1, "AtmFieldsCalcVal1");
+  auto vmr_zeropadding = Var::IndexCreate(ws, 1, "AtmFieldsCalcVal2");
+  Method::AtmFieldsCalc(ws, interp_order, vmr_zeropadding);
+  
+  auto model = Var::StringCreate(ws, "Sphere", "AtmFieldsCalcVal2");
+  Method::refellipsoidVenus(ws, model);
+  Method::z_surfaceConstantAltitude(ws);
   Var::t_surface(ws) = Matrix(1, 1, 735.29999);
   
-  std::pair x2 = {Var::partition_functions(ws), String{"partition_functions"}};
-  std::pair x3 = {Var::isotopologue_ratios(ws), String{"isotopologue_ratios"}};
-  Method::ReadXML(ws, x2, {String{"/home/larsson/Work/arts-xml-data/spectroscopy/PartitionSums/TIPS/tips.xml"}, String{"/home/larsson/Work/arts-xml-data/spectroscopy/PartitionSums/TIPS/tips.xml"}});
-  Method::ReadXML(ws, x3, {String{"/home/larsson/Work/arts-xml-data/planets/Venus/isotopratio_Venus.xml"}, String{"/home/larsson/Work/arts-xml-data/planets/Venus/isotopratio_Venus.xml"}});
-  Var::partition_functions(ws) = x2.first;  // FIXME: This is ugly
-  Var::isotopologue_ratios(ws) = x3.first;  // FIXME: This is ugly
+  filename = "/home/larsson/Work/arts-xml-data/spectroscopy/PartitionSums/TIPS/tips.xml";
+  Method::ReadXML(ws, Var::partition_functions(ws), filename);
+  filename = "/home/larsson/Work/arts-xml-data/planets/Venus/isotopratio_Venus.xml";
+  Method::ReadXML(ws, Var::isotopologue_ratios(ws), filename);
   Method::ReadARTSCAT(ws, "/home/larsson/Work/arts-xml-data/spectroscopy/Perrin/PH3.xml.gz");
   Method::abs_linesDeleteBadF0(ws, 400e9);
   Method::abs_linesDeleteBadF0(ws, 1300e9, 0);
@@ -206,11 +208,11 @@ int main() try {
   Var::ppath_lraytrace(ws) = 1e3;
   Var::ppath_lmax(ws) = 1e3;
   
-  for (auto& line: phoscat[0].AllLines()) {
+  for (auto& line: phoscat.value()[0].AllLines()) {
     if (line.F0() < 500e9 or line.F0() > 1200e9 or (line.F0() < 1000e9 and line.F0() > 650e9)) continue;
     
     Var::nelem(ws) = 1001;
-    Method::VectorNLinSpace(ws, Var::f_grid(ws), line.F0() - 500e9, line.F0() + 500e9);
+    Method::VectorNLinSpace(ws, Var::f_grid(ws).value(), line.F0() - 500e9, line.F0() + 500e9);
     
     const Numeric za = 119.8;
     
@@ -230,7 +232,7 @@ int main() try {
     std::cout << "got here\n";
     Method::yCalc(ws);
     
-    std::cout << Var::y(ws)<< '\n';
+    std::cout << Var::y(ws).value() << '\n';
   }
     
   std::cout << "Hello!\n";
