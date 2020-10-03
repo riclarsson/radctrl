@@ -176,8 +176,8 @@ int main() try {
   Method::Touch(ws, Var::nlte_field(ws));
   Method::Touch(ws, Var::rte_alonglos_v(ws));
   Method::Touch(ws, Var::surface_props_data(ws));
-  Method::AtmRawRead(ws, "/home/larsson/Work/arts-xml-data/planets/Venus/MPS/Venus.vira.day/Venus.vira.day");
-  auto filename = Var::StringCreate(ws, "/home/larsson/Work/arts-xml-data/spectroscopy/cia/hitran2011/hitran_cia2012_adapted.xml.gz", "filename");
+  Method::AtmRawRead(ws, "/home/richard/Work/arts-xml-data/planets/Venus/MPS/Venus.vira.day/Venus.vira.day");
+  auto filename = Var::StringCreate(ws, "/home/richard/Work/arts-xml-data/spectroscopy/cia/hitran2011/hitran_cia2012_adapted.xml.gz", "filename");
   Method::ReadXML(ws, Var::abs_cia_data(ws), filename);
   
   auto interp_order = Var::IndexCreate(ws, 1, "AtmFieldsCalcVal1");
@@ -189,15 +189,15 @@ int main() try {
   Method::z_surfaceConstantAltitude(ws);
   Var::t_surface(ws) = Matrix(1, 1, 735.29999);
   
-  filename = "/home/larsson/Work/arts-xml-data/spectroscopy/PartitionSums/TIPS/tips.xml";
+  filename = "/home/richard/Work/arts-xml-data/spectroscopy/PartitionSums/TIPS/tips.xml";
   Method::ReadXML(ws, Var::partition_functions(ws), filename);
-  filename = "/home/larsson/Work/arts-xml-data/planets/Venus/isotopratio_Venus.xml";
+  filename = "/home/richard/Work/arts-xml-data/planets/Venus/isotopratio_Venus.xml";
   Method::ReadXML(ws, Var::isotopologue_ratios(ws), filename);
-  Method::ReadARTSCAT(ws, "/home/larsson/Work/arts-xml-data/spectroscopy/Perrin/PH3.xml.gz");
+  Method::ReadARTSCAT(ws, "/home/richard/Work/arts-xml-data/spectroscopy/Perrin/PH3.xml.gz");
   Method::abs_linesDeleteBadF0(ws, 400e9);
   Method::abs_linesDeleteBadF0(ws, 1300e9, 0);
   const auto phoscat = Var::abs_lines(ws);
-  Method::ReadSplitARTSCAT(ws, "/home/larsson/Work/arts-xml-data/spectroscopy/Perrin/", 400e9, 1300e9);
+  Method::ReadSplitARTSCAT(ws, "/home/richard/Work/arts-xml-data/spectroscopy/Perrin/", 400e9, 1300e9);
   Method::cloudboxOff(ws);
   Method::abs_linesDeleteBadF0(ws, 400e9);
   Method::abs_linesDeleteBadF0(ws, 1300e9, 0);
@@ -229,7 +229,7 @@ int main() try {
     Method::abs_xsec_agenda_checkedCalc(ws);
     Method::lbl_checkedCalc(ws);
     
-    std::cout << "got here\n";
+    std::cout << "STARTING YCALC\n";
     Method::yCalc(ws);
     
     std::cout << Var::y(ws).value() << '\n';
