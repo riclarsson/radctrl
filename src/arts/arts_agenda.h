@@ -49,6 +49,9 @@ Workspace& surface_rtprop_agenda_blackbody_from_atmosphere(Workspace& ws);
 
 /*! Standard empty geo pos agenda */
 Workspace& geo_pos_agenda_empty(Workspace& ws);
+
+/*! Standard water_p_eq_agenda */
+Workspace& water_p_eq_agenda_default(Workspace& ws);
 };  // namespace ARTS::Agenda
 
 #endif  // arts_agendas_a

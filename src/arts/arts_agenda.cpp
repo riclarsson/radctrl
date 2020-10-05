@@ -132,4 +132,11 @@ Workspace& geo_pos_agenda_empty(Workspace& ws) {
                  VectorSet(ws, geo_pos(ws), VectorCreate(ws, {}, "Default")));
   return ws;
 }
+
+Workspace& water_p_eq_agenda_default(Workspace& ws) {
+  using namespace AgendaMethod;
+  using namespace AgendaDefine;
+  water_p_eq_agenda(ws, water_p_eq_fieldMK05(ws));
+  return ws;
+}
 }  // namespace ARTS::Agenda

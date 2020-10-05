@@ -181,7 +181,6 @@ void Agenda::execute(Workspace& ws) const {
 
   Verbosity& averbosity = *((Verbosity*)ws[wsv_id_verbosity]);
 
-  std::cerr << "\n\nI BELIEVE I AM THE MAIN: " << is_main_agenda() << '\n' << '\n';
   averbosity.set_main_agenda(is_main_agenda());
 
   ArtsOut1 aout1(averbosity);
@@ -193,7 +192,7 @@ void Agenda::execute(Workspace& ws) const {
     aout1 << "Executing " << name() << "\n"
           << "{\n";
   }
-std::cout << mname << " " << "HI inside test\n";
+
   for (Index i = 0; i < mml.nelem(); ++i) {
     const Verbosity& verbosity = *((Verbosity*)ws[wsv_id_verbosity]);
     CREATE_OUT1;
@@ -212,7 +211,6 @@ std::cout << mname << " " << "HI inside test\n";
           out1 << "- " + mdd.Name() + "\n";
         }
       }
-      std::cerr << "\n\nI BELIEVE I AM INTERNAL: " << mrr.isInternal() << " I AM: " << global_data::md_data[mrr.Id()].Name() << '\n' << '\n';
 
       {  // Check if all input variables are initialized:
         const ArrayOfIndex& v(mrr.In());
@@ -235,7 +233,6 @@ std::cout << mname << " " << "HI inside test\n";
       }
 
       // Call the getaway function:
-      std::cerr << "\nI AM STARTING:\n\n";
       getaways[mrr.Id()](ws, mrr);
 
     } catch (const std::bad_alloc& x) {

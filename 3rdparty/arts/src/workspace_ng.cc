@@ -60,10 +60,6 @@ Index Workspace::add_wsv(const WsvRecord &wsv) {
 Index Workspace::add_wsv_inplace(const WsvRecord &wsv) {
   const Index pos = add_wsv(wsv);
   ws.push_back(stack<WsvStruct *>());
-  push(pos, nullptr);
-  ws.back().top()->wsv = workspace_memory_handler.allocate(wsv.Group());
-  ws.back().top()->auto_allocated = true;
-  ws.back().top()->initialized = false;
   return pos;
 }
 
@@ -76,7 +72,6 @@ void Workspace::del(Index i) {
     wsvs->auto_allocated = false;
     wsvs->initialized = false;
   }
-  std::cerr << "I DELETED MYSELF " << "var: " << wsv_data[i].Name() << '\n';
 }
 
 void Workspace::duplicate(Index i) {
@@ -92,8 +87,6 @@ void Workspace::duplicate(Index i) {
     wsvs->initialized = false;
   }
   ws[i].push(wsvs);
-  
-  std::cerr << "I DUPLICATED MYSELF " << "var: " << wsv_data[i].Name() << '\n';
 }
 
 Workspace::Workspace(const Workspace &workspace) : ws(workspace.ws.nelem()) {
@@ -112,7 +105,6 @@ Workspace::Workspace(const Workspace &workspace) : ws(workspace.ws.nelem()) {
     }
     ws[i].push(wsvs);
   }
-  std::cerr << "I COPIED MYSELF " << '\n';
 }
 
 Workspace::~Workspace() {
@@ -143,7 +135,6 @@ void *Workspace::pop(Index i) {
     delete wsvs;
     ws[i].pop();
   }
-  std::cerr << "POP " << "var: " << wsv_data[i].Name() << " stack size " << ws[i].size() << '\n';
   return vp;
 }
 
@@ -157,7 +148,6 @@ void Workspace::pop_free(Index i) {
     delete wsvs;
     ws[i].pop();
   }
-  std::cerr << "POPFREE " << "var: " << wsv_data[i].Name() << " stack size " << ws[i].size() << '\n';
 }
 
 void Workspace::push(Index i, void *wsv) {
@@ -166,7 +156,6 @@ void Workspace::push(Index i, void *wsv) {
   wsvs->initialized = true;
   wsvs->wsv = wsv;
   ws[i].push(wsvs);
-  std::cerr << "PUSH " << "var: " << wsv_data[i].Name() << " stack size " << ws[i].size() << '\n';
 }
 
 void Workspace::push_uninitialized(Index i, void *wsv) {
@@ -175,7 +164,6 @@ void Workspace::push_uninitialized(Index i, void *wsv) {
   wsvs->initialized = false;
   wsvs->wsv = wsv;
   ws[i].push(wsvs);
-  std::cerr << "PUSHNOTINIT " << "var: " << wsv_data[i].Name() << " stack size " << ws[i].size() << '\n';
 }
 
 void *Workspace::operator[](Index i) {
@@ -187,6 +175,6 @@ void *Workspace::operator[](Index i) {
   }
 
   ws[i].top()->initialized = true;
-  std::cerr << "ACCESS " << "var: " << wsv_data[i].Name() << " stack size " << ws[i].size() << '\n';
+
   return (ws[i].top()->wsv);
 }

@@ -25,6 +25,8 @@ int main() try {
   
   ARTS::Agenda::geo_pos_agenda_empty(ws);
   
+  ARTS::Agenda::water_p_eq_agenda_default(ws);
+  
   Method::jacobianOff(ws);
   Method::nlteOff(ws);
   Var::iy_unit(ws) = "PlanckBT";
