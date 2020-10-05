@@ -392,6 +392,7 @@ int main() {
             << "#include <m_ignore.h>" << '\n'
             << '\n'
             << '\n';
+  std::cerr << "#include \"autoarts.h\"\n";
 
   std::cout << "namespace ARTS::Var {\n";
   for (auto& x : artsname.group) {
@@ -402,12 +403,16 @@ int main() {
     std::cout << "  std::size_t p;\n";
     std::cout << "  type* v;\n";
     std::cout << "public:\n";
+    std::cout << "  static std::size_t counter;\n";
     std::cout << "  Workspace" << x.first
               << "() noexcept : p(std::numeric_limits<std::size_t>::max()), "
                  "v(nullptr) {}\n";
     std::cout << "  Workspace" << x.first
               << "(std::size_t i, void * x) noexcept : p(i), "
                  "v(static_cast<type *>(x)) {}\n";
+              
+    std::cout << "  Workspace" << x.first << "(const type& x) : p(std::numeric_limits<std::size_t>::max()), v(new type(x)) {}\n";
+    std::cout << "  ~Workspace" << x.first << "() noexcept {if (not isnull() and islast()) delete v;}\n";
     std::cout << "  type& value() noexcept {return *v;}\n";
     std::cout << "  const type& value() const noexcept {return *v;}\n";
     std::cout
@@ -415,9 +420,19 @@ int main() {
         << "& operator=(const type& t) noexcept {value() = t; return *this;}\n";
     std::cout << "  std::size_t pos() const noexcept {return p;}\n";
     std::cout << "  bool isnull() const noexcept {return v == nullptr;}\n";
+    std::cout << "  bool islast() const noexcept {return p == std::numeric_limits<std::size_t>::max();}\n";
     std::cout << "  const String& name() const noexcept {return Workspace::wsv_data[isnull() ? 0 : p].Name();}\n";
-    std::cout << '}' << ';' << '\n' << '\n';
+    std::cout << '}' << ';' << '\n';
+    std::cout << "Workspace" << x.first << " init(Workspace& ws, const Workspace"<<x.first<<"& val);\n\n";
+    std::cerr << "ARTS::Var::Workspace" << x.first << " ARTS::Var::init(Workspace& ws, const Workspace"<<x.first<<"& val) {\n"
+              << "  if (val.islast() and not val.isnull())\n"
+              << "    return ARTS::Var::"<<x.first<<"Create(ws, val.value(), String{\"ag_"<<x.first<<"_num_\"} + std::to_string(val.counter++));\n"
+              << "  else return val;\n"
+              << "}\n\n";
+    std::cerr << "std::size_t ARTS::Var::Workspace" << x.first << "::counter = 1;\n";
   }
+  std::cerr << '\n';
+  
   for (auto& x : artsname.varname_group) {
     std::cout << "/*! " << x.second.varname_desc << '\n';
     std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n";
@@ -793,6 +808,7 @@ int main() {
     std::cout << ')' << ' ' << '{' << '\n';
 
     for (std::size_t i = 0; i < x.gin.group.size(); i++) {
+      std::cout << "  const auto " << x.gin.name[i] << "_iofix = init(ws, " << x.gin.name[i] << ");\n";
       if (x.gin.hasdefs[i]) {
         std::cout
             << "  static const auto " << x.gin.name[i]
@@ -802,6 +818,11 @@ int main() {
             << "\",\n    \"auto generated variable with default from method "
                "definition\");\n";
       }
+    }
+    
+    // Check if the GOUT is correct
+    for (std::size_t i = 0; i < x.gout.group.size(); i++) {
+      std::cout << "if (" << x.gout.name[i] << ".islast()) throw std::runtime_error(\"" << x.gout.name[i] << " must be a Workspace Variable\");\n";
     }
 
     // Call the ARTS auto_md.h function
@@ -829,7 +850,7 @@ int main() {
       if (x.gin.hasdefs[i])
         std::cout << x.gin.name[i] << ".isnull() ? Index(" << x.gin.name[i]
                   << "_default.pos()) : ";
-      std::cout << "Index(" << x.gin.name[i] << ".pos())" << ',' << ' ';
+      std::cout << "Index(" << x.gin.name[i] << "_iofix.pos())" << ',' << ' ';
     }
 
     std::cout << '}' << ')' << ',' << ' ';
@@ -916,7 +937,7 @@ int main() {
     "  Var::verbosity(ws).value().set_main_agenda(1);\n"
     "\n"
     "  #ifndef NDEBUG\n"
-    "  ws.context = "";\n"
+    "  ws.context = \"\";\n"
     "  #endif\n"
     "\n"
     "  return ws;"

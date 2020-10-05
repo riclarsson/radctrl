@@ -60,6 +60,10 @@ Index Workspace::add_wsv(const WsvRecord &wsv) {
 Index Workspace::add_wsv_inplace(const WsvRecord &wsv) {
   const Index pos = add_wsv(wsv);
   ws.push_back(stack<WsvStruct *>());
+  push(pos, nullptr);
+  ws.back().top()->wsv = workspace_memory_handler.allocate(wsv.Group());
+  ws.back().top()->auto_allocated = true;
+  ws.back().top()->initialized = false;
   return pos;
 }
 
