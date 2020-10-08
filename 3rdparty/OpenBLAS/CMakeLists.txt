@@ -6,8 +6,7 @@ cmake_minimum_required(VERSION 2.8.5)
 project(OpenBLAS C ASM)
 set(OpenBLAS_MAJOR_VERSION 0)
 set(OpenBLAS_MINOR_VERSION 3)
-set(OpenBLAS_PATCH_VERSION 10)
-
+set(OpenBLAS_PATCH_VERSION 10.dev)
 set(OpenBLAS_VERSION "${OpenBLAS_MAJOR_VERSION}.${OpenBLAS_MINOR_VERSION}.${OpenBLAS_PATCH_VERSION}")
 
 # Adhere to GNU filesystem layout conventions
@@ -30,6 +29,8 @@ option(NO_AFFINITY "Disable support for CPU affinity masks to avoid binding proc
 else()
 set(NO_AFFINITY 1)
 endif()
+option(CPP_THREAD_SAFETY_TEST "Run a massively parallel DGEMM test to confirm thread safety of the library (requires OpenMP and about 1.3GB of RAM)" OFF)
+option(CPP_THREAD_SAFETY_GEMV "Run a massively parallel DGEMV test to confirm thread safety of the library (requires OpenMP)" OFF)
 
 # Add a prefix or suffix to all exported symbol names in the shared library.
 # Avoids conflicts with other BLAS libraries, especially when using
@@ -234,6 +235,10 @@ if (NOT MSVC AND NOT NOFORTRAN)
   if(NOT NO_CBLAS)
     add_subdirectory(ctest)
   endif()
+  add_subdirectory(lapack-netlib/TESTING)
+	  if (CPP_THREAD_SAFETY_TEST OR CPP_THREAD_SAFETY_GEMV)
+	  	add_subdirectory(cpp_thread_test)
+    	  endif()
 endif()
 
 set_target_properties(${OpenBLAS_LIBNAME} PROPERTIES
@@ -249,7 +254,7 @@ if (BUILD_SHARED_LIBS AND BUILD_RELAPACK)
   endif()
 endif()
 
-if (BUILD_SHARED_LIBS AND NOT ${SYMBOLPREFIX}${SYMBOLSUFIX} STREQUAL "")
+if (BUILD_SHARED_LIBS AND NOT ${SYMBOLPREFIX}${SYMBOLSUFFIX} STREQUAL "")
 if (NOT DEFINED ARCH)
   set(ARCH_IN "x86_64")
 else()
@@ -358,10 +363,21 @@ endif()
 
 if(NOT NO_CBLAS)
 	message (STATUS "Generating cblas.h in ${CMAKE_INSTALL_INCLUDEDIR}")
-
 	set(CBLAS_H ${CMAKE_BINARY_DIR}/generated/cblas.h)
 	file(READ ${CMAKE_CURRENT_SOURCE_DIR}/cblas.h CBLAS_H_CONTENTS)
 	string(REPLACE "common" "openblas_config" CBLAS_H_CONTENTS_NEW "${CBLAS_H_CONTENTS}")
+	if (NOT ${SYMBOLPREFIX} STREQUAL "")
+	string(REPLACE " cblas" " ${SYMBOLPREFIX}cblas" CBLAS_H_CONTENTS	"${CBLAS_H_CONTENTS_NEW}")
+	string(REPLACE " openblas" " ${SYMBOLPREFIX}openblas" CBLAS_H_CONTENTS_NEW	"${CBLAS_H_CONTENTS}")
+	string (REPLACE " ${SYMBOLPREFIX}openblas_complex" " openblas_complex" CBLAS_H_CONTENTS	"${CBLAS_H_CONTENTS_NEW}")
+	string(REPLACE " goto" " ${SYMBOLPREFIX}goto" CBLAS_H_CONTENTS_NEW "${CBLAS_H_CONTENTS}")
+	endif()
+	if (NOT ${SYMBOLSUFFIX} STREQUAL "")
+	string(REGEX REPLACE "(cblas[^ (]*)" "\\1${SYMBOLSUFFIX}" CBLAS_H_CONTENTS	"${CBLAS_H_CONTENTS_NEW}")
+	string(REGEX REPLACE "(openblas[^ (]*)" "\\1${SYMBOLSUFFIX}" CBLAS_H_CONTENTS_NEW "${CBLAS_H_CONTENTS}")
+	string(REGEX REPLACE "(openblas_complex[^ ]*)${SYMBOLSUFFIX}" "\\1" CBLAS_H_CONTENTS	"${CBLAS_H_CONTENTS_NEW}")
+	string(REGEX REPLACE "(goto[^ (]*)" "\\1${SYMBOLSUFFIX}" CBLAS_H_CONTENTS_NEW	"${CBLAS_H_CONTENTS}")
+	endif()
 	file(WRITE ${CBLAS_H} "${CBLAS_H_CONTENTS_NEW}")
 	install (FILES ${CBLAS_H} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
@@ -378,11 +394,9 @@ if(NOT NO_LAPACKE)
 	install (FILES ${CMAKE_BINARY_DIR}/lapacke_mangling.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/openblas${SUFFIX64})
 endif()
 
-include(FindPkgConfig QUIET)
-if(PKG_CONFIG_FOUND)
-	configure_file(${PROJECT_SOURCE_DIR}/cmake/openblas.pc.in ${PROJECT_BINARY_DIR}/openblas${SUFFIX64}.pc @ONLY)
-	install (FILES ${PROJECT_BINARY_DIR}/openblas${SUFFIX64}.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
-endif()
+# Install pkg-config files
+configure_file(${PROJECT_SOURCE_DIR}/cmake/openblas.pc.in ${PROJECT_BINARY_DIR}/openblas${SUFFIX64}.pc @ONLY)
+install (FILES ${PROJECT_BINARY_DIR}/openblas${SUFFIX64}.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig/)
 
 
 # GNUInstallDirs "DATADIR" wrong here; CMake search path wants "share".
