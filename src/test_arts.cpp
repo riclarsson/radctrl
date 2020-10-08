@@ -40,7 +40,7 @@ int main() try {
                                            "N2-CIA-N2-0", "CO2-CIA-CO2-0"});
   Var::nelem(ws) = 501;
   Method::VectorNLogSpace(ws, Var::p_grid(ws), 9.2100000e+06, 9.4409618e-14);
-    
+  
   Method::AtmosphereSet1D(ws);
   Var::lat_true(ws) = Var::lat_grid(ws);
   Var::lon_true(ws) = Var::lon_grid(ws);
@@ -83,7 +83,7 @@ int main() try {
     if (line.F0() < 500e9 or line.F0() > 1200e9 or (line.F0() < 1000e9 and line.F0() > 650e9)) continue;
     
     Var::nelem(ws) = 1001;
-    Method::VectorNLinSpace(ws, Var::f_grid(ws).value(), line.F0() - 500e9, line.F0() + 500e9);
+    Method::VectorNLinSpace(ws, Var::f_grid(ws), line.F0() - 500e9, line.F0() + 500e9);
     
     const Numeric za = 119.8;
     
