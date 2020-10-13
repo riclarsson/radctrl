@@ -19,7 +19,6 @@ void compute() {
   ARTS::Agenda::geo_pos_agenda_empty(ws);
   ARTS::Agenda::water_p_eq_agenda_default(ws);
 
-  Method::jacobianOff(ws);
   Method::nlteOff(ws);
   Var::iy_unit(ws) = "PlanckBT";
   Method::Touch(ws, Var::iy_aux_vars(ws));
@@ -33,7 +32,7 @@ void compute() {
   ARTS::Continua::addN2SelfContStandardType(ws);
 
   Method::abs_speciesSet(
-      ws, ArrayOfString{"H2O", "N2-SelfContStandardType", "O2-PWR98"});
+      ws, Group::ArrayOfString{"H2O", "N2-SelfContStandardType", "O2-PWR98"});
 
   Method::partition_functionsInitFromBuiltin(ws);
   Method::isotopologue_ratiosInitFromBuiltin(ws);
@@ -55,7 +54,7 @@ void compute() {
   Method::refellipsoidEarth(ws, Group::String{"Sphere"});
   Method::Touch(ws, Var::rte_alonglos_v(ws));
   Method::z_surfaceConstantAltitude(ws);
-  Var::t_surface(ws) = Matrix(1, 1, 600.0);
+  Var::t_surface(ws) = Group::Matrix(1, 1, 600.0);
 
   Method::Touch(ws, Var::abs_lines(ws));
   Method::abs_lines_per_speciesCreateFromLines(ws);
@@ -65,15 +64,26 @@ void compute() {
   Var::ppath_lraytrace(ws) = 1e3;
   Var::ppath_lmax(ws) = 1e3;
 
-  Var::nelem(ws) = 101;
-  Method::VectorNLinSpace(ws, Var::f_grid(ws), 22e9 - 500e6, 22e9 + 500e6);
+  Method::VectorNLinSpace(ws, Var::f_grid(ws).value(), 101, 22e9 - 500e6, 22e9 + 500e6);
 
-  Var::sensor_pos(ws) = Matrix(1, 1, 100);
-  Var::sensor_los(ws) = Matrix(1, 1, 75);
+  Var::sensor_pos(ws) = Group::Matrix(1, 1, 100);
+  Var::sensor_los(ws) = Group::Matrix(1, 1, 75);
   Method::Touch(ws, Var::transmitter_pos(ws));
   Method::sensorOff(ws);
   Method::cloudboxOff(ws);
-
+  
+  // Set up the Retrievals
+  Method::retrievalDefInit(ws);
+//   arts.covmat_block = copy(sa1)
+//   Method::retrievalAddAbsSpecies(ws, Var::p_grid(ws), Group::Vector{}, Group::Vector{}, Group::String{"H2O"}, Group::String{"vmr"}, 0);
+//   arts.covmat_block = sp.sparse.csc.csc_matrix(100*np.ones((1, 1)))
+//   Method::retrievalAddWind(ws, Group::Vector(1, 1e4), Group::Vector{}, Group::Vector{}, Group::String{"strength"});
+//   arts.covmat_block = sp.sparse.csc.csc_matrix(np.ones((1, 1)))
+//   Method::retrievalAddPolyfit(ws, 1);
+  Method::covmatDiagonal(ws, Var::covmat_block(ws), Var::covmat_inv_block(ws), Group::Vector(2, 1e-4));
+  Method::retrievalAddSinefit(ws, Group::Vector{5e6, 10e6, 20e6, 40e6});
+  Method::retrievalDefClose(ws);
+  
   Method::atmgeom_checkedCalc(ws);
   Method::atmfields_checkedCalc(ws);
   Method::cloudbox_checkedCalc(ws);

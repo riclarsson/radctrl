@@ -549,7 +549,7 @@ void print_gin_methods(const NameMaps& artsname) {
     for (std::size_t i = 0; i < x.gout.group.size(); i++) {
       std::cout << " if (" << x.gout.name[i]
                 << ".islast()) {\n    throw std::runtime_error(\""
-                << x.gout.name[i] << " needs to be a defined Workspace"
+                << x.gout.name[i] << " needs to be a defined "
                 << x.gout.group[i] << " since it is output of " << x.name
                 << "\");\n  }";
     }
@@ -624,6 +624,169 @@ void print_gin_methods(const NameMaps& artsname) {
         has_any = true;
         std::cout << x.gin.name[i] << ".islast() ? Group::String{\""
                   << x.gin.name[i] << "\"} : " << x.gin.name[i] << ".name()";
+      }
+    }
+
+    // Check verbosity
+    const bool has_verbosity =
+        std::any_of(x.in.varname.cbegin(), x.in.varname.cend(), [](auto& name) {
+          return name == "verbosity";
+        });
+
+    // Add verbosity of it does not exist
+    if (not has_verbosity) {
+      if (has_any) std::cout << ',' << ' ';
+      has_any = true;
+      std::cout << "Var::verbosity(ws).value()";
+    }
+
+    // Close the function call and the function itself
+    std::cout << ')' << ';' << '\n' << '}' << '\n' << '\n' << '\n';
+  }
+  std::cout << "}  // ARTS::Method \n\n";
+}
+
+void print_full_methods(const NameMaps& artsname) {
+  std::cout << "namespace ARTS::Method {\n";
+
+  for (auto& x : artsname.methodname_method) {
+    // Skip methods using verbosity and Agenda methods (for now)
+    if (x.agenda_method) continue;
+
+    // Also skip create methods since these must be called via Var
+    if (std::any_of(artsname.group.cbegin(),
+                    artsname.group.cend(),
+                    [metname = x.name](auto& y) {
+                      return (y.first + String("Create")) == metname;
+                    }))
+      continue;
+    
+    // Skip the 'silly' methods
+    if (not x.out.varname.size() and not x.gout.name.size() and not x.in.varname.size() and not x.gin.name.size()) continue;
+
+    // Describe the method
+    std::cout << "/*! " << x.desc << '\n';
+    for (auto a : x.authors) std::cout << "@author " << a << '\n';
+    std::cout << "\n"
+                 "@param[in,out] Workspace ws - An ARTS workspace\n";
+    for (std::size_t i = 0; i < x.out.varname.size(); i++) {
+      if (std::any_of(x.in.varname.cbegin(), x.in.varname.cend(),
+        [out = x.out.varname[i]](const auto& in) { return in == out; }))
+        std::cout << "@param[in,out] ";
+      else
+        std::cout << "@param[out] ";
+      std::cout << x.out.varname[i] << " - as *Var::"<<x.out.varname[i]<<"(ws)*\n";
+    }
+    for (std::size_t i = 0; i < x.gout.name.size(); i++)
+      std::cout << "@param[out] " << x.gout.name[i] << " - " << x.gout.desc[i] << "\n";
+    for (std::size_t i = 0; i < x.in.varname.size(); i++) {
+      if (std::any_of(x.out.varname.cbegin(), x.out.varname.cend(),
+        [in = x.in.varname[i]](const auto& out) { return in == out; }))
+        continue;
+      std::cout << "@param[in] " << x.in.varname[i] << " - as *Var::"<<x.in.varname[i]<<"(ws)*\n";
+    }
+    for (std::size_t i = 0; i < x.gin.name.size(); i++) {
+      std::cout << "@param[in] " << x.gin.name[i] << " - " << x.gin.desc[i];
+      if (x.gin.hasdefs[i]) std::cout << " (default: " << x.gin.defs[i] << ")";
+      std::cout << '\n';
+    }
+    std::cout << "\nUse the ARTS documentation to read more on how the "
+                 "workspace is manipulated\n";
+    std::cout << "This interface function has been automatically generated\n";
+    std::cout << "*/" << '\n';
+
+    // Make the function
+    std::cout << "inline void " << x.name << "(\n            Workspace& ws";
+
+    // First put all OUT variables
+    for (std::size_t i = 0; i < x.out.varname.size(); i++)
+      std::cout << ',' << "\n            Group::" << artsname.varname_group.at(x.out.varname[i]).varname_group << '&' << ' ' << x.out.varname[i];
+    
+    // Second put all GOUT variables
+    for (std::size_t i = 0; i < x.gout.group.size(); i++)
+      std::cout << ',' << "\n            Group::" << x.gout.group[i] << '&' << ' ' << x.gout.name[i];
+    
+    // Third put all the inputs that are not also outputs
+    for (std::size_t i = 0; i < x.in.varname.size(); i++) {
+      if (std::any_of(x.out.varname.cbegin(), x.out.varname.cend(),
+                      [in = x.in.varname[i]](const auto& out) { return in == out; }))
+        continue;
+      std::cout << ',' << "\n      const Group::" << artsname.varname_group.at(x.in.varname[i]).varname_group << '&' << ' '<<x.in.varname[i];
+    }
+
+    // Last put all GIN variables that have no default argument
+    for (std::size_t i = 0; i < x.gin.group.size(); i++)
+      std::cout << ',' << "\n      const Group::" << x.gin.group[i] << '&' << ' ' << x.gin.name[i];
+
+    // End of function definition and open function block
+    std::cout << ')' << ' ' << '{' << '\n';
+
+    // Call the ARTS auto_md.h function
+    std::cout << ' ' << ' ' << x.name << '(';
+
+    // We need the workspace if we input an Agenda or simply pass the workspace
+    bool has_any = false;
+    if (x.pass_workspace or x.agenda_method or
+        std::any_of(
+            x.gin.group.cbegin(),
+            x.gin.group.cend(),
+            [](auto& g) { return g == "Agenda" or g == "ArrayOfAgenda"; }) or
+        std::any_of(x.in.varname.cbegin(), x.in.varname.cend(), [&](auto& g) {
+          return artsname.varname_group.at(g).varname_group == "Agenda" or
+                 artsname.varname_group.at(g).varname_group == "ArrayOfAgenda";
+        })) {
+      std::cout << "ws";
+      has_any = true;
+    }
+
+    // First are all the outputs
+    for (std::size_t i = 0; i < x.out.varname.size(); i++) {
+      if (has_any) std::cout << ',' << ' ';
+      has_any = true;
+      std::cout << x.out.varname[i];
+    }
+
+    // Second comes all the generic outputs
+    for (std::size_t i = 0; i < x.gout.name.size(); i++) {
+      if (has_any) std::cout << ',' << ' ';
+      has_any = true;
+      std::cout << x.gout.name[i];
+    }
+
+    // And their filenames if relevant
+    if (x.pass_wsv_names) {
+      for (std::size_t i = 0; i < x.gout.name.size(); i++) {
+        if (has_any) std::cout << ',' << ' ';
+        has_any = true;
+        std::cout << "Group::String{\"" << x.gout.name[i] << "\"}";
+      }
+    }
+
+    // Then come all the inputs that are not also outputs
+    for (std::size_t i = 0; i < x.in.varname.size(); i++) {
+      if (std::any_of(
+              x.out.varname.cbegin(),
+              x.out.varname.cend(),
+              [in = x.in.varname[i]](const auto& out) { return in == out; }))
+        continue;
+      if (has_any) std::cout << ',' << ' ';
+      has_any = true;
+      std::cout << x.in.varname[i];
+    }
+
+    // Lastly are all the generic inputs, which cannot also be outputs
+    for (std::size_t i = 0; i < x.gin.name.size(); i++) {
+      if (has_any) std::cout << ',' << ' ';
+      has_any = true;
+      std::cout << x.gin.name[i];
+    }
+
+    // And their filenames if relevant
+    if (x.pass_wsv_names) {
+      for (std::size_t i = 0; i < x.gin.name.size(); i++) {
+        if (has_any) std::cout << ',' << ' ';
+        has_any = true;
+        std::cout << "Group::String{\"" << x.gin.name[i] << "\"}";
       }
     }
 
@@ -925,6 +1088,8 @@ int main() {
   print_var(artsname);
 
   print_gin_methods(artsname);
+  
+  print_full_methods(artsname);
 
   print_agenda_methods(artsname);
 
@@ -971,9 +1136,9 @@ int main() {
          "\n"
          "  out_basename = basename;\n"
          "\n"
-#ifndef NDEBUG
+         "#ifndef NDEBUG\n"
          "  ws.context = \"\";\n"
-#endif
+         "#endif\n"
          "\n"
          "  return ws;\n"
          "}\n";
