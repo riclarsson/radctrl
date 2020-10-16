@@ -1,7 +1,8 @@
 # Global compile time options
-add_compile_options(-Wall -Wextra -Wdouble-promotion -Wimplicit-fallthrough=5 -Wno-ignored-attributes -O3 -march=native -fvisibility=hidden -flto)
+add_compile_options(-Wall -Wextra -Wdouble-promotion -Wimplicit-fallthrough=5 -Wno-ignored-attributes -O2 -march=native -fvisibility=hidden)
 
 # Sub directories
+add_subdirectory(arts)
 
 ########################################################################################
 # GUI Library: For basic GUI creation
@@ -30,11 +31,11 @@ add_library (math STATIC
              wigner.cpp
              openblas_interface.cpp
              )
-target_include_directories(math PUBLIC ../3rdparty/Eigen/ ../3rdparty/wigner/ ../3rdparty/Faddeeva/)
-target_link_libraries(math PUBLIC wigner Faddeeva openblas lapack kernel)
+target_include_directories(math PUBLIC ../3rdparty/ ../3rdparty/wigner/ ../3rdparty/Faddeeva/)
+target_link_libraries(math PUBLIC radctrl_wigner radctrl_Faddeeva openblas lapack kernel)
 if(FASTWIGNER)
-target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_3J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.3j\"")
-target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_6J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.6j\"")
+  target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_3J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.3j\"")
+  target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_6J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.6j\"")
 endif()
 
 ########################################################################################
@@ -100,6 +101,11 @@ add_library (backend STATIC
              backend.cpp
              )
 target_link_libraries(backend PUBLIC files gui python math)
+if (ACS2020)
+  target_link_libraries(backend PUBLIC fm_acs)
+  target_compile_definitions(backend PRIVATE HAS_ACS2020=1)
+endif()
+
 ########################################################################################
 
 ########################################################################################
@@ -141,6 +147,15 @@ add_library (atmpath STATIC
 target_link_libraries(atmpath PUBLIC atm geom)
 ########################################################################################
 
+
+########################################################################################
+# Antenna Library
+add_library (antenna STATIC
+             antenna.cpp
+             )
+target_link_libraries(antenna PUBLIC atmpath math)
+########################################################################################
+
 ########################################################################################
 # Cross-section line-by-line library:  For computing cross-sections of absorption lines
 add_library (xsec_lbl STATIC
@@ -161,7 +176,7 @@ target_link_libraries(xsec PUBLIC xsec_lbl)
 ########################################################################################
 
 ########################################################################################
-# Absorption Library:  For equations and classes for computing the path and geometry
+# Absorption Library:  For equations and classes for computing the Propagation Matrix
 add_library (absorption STATIC
              propmat.cpp
              )
@@ -169,26 +184,42 @@ target_link_libraries(absorption PUBLIC species files xsec)
 ########################################################################################
 
 ########################################################################################
-# Cross-section library:  For computing cross-sections of any kind
+# Forward calculations:  For computing forward radiation (including sensor effects)
 add_library (forward STATIC
              forward.cpp
              )
-target_link_libraries(forward PUBLIC absorption rte)
+target_link_libraries(forward PUBLIC absorption rte antenna background)
 ########################################################################################
 
 ########################################################################################
-# Radiative Transfer Library:  For equations and classes for computing the path and geometry
+# Cross-section library:  For computing cross-sections of any kind
+add_library (inverse STATIC
+             inverse.cpp
+             )
+target_link_libraries(inverse PUBLIC forward)
+########################################################################################
+
+########################################################################################
+# Radiative Transfer Library:  For equations and classes computing the radiative transfer
 add_library (rte STATIC
              rte.cpp
              )
-target_link_libraries(rte PUBLIC species)
+target_link_libraries(rte PUBLIC species absorption)
+########################################################################################
+
+########################################################################################
+# Background library:  For equations and classes computing background radiation
+add_library (background STATIC
+             background.cpp
+             )
+target_link_libraries(background PUBLIC rte atm)
 ########################################################################################
 
 ########################################################################################
 # Python Interface Library:  For calling python code
 set(Python_ADDITIONAL_VERSIONS 3)
 add_library(python STATIC python_interface.cpp)
-target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../3rdparty/pybind11/include/ ../3rdparty/Eigen/)
+target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../3rdparty/pybind11/include/ ../3rdparty/)
 target_link_libraries(python PUBLIC ${PYTHON_LIBRARIES} pybind11::embed)
 ########################################################################################
 
@@ -282,9 +313,21 @@ target_link_libraries(test_atmpath PUBLIC atmpath)
 ########################################################################################
 
 ########################################################################################
+# Test line shapes calculations
+add_executable(test_lineshapes test_lineshapes.cpp)
+target_link_libraries(test_lineshapes PUBLIC xsec_lbl)
+########################################################################################
+
+########################################################################################
 # Test lbl calculations
 add_executable(test_xsec_lbl test_xsec_lbl.cpp)
 target_link_libraries(test_xsec_lbl PUBLIC xsec_lbl)
+########################################################################################
+
+########################################################################################
+# Test xsec calculations
+add_executable(test_xsec test_xsec.cpp)
+target_link_libraries(test_xsec PUBLIC xsec)
 ########################################################################################
 
 ########################################################################################
@@ -302,3 +345,29 @@ add_executable(test_grids test_grids.cpp)
 add_executable(test_blas test_blas.cpp)
 target_link_libraries(test_blas PUBLIC math)
 ########################################################################################
+
+########################################################################################
+# Tests to understand Forward
+add_executable(test_forward test_forward.cpp)
+target_link_libraries(test_forward PUBLIC forward)
+########################################################################################
+
+########################################################################################
+# Tests to understand ARTS interface
+add_executable(test_arts test_arts.cpp)
+target_link_libraries(test_arts PUBLIC arts_interface)
+########################################################################################
+
+########################################################################################
+########################################################################################
+########################################################################################
+################################################################################ Special
+########################################################################################
+########################################################################################
+########################################################################################
+if (ACS2020)
+  add_subdirectory(ACS2020-FM)
+  message(STATUS "Creating ACS2020 (use -DACS2020=0 when running CMake to disable)")
+else()
+  message(STATUS "No ACS2020 (use -DACS2020=1 when running CMake to enable if you have the files)")
+endif()

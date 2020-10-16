@@ -29,17 +29,18 @@ class Band;
 class Line {
   Frequency<FrequencyType::Freq> f0;  // Central frequency
   LineStrength<FrequencyType::Freq, AreaType::m2>
-      i0;                        // Reference line strength
-  Energy<EnergyType::Joule> e0;  // Lower state energy
-  Zeeman::Model zeeman;          // Zeeman model
-  double gl;                     // Lower degeneracy
-  double gu;                     // Upper degeneracy
-  double a;                      // Einstein coefficient
-  std::pair<std::size_t, std::size_t>
-      ids;  // ID, only initialized if necessary (lower, upper)
+      i0;                                    // Reference line strength
+  Energy<EnergyType::Joule> e0;              // Lower state energy
+  Zeeman::Model zeeman;                      // Zeeman model
+  double gl;                                 // Lower degeneracy
+  double gu;                                 // Upper degeneracy
+  Decay<DecayType::ExponentialPerSecond> a;  // Einstein coefficient
   std::vector<Quantum::Number> local_lower;  // Lower local quantum
   std::vector<Quantum::Number> local_upper;  // Upper local quantum
   LineShape::Model lineshape;                // Line shape model
+  std::size_t line_id;  // ID of line, only initialized if necessary
+  std::pair<std::size_t, std::size_t>
+      level_ids;  // ID of levels, only initialized if necessary (lower, upper)
 
  public:
   Line(Species::Isotope s) noexcept
@@ -51,13 +52,17 @@ class Line {
         gu(0),
         a(0),
         local_lower(s.localQuantumNumberCount()),
-        local_upper(s.localQuantumNumberCount()) {}
+        local_upper(s.localQuantumNumberCount()),
+        line_id(std::numeric_limits<std::size_t>::max()),
+        level_ids({std::numeric_limits<std::size_t>::max(),
+                   std::numeric_limits<std::size_t>::max()}) {}
 
   Line(Species::Isotope s, Frequency<FrequencyType::Freq> f,
        LineStrength<FrequencyType::Freq, AreaType::m2> i,
        Energy<EnergyType::Joule> e, Zeeman::Model z, double Gu, double Gl,
-       double A, std::vector<Quantum::Number> ll,
-       std::vector<Quantum::Number> lu, LineShape::Model m) noexcept
+       Decay<DecayType::ExponentialPerSecond> A,
+       std::vector<Quantum::Number> ll, std::vector<Quantum::Number> lu,
+       LineShape::Model m) noexcept
       : f0(f),
         i0(i),
         e0(e),
@@ -67,7 +72,10 @@ class Line {
         a(A),
         local_lower(ll),
         local_upper(lu),
-        lineshape(m) {
+        lineshape(m),
+        line_id(std::numeric_limits<std::size_t>::max()),
+        level_ids({std::numeric_limits<std::size_t>::max(),
+                   std::numeric_limits<std::size_t>::max()}) {
     size_t size = s.localQuantumNumberCount();
     if (size not_eq ll.size() or size not_eq lu.size()) {
       std::cerr << "Bad quantum number sizes\n";
@@ -76,8 +84,12 @@ class Line {
   }
 
   Frequency<FrequencyType::Freq> F0() const noexcept { return f0; }
+  void F0(Frequency<FrequencyType::Freq> x) noexcept { f0 = x; }
   LineStrength<FrequencyType::Freq, AreaType::m2> I0() const noexcept {
     return i0;
+  }
+  void I0(LineStrength<FrequencyType::Freq, AreaType::m2> x) noexcept {
+    i0 = x;
   }
   Energy<EnergyType::Joule> E0() const noexcept { return e0; }
   Zeeman::Model Ze() const noexcept { return zeeman; }
@@ -120,20 +132,23 @@ class Line {
   }
   double Gu() const noexcept { return gu; }
   double Gl() const noexcept { return gl; }
-  double A() const noexcept { return a; }
+  Decay<DecayType::ExponentialPerSecond> A() const noexcept { return a; }
   Quantum::Number localUpperQuantumNumber(size_t i) const noexcept {
     return local_upper[i];
   }
   Quantum::Number localLowerQuantumNumber(size_t i) const noexcept {
     return local_lower[i];
   }
-  const LineShape::Model& ShapeModel() const noexcept { return lineshape; }
+  const LineShape::Model &ShapeModel() const noexcept { return lineshape; }
+  LineShape::Model &ShapeModel() noexcept { return lineshape; }
 
-  friend void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
-                       Band& band, const std::string& key);
+  friend void readBand(File::File<File::Operation::Read, File::Type::Xml> &file,
+                       Band &band, const std::string &key);
   friend void readBand(
-      File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
-      Band& band, const std::string& key);
+      File::File<File::Operation::ReadBinary, File::Type::Xml> &file,
+      Band &band, const std::string &key);
+
+  std::size_t ID() const noexcept { return line_id; }
 };  // Line
 
 class Band {
@@ -157,8 +172,8 @@ class Band {
   Band(Species::Isotope s, Mirroring m, Normalization n, Population p, Cutoff c,
        Shape sh, bool dz, Temperature<TemperatureType::K> T0,
        Frequency<FrequencyType::Freq> FCut,
-       const std::vector<Quantum::Number>& gl,
-       const std::vector<Quantum::Number>& gu, long N = 0) noexcept
+       const std::vector<Quantum::Number> &gl,
+       const std::vector<Quantum::Number> &gu, long N = 0) noexcept
       : spec(s),
         mirroring(m),
         normalization(n),
@@ -178,7 +193,7 @@ class Band {
     }
   }
 
-  bool operator==(const Band& b) const noexcept {
+  bool operator==(const Band &b) const noexcept {
     return spec == b.spec and mirroring == b.mirroring and
            normalization == b.normalization and population == b.population and
            cutoff == b.cutoff and shape == b.shape and
@@ -227,8 +242,8 @@ class Band {
   std::vector<Quantum::Type> localQuantumNumbers() const noexcept {
     return spec.get_localquantumnumbers();
   }
-  const std::vector<Line>& Lines() const noexcept { return lines; }
-  std::vector<Line>& Lines() noexcept { return lines; }
+  const std::vector<Line> &Lines() const noexcept { return lines; }
+  std::vector<Line> &Lines() noexcept { return lines; }
   double GD_giv_F0(Temperature<TemperatureType::K> T) const {
     return std::sqrt(Constant::doppler_broadening_const_squared * T /
                      spec.mass());
@@ -249,10 +264,10 @@ class Band {
   Frequency<FrequencyType::Freq> MeanFreq() const noexcept {
     const double val = std::inner_product(
         lines.cbegin(), lines.cend(), lines.cbegin(), 0.0, std::plus<double>(),
-        [](const auto& a, const auto& b) { return a.F0() * b.I0(); });
+        [](const auto &a, const auto &b) { return a.F0() * b.I0(); });
     const double div = std::accumulate(
         lines.cbegin(), lines.cend(), 0.0,
-        [](const auto& a, const auto& b) { return a + b.I0(); });
+        [](const auto &a, const auto &b) { return a + b.I0(); });
     return val / div;
   }
   Frequency<FrequencyType::Freq> CutoffLower(size_t iline) const noexcept {
@@ -272,32 +287,35 @@ class Band {
   double QT(Temperature<TemperatureType::K> T) const noexcept {
     return spec.QT(T);
   }
+  double dQT(Temperature<TemperatureType::K> T) const noexcept {
+    return spec.dQT(T);
+  }
   bool doZeeman() const noexcept { return do_zeeman; }
 
-  friend void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
-                       Band& band, const std::string& key);
+  friend void readBand(File::File<File::Operation::Read, File::Type::Xml> &file,
+                       Band &band, const std::string &key);
   friend void readBand(
-      File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
-      Band& band, const std::string& key);
+      File::File<File::Operation::ReadBinary, File::Type::Xml> &file,
+      Band &band, const std::string &key);
 };  // Band
 
 std::vector<Band> parse_hitran_with_qns(
-    File::File<File::Operation::Read, File::Type::Raw>& hitranfile,
+    File::File<File::Operation::Read, File::Type::Raw> &hitranfile,
     Frequency<FrequencyType::Freq> flow,
     Frequency<FrequencyType::Freq> fupp) noexcept;
 
-void saveBand(File::File<File::Operation::Write, File::Type::Xml>& file,
-              const Band& band, const std::string& key = "Band");
-void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
-              const Band& band, const std::string& key = "Band");
-void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
-              Band& band, const std::string& key = "Band");
-void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
-              Band& band, const std::string& key = "Band");
+void saveBand(File::File<File::Operation::Write, File::Type::Xml> &file,
+              const Band &band, const std::string &key = "Band");
+void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml> &file,
+              const Band &band, const std::string &key = "Band");
+void readBand(File::File<File::Operation::Read, File::Type::Xml> &file,
+              Band &band, const std::string &key = "Band");
+void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml> &file,
+              Band &band, const std::string &key = "Band");
 
 template <File::Operation X>
-void saveBands(File::File<X, File::Type::Xml>& file,
-               const std::vector<Band>& bands) {
+void saveBands(File::File<X, File::Type::Xml> &file,
+               const std::vector<Band> &bands) {
   file.add_attribute("size", bands.size());
   for (size_t i = 0; i < bands.size(); i++)
     saveBand(file, bands[i], std::string{"Band"} + std::to_string(i + 1));

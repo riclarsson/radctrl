@@ -553,7 +553,7 @@ std::string toShortName(Species x) noexcept {
   return {};
 }
 
-Species fromShortName(const std::string& x) noexcept {
+Species fromShortName(const std::string &x) noexcept {
   if (x == "H2O")
     return Species::Water;
   else if (x == "CO2")

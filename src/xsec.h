@@ -2,11 +2,12 @@
 #define xsec_h
 
 #include "atmpath.h"
+#include "derivatives.h"
 #include "lbl.h"
 #include "propmat.h"
 
 namespace Absorption {
-namespace Xsec {
+namespace PropagationMatrix {
 
 template <size_t N>
 struct Results {
@@ -17,15 +18,23 @@ struct Results {
       : x(nfreq, PropMat<N>()), dx(njac, x) {}
 };
 
-void compute(Results<1>&, Results<1>&, const std::vector<double>&,
-             const std::vector<Band>&, const Path::Point&);
-void compute(Results<2>&, Results<2>&, const std::vector<double>&,
-             const std::vector<Band>&, const Path::Point&);
-void compute(Results<3>&, Results<3>&, const std::vector<double>&,
-             const std::vector<Band>&, const Path::Point&);
-void compute(Results<4>&, Results<4>&, const std::vector<double>&,
-             const std::vector<Band>&, const Path::Point&);
-}  // namespace Xsec
+void compute(Results<1> &, Results<1> &,
+             const std::vector<Frequency<FrequencyType::Freq>> &,
+             const std::vector<Band> &, const Path::Point &,
+             const std::vector<Derivative::Target> &);
+void compute(Results<2> &, Results<2> &,
+             const std::vector<Frequency<FrequencyType::Freq>> &,
+             const std::vector<Band> &, const Path::Point &,
+             const std::vector<Derivative::Target> &);
+void compute(Results<3> &, Results<3> &,
+             const std::vector<Frequency<FrequencyType::Freq>> &,
+             const std::vector<Band> &, const Path::Point &,
+             const std::vector<Derivative::Target> &);
+void compute(Results<4> &, Results<4> &,
+             const std::vector<Frequency<FrequencyType::Freq>> &,
+             const std::vector<Band> &, const Path::Point &,
+             const std::vector<Derivative::Target> &);
+}  // namespace PropagationMatrix
 }  // namespace Absorption
 
 #endif  // absorption_h

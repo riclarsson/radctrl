@@ -4,7 +4,7 @@
 
 namespace Absorption {
 std::vector<Band> parse_hitran_with_qns(
-    File::File<File::Operation::Read, File::Type::Raw>& hitranfile,
+    File::File<File::Operation::Read, File::Type::Raw> &hitranfile,
     Frequency<FrequencyType::Freq> flow,
     Frequency<FrequencyType::Freq> fupp) noexcept {
   std::vector<Band> database;
@@ -77,8 +77,8 @@ std::vector<Band> parse_hitran_with_qns(
   return database;
 }
 
-void saveBand(File::File<File::Operation::Write, File::Type::Xml>& file,
-              const Band& band, const std::string& key) {
+void saveBand(File::File<File::Operation::Write, File::Type::Xml> &file,
+              const Band &band, const std::string &key) {
   file.new_child(key.c_str());
 
   file.add_attribute("Species", band.Species());
@@ -120,7 +120,7 @@ void saveBand(File::File<File::Operation::Write, File::Type::Xml>& file,
   file.add_attribute("N", band.n_lines());
 
   file << '\n';
-  for (auto& x : band.Lines()) {
+  for (auto &x : band.Lines()) {
     file << x.F0() << ' ' << x.I0() << ' ' << x.E0() << ' ' << x.Ze() << ' '
          << x.Gu() << ' ' << x.Gl() << ' ' << x.A();
     file << ' ' << x.ShapeModel();
@@ -135,8 +135,8 @@ void saveBand(File::File<File::Operation::Write, File::Type::Xml>& file,
   file.leave_child();
 }
 
-void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
-              Band& band, const std::string& key) {
+void readBand(File::File<File::Operation::Read, File::Type::Xml> &file,
+              Band &band, const std::string &key) {
   auto c = file.get_child(key.c_str());
 
   Species::Species spec =
@@ -161,8 +161,8 @@ void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
   int nbs;
   bs >> nbs;
   std::vector<LineShape::ModelHelper> bsdata(nbs);
-  for (auto& a : bsdata) bs >> a.s;
-  for (auto& a : bsdata) bs >> a.p >> a.tm >> a.pres;
+  for (auto &a : bsdata) bs >> a.s;
+  for (auto &a : bsdata) bs >> a.p >> a.tm >> a.pres;
   LineShape::Model model(bsdata);
 
   std::stringstream globalqn(
@@ -193,7 +193,7 @@ void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
   std::stringstream is{c.text().as_string()};
   band.lines =
       std::vector<Line>(file.get_attribute("N").as_ullong(), {band.spec});
-  for (auto& line : band.lines) {
+  for (auto &line : band.lines) {
     line.lineshape = model;
     is >> line.f0 >> line.i0 >> line.e0 >> line.zeeman >> line.gl >> line.gu >>
         line.a >> line.lineshape;
@@ -207,8 +207,8 @@ void readBand(File::File<File::Operation::Read, File::Type::Xml>& file,
   file.leave_child();
 }
 
-void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
-              const Band& band, const std::string& key) {
+void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml> &file,
+              const Band &band, const std::string &key) {
   file.new_child(key.c_str());
 
   file.add_attribute("Species", band.Species());
@@ -249,7 +249,7 @@ void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
 
   file.add_attribute("N", band.n_lines());
 
-  for (auto& x : band.Lines()) {
+  for (auto &x : band.Lines()) {
     file.write(x.F0());
     file.write(x.I0());
     file.write(x.E0());
@@ -258,7 +258,7 @@ void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
     file.write(x.Gu());
     file.write(x.A());
 
-    const auto& model = x.ShapeModel();
+    const auto &model = x.ShapeModel();
     for (size_t i = 0; i < model.n_spec(); i++) file.write(model[i]);
 
     for (size_t i = 0; i < lqn.size(); i++) {
@@ -269,8 +269,8 @@ void saveBand(File::File<File::Operation::WriteBinary, File::Type::Xml>& file,
   file.leave_child();
 }
 
-void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
-              Band& band, const std::string& key) {
+void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml> &file,
+              Band &band, const std::string &key) {
   file.get_child(key.c_str());
 
   Species::Species spec =
@@ -311,7 +311,7 @@ void readBand(File::File<File::Operation::ReadBinary, File::Type::Xml>& file,
 
   band.lines =
       std::vector<Line>(file.get_attribute("N").as_ullong(), {band.spec});
-  for (Line& line : band.lines) {
+  for (Line &line : band.lines) {
     file.read(line.f0);
     file.read(line.i0);
     file.read(line.e0);

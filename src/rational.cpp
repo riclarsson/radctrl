@@ -37,7 +37,7 @@ constexpr Rational numeric2rational(double x, size_t maxdec = 4) {
     return Rational(nom, denom);
 }
 
-Rational::Rational(const std::string& s) {
+Rational::Rational(const std::string &s) {
   if (s.cend() not_eq s.cbegin()) {
     if (auto dot_pos = std::find(s.cbegin(), s.end(), '.');
         s.cend() > dot_pos) {

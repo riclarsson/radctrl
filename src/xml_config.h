@@ -12,16 +12,16 @@ class ConfigParser {
   std::string nodata;
 
  public:
-  ConfigParser(const std::string& filepath,
-               const std::vector<std::string>& targets,
-               const std::string& return_on_no_data = "NODATA")
+  ConfigParser(const std::string &filepath,
+               const std::vector<std::string> &targets,
+               const std::string &return_on_no_data = "NODATA")
       : nodata(return_on_no_data) {
     File<Operation::Read, Type::Xml> file(filepath);
 
     const std::filesystem::path relpath{
         std::filesystem::path(filepath).remove_filename()};
 
-    for (auto& key : targets) {
+    for (auto &key : targets) {
       if (key == std::string{"default"})
         throw std::runtime_error("Cannot give default values in config");
 
@@ -55,8 +55,8 @@ class ConfigParser {
     file.close();
   }
 
-  const std::string& operator()(const std::string& childkey,
-                                const std::string& attrkey) const {
+  const std::string &operator()(const std::string &childkey,
+                                const std::string &attrkey) const {
     auto attr = data.find(childkey);
     if (attr == data.end()) {
       return nodata;
@@ -70,10 +70,10 @@ class ConfigParser {
     }
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const ConfigParser& cp) {
-    for (auto& cfg : cp.data) {
+  friend std::ostream &operator<<(std::ostream &os, const ConfigParser &cp) {
+    for (auto &cfg : cp.data) {
       os << cfg.first << ":\n";
-      for (auto& attr : cfg.second)
+      for (auto &attr : cfg.second)
         os << '\t' << attr.first << ":\t" << attr.second << '\n';
     }
     return os << "default (all data):\n\t" << cp.nodata;

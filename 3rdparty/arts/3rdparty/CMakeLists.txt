@@ -1,0 +1,8 @@
+add_subdirectory(cdisort)
+add_subdirectory(polradtran)
+#add_subdirectory(rt4)
+add_subdirectory(fastem)
+add_subdirectory(refice)
+add_subdirectory(tmatrix)
+add_subdirectory(wigner)
+add_subdirectory(Faddeeva)

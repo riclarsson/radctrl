@@ -16,76 +16,77 @@ namespace LineShape {
 ENUMCLASS(TemperatureModel, unsigned char, None, T0, T1, T2, T3, T4, T5, LM_AER,
           DPL)
 
-class SingleParameter {
-  static constexpr unsigned N = 4;
-  Species::Species spec;
+struct SingleParameter {
   TemperatureModel temp;
   unsigned char pres;
-  std::array<double, N> coefs;
+  double X0;
+  double X1;
+  double X2;
+  double X3;
 
-#define x0 coefs[0]
-#define x1 coefs[1]
-#define x2 coefs[2]
-#define x3 coefs[3]
-
+ private:
   constexpr double special_linemixing_aer(double T) const noexcept {
     if (T < 250)
-      return x0 + (T - 200) * (x1 - x0) / (250 - 200);
+      return X0 + (T - 200) * (X1 - X0) / (250 - 200);
     else if (T > 296)
-      return x2 + (T - 296) * (x3 - x2) / (340 - 296);
+      return X2 + (T - 296) * (X3 - X2) / (340 - 296);
     else
-      return x1 + (T - 250) * (x2 - x1) / (296 - 250);
+      return X1 + (T - 250) * (X2 - X1) / (296 - 250);
   }
 
   constexpr double special_linemixing_aer_dT(double T) const noexcept {
     if (T < 250)
-      return (x1 - x0) / (250 - 200);
+      return (X1 - X0) / (250 - 200);
     else if (T > 296)
-      return (x3 - x2) / (340 - 296);
+      return (X3 - X2) / (340 - 296);
     else
-      return (x2 - x1) / (296 - 250);
+      return (X2 - X1) / (296 - 250);
   }
 
  public:
   constexpr SingleParameter() noexcept
-      : spec(Species::Species::FINAL),
-        temp(TemperatureModel::None),
+      : temp(TemperatureModel::None),
         pres(0),
-        coefs({std::numeric_limits<double>::quiet_NaN(),
-               std::numeric_limits<double>::quiet_NaN(),
-               std::numeric_limits<double>::quiet_NaN(),
-               std::numeric_limits<double>::quiet_NaN()}) {}
-  constexpr SingleParameter(Species::Species s, TemperatureModel t,
-                            unsigned char p, std::array<double, N> c) noexcept
-      : spec(s), temp(t), pres(p), coefs(c) {}
+        X0(std::numeric_limits<double>::quiet_NaN()),
+        X1(std::numeric_limits<double>::quiet_NaN()),
+        X2(std::numeric_limits<double>::quiet_NaN()),
+        X3(std::numeric_limits<double>::quiet_NaN()) {}
 
-  friend std::ostream& operator<<(std::ostream& os, SingleParameter x) {
+  constexpr SingleParameter(
+      TemperatureModel t, unsigned char p,
+      double x0 = std::numeric_limits<double>::quiet_NaN(),
+      double x1 = std::numeric_limits<double>::quiet_NaN(),
+      double x2 = std::numeric_limits<double>::quiet_NaN(),
+      double x3 = std::numeric_limits<double>::quiet_NaN()) noexcept
+      : temp(t), pres(p), X0(x0), X1(x1), X2(x2), X3(x3) {}
+
+  friend std::ostream &operator<<(std::ostream &os, SingleParameter x) {
     switch (x.temp) {
       case TemperatureModel::None:
         break;
       case TemperatureModel::T0:
-        os << x.x0;
+        os << x.X0;
         break;
       case TemperatureModel::T1:
-        os << x.x0 << ' ' << x.x1;
+        os << x.X0 << ' ' << x.X1;
         break;
       case TemperatureModel::T2:
-        os << x.x0 << ' ' << x.x1 << ' ' << x.x2;
+        os << x.X0 << ' ' << x.X1 << ' ' << x.X2;
         break;
       case TemperatureModel::T3:
-        os << x.x0 << ' ' << x.x1;
+        os << x.X0 << ' ' << x.X1;
         break;
       case TemperatureModel::T4:
-        os << x.x0 << ' ' << x.x1 << ' ' << x.x2;
+        os << x.X0 << ' ' << x.X1 << ' ' << x.X2;
         break;
       case TemperatureModel::T5:
-        os << x.x0 << ' ' << x.x1;
+        os << x.X0 << ' ' << x.X1;
         break;
       case TemperatureModel::LM_AER:
-        os << x.x0 << ' ' << x.x1 << ' ' << x.x2 << ' ' << x.x3;
+        os << x.X0 << ' ' << x.X1 << ' ' << x.X2 << ' ' << x.X3;
         break;
       case TemperatureModel::DPL:
-        os << x.x0 << ' ' << x.x1 << ' ' << x.x2 << ' ' << x.x3;
+        os << x.X0 << ' ' << x.X1 << ' ' << x.X2 << ' ' << x.X3;
         break;
       case TemperatureModel::FINAL: {
       }
@@ -93,33 +94,33 @@ class SingleParameter {
     return os;
   }
 
-  friend std::istream& operator>>(std::istream& is, SingleParameter& x) {
+  friend std::istream &operator>>(std::istream &is, SingleParameter &x) {
     switch (x.temp) {
       case TemperatureModel::None:
         break;
       case TemperatureModel::T0:
-        is >> x.x0;
+        is >> x.X0;
         break;
       case TemperatureModel::T1:
-        is >> x.x0 >> x.x1;
+        is >> x.X0 >> x.X1;
         break;
       case TemperatureModel::T2:
-        is >> x.x0 >> x.x1 >> x.x2;
+        is >> x.X0 >> x.X1 >> x.X2;
         break;
       case TemperatureModel::T3:
-        is >> x.x0 >> x.x1;
+        is >> x.X0 >> x.X1;
         break;
       case TemperatureModel::T4:
-        is >> x.x0 >> x.x1 >> x.x2;
+        is >> x.X0 >> x.X1 >> x.X2;
         break;
       case TemperatureModel::T5:
-        is >> x.x0 >> x.x1;
+        is >> x.X0 >> x.X1;
         break;
       case TemperatureModel::LM_AER:
-        is >> x.x0 >> x.x1 >> x.x2 >> x.x3;
+        is >> x.X0 >> x.X1 >> x.X2 >> x.X3;
         break;
       case TemperatureModel::DPL:
-        is >> x.x0 >> x.x1 >> x.x2 >> x.x3;
+        is >> x.X0 >> x.X1 >> x.X2 >> x.X3;
         break;
       case TemperatureModel::FINAL: {
       }
@@ -139,28 +140,28 @@ class SingleParameter {
         out = 0;
         break;
       case TemperatureModel::T0:
-        out = x0;
+        out = X0;
         break;
       case TemperatureModel::T1:
-        out = x0 * pow(T0 / T, x1);
+        out = X0 * pow(T0 / T, X1);
         break;
       case TemperatureModel::T2:
-        out = x0 * pow(T0 / T, x1) * (1 + x2 * log(T / T0));
+        out = X0 * pow(T0 / T, X1) * (1 + X2 * log(T / T0));
         break;
       case TemperatureModel::T3:
-        out = x0 + x1 * (T - T0);
+        out = X0 + X1 * (T - T0);
         break;
       case TemperatureModel::T4:
-        out = (x0 + x1 * (T0 / T - 1.)) * pow(T0 / T, x2);
+        out = (X0 + X1 * (T0 / T - 1.)) * pow(T0 / T, X2);
         break;
       case TemperatureModel::T5:
-        out = x0 * pow(T0 / T, 0.25 + 1.5 * x1);
+        out = X0 * pow(T0 / T, 0.25 + 1.5 * X1);
         break;
       case TemperatureModel::LM_AER:
         out = special_linemixing_aer(T);
         break;
       case TemperatureModel::DPL:
-        out = x0 * pow(T0 / T, x1) + x2 * pow(T0 / T, x3);
+        out = X0 * pow(T0 / T, X1) + X2 * pow(T0 / T, X3);
         break;
       case TemperatureModel::FINAL: {
       }
@@ -183,25 +184,25 @@ class SingleParameter {
         out = 1;
         break;
       case TemperatureModel::T1:
-        out = pow(T0 / T, x1);
+        out = pow(T0 / T, X1);
         break;
       case TemperatureModel::T2:
-        out = pow(T0 / T, x1) * (1 + x2 * log(T / T0));
+        out = pow(T0 / T, X1) * (1 + X2 * log(T / T0));
         break;
       case TemperatureModel::T3:
         out = 1;
         break;
       case TemperatureModel::T4:
-        out = pow(T0 / T, x2);
+        out = pow(T0 / T, X2);
         break;
       case TemperatureModel::T5:
-        out = pow(T0 / T, 1.5 * x1 + 0.25);
+        out = pow(T0 / T, 1.5 * X1 + 0.25);
         break;
       case TemperatureModel::LM_AER:
         out = 0;
         break;
       case TemperatureModel::DPL:
-        out = pow(T0 / T, x1);
+        out = pow(T0 / T, X1);
         break;
       case TemperatureModel::FINAL: {
       }
@@ -224,25 +225,25 @@ class SingleParameter {
         out = 0;
         break;
       case TemperatureModel::T1:
-        out = x0 * pow(T0 / T, x1) * log(T0 / T);
+        out = X0 * pow(T0 / T, X1) * log(T0 / T);
         break;
       case TemperatureModel::T2:
-        out = x0 * pow(T0 / T, x1) * (x2 * log(T / T0) + 1.) * log(T0 / T);
+        out = X0 * pow(T0 / T, X1) * (X2 * log(T / T0) + 1.) * log(T0 / T);
         break;
       case TemperatureModel::T3:
         out = (T - T0);
         break;
       case TemperatureModel::T4:
-        out = pow(T0 / T, x2) * (T0 / T - 1.);
+        out = pow(T0 / T, X2) * (T0 / T - 1.);
         break;
       case TemperatureModel::T5:
-        out = 1.5 * x0 * pow(T0 / T, 1.5 * x1 + 0.25) * log(T0 / T);
+        out = 1.5 * X0 * pow(T0 / T, 1.5 * X1 + 0.25) * log(T0 / T);
         break;
       case TemperatureModel::LM_AER:
         out = 0;
         break;
       case TemperatureModel::DPL:
-        out = x0 * pow(T0 / T, x1) * log(T0 / T);
+        out = X0 * pow(T0 / T, X1) * log(T0 / T);
         break;
       case TemperatureModel::FINAL: {
       }
@@ -268,13 +269,13 @@ class SingleParameter {
         out = 0;
         break;
       case TemperatureModel::T2:
-        out = x0 * pow(T0 / T, x1) * log(T / T0);
+        out = X0 * pow(T0 / T, X1) * log(T / T0);
         break;
       case TemperatureModel::T3:
         out = 0;
         break;
       case TemperatureModel::T4:
-        out = pow(T0 / T, x2) * (x0 + x1 * (T0 / T - 1)) * log(T0 / T);
+        out = pow(T0 / T, X2) * (X0 + X1 * (T0 / T - 1)) * log(T0 / T);
         break;
       case TemperatureModel::T5:
         out = 0;
@@ -283,7 +284,7 @@ class SingleParameter {
         out = 0;
         break;
       case TemperatureModel::DPL:
-        out = pow(T0 / T, x3);
+        out = pow(T0 / T, X3);
         break;
       case TemperatureModel::FINAL: {
       }
@@ -324,7 +325,7 @@ class SingleParameter {
         out = 0;
         break;
       case TemperatureModel::DPL:
-        out = x2 * pow(T0 / T, x3) * log(T0 / T);
+        out = X2 * pow(T0 / T, X3) * log(T0 / T);
         break;
       case TemperatureModel::FINAL: {
       }
@@ -347,27 +348,27 @@ class SingleParameter {
         out = 0;
         break;
       case TemperatureModel::T1:
-        out = -x0 * x1 * pow(T0 / T, x1) / T;
+        out = -X0 * X1 * pow(T0 / T, X1) / T;
         break;
       case TemperatureModel::T2:
-        out = -x0 * x1 * pow(T0 / T, x1) * (x2 * log(T / T0) + 1.) / T +
-              x0 * x2 * pow(T0 / T, x1) / T;
+        out = -X0 * X1 * pow(T0 / T, X1) * (X2 * log(T / T0) + 1.) / T +
+              X0 * X2 * pow(T0 / T, X1) / T;
         break;
       case TemperatureModel::T3:
-        out = x1;
+        out = X1;
         break;
       case TemperatureModel::T4:
-        out = -x2 * pow(T0 / T, x2) * (x0 + x1 * (T0 / T - 1.)) / T -
-              T0 * x1 * pow(T0 / T, x2) / pow(T, 2);
+        out = -X2 * pow(T0 / T, X2) * (X0 + X1 * (T0 / T - 1.)) / T -
+              T0 * X1 * pow(T0 / T, X2) / pow(T, 2);
         break;
       case TemperatureModel::T5:
-        out = -x0 * pow(T0 / T, 1.5 * x1 + 0.25) * (1.5 * x1 + 0.25) / T;
+        out = -X0 * pow(T0 / T, 1.5 * X1 + 0.25) * (1.5 * X1 + 0.25) / T;
         break;
       case TemperatureModel::LM_AER:
         out = special_linemixing_aer_dT(T);
         break;
       case TemperatureModel::DPL:
-        out = -x0 * x1 * pow(T0 / T, x1) / T + -x2 * x3 * pow(T0 / T, x3) / T;
+        out = -X0 * X1 * pow(T0 / T, X1) / T + -X2 * X3 * pow(T0 / T, X3) / T;
         break;
       case TemperatureModel::FINAL: {
       }
@@ -390,27 +391,27 @@ class SingleParameter {
         out = 0;
         break;
       case TemperatureModel::T1:
-        out = x0 * x1 * pow(T0 / T, x1) / T0;
+        out = X0 * X1 * pow(T0 / T, X1) / T0;
         break;
       case TemperatureModel::T2:
-        out = x0 * x1 * pow(T0 / T, x1) * (x2 * log(T / T0) + 1.) / T0 -
-              x0 * x2 * pow(T0 / T, x1) / T0;
+        out = X0 * X1 * pow(T0 / T, X1) * (X2 * log(T / T0) + 1.) / T0 -
+              X0 * X2 * pow(T0 / T, X1) / T0;
         break;
       case TemperatureModel::T3:
-        out = -x1;
+        out = -X1;
         break;
       case TemperatureModel::T4:
-        out = x2 * pow(T0 / T, x2) * (x0 + x1 * (T0 / T - 1.)) / T0 +
-              x1 * pow(T0 / T, x2) / T;
+        out = X2 * pow(T0 / T, X2) * (X0 + X1 * (T0 / T - 1.)) / T0 +
+              X1 * pow(T0 / T, X2) / T;
         break;
       case TemperatureModel::T5:
-        out = x0 * pow(T0 / T, 1.5 * x1 + 0.25) * (1.5 * x1 + 0.25) / T0;
+        out = X0 * pow(T0 / T, 1.5 * X1 + 0.25) * (1.5 * X1 + 0.25) / T0;
         break;
       case TemperatureModel::LM_AER:
         out = 0;
         break;
       case TemperatureModel::DPL:
-        out = x0 * x1 * pow(T0 / T, x1) / T0 + x2 * x3 * pow(T0 / T, x3) / T0;
+        out = X0 * X1 * pow(T0 / T, X1) / T0 + X2 * X3 * pow(T0 / T, X3) / T0;
         break;
       case TemperatureModel::FINAL: {
       }
@@ -433,25 +434,25 @@ class SingleParameter {
         out = 0;
         break;
       case TemperatureModel::T1:
-        out = x0 * pow(T0 / T, x1) * log(T0 / T);
+        out = X0 * pow(T0 / T, X1) * log(T0 / T);
         break;
       case TemperatureModel::T2:
-        out = x0 * pow(T0 / T, x1) * (x2 * log(T / T0) + 1.) * log(T0 / T);
+        out = X0 * pow(T0 / T, X1) * (X2 * log(T / T0) + 1.) * log(T0 / T);
         break;
       case TemperatureModel::T3:
         out = (T - T0);
         break;
       case TemperatureModel::T4:
-        out = pow(T0 / T, x2) * (T0 / T - 1.);
+        out = pow(T0 / T, X2) * (T0 / T - 1.);
         break;
       case TemperatureModel::T5:
-        out = 1.5 * x0 * pow(T0 / T, 1.5 * x1 + 0.25) * log(T0 / T);
+        out = 1.5 * X0 * pow(T0 / T, 1.5 * X1 + 0.25) * log(T0 / T);
         break;
       case TemperatureModel::LM_AER:
         out = 0;
         break;
       case TemperatureModel::DPL:
-        out = x0 * pow(T0 / T, x1) * log(T0 / T);
+        out = X0 * pow(T0 / T, X1) * log(T0 / T);
         break;
       case TemperatureModel::FINAL: {
       }
@@ -459,20 +460,8 @@ class SingleParameter {
     return pres * pow(P, pres - 1) * out;
   }
 
-  double& X0() noexcept { return x0; }
-  double& X1() noexcept { return x1; }
-  double& X2() noexcept { return x2; }
-  double& X3() noexcept { return x3; }
-
-#undef x0
-#undef x1
-#undef x2
-#undef x3
-
-  void Species(Species::Species x) noexcept { spec = x; }
   void Temperature(TemperatureModel x) noexcept { temp = x; }
   void Pressure(unsigned char x) noexcept { pres = x; }
-  constexpr Species::Species Species() const noexcept { return spec; }
   constexpr TemperatureModel Temperature() const noexcept { return temp; }
   constexpr unsigned char Pressure() const noexcept { return pres; }
 };  // SingleParameter
@@ -494,7 +483,7 @@ struct Output {
         Y(y),
         G(g),
         DV(dv) {}
-  double& operator[](Parameter p) {
+  double &operator[](Parameter p) {
     if (p == Parameter::G0)
       return G0;
     else if (p == Parameter::D0)
@@ -514,12 +503,24 @@ struct Output {
     else if (p == Parameter::DV)
       return DV;
     else
-      std::exit(1);
+      std::terminate();
   }
 };
 
 constexpr Output mirrored(Output x) noexcept {
   return {x.G0, -x.D0, x.G2, -x.D2, x.FVC, x.ETA, x.Y, x.G, -x.DV};
+}
+
+constexpr Complex linemixing(Output X) noexcept { return {1 + X.G, -X.Y}; }
+
+constexpr Complex linemixing_derivative(Output X) noexcept {
+  return {X.G, -X.Y};
+}
+
+constexpr bool isnonzero(Output x) noexcept {
+  return x.G0 not_eq 0 or x.D0 not_eq 0 or x.G2 not_eq 0 or x.D2 not_eq 0 or
+         x.FVC not_eq 0 or x.ETA not_eq 0 or x.Y not_eq 0 or x.G not_eq 0 or
+         x.DV not_eq 0;
 }
 
 struct ModelHelper {
@@ -529,33 +530,99 @@ struct ModelHelper {
   int pres;
 };
 
+struct AllSingleParameters {
+  Species::Species s;
+  SingleParameter G0;
+  SingleParameter D0;
+  SingleParameter G2;
+  SingleParameter D2;
+  SingleParameter FVC;
+  SingleParameter ETA;
+  SingleParameter Y;
+  SingleParameter G;
+  SingleParameter DV;
+
+  const SingleParameter &operator[](Parameter m) const noexcept {
+    switch (m) {
+      case Parameter::G0:
+        return G0;
+      case Parameter::D0:
+        return D0;
+      case Parameter::G2:
+        return G2;
+      case Parameter::D2:
+        return D2;
+      case Parameter::FVC:
+        return FVC;
+      case Parameter::ETA:
+        return ETA;
+      case Parameter::Y:
+        return Y;
+      case Parameter::G:
+        return G;
+      case Parameter::DV:
+        return DV;
+      case Parameter::FINAL: { /* Leave last */
+      }
+    }
+    std::terminate();
+  }
+
+  SingleParameter &operator[](Parameter m) noexcept {
+    switch (m) {
+      case Parameter::G0:
+        return G0;
+      case Parameter::D0:
+        return D0;
+      case Parameter::G2:
+        return G2;
+      case Parameter::D2:
+        return D2;
+      case Parameter::FVC:
+        return FVC;
+      case Parameter::ETA:
+        return ETA;
+      case Parameter::Y:
+        return Y;
+      case Parameter::G:
+        return G;
+      case Parameter::DV:
+        return DV;
+      case Parameter::FINAL: { /* Leave last */
+      }
+    }
+    std::terminate();
+  }
+
+  SingleParameter &operator[](size_t i) noexcept {
+    return operator[](Parameter(i));
+  }
+  const SingleParameter &operator[](size_t i) const noexcept {
+    return operator[](Parameter(i));
+  }
+};
+
 class Model {
   static constexpr unsigned char N{(unsigned char)Parameter::FINAL};
-  std::vector<std::array<SingleParameter, N>> data;
+  std::vector<AllSingleParameters> data;
 
-  SingleParameter& G0(int i) noexcept {
-    return data[i][(unsigned char)Parameter::G0];
-  }
-  SingleParameter& D0(int i) noexcept {
-    return data[i][(unsigned char)Parameter::D0];
-  }
+  SingleParameter &G0(int i) noexcept { return data[i].G0; }
+  SingleParameter &D0(int i) noexcept { return data[i].D0; }
 
  public:
   Model() noexcept : data(0) {}
-  Model(const std::vector<ModelHelper>& vmh) noexcept : data(vmh.size()) {
+  Model(const std::vector<ModelHelper> &vmh) noexcept : data(vmh.size()) {
     for (size_t i = 0; i < data.size(); i++) {
-      for (auto& param : data[i]) param.Species(vmh[i].s);
-      for (auto& help : vmh) {
+      data[i].s = vmh[i].s;
+      for (auto &help : vmh) {
         data[i][size_t(help.p)].Temperature(help.tm);
         data[i][size_t(help.p)].Pressure(help.pres);
       }
     }
   }
-  Model(const std::vector<std::array<SingleParameter, N>>& d) : data(d) {
-    for (auto& a : d) {
+  Model(const std::vector<AllSingleParameters> &d) : data(d) {
+    for (auto &a : d) {
       for (size_t i = 0; i < size_t(Parameter::FINAL); i++) {
-        if (d[0][0].Species() not_eq a[i].Species())
-          throw std::runtime_error("Bad species");
         if (d[0][i].Pressure() not_eq a[i].Pressure())
           throw std::runtime_error("Bad species");
         if (d[0][i].Temperature() not_eq a[i].Temperature())
@@ -571,37 +638,32 @@ class Model {
         PressureBroadening<FrequencyType::Freq, PressureType::Pa> d0air,
         double nair) noexcept
       : data(2) {
-    for (auto& x : data[0]) x.Species(Species::Species::Bath);
-    for (auto& x : data[1]) x.Species(self);
-    G0(0).Species(Species::Species::Bath);
-    G0(0).X0() = g0air;
-    G0(0).X1() = nair;
+    data[0].s = Species::Species::Bath;
+    data[1].s = self;
+    G0(0).X0 = g0air;
+    G0(0).X1 = nair;
     G0(0).Temperature(TemperatureModel::T1);
     G0(0).Pressure(1);
-    D0(0).X0() = d0air;
+    D0(0).X0 = d0air;
     D0(0).Temperature(TemperatureModel::T0);
     D0(0).Pressure(1);
 
-    G0(1).Species(self);
-    G0(1).X0() = g0self;
-    G0(1).X1() = nair;
+    G0(1).X0 = g0self;
+    G0(1).X1 = nair;
     G0(1).Temperature(TemperatureModel::T1);
     G0(1).Pressure(1);
-    D0(1).X0() = d0air;
-    D0(1).Temperature(
-        TemperatureModel::T0);  // Copy because of how it is normalized
+    D0(1).X0 = d0air;
+    D0(1).Temperature(TemperatureModel::T0);
     D0(1).Pressure(1);
   }
 
-  const std::array<SingleParameter, N>& operator[](size_t i) const noexcept {
+  const AllSingleParameters &operator[](size_t i) const noexcept {
     return data[i];
   }
-  std::array<SingleParameter, N>& operator[](size_t i) noexcept {
-    return data[i];
-  }
+  AllSingleParameters &operator[](size_t i) noexcept { return data[i]; }
   void resize(size_t n) noexcept { data.resize(n); }
 
-  friend std::ostream& operator<<(std::ostream& os, const Model& x) {
+  friend std::ostream &operator<<(std::ostream &os, const Model &x) {
     for (auto arr : x.data) {
       for (size_t i = 0; i < size_t(Parameter::FINAL); i++) {
         if (arr[i].Temperature() not_eq TemperatureModel::None) {
@@ -613,8 +675,8 @@ class Model {
     return os;
   }
 
-  friend std::istream& operator>>(std::istream& is, Model& x) {
-    for (auto& arr : x.data) {
+  friend std::istream &operator>>(std::istream &is, Model &x) {
+    for (auto &arr : x.data) {
       for (size_t i = 0; i < size_t(Parameter::FINAL); i++) {
         if (arr[i].Temperature() not_eq TemperatureModel::None) {
           is >> arr[i];
@@ -629,9 +691,9 @@ class Model {
   std::string description() const noexcept {
     std::ostringstream os;
     os << n_spec();
-    for (auto& arr : data) {
+    for (auto &arr : data) {
       if (arr[0].Temperature() not_eq TemperatureModel::None)
-        os << ' ' << arr[0].Species();
+        os << ' ' << arr.s;
     }
     if (n_spec()) {
       for (size_t i = 0; i < size_t(Parameter::FINAL); i++) {
@@ -645,20 +707,35 @@ class Model {
     return os.str();
   }
 
-  const SingleParameter& Param(size_t i, Parameter X) const noexcept {
+  const SingleParameter &Param(size_t i, Parameter X) const noexcept {
     return data[i][size_t(X)];
   }
 
+ private:
+  double sum_of_vmr(const std::vector<VMR<VMRType::ratio>> &vmr) const {
+    double vmrsum = 0;
+    for (auto &params : data) {
+      for (auto &v : vmr) {
+        if (v.Species() == params.s) {
+          vmrsum += v.value();
+          break;
+        }
+      }
+    }
+    return vmrsum;
+  }
+
+ public:
   Output operator()(
       Temperature<TemperatureType::K> T, Temperature<TemperatureType::K> T0,
       Pressure<PressureType::Pa> P,
-      const std::vector<VMR<VMRType::ratio>>& vmr) const noexcept {
+      const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
-    double vmrsum = 0;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
+    const double vmrsum = sum_of_vmr(vmr);
+
+    for (auto &params : data) {
+      for (auto &v : vmr) {
+        if (v.Species() == params.s) {
           for (unsigned char i = 0; i < N; i++) {
             out[Parameter(i)] += params[i](T, T0, P) * v.value();
           }
@@ -676,139 +753,91 @@ class Model {
     return out;
   }
 
-  Output dX0(Temperature<TemperatureType::K> T,
+  double dX0(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr,
-             Species::Species spec) const noexcept {
-    Output out;
-    double vmrsum = 0;
-    bool done = false;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
-          if (not done and spec == v.Species()) {
-            for (unsigned char i = 0; i < N; i++) {
-              out[Parameter(i)] += params[i].dX0(T, T0, P) * v.value();
+             const std::vector<VMR<VMRType::ratio>> &vmr, Species::Species spec,
+             Parameter target) const noexcept {
+    const double vmrsum = sum_of_vmr(vmr);
+    if (vmrsum > 0) {
+      for (auto &params : data) {
+        for (auto &v : vmr) {
+          if (v.Species() == params.s) {
+            if (spec == v.Species()) {
+              return params[size_t(target)].dX0(T, T0, P) * v.value() / vmrsum;
             }
-            done = true;
           }
-          break;
         }
       }
     }
-
-    if (vmrsum not_eq 0) {
-      for (unsigned char i = 0; i < N; i++) {
-        out[Parameter(i)] /= vmrsum;
-      }
-    }
-
-    return out;
+    return 0;
   }
 
-  Output dX1(Temperature<TemperatureType::K> T,
+  double dX1(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr,
-             Species::Species spec) const noexcept {
-    Output out;
-    double vmrsum = 0;
-    bool done = false;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
-          if (not done and spec == v.Species()) {
-            for (unsigned char i = 0; i < N; i++) {
-              out[Parameter(i)] += params[i].dX1(T, T0, P) * v.value();
+             const std::vector<VMR<VMRType::ratio>> &vmr, Species::Species spec,
+             Parameter target) const noexcept {
+    const double vmrsum = sum_of_vmr(vmr);
+    if (vmrsum > 0) {
+      for (auto &params : data) {
+        for (auto &v : vmr) {
+          if (v.Species() == params.s) {
+            if (spec == v.Species()) {
+              return params[size_t(target)].dX1(T, T0, P) * v.value() / vmrsum;
             }
-            done = true;
           }
-          break;
         }
       }
     }
-
-    if (vmrsum not_eq 0) {
-      for (unsigned char i = 0; i < N; i++) {
-        out[Parameter(i)] /= vmrsum;
-      }
-    }
-
-    return out;
+    return 0;
   }
 
-  Output dX2(Temperature<TemperatureType::K> T,
+  double dX2(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr,
-             Species::Species spec) const noexcept {
-    Output out;
-    double vmrsum = 0;
-    bool done = false;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
-          if (not done and spec == v.Species()) {
-            for (unsigned char i = 0; i < N; i++) {
-              out[Parameter(i)] += params[i].dX2(T, T0, P) * v.value();
+             const std::vector<VMR<VMRType::ratio>> &vmr, Species::Species spec,
+             Parameter target) const noexcept {
+    const double vmrsum = sum_of_vmr(vmr);
+    if (vmrsum > 0) {
+      for (auto &params : data) {
+        for (auto &v : vmr) {
+          if (v.Species() == params.s) {
+            if (spec == v.Species()) {
+              return params[size_t(target)].dX2(T, T0, P) * v.value() / vmrsum;
             }
-            done = true;
           }
-          break;
         }
       }
     }
-
-    if (vmrsum not_eq 0) {
-      for (unsigned char i = 0; i < N; i++) {
-        out[Parameter(i)] /= vmrsum;
-      }
-    }
-
-    return out;
+    return 0;
   }
 
-  Output dX3(Temperature<TemperatureType::K> T,
+  double dX3(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr,
-             Species::Species spec) const noexcept {
-    Output out;
-    double vmrsum = 0;
-    bool done = false;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
-          if (not done and spec == v.Species()) {
-            for (unsigned char i = 0; i < N; i++) {
-              out[Parameter(i)] += params[i].dX3(T, T0, P) * v.value();
+             const std::vector<VMR<VMRType::ratio>> &vmr, Species::Species spec,
+             Parameter target) const noexcept {
+    const double vmrsum = sum_of_vmr(vmr);
+    if (vmrsum > 0) {
+      for (auto &params : data) {
+        for (auto &v : vmr) {
+          if (v.Species() == params.s) {
+            if (spec == v.Species()) {
+              return params[size_t(target)].dX1(T, T0, P) * v.value() / vmrsum;
             }
-            done = true;
           }
-          break;
         }
       }
     }
-
-    if (vmrsum not_eq 0) {
-      for (unsigned char i = 0; i < N; i++) {
-        out[Parameter(i)] /= vmrsum;
-      }
-    }
-
-    return out;
+    return 0;
   }
 
   Output dT(Temperature<TemperatureType::K> T,
             Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-            const std::vector<VMR<VMRType::ratio>>& vmr) const noexcept {
+            const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
-    double vmrsum = 0;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
+    const double vmrsum = sum_of_vmr(vmr);
+
+    for (auto &params : data) {
+      for (auto &v : vmr) {
+        if (v.Species() == params.s) {
           for (unsigned char i = 0; i < N; i++) {
             out[Parameter(i)] += params[i].dT(T, T0, P) * v.value();
           }
@@ -828,13 +857,13 @@ class Model {
 
   Output dT0(Temperature<TemperatureType::K> T,
              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-             const std::vector<VMR<VMRType::ratio>>& vmr) const noexcept {
+             const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
-    double vmrsum = 0;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
+    const double vmrsum = sum_of_vmr(vmr);
+
+    for (auto &params : data) {
+      for (auto &v : vmr) {
+        if (v.Species() == params.s) {
           for (unsigned char i = 0; i < N; i++) {
             out[Parameter(i)] += params[i].dT0(T, T0, P) * v.value();
           }
@@ -854,13 +883,13 @@ class Model {
 
   Output dP(Temperature<TemperatureType::K> T,
             Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
-            const std::vector<VMR<VMRType::ratio>>& vmr) const noexcept {
+            const std::vector<VMR<VMRType::ratio>> &vmr) const noexcept {
     Output out;
-    double vmrsum = 0;
-    for (auto& params : data) {
-      for (auto& v : vmr) {
-        if (v.Species() == params[0].Species()) {
-          vmrsum += v.value();
+    const double vmrsum = sum_of_vmr(vmr);
+
+    for (auto &params : data) {
+      for (auto &v : vmr) {
+        if (v.Species() == params.s) {
           for (unsigned char i = 0; i < N; i++) {
             out[Parameter(i)] += params[i].dP(T, T0, P) * v.value();
           }
@@ -878,6 +907,32 @@ class Model {
     return out;
   }
 
+  Output dVMR(Temperature<TemperatureType::K> T,
+              Temperature<TemperatureType::K> T0, Pressure<PressureType::Pa> P,
+              const std::vector<VMR<VMRType::ratio>> &vmr,
+              const Species::Species s) const noexcept {
+    Output out;
+    const double vmrsum = sum_of_vmr(vmr);
+
+    for (auto &params : data) {
+      for (auto &v : vmr) {
+        if (v.Species() == params.s and v.Species() == s) {
+          for (unsigned char i = 0; i < N; i++) {
+            out[Parameter(i)] += params[i].dP(T, T0, P) * v.value();
+          }
+          break;
+        }
+      }
+    }
+
+    if (vmrsum not_eq 0) {
+      for (unsigned char i = 0; i < N; i++) {
+        out[Parameter(i)] /= vmrsum;
+      }
+    }
+
+    return out;
+  }
 };  // Model
 
 namespace Base {
@@ -936,7 +991,7 @@ class HartmannTran {
     calc();
   }
 
-  Complex dFdf(double) const noexcept {
+  Complex dFdf() const noexcept {
     constexpr Complex ddeltax = Complex(0, -1);
     Complex dx = -ddeltax / ((ETA - 1) * Complex(G2, D2));
     Complex dsqrtxy = dx / (2 * sqrtxy);
@@ -2384,7 +2439,7 @@ class HartmannTran {
 
   double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(deltax)[1] = mF0 - f;
     x = deltax / ((1 - ETA) * Complex(G2, D2));
     sqrtxy = std::sqrt(x + sqrty * sqrty);
@@ -2395,14 +2450,14 @@ class HartmannTran {
 
  private:
   CalcType init(const Complex c2t) const noexcept {
-    if (abs2(c2t) == 0)
+    if (abs_squared(c2t) == 0)
       return CalcType::Noc2tHighZ;  // nb. Value of high/low changes elsewhere
-    else if (abs2(x) <= 9e-16 * abs2(sqrty * sqrty))
+    else if (abs_squared(x) <= 9e-16 * abs_squared(sqrty * sqrty))
       return CalcType::LowXandHighY;
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)) and
-             abs2(std::sqrt(x)) <= 16.e6)
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)) and
+             abs_squared(std::sqrt(x)) <= 16.e6)
       return CalcType::LowYandLowX;  // Weird case, untested
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)))
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)))
       return CalcType::LowYandHighX;
     else
       return CalcType::Full;
@@ -2428,7 +2483,7 @@ class HartmannTran {
         z1 = deltax * invGD;
         w1 = Faddeeva::w(Complex(0, 1) * z1);
         A = Constant::sqrt_pi * invGD * w1;
-        if (abs2(z1) < 16e6) {
+        if (abs_squared(z1) < 16e6) {
           calcs = CalcType::Noc2tLowZ;
           B = Constant::sqrt_pi * invGD *
               ((1 - Constant::pow2(z1)) * w1 + z1 / Constant::sqrt_pi);
@@ -2527,7 +2582,7 @@ class SpeedDependentHardCollisionVoigt {
     calc();
   }
 
-  Complex dFdf(double) const noexcept {
+  Complex dFdf() const noexcept {
     switch (calcs) {
       case CalcType::Full:
         return invGD * invc2 * (dw1 - dw2) /
@@ -3047,7 +3102,7 @@ class SpeedDependentHardCollisionVoigt {
 
   double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(dx)[1] = mF0 - f;
     x = dx * invc2;
     update_calcs();
@@ -3057,14 +3112,14 @@ class SpeedDependentHardCollisionVoigt {
 
  private:
   CalcType init(const Complex c2) const noexcept {
-    if (abs2(c2) == 0)
+    if (abs_squared(c2) == 0)
       return CalcType::Voigt;
-    else if (abs2(x) <= 9e-16 * abs2(sqrty * sqrty))
+    else if (abs_squared(x) <= 9e-16 * abs_squared(sqrty * sqrty))
       return CalcType::LowXandHighY;
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)) and
-             abs2(std::sqrt(x)) <= 16.e6)
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)) and
+             abs_squared(std::sqrt(x)) <= 16.e6)
       return CalcType::LowYandLowX;  // Weird case, untested
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)))
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)))
       return CalcType::LowYandHighX;
     else
       return CalcType::Full;
@@ -3158,7 +3213,7 @@ class SpeedDependentVoigt {
     calc();
   }
 
-  Complex dFdf(double) const noexcept {
+  Complex dFdf() const noexcept {
     switch (calcs) {
       case CalcType::Full:
         return invGD * invc2 * (dw1 - dw2) / (2 * Constant::sqrt_pi * sq.xy);
@@ -3581,7 +3636,7 @@ class SpeedDependentVoigt {
 
   double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(dx)[1] = mF0 - f;
     x = dx * invc2;
     update_calcs();
@@ -3591,14 +3646,14 @@ class SpeedDependentVoigt {
 
  private:
   CalcType init(const Complex c2) const noexcept {
-    if (abs2(c2) == 0)
+    if (abs_squared(c2) == 0)
       return CalcType::Voigt;
-    else if (abs2(x) <= 9e-16 * abs2(sqrty * sqrty))
+    else if (abs_squared(x) <= 9e-16 * abs_squared(sqrty * sqrty))
       return CalcType::LowXandHighY;
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)) and
-             abs2(std::sqrt(x)) <= 16.e6)
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)) and
+             abs_squared(std::sqrt(x)) <= 16.e6)
       return CalcType::LowYandLowX;  // Weird case, untested
-    else if ((abs2(sqrty * sqrty) <= 1.e-30 * abs2(x)))
+    else if ((abs_squared(sqrty * sqrty) <= 1.e-30 * abs_squared(x)))
       return CalcType::LowYandHighX;
     else
       return CalcType::Full;
@@ -3664,7 +3719,7 @@ class Voigt {
         F(Constant::inv_sqrt_pi * invGD * Faddeeva::w(z)),
         dF(2 * (Complex(0, invGD * Constant::inv_pi) - z * F)) {}
 
-  Complex dFdf(double) const noexcept { return dF; }
+  Complex dFdf() const noexcept { return dF; }
   Complex dFdF0() const noexcept { return -F / mF0 - dF; }
   Complex dFdDV(double d) const noexcept { return d * dFdF0(); }
   Complex dFdD0(double d) const noexcept { return d * dFdF0(); }
@@ -3676,8 +3731,9 @@ class Voigt {
   }
   template <typename LineData>
   Complex dFdT(LineData d, double T) const noexcept {
-    return dFdVMR(d) + Constant::pow2(invGD) * (z * dF + invGD * F) /
-                           (2 * Constant::sqrt_ln_2 * T);
+    return -(F * invGD + dF * z) * (2 * T * (d.D0 + d.DV) + mF0) /
+               (2 * T * invGD * mF0) +
+           dFdVMR(d);
   }
   static constexpr Complex dFdETA(double) noexcept { return 0; }
   static constexpr Complex dFdFVC(double) noexcept { return 0; }
@@ -3688,7 +3744,7 @@ class Voigt {
 
   double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(z)[0] = invGD * (f - mF0);
     F = Constant::inv_sqrt_pi * invGD * Faddeeva::w(z);
     dF = 2 * invGD * (Complex(0, Constant::inv_pi * invGD) - z * F);
@@ -3722,7 +3778,7 @@ class Lorentz {
   constexpr Complex dFdT(LineData d, double) const noexcept {
     return dFdVMR(d);
   }
-  constexpr Complex dFdf(double) const noexcept { return Complex(0, -1) * dF; }
+  constexpr Complex dFdf() const noexcept { return Complex(0, -1) * dF; }
   constexpr Complex dFdF0() const noexcept { return Complex(0, 1) * dF; }
   constexpr Complex dFdDV(double d) const noexcept { return d * dFdF0(); }
   constexpr Complex dFdD0(double d) const noexcept { return d * dFdF0(); }
@@ -3739,7 +3795,7 @@ class Lorentz {
 
   constexpr double F0() const noexcept { return mF0; }
 
-  Complex& operator()(double f) noexcept {
+  Complex &operator()(double f) noexcept {
     reinterpret_cast<double(&)[2]>(z)[1] = Constant::pi * (mF0 - f);
     F = 1.0 / z;
     dF = -Constant::pi * Constant::pow2(F);
@@ -3764,13 +3820,10 @@ class Doppler {
 
   template <typename LineData>
   double dFdT(LineData, double T) const noexcept {
-    return -(Constant::pow2(x) - 0.5) * Constant::pow3(invGD) /
-           (Constant::sqrt_ln_2 * T) * F;
+    return F * (2 * Constant::pow2(x) - 1) / (2 * T);
   }
-  double dFdf(double) const noexcept { return -2 * invGD * F * x; }
-  double dFdF0() const noexcept {
-    return F * Constant::pow2(x) * (2 / mF0) + F * x * 2 * (invGD - 1 / mF0);
-  }
+  double dFdf() const noexcept { return -2 * invGD * F * x; }
+  double dFdF0() const noexcept { return 4 * F * invGD * x - F / mF0; }
   double dFdH(double dZ) const noexcept { return dZ * dFdF0(); }
   static constexpr double dFdFVC(double) noexcept { return 0; }
   static constexpr double dFdETA(double) noexcept { return 0; }
@@ -3788,7 +3841,7 @@ class Doppler {
 
   double F0() const noexcept { return mF0; }
 
-  double& operator()(double f) noexcept {
+  double &operator()(double f) noexcept {
     x = (f - mF0) * invGD;
     F = invGD * Constant::inv_sqrt_pi * std::exp(-Constant::pow2(x));
     return F;

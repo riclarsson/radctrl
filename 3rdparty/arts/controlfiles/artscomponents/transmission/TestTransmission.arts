@@ -1,0 +1,170 @@
+#DEFINITIONS:  -*-sh-*-
+#
+# Demonstration and test of a transmission calculation in a 
+# refractive 3D atmosphere. The case treats ground-based sensor, observing 
+# at a high/low zenith/elevation angle.
+#
+# The control file performs also a test of iyLoopFrequencies
+#
+# 2012-04-02, Patrick Eriksson
+
+
+Arts2 {
+
+INCLUDE "general/general.arts"
+INCLUDE "general/continua.arts"
+INCLUDE "general/agendas.arts"
+INCLUDE "general/planet_earth.arts"
+
+# Agenda for scalar gas absorption calculation
+Copy(abs_xsec_agenda, abs_xsec_agenda__noCIA)
+
+# on-the-fly absorption
+Copy( propmat_clearsky_agenda, propmat_clearsky_agenda__OnTheFly )
+
+# sensor-only path
+Copy( ppath_agenda, ppath_agenda__FollowSensorLosPath )
+
+
+# Number of Stokes components to be computed
+#
+IndexSet( stokes_dim, 4 )
+
+# Reference ellipsoid
+#
+refellipsoidEarth( refellipsoid, "WGS84" )
+
+
+# Frequency grid 
+#
+VectorSet( f_grid, [10e9,20e9] )
+
+
+# A pressure grid rougly matching 0 to 80 km, in steps of 2 km.
+#
+VectorNLogSpace( p_grid, 41, 1013e2, 1 )
+
+
+# Atmospheric dimensionality and lat/lon grids
+#
+VectorNLinSpace( lat_grid, 11, 5, 13 )
+VectorNLinSpace( lon_grid, 11, -14, -10 )
+AtmosphereSet3D
+
+
+# Definition of species
+# 
+abs_speciesSet( species=
+            ["H2O-PWR98", 
+             "N2-SelfContStandardType",
+             "O2-PWR93"] )
+
+# No line data needed here
+# 
+abs_lines_per_speciesSetEmpty
+
+
+# Atmospheric profiles
+# 
+AtmRawRead( basename = "testdata/tropical" )
+#
+AtmFieldsCalcExpand1D
+
+
+# Get ground altitude (z_surface) from z_field
+MatrixSetConstant( z_surface, 11, 11, 0 )
+
+
+# No jacobian calculations
+#
+jacobianOff
+
+# No scattering
+#
+cloudboxOff
+
+# Check model atmosphere
+# 
+atmfields_checkedCalc
+atmgeom_checkedCalc
+cloudbox_checkedCalc
+
+
+# Propagation path agendas and variables
+#
+# refracted path
+Copy( ppath_step_agenda, ppath_step_agenda__RefractedPath )
+Copy( refr_index_air_agenda, refr_index_air_agenda__GasMicrowavesEarth  )
+
+NumericSet( ppath_lmax, 2e3 )
+NumericSet( ppath_lraytrace, 500 )
+
+
+# Postion and line-of-sight of sensor
+# 
+VectorSet( rte_pos, [ 0, 5.1, -13.82 ] )
+VectorSet( rte_los, [ 80, 24 ] )
+VectorSet( rte_pos2, [] )                  # No transmitter position defined
+
+
+# Radiative transfer agendas
+#
+Copy( iy_transmitter_agenda, iy_transmitter_agenda__UnitUnpolIntensity )
+Copy( iy_main_agenda, iy_main_agenda__Transmission )
+
+
+# Auxiliary variables
+#
+ArrayOfStringSet( iy_aux_vars, 
+    [ "Radiative background", "Optical depth" ] )
+
+
+abs_xsec_agenda_checkedCalc
+propmat_clearsky_agenda_checkedCalc
+lbl_checkedCalc
+
+
+# Calculate
+#
+iyCalc
+
+
+# To save calculated spectrum and transmission
+#
+#output_file_formatSetAscii
+#WriteXML( output_file_format, iy, "iyREFERENCE.xml" )
+#WriteXML( output_file_format, iy_aux, "iy_auxREFERENCE.xml" )
+
+# Check that results are OK with respect to an older reference calculation
+#
+MatrixCreate( iy0 )
+#
+ReadXML( iy0, "iyREFERENCE.xml" )
+Compare( iy, iy0, 0.0001 )
+
+
+
+
+#
+# Repeat, but running in "dispersion mode".
+#
+
+# Result shall here be identical.
+#
+Copy( iy0, iy )
+
+
+Copy( iy_main_agenda, iy_main_agenda__Freqloop )
+Copy( iy_loop_freqs_agenda, iy_loop_freqs_agenda__Transmission )
+
+
+# No along-the-path-variables can here be included
+ArrayOfStringSet( iy_aux_vars, 
+    [ "Optical depth" ] )
+
+iyCalc
+
+Compare( iy, iy0, 1e-6 )
+
+}
+ 

@@ -1,0 +1,95 @@
+Key features
+============
+
+- Support for other planets
+
+- Radio links
+
+- Zeeman splitting
+
+- Named arguments
+
+- in-ARTS pnd_field calculations from atmospheric fields
+
+- in-ARTS scat_data calculations by Mie or T-matrix
+
+
+Includes and defaults
+=====================
+
+- Default settings have largely been removed from general.arts (1D
+scalar clearsky emission is not seen as the default ARTS case anymore)
+
+- "Helper" includes available that set some of the defaults removed from
+general.arts (planet*.arts) or that predefine some possible, common
+agenda settings (agenda*.arts)
+
+- Standard include file must be prefixed with general/ INCLUDE
+"continua.arts" -> INCLUDE "general/continua.arts"
+
+
+General
+=======
+
+- A reference ellipsoid now used
+
+- Sensor position now in altitude
+
+- Appending of y and jacobian variables now possible
+
+- Dispersion can now be handled 
+
+- MC considers now ppath_step_agenda and thus also supports refraction
+
+- possibility for non-scattering particles, i.e. FOS(order=0)
+  EXPERIMENTAL!
+
+- Copying of agendas. Used to initialize agendas from defaults, e.g.
+Copy(iy_main_agenda, iy_main_agenda__Emission)
+
+- abs_scalar_gas_agenda split into two agendas: abs_xsec_agenda and
+propmat_clearsky_agenda
+
+- basics_checkedCalc split into atmfields_checkedCalc, atmgeom_checkedCalc
+
+- New check methods: sensor_checkedCalc,
+propmat_clearsky_agenda_checkedCalc, abs_xsec_agenda_checkedCalc
+
+- GriddedFields with atmospheric data must contain correct grid names
+attributes: Pressure, Latitude, Longitude etc. (e.g. for AtmRawRead)
+
+- Methods for pressure regridding of atmospheric fields (e.g. AtmFieldsCalc,
+GriddedFieldPRegrid, pnd_fieldCalc) allow to fill not explicitly given pressure
+levels with zeros (when flag zeropadding set to 1; default remains no
+zeropadding)
+
+- Atmospheric dimension must be set explicitly with AtmosphereSet1D or
+*2D or *3D
+
+- isotopologue_ratios need to be set explicitly. can be initialized from
+isotopologue_ratiosInitFromBuiltin (for Earth) or loaded
+from a file (including planet_*.arts loads predefined setups)
+
+- stokes_dim must be explicitly set to 1-4: IndexSet(stokes_dim, 1)
+
+- cloudboxOff and sensorOff must be called explicitly
+
+- DoitInit is required to be called before CloudboxGetIncoming
+
+
+Naming changes
+==============
+
+- InterpSurfaceFieldToRtePos renamed to InterpSurfaceFieldToPosition
+
+- jacobianAddFreqShiftAndStretch split into two separate methods
+
+- SpeciesSet renamed to abs_speciesSet. It also takes more arguments
+now. Use new named arguments for easier migration SpeciesSet(
+abs_species, ["H2O", "N2-SelfContStandardType", "O3"] ) ->
+abs_speciesSet( species=["H2O", "N2-SelfContStandardType", "O3"] )
+
+- y_unit renamed to iy_unit
+
+
+

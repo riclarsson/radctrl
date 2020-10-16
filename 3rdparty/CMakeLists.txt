@@ -4,4 +4,6 @@ add_subdirectory(pybind11)
 add_subdirectory(gui)
 add_subdirectory(wigner)
 add_subdirectory(cmd)
-add_subdirectory(OpenBLAS)
+add_subdirectory(OpenBLAS EXCLUDE_FROM_ALL)
+
+add_subdirectory(arts EXCLUDE_FROM_ALL)

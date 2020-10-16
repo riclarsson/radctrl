@@ -129,10 +129,10 @@ void test003() {
   const Python::Function dict_fun2{"e"};
   const Python::Object<Python::Type::Dict> dict1{dict_fun1()};
   const Python::Object<Python::Type::Dict> dict2{dict_fun2()};
-  for (auto& a : dict1.keysDict())
+  for (auto &a : dict1.keysDict())
     std::cout << a << ": " << dict1.fromDict<Python::Type::String>(a).toString()
               << '\n';
-  for (auto& a : dict2.keysDict())
+  for (auto &a : dict2.keysDict())
     std::cout << a << ": " << dict2.fromDict<Python::Type::Double>(a).toDouble()
               << '\n';
 }

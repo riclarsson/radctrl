@@ -18,7 +18,7 @@ namespace GUI {
 /** A global config for all things GUI */
 struct Config {
   /** The io variable of ImGui, has a lot of key presses */
-  ImGuiIO& io;
+  ImGuiIO &io;
 
   /** Should we go fullscreen? */
   bool fullscreen;
@@ -61,7 +61,7 @@ struct Config {
 };  // Config
 
 inline void LayoutAndStyleSettings() {
-  auto& style = ImGui::GetStyle();
+  auto &style = ImGui::GetStyle();
   style.FramePadding = {0.0f, 0.0f};
   style.FrameRounding = 0.0f;
   style.FrameBorderSize = 0.0f;
@@ -129,12 +129,12 @@ inline void LayoutAndStyleSettings() {
   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
 
-GLFWmonitor* get_current_monitor(GLFWwindow* window);
+GLFWmonitor *get_current_monitor(GLFWwindow *window);
 
 namespace MainMenu {
-void fullscreen(Config& cfg, GLFWwindow* window);
-void quitscreen(const Config& cfg, GLFWwindow* window);
-size_t tabselect(Config& cfg);
+void fullscreen(Config &cfg, GLFWwindow *window);
+void quitscreen(const Config &cfg, GLFWwindow *window);
+size_t tabselect(Config &cfg);
 }  // namespace MainMenu
 }  // namespace GUI
 

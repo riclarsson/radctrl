@@ -147,12 +147,12 @@ int run(File::ConfigParser parser) try {
             not chopper_ctrl.init.load() and not wobbler_ctrl.init.load() and
             not frontend_ctrl.init.load() and
             std::none_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                         [](auto& x) { return x.init.load(); });
+                         [](auto &x) { return x.init.load(); });
         bool all_init =
             housekeeping_ctrl.init.load() and chopper_ctrl.init.load() and
             wobbler_ctrl.init.load() and frontend_ctrl.init.load() and
             std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
-                        [](auto& x) { return x.init.load(); });
+                        [](auto &x) { return x.init.load(); });
 
         if (ImGui::Button(" Initialize all ")) {
           if (none_init)
@@ -312,7 +312,7 @@ int run(File::ConfigParser parser) try {
       wobbler_ctrl.error = false;
       config.active_errors++;
     }
-    for (auto& backend_ctrl : backend_ctrls) {
+    for (auto &backend_ctrl : backend_ctrls) {
       if (backend_ctrl.error) {
         ImGui::OpenPopup("Error");
         backend_ctrl.error = false;
@@ -374,7 +374,7 @@ int run(File::ConfigParser parser) try {
 
   if (ImGui::BeginPopupModal("GUI Error")) {
     ImGui::Text("\tError! You performed invalid action(s)\t");
-    for (auto& t : config.gui_errors) {
+    for (auto &t : config.gui_errors) {
       ImGui::Text("%s\t", t.c_str());
     }
 
@@ -399,21 +399,21 @@ int run(File::ConfigParser parser) try {
   auto running_errors = runner.get();
   if (running_errors.size()) {
     std::cerr << "Errors while stopping runner:\n:";
-    for (auto& e : running_errors) std::cerr << e << '\n';
+    for (auto &e : running_errors) std::cerr << e << '\n';
     return 1;
   }
 
   CleanupGUI;
 
   return EXIT_SUCCESS;
-} catch (const std::exception& e) {
+} catch (const std::exception &e) {
   std::ostringstream os;
   os << "Terminated with errors:\n" << e.what() << '\n';
   std::cerr << os.str();
   return EXIT_FAILURE;
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   CommandLine::App rad("Run the WASPAM Radiometer");
 
   std::string xmlfilename;

@@ -44,7 +44,7 @@ struct ParForm {
 
 std::vector<IsotopologueData> getIsotopologueData(long x) noexcept;
 
-ParForm parse_parform(const std::string& line,
+ParForm parse_parform(const std::string &line,
                       unsigned long offset = 0) noexcept;
 
 ENUMCLASS(QuantumTypes, unsigned char, J, N, S, F, K, Ka, Kc, N1, L, v, v1, v2,
@@ -54,7 +54,7 @@ ENUMCLASS(QuantumTypes, unsigned char, J, N, S, F, K, Ka, Kc, N1, L, v, v1, v2,
           rotSym, vibRefl)
 
 using QNS = std::array<Quantum::Number, size_t(QuantumTypes::FINAL)>;
-std::array<QNS, 2> parse_quantum(const std::string& line,
+std::array<QNS, 2> parse_quantum(const std::string &line,
                                  const unsigned long offset = 0) noexcept;
 
 constexpr Quantum::Type toQuantumType(QuantumTypes x) {

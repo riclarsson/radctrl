@@ -23,7 +23,7 @@ class Rational {
   constexpr Rational(int n = 0, int d = 1)
       : mn(d ? n / gcd(n, d) : 0), md(d ? d / gcd(n, d) : 0) {}
 
-  Rational(const std::string& s);
+  Rational(const std::string &s);
 
   constexpr int n() const { return mn; }
   constexpr int d() const { return md; }
@@ -80,14 +80,14 @@ class Rational {
     return operator*(two, one);
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const Rational& r) {
+  friend std::ostream &operator<<(std::ostream &os, const Rational &r) {
     if (r.d() == 1)
       return os << r.n();
     else
       return os << r.n() << '/' << r.d();
   }
 
-  friend std::istream& operator>>(std::istream& is, Rational& r) {
+  friend std::istream &operator>>(std::istream &is, Rational &r) {
     std::string x;
     is >> x;
     r = Rational{x};

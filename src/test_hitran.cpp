@@ -15,6 +15,6 @@ void test001(std::string file) {
   //   wbin(file+"bin.xml"); saveBands(wbin, bands); wbin.close();
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   if (argc == 2) test001(std::string{argv[1]});
 }

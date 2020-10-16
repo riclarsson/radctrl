@@ -1,0 +1,192 @@
+/* Copyright (C) 2003-2012 Oliver Lemke <olemke@core-dump.info>
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the
+   Free Software Foundation; either version 2, or (at your option) any
+   later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307,
+   USA. */
+
+////////////////////////////////////////////////////////////////////////////
+//   File description
+////////////////////////////////////////////////////////////////////////////
+/*!
+  \file   nc_io_basic_types.cc
+  \author Oliver Lemke <olemke@core-dump.info>
+  \date   2008-09-26
+
+  \brief This file contains functions to handle NetCDF data files.
+
+*/
+
+#include "config.h"
+
+#ifdef ENABLE_NETCDF
+
+#include <cstring>
+
+#include "arts.h"
+#include "nc_io.h"
+#include "nc_io_types.h"
+
+//=== GasAbsLookup ==========================================================
+
+//! Reads a GasAbsLookup table from a NetCDF file
+/*!
+ \param[in] ncid    NetCDF file descriptor
+ \param[in] gal     GasAbsLookup
+ 
+ \author Oliver Lemke
+*/
+void nca_read_from_file(const int ncid, GasAbsLookup& gal, const Verbosity&) {
+  nca_get_data_ArrayOfArrayOfSpeciesTag(ncid, "species", gal.species, true);
+  if (!gal.species.nelem())
+    throw runtime_error("No species found in lookup table file!");
+
+  nca_get_data_ArrayOfIndex(
+      ncid, "nonlinear_species", gal.nonlinear_species, true);
+  nca_get_data_Vector(ncid, "f_grid", gal.f_grid, true);
+  nca_get_data_Vector(ncid, "p_grid", gal.p_grid, true);
+  nca_get_data_Matrix(ncid, "vmrs_ref", gal.vmrs_ref, true);
+  nca_get_data_Vector(ncid, "t_ref", gal.t_ref, true);
+  nca_get_data_Vector(ncid, "t_pert", gal.t_pert, true);
+  nca_get_data_Vector(ncid, "nls_pert", gal.nls_pert, true);
+  nca_get_data_Tensor4(ncid, "xsec", gal.xsec, true);
+}
+
+//! Writes a GasAbsLookup table to a NetCDF file
+/*!
+ \param[in]  ncid    NetCDF file descriptor
+ \param[out] gal     GasAbsLookup
+ 
+ \author Oliver Lemke
+*/
+void nca_write_to_file(const int ncid,
+                       const GasAbsLookup& gal,
+                       const Verbosity&) {
+  int retval;
+
+  int species_strings_varid;
+  int species_count_varid;
+
+  ArrayOfIndex species_count(gal.species.nelem());
+  Index species_max_strlen = 0;
+  char* species_strings = NULL;
+
+  if (gal.species.nelem()) {
+    long species_total_nelems = 0;
+    for (Index nspecies = 0; nspecies < gal.species.nelem(); nspecies++) {
+      Index nspecies_nelem = gal.species[nspecies].nelem();
+      species_total_nelems += nspecies_nelem;
+      species_count[nspecies] = nspecies_nelem;
+
+      for (ArrayOfSpeciesTag::const_iterator it = gal.species[nspecies].begin();
+           it != gal.species[nspecies].end();
+           it++)
+        if (it->Name().nelem() > species_max_strlen)
+          species_max_strlen = it->Name().nelem();
+    }
+    species_max_strlen++;
+
+    species_strings = new char[species_total_nelems * species_max_strlen];
+    memset(species_strings, 0, species_total_nelems * species_max_strlen);
+
+    Index str_i = 0;
+    for (ArrayOfArrayOfSpeciesTag::const_iterator it1 = gal.species.begin();
+         it1 != gal.species.end();
+         it1++)
+      for (ArrayOfSpeciesTag::const_iterator it2 = it1->begin();
+           it2 != it1->end();
+           it2++) {
+        memccpy(&species_strings[str_i],
+                it2->Name().c_str(),
+                0,
+                species_max_strlen);
+        str_i += species_max_strlen;
+      }
+
+    species_count_varid =
+        nca_def_ArrayOfIndex(ncid, "species_count", species_count);
+
+    int species_strings_ncdims[2];
+    nca_def_dim(ncid,
+                "species_strings_nelem",
+                species_total_nelems,
+                &species_strings_ncdims[0]);
+    nca_def_dim(ncid,
+                "species_strings_length",
+                species_max_strlen,
+                &species_strings_ncdims[1]);
+    nca_def_var(ncid,
+                "species_strings",
+                NC_CHAR,
+                2,
+                &species_strings_ncdims[0],
+                &species_strings_varid);
+  } else {
+    throw runtime_error("Current lookup table contains no species!");
+  }
+
+  // Define dimensions and variables
+  int nonlinear_species_varid =
+      nca_def_ArrayOfIndex(ncid, "nonlinear_species", gal.nonlinear_species);
+  int f_grid_varid = nca_def_Vector(ncid, "f_grid", gal.f_grid);
+  int p_grid_varid = nca_def_Vector(ncid, "p_grid", gal.p_grid);
+  int vmrs_ref_varid = nca_def_Matrix(ncid, "vmrs_ref", gal.vmrs_ref);
+  int t_ref_varid = nca_def_Vector(ncid, "t_ref", gal.t_ref);
+  int t_pert_varid = nca_def_Vector(ncid, "t_pert", gal.t_pert);
+  int nls_pert_varid = nca_def_Vector(ncid, "nls_pert", gal.nls_pert);
+  int xsec_varid = nca_def_Tensor4(ncid, "xsec", gal.xsec);
+
+  if ((retval = nc_enddef(ncid))) nca_error(retval, "nc_enddef");
+
+  // Write variables
+  nca_put_var_ArrayOfIndex(ncid, species_count_varid, species_count);
+  if (gal.species.nelem()) {
+    if ((retval =
+             nc_put_var_text(ncid, species_strings_varid, species_strings)))
+      nca_error(retval, "nc_put_var");
+  }
+
+  delete[] species_strings;
+
+  nca_put_var_ArrayOfIndex(
+      ncid, nonlinear_species_varid, gal.nonlinear_species);
+  nca_put_var_Vector(ncid, f_grid_varid, gal.f_grid);
+  nca_put_var_Vector(ncid, p_grid_varid, gal.p_grid);
+  nca_put_var_Matrix(ncid, vmrs_ref_varid, gal.vmrs_ref);
+  nca_put_var_Vector(ncid, t_ref_varid, gal.t_ref);
+  nca_put_var_Vector(ncid, t_pert_varid, gal.t_pert);
+  nca_put_var_Vector(ncid, nls_pert_varid, gal.nls_pert);
+  nca_put_var_Tensor4(ncid, xsec_varid, gal.xsec);
+}
+
+////////////////////////////////////////////////////////////////////////////
+//   Dummy funtion for groups for which
+//   IO function have not yet been implemented
+////////////////////////////////////////////////////////////////////////////
+
+#define TMPL_NC_READ_WRITE_FILE_DUMMY(what)                                   \
+  void nca_write_to_file(const int, const what&, const Verbosity&) {          \
+    throw runtime_error("NetCDF support not yet implemented for this type!"); \
+  }                                                                           \
+  void nca_read_from_file(const int, what&, const Verbosity&) {               \
+    throw runtime_error("NetCDF support not yet implemented for this type!"); \
+  }
+
+TMPL_NC_READ_WRITE_FILE_DUMMY(Agenda)
+
+//==========================================================================
+
+// Undefine the macro to avoid it being used anywhere else
+#undef TMPL_NC_READ_WRITE_FILE_DUMMY
+
+#endif /* ENABLE_NETCDF */

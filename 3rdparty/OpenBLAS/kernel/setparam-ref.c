@@ -62,9 +62,11 @@ gotoblas_t TABLE_NAME = {
  MAX(SHGEMM_DEFAULT_UNROLL_M, SHGEMM_DEFAULT_UNROLL_N),
 #endif
 
+  shstobf16_kTS, shdtobf16_kTS, sbf16tos_kTS, dbf16tod_kTS,
+
   samax_kTS,  samin_kTS,  smax_kTS,  smin_kTS,
   isamax_kTS, isamin_kTS, ismax_kTS, ismin_kTS,
-  snrm2_kTS,  sasum_kTS, ssum_kTS, scopy_kTS, sdot_kTS,
+  snrm2_kTS,  sasum_kTS, ssum_kTS, scopy_kTS, shdot_kTS,
   dsdot_kTS,
   srot_kTS,   saxpy_kTS,  sscal_kTS, sswap_kTS,
   sgemv_nTS,  sgemv_tTS, sger_kTS,
@@ -135,6 +137,11 @@ gotoblas_t TABLE_NAME = {
   sgemv_nTS,  sgemv_tTS, sger_kTS,
   ssymv_LTS, ssymv_UTS,
 
+#ifdef ARCH_X86_64
+  sgemm_directTS,
+  sgemm_direct_performantTS,	
+#endif
+	
   sgemm_kernelTS, sgemm_betaTS,
 #if SGEMM_DEFAULT_UNROLL_M != SGEMM_DEFAULT_UNROLL_N
   sgemm_incopyTS, sgemm_itcopyTS,
@@ -1166,7 +1173,7 @@ static void init_parameter(void) {
 #endif
 #endif
 
-#ifdef SKYLAKEX
+#if defined (SKYLAKEX) || defined (COOPERLAKE)
 
 #ifdef DEBUG
   fprintf(stderr, "SkylakeX\n");

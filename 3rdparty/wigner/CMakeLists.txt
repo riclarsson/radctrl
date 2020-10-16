@@ -4,9 +4,9 @@ if(FASTWIGNER)
 endif()
 
 if(FASTWIGNER)
-  add_library(wigner ALIAS fastwigxj)
+  add_library(radctrl_wigner ALIAS radctrl_fastwigxj)
 else()
-  add_library(wigner ALIAS wigxjpf)
+  add_library(radctrl_wigner ALIAS radctrl_wigxjpf)
 endif()
 
 if (FASTWIGNER)

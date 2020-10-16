@@ -1,1 +1,1 @@
-add_library (Faddeeva STATIC Faddeeva.cc)
+add_library (radctrl_Faddeeva STATIC Faddeeva.cc)

@@ -13,6 +13,10 @@
 #include "python_interface.h"
 #include "timeclass.h"
 
+#if HAS_ACS2020
+  #include "ACS2020-FM/acs_2020.h"
+#endif
+
 namespace Instrument {
 namespace Spectrometer {
 struct Controller {
@@ -37,7 +41,7 @@ struct Controller {
   std::vector<std::vector<double>> f;
   std::vector<std::vector<float>> d;
 
-  Controller(const std::string& controller_name, const std::string& h, int tcp,
+  Controller(const std::string &controller_name, const std::string &h, int tcp,
              int udp, Eigen::MatrixXd fl, Eigen::VectorXi fc, int intus,
              int blaus, bool reverse)
       : init(false),
@@ -66,8 +70,8 @@ struct Controller {
     }
   }
 
-  Controller(const std::string& controller_name,
-             const std::filesystem::path& path, int intus, int blaus)
+  Controller(const std::string &controller_name,
+             const std::filesystem::path &path, int intus, int blaus)
       : init(false),
         error(false),
         quit(false),
@@ -106,7 +110,7 @@ struct Controller {
 
 template <size_t N>
 std::vector<std::array<GUI::Plotting::Frame, 4>> PlotFrame(
-    const std::array<Controller, N>& ctrls) {
+    const std::array<Controller, N> &ctrls) {
   std::vector<std::array<GUI::Plotting::Frame, 4>> tmp;
   for (size_t i = 0; i < N; i++) {
     std::vector<GUI::Plotting::Line> raw;
@@ -162,7 +166,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       run<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
     now = Time();
   }
 
@@ -173,11 +177,11 @@ struct Backends {
     else if constexpr (i < N - 1)
       init<i + 1>(j, manual);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
-  void startup(int j, const std::string& h, int t, int u,
+  void startup(int j, const std::string &h, int t, int u,
                Eigen::Ref<Eigen::MatrixXd> fl, Eigen::Ref<Eigen::VectorXi> fc,
                int ius, int bus, bool m) {
     if (i == j)
@@ -185,7 +189,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       startup<i + 1>(j, h, t, u, fl, fc, ius, bus, m);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -195,7 +199,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       close<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -205,7 +209,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       delete_error<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -215,7 +219,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       get_data<i + 1>(j, k);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -225,7 +229,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       return name<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -235,7 +239,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       return error_string<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -245,7 +249,7 @@ struct Backends {
     else if constexpr (i < N - 1)
       return has_error<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 
   template <size_t i = 0>
@@ -265,13 +269,13 @@ struct Backends {
     else if constexpr (i < N - 1)
       return datavec<i + 1>(j);
     else
-      std::exit(1);
+      std::terminate();
   }
 };
 
 template <typename... Spectrometers>
-void GuiSetup(Backends<Spectrometers...>& spectrometers,
-              std::array<Controller, sizeof...(Spectrometers)>& ctrls) {
+void GuiSetup(Backends<Spectrometers...> &spectrometers,
+              std::array<Controller, sizeof...(Spectrometers)> &ctrls) {
   constexpr size_t N = sizeof...(Spectrometers);
 
   // Do setup per spectrometer
@@ -438,7 +442,7 @@ class Dummy {
 
  public:
   template <typename... Whatever>
-  constexpr Dummy(const std::string& n, Whatever...)
+  constexpr Dummy(const std::string &n, Whatever...)
       : mname(n),
         manual(false),
         error_found(false),
@@ -452,7 +456,7 @@ class Dummy {
     }
   }
 
-  void startup(const std::string&, int, int, Eigen::Ref<Eigen::MatrixXd>,
+  void startup(const std::string &, int, int, Eigen::Ref<Eigen::MatrixXd>,
                Eigen::Ref<Eigen::VectorXi>, int, int, bool) {}
   void init(bool manual_init) {
     manual = manual_init;
@@ -475,7 +479,7 @@ class Dummy {
     Sleep(0.1);
   }
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -501,7 +505,7 @@ class AFFTS {
   Python::Object<Python::Type::NumpyVector> internal_data;
 
  public:
-  AFFTS(const std::string& n, const std::filesystem::path& path)
+  AFFTS(const std::string &n, const std::filesystem::path &path)
       : mname(n), manual(false), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
@@ -512,7 +516,7 @@ class AFFTS {
     PyClass = Python::ClassInterface{"FW"};
   }
 
-  void startup(const std::string& host, int tcp, int udp,
+  void startup(const std::string &host, int tcp, int udp,
                Eigen::Ref<Eigen::MatrixXd> freq_limits,
                Eigen::Ref<Eigen::VectorXi> freq_counts,
                int integration_time_microsecs, int blank_time_microsecs,
@@ -553,8 +557,8 @@ class AFFTS {
 
     // Assign to correct position
     size_t ind = 0;
-    for (std::vector<float>& board : data) {
-      for (float& val : board) {
+    for (std::vector<float> &board : data) {
+      for (float &val : board) {
         val = copy[ind];
         ind++;
       }
@@ -562,7 +566,7 @@ class AFFTS {
   }
 
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -576,7 +580,7 @@ class dFFTS {
   bool error_found;
   std::string error;
   std::vector<std::vector<float>> data;
-  
+
   Python::ClassInterface PyClass;
   Python::ClassInstance PyInst;
   Python::Function initfun;
@@ -584,12 +588,12 @@ class dFFTS {
   Python::Function runfun;
   Python::Function download;
   Python::Function get_data_copy;
-  
+
   Python::Object<Python::Type::NumpyVector> internal_data;
-  
-public:
-  dFFTS(const std::string& n, const std::filesystem::path& path)
-  : mname(n), manual(false), error_found(false), error("") {
+
+ public:
+  dFFTS(const std::string &n, const std::filesystem::path &path)
+      : mname(n), manual(false), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
       os << "Cannot find dFFTS python file at:\n\t" << path << '\n';
@@ -598,62 +602,62 @@ public:
     py::eval_file(path.c_str());
     PyClass = Python::ClassInterface{"dFW"};
   }
-  
-  void startup(const std::string& host, int tcp, int udp,
+
+  void startup(const std::string &host, int tcp, int udp,
                Eigen::Ref<Eigen::MatrixXd> freq_limits,
                Eigen::Ref<Eigen::VectorXi> freq_counts,
                int integration_time_microsecs, int blank_time_microsecs,
                bool mirror) {
     PyInst = Python::ClassInstance{
-      PyClass(host, tcp, udp, freq_limits / 1e6, freq_counts,
-              integration_time_microsecs, blank_time_microsecs, mirror)};
-              initfun = Python::Function{PyInst("init")};
-              shutdown = Python::Function{PyInst("close")};
-              runfun = Python::Function{PyInst("run")};
-              download = Python::Function{PyInst("get_data")};
-              get_data_copy = Python::Function{PyInst("copy")};
-              // Fill our data with zeroes
-              data.resize(freq_counts.size());
-              for (long i = 0; i < freq_counts.size(); i++)
-                data[i] = std::vector<float>(freq_counts[i], 0);
-               }
-               
-               void init(bool manual_init) {
-                 manual = manual_init;
-                 initfun();
-               }
-               void close() { shutdown(); }
-               
-               void run() { runfun(); }
-               
-               std::vector<std::vector<float>> datavec() { return data; }
-               
-               std::string name() const { return mname; }
-               
-               void get_data(int i) {
-                 download(i);
-                 
-                 // Copy to C++
-                 internal_data = get_data_copy(i);
-                 std::vector<float> copy = internal_data.toVector<float>();
-                 
-                 // Assign to correct position
-                 size_t ind = 0;
-                 for (std::vector<float>& board : data) {
-                   for (float& val : board) {
-                     val = copy[ind];
-                     ind++;
-                   }
-                 }
-               }
-               
-               bool manual_run() { return manual; }
-               const std::string& error_string() const { return error; }
-               bool has_error() { return error_found; }
-               void delete_error() {
-                 error_found = false;
-                 error = "";
-               }
+        PyClass(host, tcp, udp, freq_limits / 1e6, freq_counts,
+                integration_time_microsecs, blank_time_microsecs, mirror)};
+    initfun = Python::Function{PyInst("init")};
+    shutdown = Python::Function{PyInst("close")};
+    runfun = Python::Function{PyInst("run")};
+    download = Python::Function{PyInst("get_data")};
+    get_data_copy = Python::Function{PyInst("copy")};
+    // Fill our data with zeroes
+    data.resize(freq_counts.size());
+    for (long i = 0; i < freq_counts.size(); i++)
+      data[i] = std::vector<float>(freq_counts[i], 0);
+  }
+
+  void init(bool manual_init) {
+    manual = manual_init;
+    initfun();
+  }
+  void close() { shutdown(); }
+
+  void run() { runfun(); }
+
+  std::vector<std::vector<float>> datavec() { return data; }
+
+  std::string name() const { return mname; }
+
+  void get_data(int i) {
+    download(i);
+
+    // Copy to C++
+    internal_data = get_data_copy(i);
+    std::vector<float> copy = internal_data.toVector<float>();
+
+    // Assign to correct position
+    size_t ind = 0;
+    for (std::vector<float> &board : data) {
+      for (float &val : board) {
+        val = copy[ind];
+        ind++;
+      }
+    }
+  }
+
+  bool manual_run() { return manual; }
+  const std::string &error_string() const { return error; }
+  bool has_error() { return error_found; }
+  void delete_error() {
+    error_found = false;
+    error = "";
+  }
 };  // dFFTS
 
 class XFFTS {
@@ -674,7 +678,7 @@ class XFFTS {
   Python::Object<Python::Type::NumpyVector> internal_data;
 
  public:
-  XFFTS(const std::string& n, const std::filesystem::path& path)
+  XFFTS(const std::string &n, const std::filesystem::path &path)
       : mname(n), manual(false), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
@@ -685,7 +689,7 @@ class XFFTS {
     PyClass = Python::ClassInterface{"XFW"};
   }
 
-  void startup(const std::string& host, int tcp, int udp,
+  void startup(const std::string &host, int tcp, int udp,
                Eigen::Ref<Eigen::MatrixXd> freq_limits,
                Eigen::Ref<Eigen::VectorXi> freq_counts,
                int integration_time_microsecs, int blank_time_microsecs,
@@ -725,8 +729,8 @@ class XFFTS {
 
     // Assign to correct position
     size_t ind = 0;
-    for (std::vector<float>& board : data) {
-      for (float& val : board) {
+    for (std::vector<float> &board : data) {
+      for (float &val : board) {
         val = copy[ind];
         ind++;
       }
@@ -734,7 +738,7 @@ class XFFTS {
   }
 
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -760,7 +764,7 @@ class RCTS104 {
   Python::Object<Python::Type::NumpyVector> internal_data;
 
  public:
-  RCTS104(const std::string& n, const std::filesystem::path& path)
+  RCTS104(const std::string &n, const std::filesystem::path &path)
       : mname(n), manual(false), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
@@ -771,7 +775,7 @@ class RCTS104 {
     PyClass = Python::ClassInterface{"rcts104"};
   }
 
-  void startup(const std::string& host, int tcp, int udp,
+  void startup(const std::string &host, int tcp, int udp,
                Eigen::Ref<Eigen::MatrixXd> freq_limits,
                Eigen::Ref<Eigen::VectorXi> freq_counts,
                int integration_time_microsecs, int blank_time_microsecs,
@@ -812,8 +816,8 @@ class RCTS104 {
 
     // Assign to correct position
     size_t ind = 0;
-    for (std::vector<float>& board : data) {
-      for (float& val : board) {
+    for (std::vector<float> &board : data) {
+      for (float &val : board) {
         val = copy[ind];
         ind++;
       }
@@ -821,7 +825,7 @@ class RCTS104 {
   }
 
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -847,7 +851,7 @@ class PC104 {
   Python::Object<Python::Type::NumpyVector> internal_data;
 
  public:
-  PC104(const std::string& n, const std::filesystem::path& path)
+  PC104(const std::string &n, const std::filesystem::path &path)
       : mname(n), manual(false), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
@@ -858,7 +862,7 @@ class PC104 {
     PyClass = Python::ClassInterface{"pc104"};
   }
 
-  void startup(const std::string& host, int tcp, int udp,
+  void startup(const std::string &host, int tcp, int udp,
                Eigen::Ref<Eigen::MatrixXd> freq_limits,
                Eigen::Ref<Eigen::VectorXi> freq_counts,
                int integration_time_microsecs, int blank_time_microsecs,
@@ -899,8 +903,8 @@ class PC104 {
 
     // Assign to correct position
     size_t ind = 0;
-    for (std::vector<float>& board : data) {
-      for (float& val : board) {
+    for (std::vector<float> &board : data) {
+      for (float &val : board) {
         val = copy[ind];
         ind++;
       }
@@ -908,7 +912,7 @@ class PC104 {
   }
 
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;
@@ -934,7 +938,7 @@ class SWICTS {
   Python::Object<Python::Type::NumpyVector> internal_data;
 
  public:
-  SWICTS(const std::string& n, const std::filesystem::path& path)
+  SWICTS(const std::string &n, const std::filesystem::path &path)
       : mname(n), manual(false), error_found(false), error("") {
     if (not std::filesystem::exists(path)) {
       std::ostringstream os;
@@ -945,7 +949,7 @@ class SWICTS {
     PyClass = Python::ClassInterface{"swicts"};
   }
 
-  void startup(const std::string& host, int tcp, int udp,
+  void startup(const std::string &host, int tcp, int udp,
                Eigen::Ref<Eigen::MatrixXd> freq_limits,
                Eigen::Ref<Eigen::VectorXi> freq_counts,
                int integration_time_microsecs, int blank_time_microsecs,
@@ -986,8 +990,8 @@ class SWICTS {
 
     // Assign to correct position
     size_t ind = 0;
-    for (std::vector<float>& board : data) {
-      for (float& val : board) {
+    for (std::vector<float> &board : data) {
+      for (float &val : board) {
         val = copy[ind];
         ind++;
       }
@@ -995,7 +999,7 @@ class SWICTS {
   }
 
   bool manual_run() { return manual; }
-  const std::string& error_string() const { return error; }
+  const std::string &error_string() const { return error; }
   bool has_error() { return error_found; }
   void delete_error() {
     error_found = false;

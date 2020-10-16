@@ -4,14 +4,14 @@ static int mini(int x, int y) { return x < y ? x : y; }
 static int maxi(int x, int y) { return x > y ? x : y; }
 
 namespace GUI {
-GLFWmonitor* get_current_monitor(GLFWwindow* window) {
+GLFWmonitor *get_current_monitor(GLFWwindow *window) {
   int nmonitors, i;
   int wx, wy, ww, wh;
   int mx, my;
   int bestoverlap;
-  GLFWmonitor* bestmonitor;
-  GLFWmonitor** monitors;
-  const GLFWvidmode* mode;
+  GLFWmonitor *bestmonitor;
+  GLFWmonitor **monitors;
+  const GLFWvidmode *mode;
 
   bestoverlap = 0;
   bestmonitor = NULL;

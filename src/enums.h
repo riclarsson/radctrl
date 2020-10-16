@@ -13,7 +13,7 @@ constexpr bool good_enum(T x) {
 }
 template <typename T>
 std::array<std::string, long(T::FINAL)> enum_strarray(
-    const std::string& strchars) {
+    const std::string &strchars) {
   std::array<std::string, long(T::FINAL)> out;
   std::istringstream x(strchars);
   for (long i = 0; i < long(T::FINAL); i++) {
@@ -69,17 +69,17 @@ std::array<std::string, long(T::FINAL)> enum_strarray(
       return "BAD " #ENUMTYPE;                                                 \
   }                                                                            \
                                                                                \
-  inline ENUMTYPE to##ENUMTYPE(const std::string& x) noexcept {                \
+  inline ENUMTYPE to##ENUMTYPE(const std::string &x) noexcept {                \
     for (TYPE i = 0; i < (TYPE)ENUMTYPE::FINAL; i++)                           \
       if (enumstrs::ENUMTYPE##Names[i] == x) return ENUMTYPE(i);               \
     return ENUMTYPE::FINAL;                                                    \
   }                                                                            \
                                                                                \
-  inline std::ostream& operator<<(std::ostream& os, const ENUMTYPE x) {        \
+  inline std::ostream &operator<<(std::ostream &os, const ENUMTYPE x) {        \
     return os << toString(x);                                                  \
   }                                                                            \
                                                                                \
-  inline std::istream& operator>>(std::istream& is, ENUMTYPE& x) {             \
+  inline std::istream &operator>>(std::istream &is, ENUMTYPE &x) {             \
     std::string val;                                                           \
     is >> val;                                                                 \
     x = to##ENUMTYPE(val);                                                     \

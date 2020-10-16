@@ -15,7 +15,7 @@
                                                                                \
  public:                                                                       \
   constexpr Scalar(double v = 0) noexcept : val(v) {}                          \
-  constexpr Scalar(Scalar&&) noexcept = default;                               \
+  constexpr Scalar(Scalar &&) noexcept = default;                              \
   constexpr double value() const noexcept { return val; }                      \
   constexpr Scalar operator-() const noexcept { return Scalar{-val}; }         \
   constexpr Scalar operator+() const noexcept { return Scalar{val}; }          \
@@ -63,32 +63,32 @@
   friend constexpr double operator/(double a, Scalar b) noexcept {             \
     return Scalar{a / b.val};                                                  \
   }                                                                            \
-  constexpr Scalar& operator=(Scalar b) noexcept {                             \
+  constexpr Scalar &operator=(Scalar b) noexcept {                             \
     val = b.val;                                                               \
     return *this;                                                              \
   }                                                                            \
-  constexpr Scalar& operator=(double b) noexcept {                             \
+  constexpr Scalar &operator=(double b) noexcept {                             \
     val = b;                                                                   \
     return *this;                                                              \
   }                                                                            \
-  Scalar& operator*=(double x) noexcept {                                      \
+  Scalar &operator*=(double x) noexcept {                                      \
     val *= x;                                                                  \
     return *this;                                                              \
   }                                                                            \
-  Scalar& operator+=(Scalar x) noexcept {                                      \
+  Scalar &operator+=(Scalar x) noexcept {                                      \
     val += x.val;                                                              \
     return *this;                                                              \
   }                                                                            \
-  Scalar& operator-=(Scalar x) noexcept {                                      \
+  Scalar &operator-=(Scalar x) noexcept {                                      \
     val -= x.val;                                                              \
     return *this;                                                              \
   }                                                                            \
-  double* operator&() noexcept { return &val; }                                \
-  const double* operator&() const noexcept { return &val; }                    \
-  friend std::ostream& operator<<(std::ostream& os, Scalar s) {                \
+  double *operator&() noexcept { return &val; }                                \
+  const double *operator&() const noexcept { return &val; }                    \
+  friend std::ostream &operator<<(std::ostream &os, Scalar s) {                \
     return os << s.val;                                                        \
   }                                                                            \
-  friend std::istream& operator>>(std::istream& is, Scalar& s) {               \
+  friend std::istream &operator>>(std::istream &is, Scalar &s) {               \
     return is >> s.val;                                                        \
   }                                                                            \
   constexpr bool operator>(Scalar b) const noexcept { return val > b.val; }    \
@@ -128,6 +128,48 @@
 ENUMCLASS(PressureType, char, Pa, Atm, Bar,
           Torr)  // PressureType
 
+ENUMCLASS(TemperatureType, char, K, C, F,
+          eV)  // TemperatureType
+
+ENUMCLASS(EnergyType, char, Joule,
+          invcm)  // EnergyType
+
+ENUMCLASS(NLTEType, char, ratio)  // TemperatureType
+
+ENUMCLASS(MagnetismType, char, T,
+          G)  // MagnetismType
+
+ENUMCLASS(WindType, char,
+          meters_per_second)  // WindType
+
+ENUMCLASS(VMRType, char,
+          ratio)  // VMRType
+
+ENUMCLASS(DistanceType, char, meter)
+
+ENUMCLASS(AltitudeType, char,
+          meter)  // AltType
+
+ENUMCLASS(LengthType, char,
+          meter)  // AltType
+
+ENUMCLASS(CoordinateType, char, deg, lon, lat,
+          rad)  // AltType
+
+ENUMCLASS(FrequencyType, char, Freq, Kayser,
+          Wavelength)  // FrequencyType
+
+ENUMCLASS(AreaType, char, m2,
+          cm2)  // AreaType
+
+ENUMCLASS(AngleType, char, deg, rad)  // AngleType
+
+ENUMCLASS(SphericalAngleType, char, Steradian)  // SphericalAngleType
+
+ENUMCLASS(PowerType, char, W, T)  // PowerType
+
+ENUMCLASS(DecayType, char, ExponentialPerSecond)  // DecayType
+
 template <PressureType X>
 class Pressure final {
   SCALAR(Pressure)
@@ -146,26 +188,23 @@ class Pressure final {
   }
 
  public:
-  constexpr Pressure(const Pressure<PressureType::Pa>& p) noexcept
+  constexpr Pressure(const Pressure<PressureType::Pa> &p) noexcept
       : val(p.value()) {
     pa2self();
   }
-  constexpr Pressure(const Pressure<PressureType::Atm>& p) noexcept
+  constexpr Pressure(const Pressure<PressureType::Atm> &p) noexcept
       : val(Conversion::atm2pa(p.value())) {
     pa2self();
   }
-  constexpr Pressure(const Pressure<PressureType::Bar>& p) noexcept
+  constexpr Pressure(const Pressure<PressureType::Bar> &p) noexcept
       : val(Conversion::bar2pa(p.value())) {
     pa2self();
   }
-  constexpr Pressure(const Pressure<PressureType::Torr>& p) noexcept
+  constexpr Pressure(const Pressure<PressureType::Torr> &p) noexcept
       : val(Conversion::torr2pa(p.value())) {
     pa2self();
   }
 };  // Pressure
-
-ENUMCLASS(TemperatureType, char, K, C, F,
-          eV)  // TemperatureType
 
 template <TemperatureType X>
 class Temperature final {
@@ -185,25 +224,23 @@ class Temperature final {
   }
 
  public:
-  constexpr Temperature(const Temperature<TemperatureType::K>& t) noexcept
+  constexpr Temperature(const Temperature<TemperatureType::K> &t) noexcept
       : val(t.value()) {
     k2self();
   }
-  constexpr Temperature(const Temperature<TemperatureType::C>& t) noexcept
+  constexpr Temperature(const Temperature<TemperatureType::C> &t) noexcept
       : val(Conversion::c2k(t.value())) {
     k2self();
   }
-  constexpr Temperature(const Temperature<TemperatureType::F>& t) noexcept
+  constexpr Temperature(const Temperature<TemperatureType::F> &t) noexcept
       : val(Conversion::f2k(t.value())) {
     k2self();
   }
-  constexpr Temperature(const Temperature<TemperatureType::eV>& t) noexcept
+  constexpr Temperature(const Temperature<TemperatureType::eV> &t) noexcept
       : val(Conversion::ev2k(t.value())) {
     k2self();
   }
 };  // Temperature
-
-ENUMCLASS(NLTEType, char, ratio)  // TemperatureType
 
 template <NLTEType X>
 class NLTE final {
@@ -214,14 +251,11 @@ class NLTE final {
   }
 
  public:
-  constexpr NLTE(const NLTE<NLTEType::ratio>& nlte) noexcept
+  constexpr NLTE(const NLTE<NLTEType::ratio> &nlte) noexcept
       : val(nlte.value()) {
     ratio2self();
   }
 };  // Temperature
-
-ENUMCLASS(MagnetismType, char, T,
-          G)  // MagnetismType
 
 template <MagnetismType X>
 class Magnetism {
@@ -230,17 +264,17 @@ class Magnetism {
     if constexpr (X == MagnetismType::T) {
     }
     if constexpr (X == MagnetismType::G) {
-      for (auto& x : M) x = Conversion::t2g(x);
+      for (auto &x : M) x = Conversion::t2g(x);
     }
   }
 
  public:
   constexpr Magnetism(std::array<double, 3> m) noexcept : M(m) {}
-  Magnetism& operator=(const Magnetism& m) = default;
-  Magnetism(const Magnetism<MagnetismType::T>& m) noexcept : M(m.M) {
+  Magnetism &operator=(const Magnetism &m) = default;
+  Magnetism(const Magnetism<MagnetismType::T> &m) noexcept : M(m.M) {
     t2self();
   }
-  Magnetism(const Magnetism<MagnetismType::G>& m) noexcept
+  Magnetism(const Magnetism<MagnetismType::G> &m) noexcept
       : M({Conversion::g2t(m.M[0]), Conversion::g2t(m.M[1]),
            Conversion::g2t(m.M[2])}) {
     t2self();
@@ -248,30 +282,31 @@ class Magnetism {
 
   constexpr std::array<double, 3> value() const noexcept { return M; }
   double Strength() const noexcept { return std::hypot(M[0], M[1], M[2]); }
-  Magnetism& operator*=(double x) noexcept {
-    for (auto& m : M) m *= x;
+  Magnetism &operator*=(double x) noexcept {
+    for (auto &m : M) m *= x;
     return *this;
   }
-  Magnetism& operator+=(Magnetism x) noexcept {
+  Magnetism &operator+=(Magnetism x) noexcept {
     M[0] += x.M[0];
     M[1] += x.M[1];
     M[2] += x.M[2];
     return *this;
   }
-  friend std::ostream& operator<<(std::ostream& os, Magnetism m) {
+  friend std::ostream &operator<<(std::ostream &os, Magnetism m) {
     return os << m.M[0] << ' ' << m.M[1] << ' ' << m.M[2];
   }
-  friend std::istream& operator>>(std::istream& is, Magnetism& m) {
+  friend std::istream &operator>>(std::istream &is, Magnetism &m) {
     return is >> m.M[0] >> m.M[1] >> m.M[2];
   }
 
-  constexpr double u() const { return M[0]; }
-  constexpr double v() const { return M[1]; }
-  constexpr double w() const { return M[2]; }
-};  // Magnetism
+  constexpr double u() const noexcept { return M[0]; }
+  constexpr double v() const noexcept { return M[1]; }
+  constexpr double w() const noexcept { return M[2]; }
 
-ENUMCLASS(WindType, char,
-          meters_per_second)  // WindType
+  double &u() noexcept { return M[0]; }
+  double &v() noexcept { return M[1]; }
+  double &w() noexcept { return M[2]; }
+};  // Magnetism
 
 template <WindType X>
 class Wind {
@@ -283,33 +318,38 @@ class Wind {
 
  public:
   constexpr Wind(std::array<double, 3> w) noexcept : W(w) {}
-  Wind& operator=(const Wind& w) = default;
-  Wind(const Wind<WindType::meters_per_second>& w) noexcept : W(w.W) {
+  Wind &operator=(const Wind &w) = default;
+  Wind(const Wind<WindType::meters_per_second> &w) noexcept : W(w.W) {
     ms2self();
   }
 
   constexpr std::array<double, 3> value() const noexcept { return W; }
   double Strength() const noexcept { return std::hypot(W[0], W[1], W[2]); }
-  Wind& operator*=(double x) noexcept {
-    for (auto& w : W) w *= x;
+  Wind &operator*=(double x) noexcept {
+    for (auto &w : W) w *= x;
     return *this;
   }
-  Wind& operator+=(Wind x) noexcept {
+  Wind &operator+=(Wind x) noexcept {
     W[0] += x.W[0];
     W[1] += x.W[1];
     W[2] += x.W[2];
     return *this;
   }
-  friend std::ostream& operator<<(std::ostream& os, Wind w) {
+  friend std::ostream &operator<<(std::ostream &os, Wind w) {
     return os << w.W[0] << ' ' << w.W[1] << ' ' << w.W[2];
   }
-  friend std::istream& operator>>(std::istream& is, Wind& w) {
+  friend std::istream &operator>>(std::istream &is, Wind &w) {
     return is >> w.W[0] >> w.W[1] >> w.W[2];
   }
-};  // Wind
 
-ENUMCLASS(VMRType, char,
-          ratio)  // VMRType
+  constexpr double u() const noexcept { return W[0]; }
+  constexpr double v() const noexcept { return W[1]; }
+  constexpr double w() const noexcept { return W[2]; }
+
+  double &u() noexcept { return W[0]; }
+  double &v() noexcept { return W[1]; }
+  double &w() noexcept { return W[2]; }
+};  // Wind
 
 template <VMRType X>
 class VMR {
@@ -324,34 +364,32 @@ class VMR {
   constexpr VMR() noexcept
       : I(Species::Isotope(Species::Species::FINAL, -1)), R(0) {}
   explicit constexpr VMR(Species::Isotope s, double r) noexcept : I(s), R(r) {}
-  constexpr VMR(const VMR<VMRType::ratio>& r) noexcept : I(r.I), R(r.R) {
+  constexpr VMR(const VMR<VMRType::ratio> &r) noexcept : I(r.I), R(r.R) {
     r2self();
   }
 
   constexpr Species::Species Species() const noexcept { return I.Spec(); }
   constexpr double value() const noexcept { return R; }
-  double& value() noexcept { return R; }
+  double &value() noexcept { return R; }
   constexpr Species::Isotope isot() const noexcept { return I; }
   void isot(Species::Isotope i) noexcept { I = i; }
-  VMR& operator*=(double x) noexcept {
+  VMR &operator*=(double x) noexcept {
     R *= x;
     return *this;
   }
-  VMR& operator+=(VMR x) noexcept {
+  VMR &operator+=(VMR x) noexcept {
     if (x.I == I) {
       R += x.R;
     }
     return *this;
   }
-  friend std::ostream& operator<<(std::ostream& os, VMR r) {
+  friend std::ostream &operator<<(std::ostream &os, VMR r) {
     return os << r.I << ' ' << r.R;
   }
-  friend std::istream& operator>>(std::istream& is, VMR& r) {
+  friend std::istream &operator>>(std::istream &is, VMR &r) {
     return is >> r.I >> r.R;
   }
 };  // VMR
-
-ENUMCLASS(DistanceType, char, meter)
 
 template <DistanceType X>
 class Distance final {
@@ -362,14 +400,11 @@ class Distance final {
   }
 
  public:
-  constexpr Distance(const Distance<DistanceType::meter>& d) noexcept
+  constexpr Distance(const Distance<DistanceType::meter> &d) noexcept
       : val(d.value()) {
     d2self();
   }
 };  // Distance
-
-ENUMCLASS(AltitudeType, char,
-          meter)  // AltType
 
 template <AltitudeType X>
 class Altitude final {
@@ -380,14 +415,11 @@ class Altitude final {
   }
 
  public:
-  constexpr Altitude(const Altitude<AltitudeType::meter>& z) noexcept
+  constexpr Altitude(const Altitude<AltitudeType::meter> &z) noexcept
       : val(z.value()) {
     m2self();
   }
 };  // Altitude
-
-ENUMCLASS(LengthType, char,
-          meter)  // AltType
 
 template <LengthType X>
 class Length final {
@@ -398,14 +430,11 @@ class Length final {
   }
 
  public:
-  constexpr Length(const Length<LengthType::meter>& z) noexcept
+  constexpr Length(const Length<LengthType::meter> &z) noexcept
       : val(z.value()) {
     m2self();
   }
 };  // Length
-
-ENUMCLASS(CoordinateType, char, deg, lon, lat,
-          rad)  // AltType
 
 template <CoordinateType X>
 class Coordinate final {
@@ -423,17 +452,17 @@ class Coordinate final {
   }
 
  public:
-  constexpr Coordinate(const Coordinate<CoordinateType::deg>& d) noexcept
+  constexpr Coordinate(const Coordinate<CoordinateType::deg> &d) noexcept
       : val(d.value()) {
     deg2self();
   }
-  constexpr Coordinate(const Coordinate<CoordinateType::lon>& d) noexcept
+  constexpr Coordinate(const Coordinate<CoordinateType::lon> &d) noexcept
       : val(d.value()) {
     deg2self();
     while (val >= 360) val -= 360;
     while (val < 0) val += 360;
   }
-  constexpr Coordinate(const Coordinate<CoordinateType::lat>& d) noexcept
+  constexpr Coordinate(const Coordinate<CoordinateType::lat> &d) noexcept
       : val(d.value()) {
     deg2self();
     if (val > 90)
@@ -441,14 +470,11 @@ class Coordinate final {
     else if (val < -90)
       val = -90;
   }
-  constexpr Coordinate(const Coordinate<CoordinateType::rad>& d) noexcept
+  constexpr Coordinate(const Coordinate<CoordinateType::rad> &d) noexcept
       : val(Conversion::rad2deg(d.value())) {
     deg2self();
   }
 };  // Coordinate
-
-ENUMCLASS(FrequencyType, char, Freq, Kayser,
-          Wavelength)  // FrequencyType
 
 template <FrequencyType X>
 class Frequency final {
@@ -465,22 +491,19 @@ class Frequency final {
   }
 
  public:
-  constexpr Frequency(const Frequency<FrequencyType::Freq>& f) noexcept
+  constexpr Frequency(const Frequency<FrequencyType::Freq> &f) noexcept
       : val(f.value()) {
     f2self();
   }
-  constexpr Frequency(const Frequency<FrequencyType::Kayser>& f) noexcept
+  constexpr Frequency(const Frequency<FrequencyType::Kayser> &f) noexcept
       : val(Conversion::kaycm2freq(f.value())) {
     f2self();
   }
-  constexpr Frequency(const Frequency<FrequencyType::Wavelength>& f) noexcept
+  constexpr Frequency(const Frequency<FrequencyType::Wavelength> &f) noexcept
       : val(Conversion::wavelen2freq(f.value())) {
     f2self();
   }
 };  // Frequency
-
-ENUMCLASS(AreaType, char, m2,
-          cm2)  // AreaType
 
 template <FrequencyType X, AreaType Y>
 class LineStrength {
@@ -488,26 +511,23 @@ class LineStrength {
   void hzm22self() noexcept {
     if constexpr (X == FrequencyType::Freq and Y == AreaType::m2) {
     }
-    if constexpr (X == FrequencyType::Kayser and Y == AreaType::m2) {
-      val = Conversion::arts2hitran_linestrength(val);
+    if constexpr (X == FrequencyType::Kayser and Y == AreaType::cm2) {
+      val = Conversion::si2cgs_linestrength(val);
     }
   }
 
  public:
   constexpr LineStrength(
-      const LineStrength<FrequencyType::Freq, AreaType::m2>& ls) noexcept
+      const LineStrength<FrequencyType::Freq, AreaType::m2> &ls) noexcept
       : val(ls.value()) {
     hzm22self();
   }
   constexpr LineStrength(
-      const LineStrength<FrequencyType::Kayser, AreaType::cm2>& ls) noexcept
-      : val(Conversion::hitran2arts_linestrength(ls.value())) {
+      const LineStrength<FrequencyType::Kayser, AreaType::cm2> &ls) noexcept
+      : val(Conversion::cgs2si_linestrength(ls.value())) {
     hzm22self();
   }
 };  // LineStrength
-
-ENUMCLASS(EnergyType, char, Joule,
-          invcm)  // EnergyType
 
 template <EnergyType X>
 class Energy {
@@ -516,17 +536,17 @@ class Energy {
     if constexpr (X == EnergyType::Joule) {
     }
     if constexpr (X == EnergyType::invcm) {
-      val = Conversion::arts2hitran_energy(val);
+      val = Conversion::si2cgs_energy(val);
     }
   }
 
  public:
-  constexpr Energy(const Energy<EnergyType::Joule>& e) noexcept
+  constexpr Energy(const Energy<EnergyType::Joule> &e) noexcept
       : val(e.value()) {
     hzm22self();
   }
-  constexpr Energy(const Energy<EnergyType::invcm>& e) noexcept
-      : val(Conversion::hitran2arts_energy(e.value())) {
+  constexpr Energy(const Energy<EnergyType::invcm> &e) noexcept
+      : val(Conversion::cgs2si_energy(e.value())) {
     hzm22self();
   }
 };  // Energy
@@ -538,24 +558,85 @@ class PressureBroadening {
     if constexpr (X == FrequencyType::Freq and Y == PressureType::Pa) {
     }
     if constexpr (X == FrequencyType::Kayser and Y == PressureType::Atm) {
-      val = Conversion::arts2hitran_broadening(val);
+      val = Conversion::si2cgs_broadening(val);
     }
   }
 
  public:
   constexpr PressureBroadening(
-      const PressureBroadening<FrequencyType::Freq, PressureType::Pa>&
-          pb) noexcept
+      const PressureBroadening<FrequencyType::Freq, PressureType::Pa>
+          &pb) noexcept
       : val(pb.value()) {
     hzpa2self();
   }
   constexpr PressureBroadening(
-      const PressureBroadening<FrequencyType::Kayser, PressureType::Atm>&
-          pb) noexcept
-      : val(Conversion::hitran2arts_broadening(pb.value())) {
+      const PressureBroadening<FrequencyType::Kayser, PressureType::Atm>
+          &pb) noexcept
+      : val(Conversion::cgs2si_broadening(pb.value())) {
     hzpa2self();
   }
 };  // PressureBroadening
+
+template <PowerType X, SphericalAngleType Y, AreaType Z, FrequencyType W>
+class SpectralRadiance {
+  SCALAR(SpectralRadiance)
+  void sr2self() noexcept {
+    if constexpr (X == PowerType::W and Y == SphericalAngleType::Steradian and
+                  Z == AreaType::m2 and W == FrequencyType::Freq) {
+    }
+  }
+
+ public:
+  constexpr SpectralRadiance(
+      const SpectralRadiance<PowerType::W, SphericalAngleType::Steradian,
+                             AreaType::m2, FrequencyType::Freq> &sr) noexcept
+      : val(sr.value()) {
+    static_assert(X == PowerType::W and Y == SphericalAngleType::Steradian and
+                  Z == AreaType::m2 and W == FrequencyType::Freq);
+  }
+  constexpr SpectralRadiance(
+      const SpectralRadiance<PowerType::T, SphericalAngleType::Steradian,
+                             AreaType::m2, FrequencyType::Freq> &sr) noexcept
+      : val(sr.value()) {
+    static_assert(X == PowerType::T and Y == SphericalAngleType::Steradian and
+                  Z == AreaType::m2 and W == FrequencyType::Freq);
+  }
+};
+
+template <DecayType X>
+class Decay final {
+  SCALAR(Decay)
+  void m2self() noexcept {
+    if constexpr (X == DecayType::ExponentialPerSecond) {
+    }
+  }
+
+ public:
+  constexpr Decay(const Decay<DecayType::ExponentialPerSecond> &d) noexcept
+      : val(d.value()) {
+    m2self();
+  }
+};  // Decay
+
+template <AngleType X>
+class Angle final {
+  SCALAR(Angle)
+  void m2self() noexcept {
+    if constexpr (X == AngleType::deg) {
+    } else if constexpr (X == AngleType::rad) {
+      val = Conversion::deg2rad(val);
+    }
+  }
+
+ public:
+  constexpr Angle(const Angle<AngleType::deg> &a) noexcept : val(a.value()) {
+    m2self();
+  }
+  constexpr Angle(const Angle<AngleType::rad> &a) noexcept
+      : val(Conversion::rad2deg(a.value())) {
+    m2self();
+  }
+};  // Decay
 
 #undef SCALAR
 
