@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <RADCTRL>
 <CTS210 name="ACS Flight Model" host="/dev/ttyACM0" tcp="-1" udp="-1" Nboards="4" mirror="false">
-1024 4000e6 8000e6
-1024 4000e6 8000e6
+1024 4400e6 8800e6
+1024 4400e6 8800e6
 2065 1 2
 2065 1 2
 </CTS210>
