@@ -13,6 +13,10 @@
 #include "python_interface.h"
 #include "timeclass.h"
 
+#if HAS_ACS2020
+  #include "ACS2020-FM/acs_2020.h"
+#endif
+
 namespace Instrument {
 namespace Spectrometer {
 struct Controller {
