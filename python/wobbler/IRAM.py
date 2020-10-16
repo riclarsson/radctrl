@@ -53,6 +53,7 @@ class wobbler:
         self._serial=serial.Serial(self._device,self._baud,timeout=2)
 
         # Set the command to Go to Initialization + position
+        self._send('PC100000')
         self._send("GI+")
 
         # No position is set so wait for a constant time...
