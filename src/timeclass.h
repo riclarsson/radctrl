@@ -139,10 +139,12 @@ inline std::ostream &operator<<(std::ostream &os, const TimeStep &dt) {
   return os << dt.count() << " seconds";
 }
 
+/*! Sleeps for the given number of seconds */
 inline void Sleep(double duration) {
   std::this_thread::sleep_for(TimeStep(duration));
 }
 
+/*! Sleeps until the given time */
 inline void Sleep(Time t) { std::this_thread::sleep_until(t.mtime); }
 
 #endif  // timeclass_h

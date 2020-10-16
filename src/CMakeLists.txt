@@ -101,6 +101,11 @@ add_library (backend STATIC
              backend.cpp
              )
 target_link_libraries(backend PUBLIC files gui python math)
+if (ACS2020)
+  target_link_libraries(backend PUBLIC fm_acs)
+  target_compile_definitions(backend PRIVATE HAS_ACS2020=1)
+endif()
+
 ########################################################################################
 
 ########################################################################################
@@ -352,3 +357,17 @@ target_link_libraries(test_forward PUBLIC forward)
 add_executable(test_arts test_arts.cpp)
 target_link_libraries(test_arts PUBLIC arts_interface)
 ########################################################################################
+
+########################################################################################
+########################################################################################
+########################################################################################
+################################################################################ Special
+########################################################################################
+########################################################################################
+########################################################################################
+if (ACS2020)
+  add_subdirectory(ACS2020-FM)
+  message(STATUS "Creating ACS2020 (use -DACS2020=0 when running CMake to disable)")
+else()
+  message(STATUS "No ACS2020 (use -DACS2020=1 when running CMake to enable if you have the files)")
+endif()
