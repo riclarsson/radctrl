@@ -53,7 +53,6 @@
 *> SSR   10               List types on next line if 0 < NTYPES < 10
 *> SSK   10               List types on next line if 0 < NTYPES < 10
 *> SSA   10               List types on next line if 0 < NTYPES < 10
-*> SS2   10               List types on next line if 0 < NTYPES < 10
 *> SSP   10               List types on next line if 0 < NTYPES < 10
 *> STR   18               List types on next line if 0 < NTYPES < 18
 *> STP   18               List types on next line if 0 < NTYPES < 18
@@ -68,8 +67,6 @@
 *> SEQ
 *> SQT
 *> SQX
-*> STS
-*> SHH
 *> \endverbatim
 *
 *  Parameters:
@@ -104,17 +101,17 @@
 *> \author Univ. of Colorado Denver
 *> \author NAG Ltd.
 *
-*> \date November 2019
+*> \date April 2012
 *
 *> \ingroup single_lin
 *
 *  =====================================================================
       PROGRAM SCHKAA
 *
-*  -- LAPACK test routine (version 3.9.0) --
+*  -- LAPACK test routine (version 3.7.0) --
 *  -- LAPACK is a software package provided by Univ. of Tennessee,    --
 *  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
-*     November 2019
+*     April 2012
 *
 *  =====================================================================
 *
@@ -161,14 +158,13 @@
 *     ..
 *     .. External Subroutines ..
       EXTERNAL           ALAREQ, SCHKEQ, SCHKGB, SCHKGE, SCHKGT, SCHKLQ,
-     $                   SCHKORHR_COL, SCHKPB, SCHKPO, SCHKPS, SCHKPP,
-     $                   SCHKPT, SCHKQ3, SCHKQL, SCHKQR, SCHKRQ, SCHKSP,
-     $                   SCHKSY, SCHKSY_ROOK, SCHKSY_RK, SCHKSY_AA,
-     $                   SCHKTB, SCHKTP, SCHKTR, SCHKTZ, SDRVGB, SDRVGE,
-     $                   SDRVGT, SDRVLS, SDRVPB, SDRVPO, SDRVPP, SDRVPT,
-     $                   SDRVSP, SDRVSY, SDRVSY_ROOK, SDRVSY_RK,
-     $                   SDRVSY_AA, ILAVER, SCHKLQTP, SCHKQRT, SCHKQRTP,
-     $                   SCHKLQT, SCHKTSQR
+     $                   SCHKPB, SCHKPO, SCHKPS, SCHKPP, SCHKPT, SCHKQ3,
+     $                   SCHKQL, SCHKQR, SCHKRQ, SCHKSP, SCHKSY,
+     $                   SCHKSY_ROOK, SCHKSY_RK, SCHKSY_AA, SCHKTB,
+     $                   SCHKTP, SCHKTR, SCHKTZ, SDRVGB, SDRVGE, SDRVGT,
+     $                   SDRVLS, SDRVPB, SDRVPO, SDRVPP, SDRVPT, SDRVSP,
+     $                   SDRVSY, SDRVSY_ROOK, SDRVSY_RK, SDRVSY_AA,
+     $                   ILAVER, SCHKLQTP, SCHKQRT, SCHKQRTP
 *     ..
 *     .. Scalars in Common ..
       LOGICAL            LERR, OK
@@ -675,7 +671,7 @@
 *
 *        SK:  symmetric indefinite matrices,
 *             with bounded Bunch-Kaufman (rook) pivoting algorithm,
-*             different matrix storage format than SR path version.
+*             differnet matrix storage format than SR path version.
 *
          NTYPES = 10
          CALL ALAREQ( PATH, NMATS, DOTYPE, NTYPES, NIN, NOUT )
@@ -718,34 +714,6 @@
 *
          IF( TSTDRV ) THEN
             CALL SDRVSY_AA( DOTYPE, NN, NVAL, NRHS, THRESH, TSTERR,
-     $                         LDA, A( 1, 1 ), A( 1, 2 ), A( 1, 3 ),
-     $                         B( 1, 1 ), B( 1, 2 ), B( 1, 3 ),
-     $                         WORK, RWORK, IWORK, NOUT )
-        ELSE
-           WRITE( NOUT, FMT = 9988 )PATH
-        END IF
-*
-      ELSE IF( LSAMEN( 2, C2, 'S2' ) ) THEN
-*
-*        SA:  symmetric indefinite matrices,
-*             with partial (Aasen's) pivoting algorithm
-*
-         NTYPES = 10
-         CALL ALAREQ( PATH, NMATS, DOTYPE, NTYPES, NIN, NOUT )
-*
-         IF( TSTCHK ) THEN
-            CALL SCHKSY_AA_2STAGE( DOTYPE, NN, NVAL, NNB2, NBVAL2,
-     $                         NNS, NSVAL, THRESH, TSTERR, LDA,
-     $                         A( 1, 1 ), A( 1, 2 ), A( 1, 3 ),
-     $                         B( 1, 1 ), B( 1, 2 ), B( 1, 3 ),
-     $                         WORK, RWORK, IWORK, NOUT )
-         ELSE
-            WRITE( NOUT, FMT = 9989 )PATH
-         END IF
-*
-         IF( TSTDRV ) THEN
-            CALL SDRVSY_AA_2STAGE(
-     $                         DOTYPE, NN, NVAL, NRHS, THRESH, TSTERR,
      $                         LDA, A( 1, 1 ), A( 1, 2 ), A( 1, 3 ),
      $                         B( 1, 1 ), B( 1, 2 ), B( 1, 3 ),
      $                         WORK, RWORK, IWORK, NOUT )
@@ -1005,17 +973,6 @@
      $                     NBVAL, NOUT )
          ELSE
             WRITE( NOUT, FMT = 9989 )PATH
-         END IF
-*
-      ELSE IF( LSAMEN( 2, C2, 'HH' ) ) THEN
-*
-*        HH:  Householder reconstruction for tall-skinny matrices
-*
-         IF( TSTCHK ) THEN
-            CALL SCHKORHR_COL( THRESH, TSTERR, NM, MVAL, NN, NVAL, NNB,
-     $                         NBVAL, NOUT )
-         ELSE
-            WRITE( NOUT, FMT = 9989 ) PATH
          END IF
 *
       ELSE

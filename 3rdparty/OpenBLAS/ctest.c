@@ -60,14 +60,6 @@ OS_FREEBSD
 OS_NETBSD
 #endif
 
-#if defined(__OpenBSD__)
-OS_OPENBSD
-#endif
-
-#if defined(__DragonFly__)
-OS_DRAGONFLY
-#endif
-
 #if defined(__sun)
 OS_SUNOS
 #endif
@@ -101,10 +93,6 @@ OS_INTERIX
 OS_LINUX
 #endif
 
-#if defined(__HAIKU__)
-OS_HAIKU
-#endif
-
 #if defined(__i386) || defined(_X86)
 ARCH_X86
 #endif
@@ -113,7 +101,7 @@ ARCH_X86
 ARCH_X86_64
 #endif
 
-#if defined(__powerpc___) || defined(__PPC__) || defined(_POWER) || defined(__POWERPC__)
+#if defined(__powerpc___) || defined(__PPC__) || defined(_POWER)
 ARCH_POWER
 #endif
 
@@ -153,6 +141,3 @@ ARCH_ARM
 ARCH_ARM64
 #endif
 
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L)
-HAVE_C11
-#endif

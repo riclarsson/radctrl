@@ -12,7 +12,6 @@
 #define	ISMAX_K			ismax_k
 #define	ISMIN_K			ismin_k
 #define	SASUM_K			sasum_k
-#define	SSUM_K			ssum_k
 #define	SAXPYU_K		saxpy_k
 #define	SAXPYC_K		saxpy_k
 #define	SCOPY_K			scopy_k
@@ -44,10 +43,6 @@
 
 #define SSYMV_THREAD_U		ssymv_thread_U
 #define SSYMV_THREAD_L		ssymv_thread_L
-
-
-#define SGEMM_DIRECT_PERFORMANT    sgemm_direct_performant
-#define SGEMM_DIRECT		sgemm_direct
 
 #define	SGEMM_ONCOPY		sgemm_oncopy
 #define	SGEMM_OTCOPY		sgemm_otcopy
@@ -175,7 +170,6 @@
 #define	ISMAX_K			gotoblas -> ismax_k
 #define	ISMIN_K			gotoblas -> ismin_k
 #define	SASUM_K			gotoblas -> sasum_k
-#define	SSUM_K			gotoblas -> ssum_k
 #define	SAXPYU_K		gotoblas -> saxpy_k
 #define	SAXPYC_K		gotoblas -> saxpy_k
 #define	SCOPY_K			gotoblas -> scopy_k
@@ -207,14 +201,6 @@
 
 #define SSYMV_THREAD_U		ssymv_thread_U
 #define SSYMV_THREAD_L		ssymv_thread_L
-
-#ifdef ARCH_X86_64
-#define SGEMM_DIRECT_PERFORMANT gotoblas -> sgemm_direct_performant
-#define  SGEMM_DIRECT		gotoblas -> sgemm_direct
-#else
-#define SGEMM_DIRECT_PERFORMANT    sgemm_direct_performant
-#define  SGEMM_DIRECT		sgemm_direct
-#endif
 
 #define	SGEMM_ONCOPY		gotoblas -> sgemm_oncopy
 #define	SGEMM_OTCOPY		gotoblas -> sgemm_otcopy

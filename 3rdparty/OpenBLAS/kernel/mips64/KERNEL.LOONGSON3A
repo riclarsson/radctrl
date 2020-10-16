@@ -63,7 +63,6 @@ ZTRSMKERNEL_LT	= ../generic/trsm_kernel_LT.c
 ZTRSMKERNEL_RN	= ../generic/trsm_kernel_RN.c
 ZTRSMKERNEL_RT	= ../generic/trsm_kernel_RT.c
 
-DSDOTKERNEL     = ../mips/dot.c
 
 
 

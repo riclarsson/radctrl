@@ -62,11 +62,6 @@ BLASLONG gemm_offset_b = DEFAULT_GEMM_OFFSET_B;
 BLASLONG gemm_offset_b = GEMM_OFFSET_B;
 #endif
 
-#if SHGEMM_P == shgemm_p
-BLASLONG shgemm_p = DEFAULT_GEMM_P;
-#else
-BLASLONG shgemm_p = SHGEMM_P;
-#endif
 #if SGEMM_P == sgemm_p
 BLASLONG sgemm_p = DEFAULT_GEMM_P;
 #else
@@ -88,11 +83,6 @@ BLASLONG zgemm_p = DEFAULT_GEMM_P;
 BLASLONG zgemm_p = ZGEMM_P;
 #endif
 
-#if SHGEMM_Q == shgemm_q
-BLASLONG shgemm_q = DEFAULT_GEMM_Q;
-#else
-BLASLONG shgemm_q = SHGEMM_Q;
-#endif
 #if SGEMM_Q == sgemm_q
 BLASLONG sgemm_q = DEFAULT_GEMM_Q;
 #else
@@ -114,11 +104,6 @@ BLASLONG zgemm_q = DEFAULT_GEMM_Q;
 BLASLONG zgemm_q = ZGEMM_Q;
 #endif
 
-#if SHGEMM_R == shgemm_r
-BLASLONG shgemm_r = DEFAULT_GEMM_R;
-#else
-BLASLONG shgemm_r = SHGEMM_R;
-#endif
 #if SGEMM_R == sgemm_r
 BLASLONG sgemm_r = DEFAULT_GEMM_R;
 #else
@@ -180,10 +165,9 @@ int get_L2_size(void){
   int eax, ebx, ecx, edx;
 
 #if defined(ATHLON) || defined(OPTERON) || defined(BARCELONA) || defined(BOBCAT) || defined(BULLDOZER) || \
-    defined(CORE_PRESCOTT) || defined(CORE_CORE2)       || defined(PENRYN) || defined(DUNNINGTON) || \
-    defined(CORE_NEHALEM)  || defined(CORE_SANDYBRIDGE) || defined(ATOM)   || defined(GENERIC)    || \
-    defined(PILEDRIVER)    || defined(HASWELL)          || defined(STEAMROLLER) || defined(EXCAVATOR) || \
-    defined(ZEN)           || defined(SKYLAKEX)         || defined(COOPERLAKE)
+    defined(CORE_PRESCOTT) || defined(CORE_CORE2) || defined(PENRYN) || defined(DUNNINGTON) || \
+    defined(CORE_NEHALEM) || defined(CORE_SANDYBRIDGE) || defined(ATOM) || defined(GENERIC) || \
+    defined(PILEDRIVER) || defined(HASWELL) || defined(STEAMROLLER) || defined(EXCAVATOR) || defined(ZEN)
 
   cpuid(0x80000006, &eax, &ebx, &ecx, &edx);
 
@@ -267,9 +251,7 @@ int get_L2_size(void){
 void blas_set_parameter(void){
 
   int factor;
-#if defined(BULLDOZER) || defined(PILEDRIVER)  || defined(SANDYBRIDGE) || defined(NEHALEM) || \
-    defined(HASWELL)   || defined(STEAMROLLER) || defined(EXCAVATOR)   || defined(ZEN)     || \
-    defined(SKYLAKEX)  || defined(COOPERLAKE)
+#if defined(BULLDOZER) || defined(PILEDRIVER) || defined(SANDYBRIDGE) || defined(NEHALEM) || defined(HASWELL) || defined(STEAMROLLER) || defined(EXCAVATOR) || defined(ZEN)
   int size = 16;
 #else
   int size = get_L2_size();
@@ -615,7 +597,6 @@ void blas_set_parameter(void){
 
   size = BITMASK(cpuid3, 16, 0xff);
 
-  shgemm_p = 192 * (size + 1);
   sgemm_p = 192 * (size + 1);
   dgemm_p =  96 * (size + 1);
   cgemm_p =  96 * (size + 1);
@@ -629,7 +610,6 @@ void blas_set_parameter(void){
   xgemm_p =  16 * (size + 1);
 #endif
 
-  shgemm_r = (((BUFFER_SIZE - ((SHGEMM_P * SHGEMM_Q *  4 + GEMM_OFFSET_A + GEMM_ALIGN) & ~GEMM_ALIGN)) / (SHGEMM_Q *  4)) - 15) & ~15;
   sgemm_r = (((BUFFER_SIZE - ((SGEMM_P * SGEMM_Q *  4 + GEMM_OFFSET_A + GEMM_ALIGN) & ~GEMM_ALIGN)) / (SGEMM_Q *  4)) - 15) & ~15;
   dgemm_r = (((BUFFER_SIZE - ((DGEMM_P * DGEMM_Q *  8 + GEMM_OFFSET_A + GEMM_ALIGN) & ~GEMM_ALIGN)) / (DGEMM_Q *  8)) - 15) & ~15;
   cgemm_r = (((BUFFER_SIZE - ((CGEMM_P * CGEMM_Q *  8 + GEMM_OFFSET_A + GEMM_ALIGN) & ~GEMM_ALIGN)) / (CGEMM_Q *  8)) - 15) & ~15;
@@ -750,8 +730,35 @@ void blas_set_parameter(void){
 
 #if defined(ARCH_ARM64)
 
+#if defined(VULCAN) || defined(THUNDERX2T99)
+unsigned long dgemm_prefetch_size_a;
+unsigned long dgemm_prefetch_size_b;
+unsigned long dgemm_prefetch_size_c;
+#endif
+
 void blas_set_parameter(void)
 {
+#if defined(VULCAN) || defined(THUNDERX2T99)
+  dgemm_p = 160;
+  dgemm_q = 128;
+  dgemm_r = 4096;
+
+  sgemm_p = 128;
+  sgemm_q = 352;
+  sgemm_r = 4096;
+
+  cgemm_p = 128;
+  cgemm_q = 224;
+  cgemm_r = 4096;
+
+  zgemm_p = 128;
+  zgemm_q = 112;
+  zgemm_r = 4096;
+
+  dgemm_prefetch_size_a = 3584;
+  dgemm_prefetch_size_b = 512;
+  dgemm_prefetch_size_c = 128;
+#endif
 }
 
 #endif

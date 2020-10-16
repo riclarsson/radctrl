@@ -47,105 +47,6 @@ typedef struct {
   int dtb_entries;
   int offsetA, offsetB, align;
 
-#ifdef BUILD_HALF
-  int shgemm_p, shgemm_q, shgemm_r;
-  int shgemm_unroll_m, shgemm_unroll_n, shgemm_unroll_mn;
-
-  void   (*shstobf16_k) (BLASLONG, float    *, BLASLONG, bfloat16 *, BLASLONG);
-  void   (*shdtobf16_k) (BLASLONG, double   *, BLASLONG, bfloat16 *, BLASLONG);
-  void   (*sbf16tos_k)  (BLASLONG, bfloat16 *, BLASLONG, float    *, BLASLONG);
-  void   (*dbf16tod_k)  (BLASLONG, bfloat16 *, BLASLONG, double   *, BLASLONG);
-
-  float  (*shamax_k) (BLASLONG, float *, BLASLONG);
-  float  (*shamin_k) (BLASLONG, float *, BLASLONG);
-  float  (*shmax_k)  (BLASLONG, float *, BLASLONG);
-  float  (*shmin_k)  (BLASLONG, float *, BLASLONG);
-BLASLONG (*ishamax_k)(BLASLONG, float *, BLASLONG);
-BLASLONG (*ishamin_k)(BLASLONG, float *, BLASLONG);
-BLASLONG (*ishmax_k) (BLASLONG, float *, BLASLONG);
-BLASLONG (*ishmin_k) (BLASLONG, float *, BLASLONG);
-
-  float  (*shnrm2_k) (BLASLONG, float *, BLASLONG);
-  float  (*shasum_k) (BLASLONG, float *, BLASLONG);
-  float  (*shsum_k)  (BLASLONG, float *, BLASLONG);
-  int    (*shcopy_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG);
-  float  (*shdot_k)  (BLASLONG, bfloat16 *, BLASLONG, bfloat16 *, BLASLONG);
-  double (*dshdot_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG);
-
-  int    (*shrot_k)  (BLASLONG, float *, BLASLONG, float *, BLASLONG, float, float);
-
-  int    (*shaxpy_k) (BLASLONG, BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float *, BLASLONG);
-  int    (*shscal_k) (BLASLONG, BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float *, BLASLONG);
-  int    (*shswap_k) (BLASLONG, BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float *, BLASLONG);
-
-  int    (*shgemv_n) (BLASLONG, BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float *, BLASLONG, float *);
-  int    (*shgemv_t) (BLASLONG, BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float *, BLASLONG, float *);
-  int    (*shger_k)  (BLASLONG, BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float *, BLASLONG, float *);
-
-  int    (*shsymv_L) (BLASLONG, BLASLONG, float,  float  *, BLASLONG, float  *, BLASLONG, float  *, BLASLONG, float *);
-  int    (*shsymv_U) (BLASLONG, BLASLONG, float,  float  *, BLASLONG, float  *, BLASLONG, float  *, BLASLONG, float *);
-
-  int    (*shgemm_kernel   )(BLASLONG, BLASLONG, BLASLONG, float, bfloat16 *, bfloat16 *, float *, BLASLONG);
-  int    (*shgemm_beta     )(BLASLONG, BLASLONG, BLASLONG, float, bfloat16 *, BLASLONG, bfloat16 *, BLASLONG, float *, BLASLONG);
-
-  int    (*shgemm_incopy   )(BLASLONG, BLASLONG, bfloat16 *, BLASLONG, bfloat16 *);
-  int    (*shgemm_itcopy   )(BLASLONG, BLASLONG, bfloat16 *, BLASLONG, bfloat16 *);
-  int    (*shgemm_oncopy   )(BLASLONG, BLASLONG, bfloat16 *, BLASLONG, bfloat16 *);
-  int    (*shgemm_otcopy   )(BLASLONG, BLASLONG, bfloat16 *, BLASLONG, bfloat16 *);
-
-  int    (*shtrsm_kernel_LN)(BLASLONG, BLASLONG, BLASLONG, float, float *, float *, float *, BLASLONG, BLASLONG);
-  int    (*shtrsm_kernel_LT)(BLASLONG, BLASLONG, BLASLONG, float, float *, float *, float *, BLASLONG, BLASLONG);
-  int    (*shtrsm_kernel_RN)(BLASLONG, BLASLONG, BLASLONG, float, float *, float *, float *, BLASLONG, BLASLONG);
-  int    (*shtrsm_kernel_RT)(BLASLONG, BLASLONG, BLASLONG, float, float *, float *, float *, BLASLONG, BLASLONG);
-
-  int    (*shtrsm_iunucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_iunncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_iutucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_iutncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_ilnucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_ilnncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_iltucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_iltncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_ounucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_ounncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_outucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_outncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_olnucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_olnncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_oltucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-  int    (*shtrsm_oltncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, float *);
-
-  int    (*shtrmm_kernel_RN)(BLASLONG, BLASLONG, BLASLONG, float, float *, float *, float *, BLASLONG, BLASLONG);
-  int    (*shtrmm_kernel_RT)(BLASLONG, BLASLONG, BLASLONG, float, float *, float *, float *, BLASLONG, BLASLONG);
-  int    (*shtrmm_kernel_LN)(BLASLONG, BLASLONG, BLASLONG, float, float *, float *, float *, BLASLONG, BLASLONG);
-  int    (*shtrmm_kernel_LT)(BLASLONG, BLASLONG, BLASLONG, float, float *, float *, float *, BLASLONG, BLASLONG);
-
-  int    (*shtrmm_iunucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_iunncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_iutucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_iutncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_ilnucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_ilnncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_iltucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_iltncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_ounucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_ounncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_outucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_outncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_olnucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_olnncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_oltucopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shtrmm_oltncopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-
-  int    (*shsymm_iutcopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shsymm_iltcopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shsymm_outcopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-  int    (*shsymm_oltcopy)(BLASLONG, BLASLONG, float *, BLASLONG, BLASLONG, BLASLONG, float *);
-
-  int	 (*shneg_tcopy)   (BLASLONG, BLASLONG, float *, BLASLONG, float *);
-  int    (*shlaswp_ncopy) (BLASLONG, BLASLONG, BLASLONG, float *, BLASLONG, blasint *, float *);
-
-#endif
   int sgemm_p, sgemm_q, sgemm_r;
   int sgemm_unroll_m, sgemm_unroll_n, sgemm_unroll_mn;
 
@@ -162,7 +63,6 @@ BLASLONG (*ismin_k) (BLASLONG, float *, BLASLONG);
 
   float  (*snrm2_k) (BLASLONG, float *, BLASLONG);
   float  (*sasum_k) (BLASLONG, float *, BLASLONG);
-  float  (*ssum_k)  (BLASLONG, float *, BLASLONG);
   int    (*scopy_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG);
   float  (*sdot_k)  (BLASLONG, float *, BLASLONG, float *, BLASLONG);
   double (*dsdot_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG);
@@ -180,14 +80,8 @@ BLASLONG (*ismin_k) (BLASLONG, float *, BLASLONG);
   int    (*ssymv_L) (BLASLONG, BLASLONG, float,  float  *, BLASLONG, float  *, BLASLONG, float  *, BLASLONG, float *);
   int    (*ssymv_U) (BLASLONG, BLASLONG, float,  float  *, BLASLONG, float  *, BLASLONG, float  *, BLASLONG, float *);
 
-#ifdef ARCH_X86_64
-  void (*sgemm_direct) (BLASLONG, BLASLONG, BLASLONG, float *, BLASLONG , float *, BLASLONG , float * , BLASLONG);
-  int  (*sgemm_direct_performant) (BLASLONG M, BLASLONG N, BLASLONG K);
-#endif
-  
   int    (*sgemm_kernel   )(BLASLONG, BLASLONG, BLASLONG, float, float *, float *, float *, BLASLONG);
   int    (*sgemm_beta     )(BLASLONG, BLASLONG, BLASLONG, float, float *, BLASLONG, float *, BLASLONG, float  *, BLASLONG);
-
 
   int    (*sgemm_incopy   )(BLASLONG, BLASLONG, float *, BLASLONG, float *);
   int    (*sgemm_itcopy   )(BLASLONG, BLASLONG, float *, BLASLONG, float *);
@@ -260,7 +154,6 @@ BLASLONG (*idmin_k) (BLASLONG, double *, BLASLONG);
 
   double (*dnrm2_k) (BLASLONG, double *, BLASLONG);
   double (*dasum_k) (BLASLONG, double *, BLASLONG);
-  double (*dsum_k)  (BLASLONG, double *, BLASLONG);
   int    (*dcopy_k) (BLASLONG, double *, BLASLONG, double *, BLASLONG);
   double (*ddot_k)  (BLASLONG, double *, BLASLONG, double *, BLASLONG);
   int    (*drot_k)  (BLASLONG, double *, BLASLONG, double *, BLASLONG, double, double);
@@ -352,7 +245,6 @@ BLASLONG (*iqmin_k) (BLASLONG, xdouble *, BLASLONG);
 
  xdouble (*qnrm2_k) (BLASLONG, xdouble *, BLASLONG);
  xdouble (*qasum_k) (BLASLONG, xdouble *, BLASLONG);
- xdouble (*qsum_k)  (BLASLONG, xdouble *, BLASLONG);
   int    (*qcopy_k) (BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG);
  xdouble (*qdot_k)  (BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG);
   int    (*qrot_k)  (BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG, xdouble, xdouble);
@@ -440,10 +332,9 @@ BLASLONG (*icamin_k)(BLASLONG, float *, BLASLONG);
 
   float (*cnrm2_k) (BLASLONG, float *, BLASLONG);
   float (*casum_k) (BLASLONG, float *, BLASLONG);
-  float (*csum_k)  (BLASLONG, float *, BLASLONG);
   int    (*ccopy_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG);
-  openblas_complex_float (*cdotu_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG);
-  openblas_complex_float (*cdotc_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG);
+  float _Complex (*cdotu_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG);
+  float _Complex (*cdotc_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG);
   int    (*csrot_k) (BLASLONG, float *, BLASLONG, float *, BLASLONG, float, float);
 
   int    (*caxpy_k) (BLASLONG, BLASLONG, BLASLONG, float, float, float *, BLASLONG, float *, BLASLONG, float *, BLASLONG);
@@ -604,10 +495,9 @@ BLASLONG (*izamin_k)(BLASLONG, double *, BLASLONG);
 
   double (*znrm2_k) (BLASLONG, double *, BLASLONG);
   double (*zasum_k) (BLASLONG, double *, BLASLONG);
-  double (*zsum_k)  (BLASLONG, double *, BLASLONG);
   int    (*zcopy_k) (BLASLONG, double *, BLASLONG, double *, BLASLONG);
-  openblas_complex_double (*zdotu_k) (BLASLONG, double *, BLASLONG, double *, BLASLONG);
-  openblas_complex_double (*zdotc_k) (BLASLONG, double *, BLASLONG, double *, BLASLONG);
+  double _Complex (*zdotu_k) (BLASLONG, double *, BLASLONG, double *, BLASLONG);
+  double _Complex (*zdotc_k) (BLASLONG, double *, BLASLONG, double *, BLASLONG);
   int    (*zdrot_k) (BLASLONG, double *, BLASLONG, double *, BLASLONG, double, double);
 
   int    (*zaxpy_k) (BLASLONG, BLASLONG, BLASLONG, double, double, double *, BLASLONG, double *, BLASLONG, double *, BLASLONG);
@@ -770,10 +660,9 @@ BLASLONG (*ixamin_k)(BLASLONG, xdouble *, BLASLONG);
 
   xdouble (*xnrm2_k) (BLASLONG, xdouble *, BLASLONG);
   xdouble (*xasum_k) (BLASLONG, xdouble *, BLASLONG);
-  xdouble (*xsum_k) (BLASLONG, xdouble *, BLASLONG);
   int    (*xcopy_k) (BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG);
-  openblas_complex_xdouble (*xdotu_k) (BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG);
-  openblas_complex_xdouble (*xdotc_k) (BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG);
+  xdouble _Complex (*xdotu_k) (BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG);
+  xdouble _Complex (*xdotc_k) (BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG);
   int    (*xqrot_k) (BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG, xdouble, xdouble);
 
   int    (*xaxpy_k) (BLASLONG, BLASLONG, BLASLONG, xdouble, xdouble, xdouble *, BLASLONG, xdouble *, BLASLONG, xdouble *, BLASLONG);
@@ -999,7 +888,7 @@ BLASLONG (*ixamin_k)(BLASLONG, xdouble *, BLASLONG);
   int    (*sgeadd_k) (BLASLONG, BLASLONG, float, float *, BLASLONG, float, float *, BLASLONG); 
   int    (*dgeadd_k) (BLASLONG, BLASLONG, double, double *, BLASLONG, double, double *, BLASLONG); 
   int    (*cgeadd_k) (BLASLONG, BLASLONG, float, float,  float *,  BLASLONG, float, float, float *, BLASLONG); 
-  int    (*zgeadd_k) (BLASLONG, BLASLONG, double, double, double *, BLASLONG, double, double, double *, BLASLONG); 
+  int    (*zgeadd_k) (BLASLONG, BLASLONG, float, double, double *, BLASLONG, double, double, double *, BLASLONG); 
 
 } gotoblas_t;
 
@@ -1011,15 +900,6 @@ extern gotoblas_t *gotoblas;
 #define GEMM_ALIGN	gotoblas -> align
 
 #define HAVE_EX_L2	gotoblas -> exclusive_cache
-
-#ifdef BUILD_HALF
-#define	SHGEMM_P		gotoblas -> shgemm_p
-#define	SHGEMM_Q		gotoblas -> shgemm_q
-#define	SHGEMM_R		gotoblas -> shgemm_r
-#define	SHGEMM_UNROLL_M	gotoblas -> shgemm_unroll_m
-#define	SHGEMM_UNROLL_N	gotoblas -> shgemm_unroll_n
-#define	SHGEMM_UNROLL_MN	gotoblas -> shgemm_unroll_mn
-#endif
 
 #define	SGEMM_P		gotoblas -> sgemm_p
 #define	SGEMM_Q		gotoblas -> sgemm_q
@@ -1096,19 +976,6 @@ extern gotoblas_t *gotoblas;
 #define HAVE_EX_L2	1
 #else
 #define HAVE_EX_L2	0
-#endif
-
-#ifdef BUILD_HALF
-#define	SHGEMM_P		SHGEMM_DEFAULT_P
-#define	SHGEMM_Q		SHGEMM_DEFAULT_Q
-#define	SHGEMM_R		SHGEMM_DEFAULT_R
-#define SHGEMM_UNROLL_M	SHGEMM_DEFAULT_UNROLL_M
-#define SHGEMM_UNROLL_N	SHGEMM_DEFAULT_UNROLL_N
-#ifdef  SHGEMM_DEFAULT_UNROLL_MN
-#define SHGEMM_UNROLL_MN	SHGEMM_DEFAULT_UNROLL_MN
-#else
-#define SHGEMM_UNROLL_MN	MAX((SHGEMM_UNROLL_M), (SHGEMM_UNROLL_N))
-#endif
 #endif
 
 #define	SGEMM_P		SGEMM_DEFAULT_P
@@ -1246,18 +1113,6 @@ extern gotoblas_t *gotoblas;
 #define GEMM_DEFAULT_R		DGEMM_DEFAULT_R
 #define GEMM_DEFAULT_UNROLL_M	DGEMM_DEFAULT_UNROLL_M
 #define GEMM_DEFAULT_UNROLL_N	DGEMM_DEFAULT_UNROLL_N
-#elif defined(HALF)
-#define GEMM_P			SHGEMM_P
-#define GEMM_Q			SHGEMM_Q
-#define GEMM_R			SHGEMM_R
-#define GEMM_UNROLL_M		SHGEMM_UNROLL_M
-#define GEMM_UNROLL_N		SHGEMM_UNROLL_N
-#define GEMM_UNROLL_MN		SHGEMM_UNROLL_MN
-#define GEMM_DEFAULT_P		SHGEMM_DEFAULT_P
-#define GEMM_DEFAULT_Q		SHGEMM_DEFAULT_Q
-#define GEMM_DEFAULT_R		SHGEMM_DEFAULT_R
-#define GEMM_DEFAULT_UNROLL_M	SHGEMM_DEFAULT_UNROLL_M
-#define GEMM_DEFAULT_UNROLL_N	SHGEMM_DEFAULT_UNROLL_N
 #else
 #define GEMM_P			SGEMM_P
 #define GEMM_Q			SGEMM_Q
@@ -1343,32 +1198,28 @@ extern gotoblas_t *gotoblas;
 #define GEMM_THREAD gemm_thread_n
 #endif
 
-#ifndef SHGEMM_DEFAULT_R
-#define SHGEMM_DEFAULT_R (((BUFFER_SIZE - ((SHGEMM_DEFAULT_P * SHGEMM_DEFAULT_Q *  4 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (SHGEMM_DEFAULT_Q *  4) - 15) & ~15UL)
-#endif
-
 #ifndef SGEMM_DEFAULT_R
-#define SGEMM_DEFAULT_R (((BUFFER_SIZE - ((SGEMM_DEFAULT_P * SGEMM_DEFAULT_Q *  4 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (SGEMM_DEFAULT_Q *  4) - 15) & ~15UL)
+#define SGEMM_DEFAULT_R (((BUFFER_SIZE - ((SGEMM_DEFAULT_P * SGEMM_DEFAULT_Q *  4 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (SGEMM_DEFAULT_Q *  4) - 15) & ~15)
 #endif
 
 #ifndef DGEMM_DEFAULT_R
-#define DGEMM_DEFAULT_R (((BUFFER_SIZE - ((DGEMM_DEFAULT_P * DGEMM_DEFAULT_Q *  8 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (DGEMM_DEFAULT_Q *  8) - 15) & ~15UL)
+#define DGEMM_DEFAULT_R (((BUFFER_SIZE - ((DGEMM_DEFAULT_P * DGEMM_DEFAULT_Q *  8 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (DGEMM_DEFAULT_Q *  8) - 15) & ~15)
 #endif
 
 #ifndef QGEMM_DEFAULT_R
-#define QGEMM_DEFAULT_R (((BUFFER_SIZE - ((QGEMM_DEFAULT_P * QGEMM_DEFAULT_Q * 16 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (QGEMM_DEFAULT_Q * 16) - 15) & ~15UL)
+#define QGEMM_DEFAULT_R (((BUFFER_SIZE - ((QGEMM_DEFAULT_P * QGEMM_DEFAULT_Q * 16 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (QGEMM_DEFAULT_Q * 16) - 15) & ~15)
 #endif
 
 #ifndef CGEMM_DEFAULT_R
-#define CGEMM_DEFAULT_R (((BUFFER_SIZE - ((CGEMM_DEFAULT_P * CGEMM_DEFAULT_Q *  8 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (CGEMM_DEFAULT_Q *  8) - 15) & ~15UL)
+#define CGEMM_DEFAULT_R (((BUFFER_SIZE - ((CGEMM_DEFAULT_P * CGEMM_DEFAULT_Q *  8 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (CGEMM_DEFAULT_Q *  8) - 15) & ~15)
 #endif
 
 #ifndef ZGEMM_DEFAULT_R
-#define ZGEMM_DEFAULT_R (((BUFFER_SIZE - ((ZGEMM_DEFAULT_P * ZGEMM_DEFAULT_Q * 16 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (ZGEMM_DEFAULT_Q * 16) - 15) & ~15UL)
+#define ZGEMM_DEFAULT_R (((BUFFER_SIZE - ((ZGEMM_DEFAULT_P * ZGEMM_DEFAULT_Q * 16 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (ZGEMM_DEFAULT_Q * 16) - 15) & ~15)
 #endif
 
 #ifndef XGEMM_DEFAULT_R
-#define XGEMM_DEFAULT_R (((BUFFER_SIZE - ((XGEMM_DEFAULT_P * XGEMM_DEFAULT_Q * 32 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (XGEMM_DEFAULT_Q * 32) - 15) & ~15UL)
+#define XGEMM_DEFAULT_R (((BUFFER_SIZE - ((XGEMM_DEFAULT_P * XGEMM_DEFAULT_Q * 32 + GEMM_DEFAULT_OFFSET_A + GEMM_DEFAULT_ALIGN) & ~GEMM_DEFAULT_ALIGN)) / (XGEMM_DEFAULT_Q * 32) - 15) & ~15)
 #endif
 
 #ifndef SNUMOPT

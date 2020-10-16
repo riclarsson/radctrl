@@ -19,7 +19,7 @@ $nofortran = 0;
 
 $compiler = join(" ", @ARGV);
 $compiler_bin = shift(@ARGV);
- 
+
 # f77 is too ambiguous
 $compiler = "" if $compiler eq "f77";
 
@@ -69,9 +69,9 @@ if ($compiler eq "") {
 	    $bu       = "_";
 	}
 
-	if ($data =~ /GNU/ || $data =~ /GCC/ ) {
+	if ($data =~ /GNU/) {
 
-	    $data =~ /(\d+)\.(\d+).(\d+)/;
+	    $data =~ /(\d)\.(\d).(\d)/;
 	    $major = $1;
 	    $minor = $2;
 
@@ -82,9 +82,6 @@ if ($compiler eq "") {
 		if ($compiler =~ /flang/) {
 		    $vendor = FLANG;
 		    $openmp = "-fopenmp";
-	    } elsif ($compiler =~ /pgf/) {
-		    $vendor = PGI;
-		    $openmp = "-mp";
 		} else {
 		    $vendor = G77;
 		    $openmp = "";
@@ -100,7 +97,7 @@ if ($compiler eq "") {
 
 	if ($data =~ /Intel/) {
 	    $vendor = INTEL;
-	    $openmp = "-fopenmp";
+	    $openmp = "-openmp";
 	}
 
         if ($data =~ /Sun Fortran/) {
@@ -128,15 +125,10 @@ if ($compiler eq "") {
 	    $openmp = "-openmp";
 	}
 
-	# for embedded underscore name, e.g. zho_ge, it may append 2 underscores.
+	# for embeded underscore name, e.g. zho_ge, it may append 2 underscores.
 	$data = `$compiler -O2 -S ftest3.f > /dev/null 2>&1 && cat ftest3.s && rm -f ftest3.s`;
-	if ($data =~ / zho_ge__/) {
+	if ($data =~ /zho_ge__/) {
 	    $need2bu       = 1;
-	}
-	if ($vendor =~ /G95/) {
-    	  if ($ENV{NO_LAPACKE} != 1) {
-		$need2bu = "";
-	  }
 	}
     }
 
@@ -163,7 +155,7 @@ if ($compiler eq "") {
 	if ($compiler =~ /ifort/) {
 	    $vendor = INTEL;
 	    $bu       = "_";
-	    $openmp = "-fopenmp";
+	    $openmp = "-openmp";
 	}
 
 	if ($compiler =~ /pathf/) {
@@ -241,10 +233,6 @@ if (!$?) {
 	if ($?) {
 	    $link = `$compiler $openmp -q32 -v ftest2.f 2>&1 && rm -f a.out a.exe`;
 	}
-        # for AIX
-	if ($?) {
-	    $link = `$compiler $openmp -maix32 -v ftest2.f 2>&1 && rm -f a.out a.exe`;
-	}
        #For gfortran MIPS
 	if ($?) {
     $mips_data = `$compiler_bin -E -dM - < /dev/null`;
@@ -261,10 +249,6 @@ if (!$?) {
 	$link = `$compiler $openmp -m64 -v ftest2.f 2>&1 && rm -f a.out a.exe`;
 	if ($?) {
 	    $link = `$compiler $openmp -q64 -v ftest2.f 2>&1 && rm -f a.out a.exe`;
-	}
-        # for AIX
-	if ($?) {
-	    $link = `$compiler $openmp -maix64 -v ftest2.f 2>&1 && rm -f a.out a.exe`;
 	}
        #For gfortran MIPS
 	if ($?) {
@@ -285,8 +269,6 @@ $linker_a = "";
 if ($link ne "") {
 
     $link =~ s/\-Y\sP\,/\-Y/g;
-    
-    $link =~ s/\-R\s*/\-rpath\@/g;
 
     $link =~ s/\-rpath\s+/\-rpath\@/g;
 
@@ -302,6 +284,9 @@ if ($link ne "") {
 	    && ($flags !~ /^-LIST:/)
 	    && ($flags !~ /^-LANG:/)
 	    ) {
+	    if ($vendor eq "PGI") {
+		$flags =~ s/lib$/libso/;
+	    }
 	    $linker_L .= $flags . " ";
 	}
 
@@ -318,11 +303,17 @@ if ($link ne "") {
 
 	if ($flags =~ /^\-rpath\@/) {
 	    $flags =~ s/\@/\,/g;
+	    if ($vendor eq "PGI") {
+		$flags =~ s/lib$/libso/;
+	    }
 	    $linker_L .= "-Wl,". $flags . " " ;
 	}
 
 	if ($flags =~ /^\-rpath-link\@/) {
 	    $flags =~ s/\@/\,/g;
+	    if ($vendor eq "PGI") {
+		$flags =~ s/lib$/libso/;
+	    }
 	    $linker_L .= "-Wl,". $flags . " " ;
 	}
 
@@ -331,14 +322,13 @@ if ($link ne "") {
 	    && ($flags !~ /gfortranbegin/)
 	    && ($flags !~ /frtbegin/)
 	    && ($flags !~ /pathfstart/)
+	    && ($flags !~ /numa/)
 	    && ($flags !~ /crt[0-9]/)
 	    && ($flags !~ /gcc/)
 	    && ($flags !~ /user32/)
 	    && ($flags !~ /kernel32/)
 	    && ($flags !~ /advapi32/)
 	    && ($flags !~ /shell32/)
-	    && ($flags !~ /omp/ || ($vendor !~ /PGI/ && $flags =~ /omp/))
-	    && ($flags !~ /[0-9]+/)
 		&& ($flags !~ /^\-l$/)
 	    ) {
 	    $linker_l .= $flags . " ";
