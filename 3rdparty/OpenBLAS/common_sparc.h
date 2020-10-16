@@ -41,7 +41,6 @@
 
 #define MB	__asm__ __volatile__ ("nop")
 #define WMB	__asm__ __volatile__ ("nop")
-#define RMB	__asm__ __volatile__ ("nop")
 
 #ifndef ASSEMBLER
 

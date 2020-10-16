@@ -1,5 +1,4 @@
 include_directories(${PROJECT_SOURCE_DIR})
-include_directories(${PROJECT_BINARY_DIR})
 
 enable_language(Fortran)
 
@@ -12,14 +11,11 @@ FILE(WRITE ${CMAKE_CURRENT_BINARY_DIR}/test_cblas_helper.sh
 foreach(float_type ${FLOAT_TYPES})
   string(SUBSTRING ${float_type} 0 1 float_char_upper)
   string(TOLOWER ${float_char_upper} float_char)
-  if (${float_char} STREQUAL "h")
-   continue()
-  endif()
   #level1
   add_executable(x${float_char}cblat1
     c_${float_char}blat1.f
     c_${float_char}blas1.c)
-  target_link_libraries(x${float_char}cblat1 ${OpenBLAS_LIBNAME})
+  target_link_libraries(x${float_char}cblat1 ${OpenBLAS_LIBNAME}_static)
   add_test(NAME "x${float_char}cblat1"
     COMMAND "${CMAKE_CURRENT_BINARY_DIR}/x${float_char}cblat1")
 
@@ -31,7 +27,7 @@ foreach(float_type ${FLOAT_TYPES})
     auxiliary.c
     c_xerbla.c
     constant.c)
-  target_link_libraries(x${float_char}cblat2 ${OpenBLAS_LIBNAME})
+  target_link_libraries(x${float_char}cblat2 ${OpenBLAS_LIBNAME}_static)
   add_test(NAME "x${float_char}cblat2"
     COMMAND sh "${CMAKE_CURRENT_BINARY_DIR}/test_cblas_helper.sh" "${CMAKE_CURRENT_BINARY_DIR}/x${float_char}cblat2" "${PROJECT_SOURCE_DIR}/ctest/${float_char}in2")
 
@@ -43,7 +39,7 @@ foreach(float_type ${FLOAT_TYPES})
     auxiliary.c
     c_xerbla.c
     constant.c)
-  target_link_libraries(x${float_char}cblat3 ${OpenBLAS_LIBNAME})
+  target_link_libraries(x${float_char}cblat3 ${OpenBLAS_LIBNAME}_static)
   add_test(NAME "x${float_char}cblat3"
     COMMAND sh "${CMAKE_CURRENT_BINARY_DIR}/test_cblas_helper.sh" "${CMAKE_CURRENT_BINARY_DIR}/x${float_char}cblat3" "${PROJECT_SOURCE_DIR}/ctest/${float_char}in3")
 

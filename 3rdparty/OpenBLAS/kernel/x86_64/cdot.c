@@ -34,7 +34,7 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "cdot_microk_bulldozer-2.c"
 #elif defined(STEAMROLLER) || defined(PILEDRIVER)  || defined(EXCAVATOR)
 #include "cdot_microk_steamroller-2.c"
-#elif defined(HASWELL) || defined(ZEN) || defined (SKYLAKEX) || defined (COOPERLAKE)
+#elif defined(HASWELL) || defined(ZEN)
 #include "cdot_microk_haswell-2.c"
 #elif defined(SANDYBRIDGE)
 #include "cdot_microk_sandy-2.c"
@@ -91,15 +91,16 @@ static void cdot_kernel_16(BLASLONG n, FLOAT *x, FLOAT *y, FLOAT *d)
 
 #endif
 
-OPENBLAS_COMPLEX_FLOAT CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y)
+FLOAT _Complex CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLASLONG inc_y)
 {
 	BLASLONG i;
 	BLASLONG ix,iy;
+	FLOAT _Complex result;
 	FLOAT  dot[8] = { 0.0, 0.0, 0.0 , 0.0, 0.0, 0.0, 0.0, 0.0 } ; 
 
 	if ( n <= 0 ) 
 	{
-	    OPENBLAS_COMPLEX_FLOAT result = OPENBLAS_MAKE_COMPLEX_FLOAT (0.0, 0.0) ;
+	        result = OPENBLAS_MAKE_COMPLEX_FLOAT (0.0, 0.0) ;
 		return(result);
 
 	}
@@ -141,8 +142,8 @@ OPENBLAS_COMPLEX_FLOAT CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLA
 		i=0;
 		ix=0;
 		iy=0;
-		inc_x *= 2;
-		inc_y *= 2;
+		inc_x <<= 1;
+		inc_y <<= 1;
 		while(i < n)
 		{
 
@@ -159,11 +160,11 @@ OPENBLAS_COMPLEX_FLOAT CNAME(BLASLONG n, FLOAT *x, BLASLONG inc_x, FLOAT *y, BLA
 	}
 
 #if !defined(CONJ)
-	OPENBLAS_COMPLEX_FLOAT result = OPENBLAS_MAKE_COMPLEX_FLOAT (dot[0]-dot[1], dot[4]+dot[5]) ;
+	        result = OPENBLAS_MAKE_COMPLEX_FLOAT (dot[0]-dot[1], dot[4]+dot[5]) ;
 //	CREAL(result) = dot[0] - dot[1];
 //	CIMAG(result) = dot[4] + dot[5];
 #else
-	OPENBLAS_COMPLEX_FLOAT result = OPENBLAS_MAKE_COMPLEX_FLOAT (dot[0]+dot[1], dot[4]-dot[5]) ;
+	        result = OPENBLAS_MAKE_COMPLEX_FLOAT (dot[0]+dot[1], dot[4]-dot[5]) ;
 //	CREAL(result) = dot[0] + dot[1];
 //	CIMAG(result) = dot[4] - dot[5];
 

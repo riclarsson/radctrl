@@ -47,21 +47,21 @@
 *
 *> \param[in] WANTT
 *> \verbatim
-*>          WANTT is LOGICAL
+*>          WANTT is logical scalar
 *>             WANTT = .true. if the triangular Schur factor
 *>             is being computed.  WANTT is set to .false. otherwise.
 *> \endverbatim
 *>
 *> \param[in] WANTZ
 *> \verbatim
-*>          WANTZ is LOGICAL
+*>          WANTZ is logical scalar
 *>             WANTZ = .true. if the unitary Schur factor is being
 *>             computed.  WANTZ is set to .false. otherwise.
 *> \endverbatim
 *>
 *> \param[in] KACC22
 *> \verbatim
-*>          KACC22 is INTEGER with value 0, 1, or 2.
+*>          KACC22 is integer with value 0, 1, or 2.
 *>             Specifies the computation mode of far-from-diagonal
 *>             orthogonal updates.
 *>        = 0: CLAQR5 does not accumulate reflections and does not
@@ -77,19 +77,19 @@
 *>
 *> \param[in] N
 *> \verbatim
-*>          N is INTEGER
+*>          N is integer scalar
 *>             N is the order of the Hessenberg matrix H upon which this
 *>             subroutine operates.
 *> \endverbatim
 *>
 *> \param[in] KTOP
 *> \verbatim
-*>          KTOP is INTEGER
+*>          KTOP is integer scalar
 *> \endverbatim
 *>
 *> \param[in] KBOT
 *> \verbatim
-*>          KBOT is INTEGER
+*>          KBOT is integer scalar
 *>             These are the first and last rows and columns of an
 *>             isolated diagonal block upon which the QR sweep is to be
 *>             applied. It is assumed without a check that
@@ -100,21 +100,21 @@
 *>
 *> \param[in] NSHFTS
 *> \verbatim
-*>          NSHFTS is INTEGER
+*>          NSHFTS is integer scalar
 *>             NSHFTS gives the number of simultaneous shifts.  NSHFTS
 *>             must be positive and even.
 *> \endverbatim
 *>
 *> \param[in,out] S
 *> \verbatim
-*>          S is COMPLEX array, dimension (NSHFTS)
+*>          S is COMPLEX array of size (NSHFTS)
 *>             S contains the shifts of origin that define the multi-
 *>             shift QR sweep.  On output S may be reordered.
 *> \endverbatim
 *>
 *> \param[in,out] H
 *> \verbatim
-*>          H is COMPLEX array, dimension (LDH,N)
+*>          H is COMPLEX array of size (LDH,N)
 *>             On input H contains a Hessenberg matrix.  On output a
 *>             multi-shift QR sweep with shifts SR(J)+i*SI(J) is applied
 *>             to the isolated diagonal block in rows and columns KTOP
@@ -123,9 +123,9 @@
 *>
 *> \param[in] LDH
 *> \verbatim
-*>          LDH is INTEGER
+*>          LDH is integer scalar
 *>             LDH is the leading dimension of H just as declared in the
-*>             calling procedure.  LDH >= MAX(1,N).
+*>             calling procedure.  LDH.GE.MAX(1,N).
 *> \endverbatim
 *>
 *> \param[in] ILOZ
@@ -137,12 +137,12 @@
 *> \verbatim
 *>          IHIZ is INTEGER
 *>             Specify the rows of Z to which transformations must be
-*>             applied if WANTZ is .TRUE.. 1 <= ILOZ <= IHIZ <= N
+*>             applied if WANTZ is .TRUE.. 1 .LE. ILOZ .LE. IHIZ .LE. N
 *> \endverbatim
 *>
 *> \param[in,out] Z
 *> \verbatim
-*>          Z is COMPLEX array, dimension (LDZ,IHIZ)
+*>          Z is COMPLEX array of size (LDZ,IHIZ)
 *>             If WANTZ = .TRUE., then the QR Sweep unitary
 *>             similarity transformation is accumulated into
 *>             Z(ILOZ:IHIZ,ILOZ:IHIZ) from the right.
@@ -151,73 +151,75 @@
 *>
 *> \param[in] LDZ
 *> \verbatim
-*>          LDZ is INTEGER
+*>          LDZ is integer scalar
 *>             LDA is the leading dimension of Z just as declared in
-*>             the calling procedure. LDZ >= N.
+*>             the calling procedure. LDZ.GE.N.
 *> \endverbatim
 *>
 *> \param[out] V
 *> \verbatim
-*>          V is COMPLEX array, dimension (LDV,NSHFTS/2)
+*>          V is COMPLEX array of size (LDV,NSHFTS/2)
 *> \endverbatim
 *>
 *> \param[in] LDV
 *> \verbatim
-*>          LDV is INTEGER
+*>          LDV is integer scalar
 *>             LDV is the leading dimension of V as declared in the
-*>             calling procedure.  LDV >= 3.
+*>             calling procedure.  LDV.GE.3.
 *> \endverbatim
 *>
 *> \param[out] U
 *> \verbatim
-*>          U is COMPLEX array, dimension (LDU,3*NSHFTS-3)
+*>          U is COMPLEX array of size
+*>             (LDU,3*NSHFTS-3)
 *> \endverbatim
 *>
 *> \param[in] LDU
 *> \verbatim
-*>          LDU is INTEGER
+*>          LDU is integer scalar
 *>             LDU is the leading dimension of U just as declared in the
-*>             in the calling subroutine.  LDU >= 3*NSHFTS-3.
+*>             in the calling subroutine.  LDU.GE.3*NSHFTS-3.
 *> \endverbatim
 *>
-*> \param[in] NV
-*> \verbatim
-*>          NV is INTEGER
-*>             NV is the number of rows in WV agailable for workspace.
-*>             NV >= 1.
-*> \endverbatim
-*>
-*> \param[out] WV
-*> \verbatim
-*>          WV is COMPLEX array, dimension (LDWV,3*NSHFTS-3)
-*> \endverbatim
-*>
-*> \param[in] LDWV
-*> \verbatim
-*>          LDWV is INTEGER
-*>             LDWV is the leading dimension of WV as declared in the
-*>             in the calling subroutine.  LDWV >= NV.
-*> \endverbatim
-*
 *> \param[in] NH
 *> \verbatim
-*>          NH is INTEGER
+*>          NH is integer scalar
 *>             NH is the number of columns in array WH available for
-*>             workspace. NH >= 1.
+*>             workspace. NH.GE.1.
 *> \endverbatim
 *>
 *> \param[out] WH
 *> \verbatim
-*>          WH is COMPLEX array, dimension (LDWH,NH)
+*>          WH is COMPLEX array of size (LDWH,NH)
 *> \endverbatim
 *>
 *> \param[in] LDWH
 *> \verbatim
-*>          LDWH is INTEGER
+*>          LDWH is integer scalar
 *>             Leading dimension of WH just as declared in the
-*>             calling procedure.  LDWH >= 3*NSHFTS-3.
+*>             calling procedure.  LDWH.GE.3*NSHFTS-3.
 *> \endverbatim
 *>
+*> \param[in] NV
+*> \verbatim
+*>          NV is integer scalar
+*>             NV is the number of rows in WV agailable for workspace.
+*>             NV.GE.1.
+*> \endverbatim
+*>
+*> \param[out] WV
+*> \verbatim
+*>          WV is COMPLEX array of size
+*>             (LDWV,3*NSHFTS-3)
+*> \endverbatim
+*>
+*> \param[in] LDWV
+*> \verbatim
+*>          LDWV is integer scalar
+*>             LDWV is the leading dimension of WV as declared in the
+*>             in the calling subroutine.  LDWV.GE.NV.
+*> \endverbatim
+*
 *  Authors:
 *  ========
 *
@@ -249,7 +251,7 @@
      $                   H, LDH, ILOZ, IHIZ, Z, LDZ, V, LDV, U, LDU, NV,
      $                   WV, LDWV, NH, WH, LDWH )
 *
-*  -- LAPACK auxiliary routine (version 3.7.1) --
+*  -- LAPACK auxiliary routine (version 3.7.0) --
 *  -- LAPACK is a software package provided by Univ. of Tennessee,    --
 *  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
 *     June 2016

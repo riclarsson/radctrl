@@ -151,7 +151,7 @@ int main(int argc, char *argv[]){
     fprintf(stderr,"Out of Memory!!\n");exit(1);
   }
 
-#ifdef __linux
+#ifdef linux
   srandom(getpid());
 #endif
 

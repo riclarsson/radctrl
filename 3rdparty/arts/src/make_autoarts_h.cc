@@ -62,12 +62,6 @@ struct AgendaData {
   std::vector<std::string> outs;
 };
 
-struct SpeciesData {
-  std::size_t spec;
-  std::string name;
-  std::vector<std::string> isoname;
-};
-
 std::map<std::string, Group> groups() {
   std::map<std::string, std::size_t> group;
   for (auto& x : global_data::WsvGroupMap) group[x.first] = x.second;
@@ -349,133 +343,147 @@ std::map<std::string, AgendaData> agendas() {
   return out;
 }
 
-std::vector<SpeciesData> all_species() {
-  std::vector<SpeciesData> out(0);
-  for (auto& s: global_data::species_data) {
-    SpeciesData sd;
-    sd.spec = global_data::SpeciesMap.at(s.Name());
-    sd.name = s.Name();
-    sd.isoname.resize(0);
-    for (auto& iso: s.Isotopologue()) {
-      sd.isoname.push_back(iso.Name());
-    }
-    out.push_back(sd);
-  }
-  return out;
-}
-
 struct NameMaps {
   std::map<std::string, AgendaData> agendaname_agenda;
   std::vector<Method> methodname_method;
   std::map<std::string, Group> varname_group;
   std::map<std::string, std::size_t> group;
-  std::vector<SpeciesData> specdata;
 
   NameMaps() {
     for (auto& x : global_data::WsvGroupMap) group[x.first] = x.second;
     varname_group = groups();
     methodname_method = methods();
     agendaname_agenda = agendas();
-    specdata = all_species();
   }
 };
 
-void print_var(const NameMaps& artsname) {
+int main() {
+  define_wsv_group_names();
+  Workspace::define_wsv_data();
+  Workspace::define_wsv_map();
+  define_md_data_raw();
+  expand_md_data_raw_to_md_data();
+  define_md_map();
+  define_agenda_data();
+  define_agenda_map();
+  define_species_data();
+  define_species_map();
+
+  const auto artsname = NameMaps();
+
+  std::cout << "#ifndef autoarts_h\n"
+            << "#define autoarts_h\n"
+            << '\n'
+            << "#include <auto_md.h>" << '\n'
+            << "#include <arts.h>" << '\n'
+            << "#include <global_data.h>" << '\n'
+            << "#include <m_basic_types.h>" << '\n'
+            << "#include <m_general.h>" << '\n'
+            << "#include <m_append.h>" << '\n'
+            << "#include <m_conversion.h>" << '\n'
+            << "#include <m_copy.h>" << '\n'
+            << "#include <m_gridded_fields.h>" << '\n'
+            << "#include <m_xml.h>" << '\n'
+            << "#include <m_select.h>" << '\n'
+            << "#include <m_reduce.h>" << '\n'
+            << "#include <m_nc.h>" << '\n'
+            << "#include <m_delete.h>" << '\n'
+            << "#include <m_extract.h>" << '\n'
+            << "#include <m_ignore.h>" << '\n'
+            << '\n'
+            << '\n';
+
+  std::cout << "extern String out_basename;\n\n";
+
+  std::cout << "namespace ARTS { using Workspace=Workspace; }\n\n";
+  std::cout << "namespace ARTS::Group {\n";
+  for (auto& x : artsname.group) {
+    if (x.first == "Any") continue;
+    std::cout << "using " << x.first << '=' << x.first << ';' << '\n';
+  }
+  std::cout << "}  // ARTS::Group \n\n";
+
   std::cout << "namespace ARTS::Var {\n";
   for (auto& x : artsname.group) {
     if (x.first == "Any") continue;
-    std::cout << "/*! Workspace Variable class.  Used as default\n"
-    "  input to many Method and AgendaMethod.\n"
-    "  Note that it is not recommended to manually\n"
-    "  create this class as many methods makes distinct\n"
-    "  assumptions about the states that this class are\n"
-    "  allowed to be in */\n";
+
     std::cout << "class " << x.first << ' ' << '{' << '\n';
     std::cout << "  using type = Group::" << x.first << ";\n";
     std::cout << "  std::size_t p;\n";
     std::cout << "  type* v;\n";
     std::cout << "public:\n";
-    std::cout << "  /*! Default construct.  DO NOT USE MANUALLY.  Leaves islast() true and isnull() true */\n";
-    std::cout << "  " << x.first << "() noexcept : p(std::numeric_limits<std::size_t>::max()), v(nullptr) {}\n\n";
-    std::cout << "  /*! Construct from existing Workspace.  DO NOT USE MANUALLY. Leaves islast() false and isnull() false */\n";
-    std::cout << "  " << x.first << "(std::size_t i, void * x) noexcept : p(i), " "v(static_cast<type *>(x)) {}\n\n";
-    std::cout << "  /*! Construct from type.  Leaves islast() true and isnull() false */\n";
-    std::cout << "  " << x.first << "(const type& val) noexcept : p(std::numeric_limits<std::size_t>::max()), v(new type(val)) {}\n\n";
-    std::cout << "  /*! Delete data only when islast() is true and isnull() is false */\n";
-    std::cout << "  ~" << x.first << "() noexcept {if (islast() and not isnull()) delete v;}\n\n";
-    std::cout << "  /*! Get value as Group-type.  Works when isnull() is false */\n";
-    std::cout << "  type& value() noexcept {return *v;}\n\n";
-    std::cout << "  /*! Get value as Group-type.  Works when isnull() is false */\n";
-    std::cout << "  const type& value() const noexcept {return *v;}\n\n";
-    std::cout << "  /*! Set value from Group-type.  Works when isnull() is false */\n";
-    std::cout << "  " << x.first << "& operator=(const type& t) noexcept {value() = t; return *this;}\n\n";
-    std::cout << "  /*! Return the position of the variable in the Workspace */\n";
-    std::cout << "  std::size_t pos() const noexcept {return p;}\n\n";
-    std::cout << "  /*! Return true if there is no data */\n";
-    std::cout << "  bool isnull() const noexcept {return v == nullptr;}\n\n";
-    std::cout << "  /*! Return true if data is not in the Workspace */\n";
-    std::cout << "  bool islast() const noexcept {return p == std::numeric_limits<std::size_t>::max();}\n\n";
-    std::cout << "  /*! Name of variable.  Must be in the workspace */\n";        
-    std::cout << "  const Group::String& name() const noexcept {return Workspace::wsv_data[p].Name();}\n\n";
-    
-    // NOTE:  Don't add more groups here.  The ones that are here are ugly enough as it is.  Just define an output operator...
-    if (x.first not_eq "Ppath" and x.first not_eq "TessemNN" and x.first not_eq "Timer" and x.first not_eq "ArrayOfPpath") {
-      std::cout << "  /*! Output to stream of internal variable */\n";
-      std::cout << "  friend std::ostream& operator<<(std::ostream& os, const "<< x.first <<"& var) {if (var.isnull()) return os << \"NULLDATA\"; else return os << var.value();}\n";
-    }
-    
+    std::cout << "  " << x.first
+              << "() noexcept : p(std::numeric_limits<std::size_t>::max()), "
+                 "v(nullptr) {}\n";
+    std::cout << "  " << x.first
+              << "(std::size_t i, void * x) noexcept : p(i), "
+                 "v(static_cast<type *>(x)) {}\n";
+    std::cout << "  ~" << x.first
+              << "() noexcept {if (islast() and not isnull()) delete v;}\n";
+    std::cout
+        << "  " << x.first
+        << "(const type& val) noexcept : p(std::numeric_limits<std::size_t>::max()), v(new type(val)) {}\n";
+    std::cout << "  type& value() noexcept {return *v;}\n";
+    std::cout << "  const type& value() const noexcept {return *v;}\n";
+    std::cout
+        << "  " << x.first
+        << "& operator=(const type& t) noexcept {value() = t; return *this;}\n";
+    std::cout << "  std::size_t pos() const noexcept {return p;}\n";
+    std::cout << "  bool isnull() const noexcept {return v == nullptr;}\n";
+    std::cout
+        << "  bool islast() const noexcept {return p == std::numeric_limits<std::size_t>::max();}\n";
+    std::cout
+        << "  const Group::String& name() const noexcept {return Workspace::wsv_data[p].Name();}\n";
     std::cout << '}' << ';' << '\n' << '\n';
   }
   for (auto& x : artsname.varname_group) {
     std::cout << "/*! " << x.second.varname_desc << '\n';
     std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n";
     std::cout << "@return A class with a pointer to this variable and its "
-    "position in the workspace\n*/\n";
+                 "position in the workspace\n*/\n";
     std::cout << "[[nodiscard]] inline ";
     std::cout << x.second.varname_group << ' ' << x.first
-    << "(Workspace& ws) "
-    "noexcept { "
-    "return {"
-    << x.second.artspos << ", ws[" << x.second.artspos
-    << "]}; "
-    "}\n\n";
+              << "(Workspace& ws) "
+                 "noexcept { "
+                 "return {"
+              << x.second.artspos << ", ws[" << x.second.artspos
+              << "]}; "
+                 "}\n\n";
   }
   for (auto& x : artsname.group) {
     if (x.first == "Any") continue;
-    
+
     std::cout << "/*! Creates in, and returns from, Workspace a/an " << x.first
-    << '\n'
-    << '\n';
+              << '\n'
+              << '\n';
     std::cout << "@param[in,out] Workspace ws - An ARTS workspace\n";
     std::cout << "@param[in] " << x.first
-    << " inval - The default value the variable will have in "
-    "the workspace\n";
+              << " inval - The default value the variable will have in "
+                 "the workspace\n";
     std::cout << "@param[in] String name - The name the variable will have in "
-    "the workspace\n";
+                 "the workspace\n";
     std::cout << "@param[in] String desc - The description the variable will "
-    "have in the workspace (default: \"nodescription\")\n";
+                 "have in the workspace (default: \"nodescription\")\n";
     std::cout << "@return A class with a pointer to this variable and its new "
-    "position in the workspace\n";
+                 "position in the workspace\n";
     std::cout << "*/\n";
     std::cout << "[[nodiscard]] inline\n";
     std::cout
-    << x.first << ' ' << x.first
-    << "Create(\n            Workspace& ws,\n            const Group::"
-    << x.first
-    << "& inval,\n            const Group::String& name,\n            const Group::"
-    "String& "
-    "desc=\"nodescription\") {\n";
+        << x.first << ' ' << x.first
+        << "Create(\n            Workspace& ws,\n            const Group::"
+        << x.first
+        << "& inval,\n            const Group::String& name,\n            const Group::"
+           "String& "
+           "desc=\"nodescription\") {\n";
     std::cout << "  const std::size_t ind = "
-    "std::size_t(ws.add_wsv_inplace({name.c_str(), desc.c_str(), "
-    << x.second << "}));\n";
+                 "std::size_t(ws.add_wsv_inplace({name.c_str(), desc.c_str(), "
+              << x.second << "}));\n";
     std::cout << "  " << x.first << ' ' << "val{ind, ws[ind]};\n";
     std::cout << "  return val = inval;\n"
-    << "}\n\n";
+              << "}\n\n";
   }
   std::cout << "}  // ARTS::Var \n\n";
-}
 
-void print_gin_methods(const NameMaps& artsname) {
   std::cout << "namespace ARTS::Method {\n";
 
   for (auto& x : artsname.methodname_method) {
@@ -549,7 +557,7 @@ void print_gin_methods(const NameMaps& artsname) {
     for (std::size_t i = 0; i < x.gout.group.size(); i++) {
       std::cout << " if (" << x.gout.name[i]
                 << ".islast()) {\n    throw std::runtime_error(\""
-                << x.gout.name[i] << " needs to be a defined "
+                << x.gout.name[i] << " needs to be a defined Workspace"
                 << x.gout.group[i] << " since it is output of " << x.name
                 << "\");\n  }";
     }
@@ -644,10 +652,8 @@ void print_gin_methods(const NameMaps& artsname) {
     std::cout << ')' << ';' << '\n' << '}' << '\n' << '\n' << '\n';
   }
   std::cout << "}  // ARTS::Method \n\n";
-}
 
-void print_full_methods(const NameMaps& artsname) {
-  std::cout << "namespace ARTS::Method {\n";
+  std::cout << "namespace ARTS::AgendaMethod  {\n";
 
   for (auto& x : artsname.methodname_method) {
     // Skip methods using verbosity and Agenda methods (for now)
@@ -660,31 +666,15 @@ void print_full_methods(const NameMaps& artsname) {
                       return (y.first + String("Create")) == metname;
                     }))
       continue;
-    
-    // Skip the 'silly' methods
-    if (not x.out.varname.size() and not x.gout.name.size() and not x.in.varname.size() and not x.gin.name.size()) continue;
 
     // Describe the method
     std::cout << "/*! " << x.desc << '\n';
     for (auto a : x.authors) std::cout << "@author " << a << '\n';
     std::cout << "\n"
                  "@param[in,out] Workspace ws - An ARTS workspace\n";
-    for (std::size_t i = 0; i < x.out.varname.size(); i++) {
-      if (std::any_of(x.in.varname.cbegin(), x.in.varname.cend(),
-        [out = x.out.varname[i]](const auto& in) { return in == out; }))
-        std::cout << "@param[in,out] ";
-      else
-        std::cout << "@param[out] ";
-      std::cout << x.out.varname[i] << " - as *Var::"<<x.out.varname[i]<<"(ws)*\n";
-    }
     for (std::size_t i = 0; i < x.gout.name.size(); i++)
-      std::cout << "@param[out] " << x.gout.name[i] << " - " << x.gout.desc[i] << "\n";
-    for (std::size_t i = 0; i < x.in.varname.size(); i++) {
-      if (std::any_of(x.out.varname.cbegin(), x.out.varname.cend(),
-        [in = x.in.varname[i]](const auto& out) { return in == out; }))
-        continue;
-      std::cout << "@param[in] " << x.in.varname[i] << " - as *Var::"<<x.in.varname[i]<<"(ws)*\n";
-    }
+      std::cout << "@param[out] " << x.gout.name[i] << " - " << x.gout.desc[i]
+                << "\n";
     for (std::size_t i = 0; i < x.gin.name.size(); i++) {
       std::cout << "@param[in] " << x.gin.name[i] << " - " << x.gin.desc[i];
       if (x.gin.hasdefs[i]) std::cout << " (default: " << x.gin.defs[i] << ")";
@@ -693,411 +683,173 @@ void print_full_methods(const NameMaps& artsname) {
     std::cout << "\nUse the ARTS documentation to read more on how the "
                  "workspace is manipulated\n";
     std::cout << "This interface function has been automatically generated\n";
+    std::cout << "\n"
+              << "@return MRecord to call this method\n";
     std::cout << "*/" << '\n';
 
     // Make the function
-    std::cout << "inline void " << x.name << "(\n            Workspace& ws";
+    std::cout << "[[nodiscard]] inline\nMRecord " << x.name
+              << "(\n    [[maybe_unused]] Workspace& ws";
 
-    // First put all OUT variables
-    for (std::size_t i = 0; i < x.out.varname.size(); i++)
-      std::cout << ',' << "\n            Group::" << artsname.varname_group.at(x.out.varname[i]).varname_group << '&' << ' ' << x.out.varname[i];
-    
-    // Second put all GOUT variables
-    for (std::size_t i = 0; i < x.gout.group.size(); i++)
-      std::cout << ',' << "\n            Group::" << x.gout.group[i] << '&' << ' ' << x.gout.name[i];
-    
-    // Third put all the inputs that are not also outputs
-    for (std::size_t i = 0; i < x.in.varname.size(); i++) {
-      if (std::any_of(x.out.varname.cbegin(), x.out.varname.cend(),
-                      [in = x.in.varname[i]](const auto& out) { return in == out; }))
-        continue;
-      std::cout << ',' << "\n      const Group::" << artsname.varname_group.at(x.in.varname[i]).varname_group << '&' << ' '<<x.in.varname[i];
-    }
-
-    // Last put all GIN variables that have no default argument
-    for (std::size_t i = 0; i < x.gin.group.size(); i++)
-      std::cout << ',' << "\n      const Group::" << x.gin.group[i] << '&' << ' ' << x.gin.name[i];
-
-    // End of function definition and open function block
-    std::cout << ')' << ' ' << '{' << '\n';
-
-    // Call the ARTS auto_md.h function
-    std::cout << ' ' << ' ' << x.name << '(';
-
-    // We need the workspace if we input an Agenda or simply pass the workspace
-    bool has_any = false;
-    if (x.pass_workspace or x.agenda_method or
-        std::any_of(
-            x.gin.group.cbegin(),
-            x.gin.group.cend(),
-            [](auto& g) { return g == "Agenda" or g == "ArrayOfAgenda"; }) or
-        std::any_of(x.in.varname.cbegin(), x.in.varname.cend(), [&](auto& g) {
-          return artsname.varname_group.at(g).varname_group == "Agenda" or
-                 artsname.varname_group.at(g).varname_group == "ArrayOfAgenda";
-        })) {
-      std::cout << "ws";
-      has_any = true;
-    }
-
-    // First are all the outputs
-    for (std::size_t i = 0; i < x.out.varname.size(); i++) {
-      if (has_any) std::cout << ',' << ' ';
-      has_any = true;
-      std::cout << x.out.varname[i];
-    }
-
-    // Second comes all the generic outputs
-    for (std::size_t i = 0; i < x.gout.name.size(); i++) {
-      if (has_any) std::cout << ',' << ' ';
-      has_any = true;
-      std::cout << x.gout.name[i];
-    }
-
-    // And their filenames if relevant
-    if (x.pass_wsv_names) {
-      for (std::size_t i = 0; i < x.gout.name.size(); i++) {
-        if (has_any) std::cout << ',' << ' ';
-        has_any = true;
-        std::cout << "Group::String{\"" << x.gout.name[i] << "\"}";
-      }
-    }
-
-    // Then come all the inputs that are not also outputs
-    for (std::size_t i = 0; i < x.in.varname.size(); i++) {
-      if (std::any_of(
-              x.out.varname.cbegin(),
-              x.out.varname.cend(),
-              [in = x.in.varname[i]](const auto& out) { return in == out; }))
-        continue;
-      if (has_any) std::cout << ',' << ' ';
-      has_any = true;
-      std::cout << x.in.varname[i];
-    }
-
-    // Lastly are all the generic inputs, which cannot also be outputs
-    for (std::size_t i = 0; i < x.gin.name.size(); i++) {
-      if (has_any) std::cout << ',' << ' ';
-      has_any = true;
-      std::cout << x.gin.name[i];
-    }
-
-    // And their filenames if relevant
-    if (x.pass_wsv_names) {
-      for (std::size_t i = 0; i < x.gin.name.size(); i++) {
-        if (has_any) std::cout << ',' << ' ';
-        has_any = true;
-        std::cout << "Group::String{\"" << x.gin.name[i] << "\"}";
-      }
-    }
-
-    // Check verbosity
-    const bool has_verbosity =
-        std::any_of(x.in.varname.cbegin(), x.in.varname.cend(), [](auto& name) {
-          return name == "verbosity";
-        });
-
-    // Add verbosity of it does not exist
-    if (not has_verbosity) {
-      if (has_any) std::cout << ',' << ' ';
-      has_any = true;
-      std::cout << "Var::verbosity(ws).value()";
-    }
-
-    // Close the function call and the function itself
-    std::cout << ')' << ';' << '\n' << '}' << '\n' << '\n' << '\n';
-  }
-  std::cout << "}  // ARTS::Method \n\n";
-}
-
-void print_agenda_methods(const NameMaps& artsname) {
-  std::cout << "namespace ARTS::AgendaMethod  {\n";
-  
-  for (auto& x : artsname.methodname_method) {
-    // Skip methods using verbosity and Agenda methods (for now)
-    if (x.agenda_method) continue;
-    
-    // Also skip create methods since these must be called via Var
-    if (std::any_of(artsname.group.cbegin(),
-      artsname.group.cend(),
-                    [metname = x.name](auto& y) {
-                      return (y.first + String("Create")) == metname;
-                    }))
-      continue;
-    
-    // Describe the method
-    std::cout << "/*! " << x.desc << '\n';
-    for (auto a : x.authors) std::cout << "@author " << a << '\n';
-    std::cout << "\n"
-    "@param[in,out] Workspace ws - An ARTS workspace\n";
-    for (std::size_t i = 0; i < x.gout.name.size(); i++)
-      std::cout << "@param[out] " << x.gout.name[i] << " - " << x.gout.desc[i]
-      << "\n";
-    for (std::size_t i = 0; i < x.gin.name.size(); i++) {
-      std::cout << "@param[in] " << x.gin.name[i] << " - " << x.gin.desc[i];
-      if (x.gin.hasdefs[i]) std::cout << " (default: " << x.gin.defs[i] << ")";
-      std::cout << '\n';
-    }
-    std::cout << "\nUse the ARTS documentation to read more on how the "
-    "workspace is manipulated\n";
-    std::cout << "This interface function has been automatically generated\n";
-    std::cout << "\n"
-    << "@return MRecord to call this method\n";
-    std::cout << "*/" << '\n';
-    
-    // Make the function
-    std::cout << "[[nodiscard]] inline\nGroup::Internal::MRecord " << x.name
-    << "(\n    [[maybe_unused]] Workspace& ws";
-    
     // Check if we have the first input
     for (std::size_t i = 0; i < x.gout.group.size(); i++) {
       std::cout << ',' << '\n';
       std::cout << "                     Var::" << x.gout.group[i] << ' '
-      << x.gout.name[i];
+                << x.gout.name[i];
     }
-    
+
     // Second put all GIN variables that have no default argument
     for (std::size_t i = 0; i < x.gin.group.size(); i++) {
       if (not x.gin.hasdefs[i]) {
         std::cout << ',' << "\n";
         std::cout << "               const Var::" << x.gin.group[i] << ' '
-        << x.gin.name[i];
+                  << x.gin.name[i];
       }
     }
-    
+
     // Lastly put all GIN variables that have a default argument
     for (std::size_t i = 0; i < x.gin.group.size(); i++) {
       if (x.gin.hasdefs[i]) {
         std::cout << ',' << "\n";
         std::cout << "               const Var::" << x.gin.group[i] << '&'
-        << ' ' << x.gin.name[i] << '=' << "{}";
+                  << ' ' << x.gin.name[i] << '=' << "{}";
       }
     }
-    
+
     // End of function definition and open function block
     std::cout << ')' << ' ' << '{' << '\n';
-    
+
     // Output variables have to be on the Workspace
     if (x.gout.group.size() or x.gin.group.size()) std::cout << ' ';
     for (std::size_t i = 0; i < x.gout.group.size(); i++) {
       std::cout << " if (" << x.gout.name[i]
-      << ".islast()) {\n    throw std::runtime_error(\""
-      << x.gout.name[i] << " needs to be a defined Workspace"
-      << x.gout.group[i] << " since it is output of " << x.name
-      << "\");\n  }";
+                << ".islast()) {\n    throw std::runtime_error(\""
+                << x.gout.name[i] << " needs to be a defined Workspace"
+                << x.gout.group[i] << " since it is output of " << x.name
+                << "\");\n  }";
     }
     for (std::size_t i = 0; i < x.gin.group.size(); i++) {
       if (x.gin.hasdefs[i])
         std::cout << " if (not " << x.gin.name[i] << ".isnull() and "
-        << x.gin.name[i]
-        << ".islast()) {\n    throw std::runtime_error(\""
-        << x.gin.name[i] << " needs to be a defined Workspace"
-        << x.gin.group[i]
-        << " (or left default) since it is agenda input to " << x.name
-        << "\");\n  }";
+                  << x.gin.name[i]
+                  << ".islast()) {\n    throw std::runtime_error(\""
+                  << x.gin.name[i] << " needs to be a defined Workspace"
+                  << x.gin.group[i]
+                  << " (or left default) since it is agenda input to " << x.name
+                  << "\");\n  }";
       else
         std::cout << " if (" << x.gin.name[i]
-        << ".islast()) {\n    throw std::runtime_error(\""
-        << x.gin.name[i] << " needs to be a defined Workspace"
-        << x.gin.group[i] << " since it is agenda input to " << x.name
-        << "\");\n  }";
+                  << ".islast()) {\n    throw std::runtime_error(\""
+                  << x.gin.name[i] << " needs to be a defined Workspace"
+                  << x.gin.group[i] << " since it is agenda input to " << x.name
+                  << "\");\n  }";
     }
     if (x.gout.group.size() or x.gin.group.size()) std::cout << '\n' << '\n';
-    
+
     for (std::size_t i = 0; i < x.gin.group.size(); i++) {
       if (x.gin.hasdefs[i]) {
         std::cout
-        << "  static const auto " << x.gin.name[i]
-        << "_default = Var::" << x.gin.group[i] << "Create(ws, "
-        << x.gin.defs[i] << ",\n    \"" << x.name << '_' << x.gin.name[i]
-        << "_autodefault"
-        << "\",\n    \"auto generated variable with default from method "
-        "definition\");\n";
+            << "  static const auto " << x.gin.name[i]
+            << "_default = Var::" << x.gin.group[i] << "Create(ws, "
+            << x.gin.defs[i] << ",\n    \"" << x.name << '_' << x.gin.name[i]
+            << "_autodefault"
+            << "\",\n    \"auto generated variable with default from method "
+               "definition\");\n";
       }
     }
-    
+
     // Call the ARTS auto_md.h function
-    std::cout << "  return Group::Internal::MRecord(" << x.pos << ',' << ' '
-    << "\n    Group::ArrayOfIndex(" << '{';
-    
+    std::cout << "  return MRecord(" << x.pos << ',' << ' '
+              << "\n    Group::ArrayOfIndex(" << '{';
+
     // First are all the outputs
     for (std::size_t i = 0; i < x.out.varpos.size(); i++) {
       std::cout << x.out.varpos[i] << ',' << ' ';
     }
-    
+
     // Second comes all the generic outputs
     for (std::size_t i = 0; i < x.gout.name.size(); i++) {
       std::cout << "Group::Index(" << x.gout.name[i] << ".pos())" << ',' << ' ';
     }
     std::cout << '}' << ')' << ',' << ' ' << "\n    Group::ArrayOfIndex("
-    << '{';
-    
+              << '{';
+
     // Then come all the inputs that are not also outputs
     for (std::size_t i = 0; i < x.in.varpos.size(); i++) {
       std::cout << x.in.varpos[i] << ',' << ' ';
     }
-    
+
     // Lastly are all the generic inputs, which cannot also be outputs
     for (std::size_t i = 0; i < x.gin.name.size(); i++) {
       if (x.gin.hasdefs[i])
         std::cout << x.gin.name[i] << ".isnull() ? Index(" << x.gin.name[i]
-        << "_default.pos()) : ";
+                  << "_default.pos()) : ";
       std::cout << "Group::Index(" << x.gin.name[i] << ".pos())" << ',' << ' ';
     }
-    
+
     std::cout << '}' << ')' << ',' << ' ';
-    
+
     if (x.set_method)
-      std::cout << "\n    Group::Internal::TokVal{" << x.gin.name[0] << ".value()}";
+      std::cout << "\n    TokVal{" << x.gin.name[0] << ".value()}";
     else
-      std::cout << "\n    Group::Internal::TokVal{}";
-    
-    std::cout << ", Group::Agenda{}";
-    
+      std::cout << "\n    TokVal{}";
+
+    std::cout << ", Agenda{}";
+
     // Close the function call and the function itself
     std::cout << ')' << ';' << '\n' << '}' << '\n' << '\n' << '\n';
   }
   std::cout << "}  // ARTS::AgendaMethod \n\n";
-}
 
-void print_agenda_execute(const NameMaps& artsname) {
   std::cout << "namespace ARTS::AgendaExecute { \n\n";
   for (auto& x : artsname.agendaname_agenda) {
     std::cout << "/*! " << x.second.desc << '\n'
-    << "@param[in,out] Workspace ws - An ARTS workspace\n"
-    << "*/\n"
-    << "inline void " << x.first << "(Workspace& ws) {\n  " << x.first
-    << "Execute(ws";
+              << "@param[in,out] Workspace ws - An ARTS workspace\n"
+              << "*/\n"
+              << "inline void " << x.first << "(Workspace& ws) {\n  " << x.first
+              << "Execute(ws";
     for (auto& name : x.second.outs) {
       std::cout << ',' << "\n            " << ' ' << "Var::" << name
-      << "(ws).value()";
+                << "(ws).value()";
     }
     for (auto& name : x.second.ins) {
       if (not std::any_of(x.second.outs.cbegin(),
-        x.second.outs.cend(),
+                          x.second.outs.cend(),
                           [name](auto& outname) { return name == outname; }))
         std::cout << ',' << "\n            " << ' ' << "Var::" << name
-        << "(ws).value()";
+                  << "(ws).value()";
     }
     std::cout << ",\n             Var::" << x.first << "(ws).value());\n}\n\n";
   }
   std::cout << "}  // ARTS::AgendaExecute \n\n";
-}
 
-void print_agenda_define(const NameMaps& artsname) {
   std::cout << "namespace ARTS::AgendaDefine { \n";
   std::cout << "/*! Append Records to an agenda */\n";
   std::cout << "template <typename ... Records>\nvoid Append(Agenda& ag, "
-  "Records ... records) {\n"
-  << "  for (auto& x: { Group::Internal::MRecord(records)... })\n    "
-  "ag.push_back(x);\n}\n\n";
+               "Records ... records) {\n"
+            << "  for (auto& x: { MRecord(records)... })\n    "
+               "ag.push_back(x);\n}\n\n";
   for (auto& x : artsname.agendaname_agenda) {
     if (artsname.varname_group.at(x.first).varname_group == "ArrayOfAgenda")
       continue;
     std::cout << "/*! " << x.second.desc << '\n'
-    << "@param[in,out] Workspace ws - An ARTS workspace\n"
-    << "@param[in] MRecords records - Any number of ARTS methods "
-    "from ARTS::AgendaMethod\n"
-    << "*/\n"
-    << "template <typename ... Records> "
-    << "inline\nvoid " << x.first
-    << "(Workspace& ws, Records ... records) {\n"
-    << "  ARTS::Var::" << x.first << "(ws).value().resize(0);\n"
-    << "  ARTS::Var::" << x.first << "(ws).value().set_name(\""
-    << x.first << "\");\n"
-    << "  Append(ARTS::Var::" << x.first
-    << "(ws).value(), records...);"
-    << "\n"
-    << "  Var::" << x.first
-    << "(ws).value().check(ws, Var::verbosity(ws).value());\n}\n\n";
+              << "@param[in,out] Workspace ws - An ARTS workspace\n"
+              << "@param[in] MRecords records - Any number of ARTS methods "
+                 "from ARTS::AgendaMethod\n"
+              << "*/\n"
+              << "template <typename ... Records> "
+              << "inline\nvoid " << x.first
+              << "(Workspace& ws, Records ... records) {\n"
+              << "  ARTS::Var::" << x.first << "(ws).value().resize(0);\n"
+              << "  ARTS::Var::" << x.first << "(ws).value().set_name(\""
+              << x.first << "\");\n"
+              << "  Append(ARTS::Var::" << x.first
+              << "(ws).value(), records...);"
+              << "\n"
+              << "  Var::" << x.first
+              << "(ws).value().check(ws, Var::verbosity(ws).value());\n}\n\n";
   }
   std::cout << "}  // ARTS::AgendaDefine \n\n";
-}
-
-void print_species_identification(const NameMaps& artsname) {
-  std::cout << "namespace ARTS::Species {\n";
-  for (auto& s: artsname.specdata) {
-    auto name = s.name;
-    std::size_t pos;
-    while ((pos = name.find(std::string{"+"})) != std::string::npos) name.replace(pos, 1, "_plus");
-    while ((pos = name.find(std::string{"-"})) != std::string::npos) name.replace(pos, 1, "_minus");
-    std::cout << "  constexpr Group::Index " << name << '=' <<s.spec << ';' << '\n';
-    std::cout << "  constexpr bool is" << name << "(Group::Index spec) { return spec == " << name << "; }" << '\n';
-    for (std::size_t i=0; i<s.isoname.size(); i++) {
-      auto isoname = s.isoname[i];
-      while ((pos = isoname.find(std::string{"+"})) != std::string::npos) isoname.replace(pos, 1, "_plus_");
-      while ((pos = isoname.find(std::string{"-"})) != std::string::npos) isoname.replace(pos, 1, "_minus_");
-      std::cout << "  constexpr bool is" << name << '_' << isoname << "(Group::Index spec, Group::Index iso) { return spec == " << name << " and iso == " << i << "; }" << '\n';
-    }
-  }
-  std::cout << "}  // ARTS::Species \n\n";
-}
-
-int main() {
-  define_wsv_group_names();
-  Workspace::define_wsv_data();
-  Workspace::define_wsv_map();
-  define_md_data_raw();
-  expand_md_data_raw_to_md_data();
-  define_md_map();
-  define_agenda_data();
-  define_agenda_map();
-  define_species_data();
-  define_species_map();
-
-  const auto artsname = NameMaps();
-
-  std::cout << "#ifndef autoarts_h\n"
-            << "#define autoarts_h\n"
-            << '\n'
-            << "#include <auto_md.h>" << '\n'
-            << "#include <arts.h>" << '\n'
-            << "#include <global_data.h>" << '\n'
-            << "#include <m_basic_types.h>" << '\n'
-            << "#include <m_general.h>" << '\n'
-            << "#include <m_append.h>" << '\n'
-            << "#include <m_conversion.h>" << '\n'
-            << "#include <m_copy.h>" << '\n'
-            << "#include <m_gridded_fields.h>" << '\n'
-            << "#include <m_xml.h>" << '\n'
-            << "#include <m_select.h>" << '\n'
-            << "#include <m_reduce.h>" << '\n'
-            << "#include <m_nc.h>" << '\n'
-            << "#include <m_delete.h>" << '\n'
-            << "#include <m_extract.h>" << '\n'
-            << "#include <m_ignore.h>" << '\n'
-            << '\n'
-            << '\n';
-
-  std::cout << "extern String out_basename;\n\n";
-
-  std::cout << "namespace ARTS { using Workspace=Workspace; }\n\n";
-  std::cout << "namespace ARTS::Constant { using namespace ::Constant; }\n\n";
-  std::cout << "namespace ARTS::Group {\n";
-  for (auto& x : artsname.group) {
-    if (x.first == "Any") continue;
-    std::cout << "using " << x.first << '=' << x.first << ';' << '\n';
-  }
-  std::cout << "namespace Internal {\n";
-  std::cout << "/*! A Tokenized Value.  Used purely in internal code */\n";
-  std::cout << "using TokVal=TokVal;\n";
-  std::cout << "/*! A Method Record.  Used to pass methods to agendas */\n";
-  std::cout << "using MRecord=MRecord;\n";
-  std::cout << "}  // namespace Internal\n";
-  std::cout << "}  // ARTS::Group \n\n";
-
-  print_var(artsname);
-
-  print_gin_methods(artsname);
-  
-  print_full_methods(artsname);
-
-  print_agenda_methods(artsname);
-
-  print_agenda_execute(artsname);
-  
-  print_agenda_define(artsname);
-
-  print_species_identification(artsname);
 
   // Make the main "startup"
   std::cout << "namespace ARTS {\n";
@@ -1136,9 +888,9 @@ int main() {
          "\n"
          "  out_basename = basename;\n"
          "\n"
-         "#ifndef NDEBUG\n"
+         "  #ifndef NDEBUG\n"
          "  ws.context = \"\";\n"
-         "#endif\n"
+         "  #endif\n"
          "\n"
          "  return ws;\n"
          "}\n";

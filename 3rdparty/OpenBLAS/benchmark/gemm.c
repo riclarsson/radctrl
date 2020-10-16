@@ -39,8 +39,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef DOUBLE
 #define GEMM   BLASFUNC(dgemm)
-#elif defined(HALF)
-#define GEMM   BLASFUNC(shgemm)
 #else
 #define GEMM   BLASFUNC(sgemm)
 #endif
@@ -122,17 +120,14 @@ static void *huge_malloc(BLASLONG size){
 
 int main(int argc, char *argv[]){
 
-  IFLOAT *a, *b;
-  FLOAT *c;
-  FLOAT alpha[] = {1.0, 0.0};
+  FLOAT *a, *b, *c;
+  FLOAT alpha[] = {1.0, 1.0};
   FLOAT beta [] = {0.0, 0.0};
-  char transa = 'N';
-  char transb = 'N';
-  blasint m, n, k, i, j, lda, ldb, ldc;
+  char trans='N';
+  blasint m, n, i, j;
   int loops = 1;
-  int has_param_m = 0;
-  int has_param_n = 0;
-  int has_param_k = 0;
+  int has_param_n=0;
+  int l;
   char *p;
 
   int from =   1;
@@ -140,108 +135,86 @@ int main(int argc, char *argv[]){
   int step =   1;
 
   struct timeval start, stop;
-  double time1, timeg;
+  double time1,timeg;
 
   argc--;argv++;
 
-  if (argc > 0) { from = atol(*argv);            argc--; argv++; }
-  if (argc > 0) { to   = MAX(atol(*argv), from); argc--; argv++; }
-  if (argc > 0) { step = atol(*argv);            argc--; argv++; }
+  if (argc > 0) { from     = atol(*argv);		argc--; argv++;}
+  if (argc > 0) { to       = MAX(atol(*argv), from);	argc--; argv++;}
+  if (argc > 0) { step     = atol(*argv);		argc--; argv++;}
 
-  if ((p = getenv("OPENBLAS_TRANS"))) {
-    transa=*p;
-    transb=*p;
-  }
-  if ((p = getenv("OPENBLAS_TRANSA"))) {
-    transa=*p;
-  }
-  if ((p = getenv("OPENBLAS_TRANSB"))) {
-    transb=*p;
-  }
-  TOUPPER(transa);
-  TOUPPER(transb);
+  if ((p = getenv("OPENBLAS_TRANS")))  trans=*p;
 
-  fprintf(stderr, "From : %3d  To : %3d Step=%d : Transa=%c : Transb=%c\n", from, to, step, transa, transb);
+  fprintf(stderr, "From : %3d  To : %3d Step=%d : Trans=%c\n", from, to, step, trans);
+
+  if (( a = (FLOAT *)malloc(sizeof(FLOAT) * to * to * COMPSIZE)) == NULL){
+    fprintf(stderr,"Out of Memory!!\n");exit(1);
+  }
+
+  if (( b = (FLOAT *)malloc(sizeof(FLOAT) * to * to * COMPSIZE)) == NULL){
+    fprintf(stderr,"Out of Memory!!\n");exit(1);
+  }
+
+  if (( c = (FLOAT *)malloc(sizeof(FLOAT) * to * to * COMPSIZE)) == NULL){
+    fprintf(stderr,"Out of Memory!!\n");exit(1);
+  }
 
   p = getenv("OPENBLAS_LOOPS");
-  if ( p != NULL ) {
-    loops = atoi(p);
-  }
+  if ( p != NULL )
+	loops = atoi(p);
 
-  if ((p = getenv("OPENBLAS_PARAM_M"))) {
-    m = atoi(p);
-    has_param_m=1;
-  } else {
-    m = to;
-  }
   if ((p = getenv("OPENBLAS_PARAM_N"))) {
-    n = atoi(p);
-    has_param_n=1;
-  } else {
-    n = to;
-  }
-  if ((p = getenv("OPENBLAS_PARAM_K"))) {
-    k = atoi(p);
-    has_param_k=1;
-  } else {
-    k = to;
+          n = atoi(p);
+	  has_param_n=1;	  
   }
 
-  if (( a = (IFLOAT *)malloc(sizeof(IFLOAT) * m * k * COMPSIZE)) == NULL) {
-    fprintf(stderr,"Out of Memory!!\n");exit(1);
-  }
-  if (( b = (IFLOAT *)malloc(sizeof(IFLOAT) * k * n * COMPSIZE)) == NULL) {
-    fprintf(stderr,"Out of Memory!!\n");exit(1);
-  }
-  if (( c = (FLOAT *)malloc(sizeof(FLOAT) * m * n * COMPSIZE)) == NULL) {
-    fprintf(stderr,"Out of Memory!!\n");exit(1);
-  }
-
-#ifdef __linux
+#ifdef linux
   srandom(getpid());
 #endif
+ 
+	for(j = 0; j < to; j++){
+      		for(i = 0; i < to * COMPSIZE; i++){
+			a[i + j * to * COMPSIZE] = ((FLOAT) rand() / (FLOAT) RAND_MAX) - 0.5;
+			b[i + j * to * COMPSIZE] = ((FLOAT) rand() / (FLOAT) RAND_MAX) - 0.5;
+			c[i + j * to * COMPSIZE] = ((FLOAT) rand() / (FLOAT) RAND_MAX) - 0.5;
+      		}
+    	}
 
-  for (i = 0; i < m * k * COMPSIZE; i++) {
-    a[i] = ((IFLOAT) rand() / (IFLOAT) RAND_MAX) - 0.5;
-  }
-  for (i = 0; i < k * n * COMPSIZE; i++) {
-    b[i] = ((IFLOAT) rand() / (IFLOAT) RAND_MAX) - 0.5;
-  }
-  for (i = 0; i < m * n * COMPSIZE; i++) {
-    c[i] = ((FLOAT) rand() / (FLOAT) RAND_MAX) - 0.5;
-  }
 
-  fprintf(stderr, "          SIZE                   Flops             Time\n");
 
-  for (i = from; i <= to; i += step) {
-    
+  fprintf(stderr, "   SIZE          Flops          Time\n");
+
+  for(m = from; m <= to; m += step)
+  {
+
     timeg=0;
 
-    if (!has_param_m) { m = i; }
-    if (!has_param_n) { n = i; }
-    if (!has_param_k) { k = i; }
+    if ( has_param_n == 1 && n <= m )
+    	n=n;
+    else
+    	n=m;
 
-    if (transa == 'N') { lda = m; }
-    else { lda = k; }
-    if (transb == 'N') { ldb = k; }
-    else { ldb = n; }
-    ldc = m;
 
-    fprintf(stderr, " M=%4d, N=%4d, K=%4d : ", (int)m, (int)n, (int)k);
+
+    fprintf(stderr, " %6dx%d : ", (int)m, (int)n);
     gettimeofday( &start, (struct timezone *)0);
 
-    for (j=0; j<loops; j++) {
-      GEMM (&transa, &transb, &m, &n, &k, alpha, a, &lda, b, &ldb, beta, c, &ldc);
-    }
+    for (l=0; l<loops; l++)
+    {
 
-    gettimeofday( &stop, (struct timezone *)0);
-    time1 = (double)(stop.tv_sec - start.tv_sec) + (double)((stop.tv_usec - start.tv_usec)) * 1.e-6;
+    	GEMM (&trans, &trans, &m, &n, &m, alpha, a, &m, b, &m, beta, c, &m );
+
+
+
+    }
+   gettimeofday( &stop, (struct timezone *)0);
+   time1 = (double)(stop.tv_sec - start.tv_sec) + (double)((stop.tv_usec - start.tv_usec)) * 1.e-6;
 
     timeg = time1/loops;
     fprintf(stderr,
 	    " %10.2f MFlops %10.6f sec\n",
-	    COMPSIZE * COMPSIZE * 2. * (double)k * (double)m * (double)n / timeg * 1.e-6, time1);
-    
+	    COMPSIZE * COMPSIZE * 2. * (double)m * (double)m * (double)n / timeg * 1.e-6, time1);
+
   }
 
   return 0;

@@ -73,7 +73,6 @@ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define MB  __sync_synchronize()
 #define WMB __sync_synchronize()
-#define RMB __sync_synchronize()
 
 #define INLINE inline
 
@@ -95,7 +94,7 @@ static inline unsigned int rpcc(void){
 #define RPCC_DEFINED
 
 #ifndef NO_AFFINITY
-//#define WHEREAMI
+#define WHEREAMI
 static inline int WhereAmI(void){
   int ret=0;
   __asm__ __volatile__(".set push \n"
@@ -227,7 +226,7 @@ REALNAME: ;\
 
 #define SEEK_ADDRESS
 
-#define BUFFER_SIZE     ( 32 << 21)
+#define BUFFER_SIZE     ( 32 << 20)
 
 #if defined(LOONGSON3A)
 #define PAGESIZE	(16UL << 10)

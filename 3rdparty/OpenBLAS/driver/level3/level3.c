@@ -62,18 +62,18 @@
 #ifndef ICOPY_OPERATION
 #if defined(NN) || defined(NT) || defined(NC) || defined(NR) || \
     defined(RN) || defined(RT) || defined(RC) || defined(RR)
-#define ICOPY_OPERATION(M, N, A, LDA, X, Y, BUFFER) GEMM_ITCOPY(M, N, (IFLOAT *)(A) + ((Y) + (X) * (LDA)) * COMPSIZE, LDA, BUFFER);
+#define ICOPY_OPERATION(M, N, A, LDA, X, Y, BUFFER) GEMM_ITCOPY(M, N, (FLOAT *)(A) + ((Y) + (X) * (LDA)) * COMPSIZE, LDA, BUFFER);
 #else
-#define ICOPY_OPERATION(M, N, A, LDA, X, Y, BUFFER) GEMM_INCOPY(M, N, (IFLOAT *)(A) + ((X) + (Y) * (LDA)) * COMPSIZE, LDA, BUFFER);
+#define ICOPY_OPERATION(M, N, A, LDA, X, Y, BUFFER) GEMM_INCOPY(M, N, (FLOAT *)(A) + ((X) + (Y) * (LDA)) * COMPSIZE, LDA, BUFFER);
 #endif
 #endif
 
 #ifndef OCOPY_OPERATION
 #if defined(NN) || defined(TN) || defined(CN) || defined(RN) || \
     defined(NR) || defined(TR) || defined(CR) || defined(RR)
-#define OCOPY_OPERATION(M, N, A, LDA, X, Y, BUFFER) GEMM_ONCOPY(M, N, (IFLOAT *)(A) + ((X) + (Y) * (LDA)) * COMPSIZE, LDA, BUFFER);
+#define OCOPY_OPERATION(M, N, A, LDA, X, Y, BUFFER) GEMM_ONCOPY(M, N, (FLOAT *)(A) + ((X) + (Y) * (LDA)) * COMPSIZE, LDA, BUFFER);
 #else
-#define OCOPY_OPERATION(M, N, A, LDA, X, Y, BUFFER) GEMM_OTCOPY(M, N, (IFLOAT *)(A) + ((Y) + (X) * (LDA)) * COMPSIZE, LDA, BUFFER);
+#define OCOPY_OPERATION(M, N, A, LDA, X, Y, BUFFER) GEMM_OTCOPY(M, N, (FLOAT *)(A) + ((Y) + (X) * (LDA)) * COMPSIZE, LDA, BUFFER);
 #endif
 #endif
 
@@ -173,8 +173,7 @@ int CNAME(blas_arg_t *args, BLASLONG *range_m, BLASLONG *range_n,
 		  XFLOAT *sa, XFLOAT *sb, BLASLONG dummy){
   BLASLONG k, lda, ldb, ldc;
   FLOAT *alpha, *beta;
-  IFLOAT *a, *b;
-  FLOAT *c;
+  FLOAT *a, *b, *c;
   BLASLONG m_from, m_to, n_from, n_to;
 
   BLASLONG ls, is, js;
@@ -199,8 +198,8 @@ int CNAME(blas_arg_t *args, BLASLONG *range_m, BLASLONG *range_n,
 
   k = K;
 
-  a = (IFLOAT *)A;
-  b = (IFLOAT *)B;
+  a = (FLOAT *)A;
+  b = (FLOAT *)B;
   c = (FLOAT *)C;
 
   lda = LDA;
@@ -252,11 +251,11 @@ int CNAME(blas_arg_t *args, BLASLONG *range_m, BLASLONG *range_n,
   if ((k == 0) || (alpha == NULL)) return 0;
 
 #if !defined(XDOUBLE) || !defined(QUAD_PRECISION)
-  if ( alpha[0] == ZERO
+  if ((alpha[0] == ZERO)
 #ifdef COMPLEX
-      && alpha[1] == ZERO
+      && (alpha[1] == ZERO)
 #endif
-	 ) return 0; 
+      ) return 0;
 #else
   if (((alpha[0].x[0] | alpha[0].x[1]
 #ifdef COMPLEX
@@ -294,7 +293,7 @@ int CNAME(blas_arg_t *args, BLASLONG *range_m, BLASLONG *range_n,
       min_l = k - ls;
 
       if (min_l >= GEMM_Q * 2) {
-	// gemm_p = GEMM_P;
+	gemm_p = GEMM_P;
 	min_l  = GEMM_Q;
       } else {
 	if (min_l > GEMM_Q) {
@@ -333,16 +332,13 @@ int CNAME(blas_arg_t *args, BLASLONG *range_m, BLASLONG *range_n,
 #else
       for(jjs = js; jjs < js + min_j; jjs += min_jj){
 	min_jj = min_j + js - jjs;
-#if defined(SKYLAKEX) || defined(COOPERLAKE)
-	/* the current AVX512 s/d/c/z GEMM kernel requires n>=6*GEMM_UNROLL_N to achieve best performance */
-	if (min_jj >= 6*GEMM_UNROLL_N) min_jj = 6*GEMM_UNROLL_N;
-#else
+
         if (min_jj >= 3*GEMM_UNROLL_N) min_jj = 3*GEMM_UNROLL_N;
         else
         	if (min_jj >= 2*GEMM_UNROLL_N) min_jj = 2*GEMM_UNROLL_N;
         	else
           		if (min_jj > GEMM_UNROLL_N) min_jj = GEMM_UNROLL_N;
-#endif
+
 
 
 	START_RPCC();

@@ -40,13 +40,17 @@
     ztbsv,ztpmv,ztpsv,ztrmm,ztrmv,ztrsm,ztrsv,
     xerbla,
     saxpby,daxpby,caxpby,zaxpby,
-    somatcopy, domatcopy, comatcopy, zomatcopy,
-    simatcopy, dimatcopy, cimatcopy, zimatcopy,
     sgeadd,dgeadd,cgeadd,zgeadd,
-    ssum, dsum, scsum, dzsum
+    somatcopy,
+    simatcopy,
+    domatcopy,
+    dimatcopy,
+    comatcopy,
+    cimatcopy,
+    zomatcopy,
+    zimatcopy,
 );
 
-@halfblasobjs = (shgemm, shdot, shstobf16, shdtobf16, sbf16tos, dbf16tod);
 @cblasobjs = (
     cblas_caxpy, cblas_ccopy, cblas_cdotc, cblas_cdotu, cblas_cgbmv, cblas_cgemm, cblas_cgemv,
     cblas_cgerc, cblas_cgeru, cblas_chbmv, cblas_chemm, cblas_chemv, cblas_cher2, cblas_cher2k,
@@ -76,15 +80,8 @@
     cblas_saxpby,cblas_daxpby,cblas_caxpby,cblas_zaxpby,
     cblas_somatcopy, cblas_domatcopy, cblas_comatcopy, cblas_zomatcopy,
     cblas_simatcopy, cblas_dimatcopy, cblas_cimatcopy, cblas_zimatcopy,
-    cblas_sgeadd, cblas_dgeadd,cblas_cgeadd, cblas_zgeadd,
-    cblas_isamin, cblas_idamin, cblas_icamin, cblas_izamin,
-    cblas_ismin, cblas_idmin, cblas_icmin, cblas_izmin,
-    cblas_ismax, cblas_idmax, cblas_icmax, cblas_izmax,
-    cblas_ssum, cblas_dsum, cblas_scsum, cblas_dzsum,
-    cblas_xerbla
+    cblas_sgeadd, cblas_dgeadd,cblas_cgeadd, cblas_zgeadd
 );
-
-@halfcblasobjs = (cblas_shgemm, cblas_shdot, cblas_shstobf16, cblas_shdtobf16, cblas_sbf16tos, cblas_dbf16tod);
 
 @exblasobjs = (
     qamax,qamin,qasum,qaxpy,qcabs1,qcopy,qdot,qgbmv,qgemm,
@@ -162,7 +159,7 @@
     ilaenv, ieeeck, lsamen,  iparmq,
     ilaprec, ilatrans, ilauplo, iladiag,
     ilaver, slamch, slamc3,
-    
+
     # SCLAUX  -- Auxiliary routines called from both REAL and COMPLEX.
     # excluded: second_$(TIMER)
     sbdsdc,
@@ -621,6 +618,19 @@
     # functions added for lapack-3.7.0
 
     slarfy,
+    slasyf_rk,
+    ssyconvf_rook,
+    ssytf2_rk,
+    ssytrf_rk,
+    ssytrs_3,
+    ssytri_3,
+    ssytri_3x,
+    ssycon_3,
+    ssysv_rk,
+    slasyf_aa,
+    ssysv_aa,
+    ssytrf_aa,
+    ssytrs_aa,
     strevc3,
     sgelqt,
     sgelqt3,
@@ -637,8 +647,33 @@
     stplqt,
     stplqt2,
     stpmlqt,
+    ssytrd_2stage,
+    ssytrd_sy2sb,
+    ssytrd_sb2st,
+    ssb2st_kernels,
+    ssyevd_2stage,
+    ssyev_2stage,
+    ssyevx_2stage,
+    ssyevr_2stage,
+    ssbev_2stage,
+    ssbevx_2stage,
+    ssbevd_2stage,
+    ssygv_2stage,
     dlarfy,
+    dlasyf_rk,
     dsyconvf,
+    dsyconvf_rook,
+    dsytf2_rk,
+    dsytrf_rk,
+    dsytrs_3,
+    dsytri_3,
+    dsytri_3x,
+    dsycon_3,
+    dsysv_rk,
+    dlasyf_aa,
+    dsysv_aa,
+    dsytrf_aa,
+    dsytrs_aa,
     dtrevc3,
     dgelqt,
     dgelqt3,
@@ -655,8 +690,45 @@
     dtplqt,
     dtplqt2,
     dtpmlqt,
+    dsytrd_2stage,
+    dsytrd_sy2sb,
+    dsytrd_sb2st,
+    dsb2st_kernels,
+    dsyevd_2stage,
+    dsyev_2stage,
+    dsyevx_2stage,
+    dsyevr_2stage,
+    dsbev_2stage,
+    dsbevx_2stage,
+    dsbevd_2stage,
+    dsygv_2stage,
+    chetf2_rk,
+    chetrf_rk,
+    chetri_3,
+    chetri_3x,
+    chetrs_3,
+    checon_3,
+    chesv_rk,
+    chesv_aa,
+    chetrf_aa,
+    chetrs_aa,
+    clahef_aa,
+    clahef_rk,
     clarfy,
+    clasyf_rk,
+    clasyf_aa,
     csyconvf,
+    csyconvf_rook,
+    csytf2_rk,
+    csytrf_rk,
+    csytrf_aa,
+    csytrs_3,
+    csytrs_aa,
+    csytri_3,
+    csytri_3x,
+    csycon_3,
+    csysv_rk,
+    csysv_aa,
     ctrevc3,
     cgelqt,
     cgelqt3,
@@ -673,8 +745,45 @@
     ctplqt,
     ctplqt2,
     ctpmlqt,
+    chetrd_2stage,
+    chetrd_he2hb,
+    chetrd_hb2st,
+    chb2st_kernels,
+    cheevd_2stage,
+    cheev_2stage,
+    cheevx_2stage,
+    cheevr_2stage,
+    chbev_2stage,
+    chbevx_2stage,
+    chbevd_2stage,
+    chegv_2stage,
+    zhetf2_rk,
+    zhetrf_rk,
+    zhetri_3,
+    zhetri_3x,
+    zhetrs_3,
+    zhecon_3,
+    zhesv_rk,
+    zhesv_aa,
+    zhetrf_aa,
+    zhetrs_aa,
+    zlahef_aa,
+    zlahef_rk,
     zlarfy,
+    zlasyf_rk,
+    zlasyf_aa,
     zsyconvf,
+    zsyconvf_rook,
+    zsytrs_aa,
+    zsytf2_rk,
+    zsytrf_rk,
+    zsytrf_aa,
+    zsytrs_3,
+    zsytri_3,
+    zsytri_3x,
+    zsycon_3,
+    zsysv_rk,
+    zsysv_aa,
     ztrevc3,
     ztplqt,
     ztplqt2,
@@ -691,25 +800,21 @@
     zlaswlq,
     zlamswlq,
     zgemlq,
+    zhetrd_2stage,
+    zhetrd_he2hb,
+    zhetrd_hb2st,
+    zhb2st_kernels,
+    zheevd_2stage,
+    zheev_2stage,
+    zheevx_2stage,
+    zheevr_2stage,
+    zhbev_2stage,
+    zhbevx_2stage,
+    zhbevd_2stage,
+    zhegv_2stage,
     sladiv1,
     dladiv1,
     iparam2stage,
-    
-    # functions added for lapack-3.8.0
-
-    ilaenv2stage,
-
-    # functions added for lapack-3.9.0
-    cgesvdq,
-    cungtsqr,
-    dcombssq,
-    dgesvdq,
-    dorgtsqr,
-    scombssq,
-    sgesvdq,
-    sorgtsqr,
-    zgesvdq,
-    zungtsqr
 );
 
 @lapack_extendedprecision_objs = (
@@ -3106,14 +3211,9 @@
     LAPACKE_zuncsd2by1_work,
 
     ## new function from lapack-3.7.0
-    LAPACKE_cgelq,
-    LAPACKE_cgelq_work,
-    LAPACKE_cgemlq,
-    LAPACKE_cgemlq_work,
+
     LAPACKE_cgemqr,
     LAPACKE_cgemqr_work,
-    LAPACKE_cgeqr,
-    LAPACKE_cgeqr_work,
     LAPACKE_cgetsls,
     LAPACKE_cgetsls_work,
     LAPACKE_chbev_2stage,
@@ -3164,14 +3264,8 @@
     LAPACKE_csytrs_aa_work,
     LAPACKE_csytrs_3,
     LAPACKE_csytrs_3_work,
-    LAPACKE_dgelq,
-    LAPACKE_dgelq_work,
-    LAPACKE_dgemlq,
-    LAPACKE_dgemlq_work,
     LAPACKE_dgemqr,
     LAPACKE_dgemqr_work,
-    LAPACKE_dgeqr,
-    LAPACKE_dgeqr_work,
     LAPACKE_dgetsls,
     LAPACKE_dgetsls_work,
     LAPACKE_dsbev_2stage,
@@ -3206,14 +3300,8 @@
     LAPACKE_dsytrs_aa_work,
     LAPACKE_dsytrs_3,
     LAPACKE_dsytrs_3_work,
-    LAPACKE_sgelq,
-    LAPACKE_sgelq_work,
-    LAPACKE_sgemlq,
-    LAPACKE_sgemlq_work,
     LAPACKE_sgemqr,
     LAPACKE_sgemqr_work,
-    LAPACKE_sgeqr,
-    LAPACKE_sgeqr_work,
     LAPACKE_sgetsls,
     LAPACKE_sgetsls_work,
     LAPACKE_ssbev_2stage,
@@ -3248,14 +3336,8 @@
     LAPACKE_ssytrs_aa_work,
     LAPACKE_ssytrs_3,
     LAPACKE_ssytrs_3_work,
-    LAPACKE_zgelq,
-    LAPACKE_zgelq_work,
-    LAPACKE_zgemlq,
-    LAPACKE_zgemlq_work,
     LAPACKE_zgemqr,
     LAPACKE_zgemqr_work,
-    LAPACKE_zgeqr,
-    LAPACKE_zgeqr_work,
     LAPACKE_zgetsls,
     LAPACKE_zgetsls_work,
     LAPACKE_zhbev_2stage,
@@ -3306,71 +3388,6 @@
     LAPACKE_zsytrs_aa_work,
     LAPACKE_zsytrs_3,
     LAPACKE_zsytrs_3_work,
-    
-    ## new function from lapack-3.8.0
-    LAPACKE_chesv_aa_2stage,
-    LAPACKE_chesv_aa_2stage_work,
-    LAPACKE_chetrf_aa_2stage,
-    LAPACKE_chetrf_aa_2stage_work,
-    LAPACKE_chetrs_aa_2stage,
-    LAPACKE_chetrs_aa_2stage_work,
-    LAPACKE_clacrm,
-    LAPACKE_clacrm_work,
-    LAPACKE_clarcm,
-    LAPACKE_clarcm_work,
-    LAPACKE_classq,
-    LAPACKE_classq_work,
-    LAPACKE_csysv_aa_2stage,
-    LAPACKE_csysv_aa_2stage_work,
-    LAPACKE_csytrf_aa_2stage,
-    LAPACKE_csytrf_aa_2stage_work,
-    LAPACKE_csytrs_aa_2stage,
-    LAPACKE_csytrs_aa_2stage_work,
-    LAPACKE_dlassq,
-    LAPACKE_dlassq_work,
-    LAPACKE_dsysv_aa_2stage,
-    LAPACKE_dsysv_aa_2stage_work,
-    LAPACKE_dsytrf_aa_2stage,
-    LAPACKE_dsytrf_aa_2stage_work,
-    LAPACKE_dsytrs_aa_2stage,
-    LAPACKE_dsytrs_aa_2stage_work,
-    LAPACKE_get_nancheck,
-    LAPACKE_set_nancheck,
-    LAPACKE_slassq,
-    LAPACKE_slassq_work,
-    LAPACKE_ssysv_aa_2stage,
-    LAPACKE_ssysv_aa_2stage_work,
-    LAPACKE_ssytrf_aa_2stage,
-    LAPACKE_ssytrf_aa_2stage_work,
-    LAPACKE_ssytrs_aa_2stage,
-    LAPACKE_ssytrs_aa_2stage_work,
-    LAPACKE_zhesv_aa_2stage,
-    LAPACKE_zhesv_aa_2stage_work,
-    LAPACKE_zhetrf_aa_2stage,
-    LAPACKE_zhetrf_aa_2stage_work,
-    LAPACKE_zhetrs_aa_2stage,
-    LAPACKE_zhetrs_aa_2stage_work,
-    LAPACKE_zlacrm,
-    LAPACKE_zlacrm_work,
-    LAPACKE_zlarcm,
-    LAPACKE_zlarcm_work,
-    LAPACKE_zlassq,
-    LAPACKE_zlassq_work,
-    LAPACKE_zsysv_aa_2stage,
-    LAPACKE_zsysv_aa_2stage_work,
-    LAPACKE_zsytrf_aa_2stage,
-    LAPACKE_zsytrf_aa_2stage_work,
-    LAPACKE_zsytrs_aa_2stage,
-    LAPACKE_zsytrs_aa_2stage_work,
-    
-    # new functions from 3.9.0
-    LAPACKE_dgesvdq,
-    LAPACKE_dgesvdq_work,
-    LAPACKE_sgesvdq,
-    LAPACKE_sgesvdq_work,
-    LAPACKE_zgesvdq,
-    LAPACKE_zgesvdq_work
-
 );
 
 #These function may need 2 underscores.
@@ -3391,83 +3408,16 @@
     zlahef_rook, zlasyf_rook,
     zsytf2_rook, zsytrf_rook, zsytrs_rook,
     zsytri_rook, zsycon_rook, zsysv_rook,
-# 3.7.0
-    slasyf_rk, ssyconvf_rook, ssytf2_rk,
-    ssytrf_rk, ssytrs_3, ssytri_3,
-    ssytri_3x, ssycon_3, ssysv_rk,
-    slasyf_aa, ssysv_aa, ssytrf_aa,
-    ssytrs_aa, ssytrd_2stage, ssytrd_sy2sb,
-    ssytrd_sb2st, ssb2st_kernels, ssyevd_2stage,
-    ssyev_2stage, ssyevx_2stage, ssyevr_2stage,
-    ssbev_2stage, ssbevx_2stage, ssbevd_2stage,
-    ssygv_2stage, dlasyf_rk, dsyconvf_rook,
-    dsytf2_rk, dsytrf_rk, dsytrs_3,
-    dsytri_3, dsytri_3x, dsycon_3,
-    dsysv_rk, dlasyf_aa, dsysv_aa,
-    dsytrf_aa, dsytrs_aa, dsytrd_2stage,
-    dsytrd_sy2sb, dsytrd_sb2st, dsb2st_kernels,
-    dsyevd_2stage, dsyev_2stage, dsyevx_2stage,
-    dsyevr_2stage, dsbev_2stage, dsbevx_2stage,
-    dsbevd_2stage, dsygv_2stage, chetf2_rk,
-    chetrf_rk, chetri_3, chetri_3x,
-    chetrs_3, checon_3, chesv_rk,
-    chesv_aa, chetrf_aa, chetrs_aa,
-    clahef_aa, clahef_rk, clasyf_rk,
-    clasyf_aa, csytf2_rk, csytrf_rk,
-    csytrf_aa, csytrs_3, csytrs_aa,
-    csytri_3, csytri_3x, csycon_3,
-    csysv_rk, csysv_aa, csyconvf_rook,
-    chetrd_2stage, chetrd_he2hb, chetrd_hb2st,
-    chb2st_kernels, cheevd_2stage, cheev_2stage,
-    cheevx_2stage, cheevr_2stage, chbev_2stage,
-    chbevx_2stage, chbevd_2stage, chegv_2stage,
-    zhetf2_rk, zhetrf_rk, zhetri_3,
-    zhetri_3x, zhetrs_3, zhecon_3,
-    zhesv_rk, zhesv_aa, zhetrf_aa,
-    zhetrs_aa, zlahef_aa, zlahef_rk,
-    zlasyf_rk, zlasyf_aa, zsyconvf_rook,
-    zsytrs_aa, zsytf2_rk, zsytrf_rk,
-    zsytrf_aa, zsytrs_3, zsytri_3,
-    zsytri_3x, zsycon_3, zsysv_rk,
-    zsysv_aa, zhetrd_2stage, zhetrd_he2hb,
-    zhetrd_hb2st, zhb2st_kernels, zheevd_2stage,
-    zheev_2stage, zheevx_2stage, zheevr_2stage,
-    zhbev_2stage, zhbevx_2stage, zhbevd_2stage,
-    zhegv_2stage,
-# 3.8.0
-    ssysv_aa_2stage, ssytrf_aa_2stage,
-    ssytrs_aa_2stage, chesv_aa_2stage,
-    chetrf_aa_2stage, chetrs_aa_2stage,
-    csysv_aa_2stage, csytrf_aa_2stage,
-    csytrs_aa_2stage, dsysv_aa_2stage,
-    dsytrf_aa_2stage, dsytrs_aa_2stage,
-    zhesv_aa_2stage, zhetrf_aa_2stage,
-    zhetrs_aa_2stage, zsysv_aa_2stage,
-    zsytrf_aa_2stage, zsytrs_aa_2stage,
-# 3.9.0
-    claunhr_col_getrfnp, claunhr_col_getrfnp2, cunhr_col,
-    dlaorhr_col_getrfnp, dlaorhr_col_getrfnp2, dorhr_col,
-    slaorhr_col_getrfnp, slaorhr_col_getrfnp2, sorhr_col,
-    zlaunhr_col_getrfnp, zlaunhr_col_getrfnp2, zunhr_col
-
 );
 
 
-use File::Spec;
-use File::Basename;
-my $dirname = File::Spec->catfile(dirname(dirname(File::Spec->rel2abs(__FILE__))), "lapack-netlib");
-
-if ($ARGV[12] == 1) {
-	@blasobjs = (@blasobjs, @halfblasobjs);
-	@cblasobjs = (@cblasobjs, @halfcblasobjs);
-}
 if ($ARGV[8] == 1) {
     #ONLY_CBLAS=1
     @underscore_objs = (@misc_underscore_objs);
 } elsif ($ARGV[5] == 1) {
     #NO_LAPACK=1
     @underscore_objs = (@blasobjs, @misc_underscore_objs);
-} elsif (-d $dirname) {
+} elsif (-d "../lapack-netlib") {
     if ($ARGV[7] == 0) {
         # NEED2UNDERSCORES=0
         # Don't need 2 underscores
@@ -3501,12 +3451,9 @@ if ($ARGV[1] eq "x86")    { @underscore_objs = (@underscore_objs, @gemm3mobjs); 
 if ($ARGV[1] eq "ia64")   { @underscore_objs = (@underscore_objs, @gemm3mobjs); };
 if ($ARGV[1] eq "MIPS")   { @underscore_objs = (@underscore_objs, @gemm3mobjs); };
 
+
 if ($ARGV[4] == 0) {
     @no_underscore_objs = (@cblasobjs, @misc_no_underscore_objs);
-    if ($ARGV[1] eq "x86_64") { @no_underscore_objs = (@no_underscore_objs, @cblasgemm3mobjs); };
-    if ($ARGV[1] eq "x86")    { @no_underscore_objs = (@no_underscore_objs, @cblasgemm3mobjs); };
-    if ($ARGV[1] eq "ia64")   { @no_underscore_objs = (@no_underscore_objs, @cblasgemm3mobjs); };
-    if ($ARGV[1] eq "MIPS")   { @no_underscore_objs = (@no_underscore_objs, @cblasgemm3mobjs); };
 }else{
     #NO_CBLAS=1
     @no_underscore_objs = (@misc_no_underscore_objs);

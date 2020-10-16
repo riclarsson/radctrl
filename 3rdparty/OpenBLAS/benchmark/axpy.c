@@ -128,7 +128,7 @@ int main(int argc, char *argv[]){
   int to   = 200;
   int step =   1;
 
-  struct timespec start, stop;
+  struct timeval start, stop;
   double time1,timeg;
 
   argc--;argv++;
@@ -151,7 +151,7 @@ int main(int argc, char *argv[]){
     fprintf(stderr,"Out of Memory!!\n");exit(1);
   }
 
-#ifdef __linux
+#ifdef linux
   srandom(getpid());
 #endif
 
@@ -175,13 +175,13 @@ int main(int argc, char *argv[]){
    	for(i = 0; i < m * COMPSIZE * abs(inc_y); i++){
 			y[i] = ((FLOAT) rand() / (FLOAT) RAND_MAX) - 0.5;
    	}
-    	clock_gettime( CLOCK_REALTIME, &start);
+    	gettimeofday( &start, (struct timezone *)0);
 
     	AXPY (&m, alpha, x, &inc_x, y, &inc_y );
 
-    	clock_gettime( CLOCK_REALTIME, &stop);
+    	gettimeofday( &stop, (struct timezone *)0);
 
-    	time1 = (double)(stop.tv_sec - start.tv_sec) + (double)((stop.tv_nsec - start.tv_nsec)) * 1.e-9;
+    	time1 = (double)(stop.tv_sec - start.tv_sec) + (double)((stop.tv_usec - start.tv_usec)) * 1.e-6;
 
 	timeg += time1;
 
@@ -190,7 +190,7 @@ int main(int argc, char *argv[]){
     timeg /= loops;
 
     fprintf(stderr,
-	    " %10.2f MFlops %10.9f sec\n",
+	    " %10.2f MFlops %10.6f sec\n",
 	    COMPSIZE * COMPSIZE * 2. * (double)m / timeg * 1.e-6, timeg);
 
   }

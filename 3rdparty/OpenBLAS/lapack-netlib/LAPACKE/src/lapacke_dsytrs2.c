@@ -34,7 +34,7 @@
 #include "lapacke_utils.h"
 
 lapack_int LAPACKE_dsytrs2( int matrix_layout, char uplo, lapack_int n,
-                            lapack_int nrhs, double* a, lapack_int lda,
+                            lapack_int nrhs, const double* a, lapack_int lda,
                             const lapack_int* ipiv, double* b, lapack_int ldb )
 {
     lapack_int info = 0;
@@ -44,14 +44,12 @@ lapack_int LAPACKE_dsytrs2( int matrix_layout, char uplo, lapack_int n,
         return -1;
     }
 #ifndef LAPACK_DISABLE_NAN_CHECK
-    if( LAPACKE_get_nancheck() ) {
-        /* Optionally check input matrices for NaNs */
-        if( LAPACKE_dsy_nancheck( matrix_layout, uplo, n, a, lda ) ) {
-            return -5;
-        }
-        if( LAPACKE_dge_nancheck( matrix_layout, n, nrhs, b, ldb ) ) {
-            return -8;
-        }
+    /* Optionally check input matrices for NaNs */
+    if( LAPACKE_dsy_nancheck( matrix_layout, uplo, n, a, lda ) ) {
+        return -5;
+    }
+    if( LAPACKE_dge_nancheck( matrix_layout, n, nrhs, b, ldb ) ) {
+        return -8;
     }
 #endif
     /* Allocate memory for working array(s) */

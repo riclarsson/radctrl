@@ -44,7 +44,6 @@
 #endif
 
 #ifndef COMPLEX
-#define SMP_THRESHOLD_MIN 65536.0
 #ifdef XDOUBLE
 #define ERROR_NAME "QGEMM "
 #elif defined(DOUBLE)
@@ -53,7 +52,6 @@
 #define ERROR_NAME "SGEMM "
 #endif
 #else
-#define SMP_THRESHOLD_MIN 8192.0
 #ifndef GEMM3M
 #ifdef XDOUBLE
 #define ERROR_NAME "XGEMM "
@@ -77,7 +75,7 @@
 #define GEMM_MULTITHREAD_THRESHOLD 4
 #endif
 
-static int (*gemm[])(blas_arg_t *, BLASLONG *, BLASLONG *, IFLOAT *, IFLOAT *, BLASLONG) = {
+static int (*gemm[])(blas_arg_t *, BLASLONG *, BLASLONG *, FLOAT *, FLOAT *, BLASLONG) = {
 #ifndef GEMM3M
   GEMM_NN, GEMM_TN, GEMM_RN, GEMM_CN,
   GEMM_NT, GEMM_TT, GEMM_RT, GEMM_CT,
@@ -108,8 +106,8 @@ static int (*gemm[])(blas_arg_t *, BLASLONG *, BLASLONG *, IFLOAT *, IFLOAT *, B
 void NAME(char *TRANSA, char *TRANSB,
 	  blasint *M, blasint *N, blasint *K,
 	  FLOAT *alpha,
-	  IFLOAT *a, blasint *ldA,
-	  IFLOAT *b, blasint *ldB,
+	  FLOAT *a, blasint *ldA,
+	  FLOAT *b, blasint *ldB,
 	  FLOAT *beta,
 	  FLOAT *c, blasint *ldC){
 
@@ -119,10 +117,12 @@ void NAME(char *TRANSA, char *TRANSB,
   blasint info;
 
   char transA, transB;
-  IFLOAT *buffer;
-  IFLOAT *sa, *sb;
+  FLOAT *buffer;
+  FLOAT *sa, *sb;
 
 #ifdef SMP
+  int nthreads_max;
+  int nthreads_avail;
   double MNK;
 #ifndef COMPLEX
 #ifdef XDOUBLE
@@ -220,22 +220,17 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
 	   blasint m, blasint n, blasint k,
 #ifndef COMPLEX
 	   FLOAT alpha,
+#else
+	   FLOAT *alpha,
+#endif
 	   FLOAT *a, blasint lda,
 	   FLOAT *b, blasint ldb,
+#ifndef COMPLEX
 	   FLOAT beta,
-	   FLOAT *c, blasint ldc) {
 #else
-	   void *valpha,
-	   void *va, blasint lda,
-	   void *vb, blasint ldb,
-	   void *vbeta,
-	   void *vc, blasint ldc) {
-  FLOAT *alpha = (FLOAT*) valpha;
-  FLOAT *beta  = (FLOAT*) vbeta;
-  FLOAT *a = (FLOAT*) va;
-  FLOAT *b = (FLOAT*) vb;
-  FLOAT *c = (FLOAT*) vc;	   
+	   FLOAT *beta,
 #endif
+	   FLOAT *c, blasint ldc) {
 
   blas_arg_t args;
   int transa, transb;
@@ -245,6 +240,8 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
   XFLOAT *sa, *sb;
 
 #ifdef SMP
+  int nthreads_max;
+  int nthreads_avail;
   double MNK;
 #ifndef COMPLEX
 #ifdef XDOUBLE
@@ -270,17 +267,6 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
 #endif
 
   PRINT_DEBUG_CNAME;
-
-#if !defined(COMPLEX) && !defined(DOUBLE) && defined(USE_SGEMM_KERNEL_DIRECT)
-#ifdef DYNAMIC_ARCH
- if (support_avx512() )
-#endif  
-  if (beta == 0 && alpha == 1.0 && order == CblasRowMajor && TransA == CblasNoTrans && TransB == CblasNoTrans && SGEMM_DIRECT_PERFORMANT(m,n,k)) {
-	SGEMM_DIRECT(m, n, k, a, lda, b, ldb, c, ldc);
-	return;
-  }
-
-#endif
 
 #ifndef COMPLEX
   args.alpha = (void *)&alpha;
@@ -420,12 +406,25 @@ void CNAME(enum CBLAS_ORDER order, enum CBLAS_TRANSPOSE TransA, enum CBLAS_TRANS
   mode |= (transa << BLAS_TRANSA_SHIFT);
   mode |= (transb << BLAS_TRANSB_SHIFT);
 
+  nthreads_max = num_cpu_avail(3);
+  nthreads_avail = nthreads_max;
+
+#ifndef COMPLEX
   MNK = (double) args.m * (double) args.n * (double) args.k;
-  if ( MNK <= (SMP_THRESHOLD_MIN  * (double) GEMM_MULTITHREAD_THRESHOLD)  )
-	args.nthreads = 1;
-  else
-	args.nthreads = num_cpu_avail(3);
+  if ( MNK <= (65536.0  * (double) GEMM_MULTITHREAD_THRESHOLD)  )
+	nthreads_max = 1;
+#else
+  MNK = (double) args.m * (double) args.n * (double) args.k;
+  if ( MNK <= (8192.0  * (double) GEMM_MULTITHREAD_THRESHOLD)  )
+	nthreads_max = 1;
+#endif
   args.common = NULL;
+
+  if ( nthreads_max > nthreads_avail )
+  	args.nthreads = nthreads_avail;
+  else
+  	args.nthreads = nthreads_max;
+
 
  if (args.nthreads == 1) {
 #endif

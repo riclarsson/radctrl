@@ -1,24 +1,16 @@
 include_directories(${PROJECT_SOURCE_DIR})
-include_directories(${PROJECT_BINARY_DIR})
 
 enable_language(Fortran)
 
-if (BUILD_SINGLE)
-	list( APPEND OpenBLAS_Tests  sblat1 sblat2 sblat3)
-endif()
-if (BUILD_DOUBLE)
-	list (APPEND OpenBLAS_Tests dblat1 dblat2 dblat3)
-endif()
-if (BUILD_COMPLEX)
-	list (APPEND OpenBLAS_Tests cblat1 cblat2 cblat3)
-endif()
-if (BUILD_COMPLEX16)
-	list (APPEND OpenBLAS_Tests zblat1 zblat2 zblat3)
-endif()
+set(OpenBLAS_Tests
+  sblat1 sblat2 sblat3
+  dblat1 dblat2 dblat3
+  cblat1 cblat2 cblat3
+  zblat1 zblat2 zblat3)
 
 foreach(test_bin ${OpenBLAS_Tests})
 add_executable(${test_bin} ${test_bin}.f)
-target_link_libraries(${test_bin} ${OpenBLAS_LIBNAME})
+target_link_libraries(${test_bin} ${OpenBLAS_LIBNAME}_static)
 endforeach()
 
 # $1 exec, $2 input, $3 output_result
