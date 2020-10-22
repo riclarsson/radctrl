@@ -522,14 +522,14 @@ template <typename Chopper, typename ChopperController, typename Wobbler,
           typename WobblerController, typename Housekeeping,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
-          typename BackendControllers>
+          typename BackendControllers, typename BackendData>
 void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
                     Wobbler &wob, WobblerController &wobbler_ctrl,
                     Housekeeping & /*hk*/,
                     HousekeepingController &housekeeping_ctrl,
                     Frontend &frontend, FrontendController &frontend_ctrl,
                     Backends &backends,
-                    BackendControllers &backend_ctrls) noexcept {
+                    BackendControllers &backend_ctrls, BackendData& backend_data) noexcept {
   float x0 = ImGui::GetCursorPosX();
   float dx = ImGui::GetFontSize();
 
@@ -630,12 +630,31 @@ void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
     }
 
     if (ImGui::BeginTabItem(" Spectrometers ")) {
-      std::stringstream ss;
-      ss << backends.now;
-      std::string ymd, hms;
-      ss >> ymd >> hms;
-      ImGui::Text("Last measurement: %s %s", ymd.c_str(), hms.c_str());
-      ImGui::EndTabItem();
+      if (ImGui::BeginTabBar(" Spectrometer Information ")) {
+        
+        for (std::size_t i = 0; i < backends.N; i++) {
+          if (ImGui::BeginTabItem(backends.name(i).c_str())) {
+            std::stringstream ss;
+            ss << backends.now;
+            std::string ymd, hms;
+            ss >> ymd >> hms;
+            ImGui::Text("Last measurement: %s %s", ymd.c_str(), hms.c_str());
+            ImGui::EndTabItem();
+            
+            ImGui::Text("Average count: %" PRIu64, backend_data[i].avg_count);
+            ImGui::Text("Number of measurements: %" PRIu64, backend_data[i].num_measurements);
+            if (std::size_t num = backend_data[i].num_to_avg; ImGui::InputScalar(" Max Averaging ", ImGuiDataType_U64, &num, 0, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue)) {
+              backend_data[i].set_average_max_count(num);
+            }
+            if (ImGui::Button(" Reset Averaging ")) {
+              backend_data[i].reset_average();
+            }
+            ImGui::EndTabItem();
+          }
+        }
+        
+        ImGui::EndTabBar();
+      }
     }
 
     if (ImGui::BeginTabItem(" Housekeeping ")) {

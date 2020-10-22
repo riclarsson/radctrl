@@ -140,28 +140,6 @@ int run(File::ConfigParser parser) try {
   GUI::MainMenu::fullscreen(config, window);
   GUI::MainMenu::quitscreen(config, window);
   GUI::Plotting::caha_mainmenu(backend_frames);
-  if (ImGui::BeginMainMenuBar()) {
-    if (ImGui::BeginMenu("Plots")) {
-      for (std::size_t i=0; i<backend_data.size(); i++) {
-        if (ImGui::BeginMenu(backend_frames[i].name().c_str())) {
-          if (ImGui::BeginMenu(backend_frames[i].Averaging().title().c_str())) {
-            ImGui::Separator();
-            if (ImGui::Button(" Reset Averaging ")) {
-              backend_data[i].reset_average();
-            }
-            std::size_t num = backend_data[i].num_to_avg;
-            if (ImGui::InputScalar(" Max Averaging ", ImGuiDataType_U64, &num)) {
-              backend_data[i].set_average_max_count(num);
-            }
-            ImGui::EndMenu();
-          }
-          ImGui::EndMenu();
-        }
-      }
-      ImGui::EndMenu();
-    }
-    ImGui::EndMainMenuBar();
-  }
   const size_t current_tab = GUI::MainMenu::tabselect(config);
 
   // Drawer helper
@@ -304,7 +282,7 @@ int run(File::ConfigParser parser) try {
                                                           "DATA Tool 1")) {
     Instrument::AllInformation(chop, chopper_ctrl, wob, wobbler_ctrl, hk,
                                housekeeping_ctrl, frontend, frontend_ctrl,
-                               backends, backend_ctrls);
+                               backends, backend_ctrls, backend_data);
   }
   GUI::Windows::end();
 
