@@ -265,7 +265,7 @@ int run(File::ConfigParser parser) try {
                                                           "DATA Tool 1")) {
     Instrument::AllInformation(chop, chopper_ctrl, wob, wobbler_ctrl, hk,
                                housekeeping_ctrl, frontend, frontend_ctrl,
-                               backends, backend_ctrls);
+                               backends, backend_ctrls, backend_data);
   }
   GUI::Windows::end();
 
