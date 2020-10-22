@@ -64,22 +64,29 @@ int run(File::ConfigParser parser) try {
   // Spectrometers declarations
   Instrument::Spectrometer::Backends backends{
       Instrument::Spectrometer::dFFTS(parser("Backends", "spectormeter1"),
-                                      parser("Backends", "path1")),
+                                      parser("Backends", "path1"))/*,
       Instrument::Spectrometer::RCTS104(parser("Backends", "spectormeter2"),
-                                        parser("Backends", "path2"))};
+                                        parser("Backends", "path2")),
+      Instrument::Spectrometer::ACS(parser("Backends", "spectormeter3"),
+                                        parser("Backends", "path3"))*/};
   std::array<Instrument::Spectrometer::Controller, backends.N> backend_ctrls{
       Instrument::Spectrometer::Controller(
           parser("Backends", "spectormeter1"), parser("Backends", "config1"),
-          integration_time_microseconds, blank_time_microseconds),
+          integration_time_microseconds, blank_time_microseconds)/*,
       Instrument::Spectrometer::Controller(
           parser("Backends", "spectormeter2"), parser("Backends", "config2"),
-          integration_time_microseconds, blank_time_microseconds)};
+          integration_time_microseconds, blank_time_microseconds),
+      Instrument::Spectrometer::Controller(
+          parser("Backends", "spectormeter3"), parser("Backends", "config3"),
+          integration_time_microseconds, blank_time_microseconds)*/};
   std::array<Instrument::Data, backends.N> backend_data;
   std::array<GUI::Plotting::CAHA<height_of_window, part_for_plot>, backends.N>
       backend_frames{GUI::Plotting::CAHA<height_of_window, part_for_plot>{
-                         backend_ctrls[0].name, backend_ctrls[0].f},
+                         backend_ctrls[0].name, backend_ctrls[0].f}/*,
                      GUI::Plotting::CAHA<height_of_window, part_for_plot>{
-                         backend_ctrls[1].name, backend_ctrls[1].f}};
+                       backend_ctrls[1].name, backend_ctrls[1].f},
+                       GUI::Plotting::CAHA<height_of_window, part_for_plot>{
+                         backend_ctrls[2].name, backend_ctrls[2].f}*/};
   if (std::stoi(parser("Backends", "size")) not_eq backends.N)
     throw std::runtime_error("Bad backend count");
 

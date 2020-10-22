@@ -103,7 +103,7 @@ add_library (backend STATIC
 target_link_libraries(backend PUBLIC files gui python math)
 if (ACS2020)
   target_link_libraries(backend PUBLIC fm_acs)
-  target_compile_definitions(backend PRIVATE HAS_ACS2020=1)
+  target_compile_definitions(backend PUBLIC HAS_ACS2020=1)
 endif()
 
 ########################################################################################
