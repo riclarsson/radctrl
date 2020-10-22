@@ -49,25 +49,31 @@ struct Data {
   // Last calibrated noise temperature of the instrument
   std::vector<std::vector<double>> last_noise;
 
-  // Running average of the raw data
-  std::vector<std::vector<double>> avg_target;
-  std::vector<std::vector<double>> avg_cold;
-  std::vector<std::vector<double>> avg_hot;
-
   // Average calibrated data of the instrument
   std::vector<std::vector<double>> avg_calib;
-
-  // Average calibrated noise temperature of the instrument
-  std::vector<std::vector<double>> avg_noise;
 
   // Housekeeping data
   double tcold;
   double thot;
 
   // Counters
-  size_t num_measurements;  // Total number of raw measurements
-  size_t num_to_avg;        // Number to average
-  size_t avg_count;         //  Count of current averages
+  std::size_t num_measurements;  // Total number of raw measurements
+  std::size_t num_to_avg;        // Number to average
+  std::size_t avg_count;         //  Count of current averages
+  
+  void reset_average() noexcept {
+    mtx.lock();
+    avg_count = 0;
+    mtx.unlock();
+  }
+  
+  void set_average_max_count(std::size_t num) noexcept {
+    mtx.lock();
+    num_to_avg = std::max(std::size_t{1}, num);
+    if (avg_count > num_to_avg)
+      avg_count = num_to_avg;
+    mtx.unlock();
+  }
 
   Data() noexcept = default;
   Data(const Data &other) noexcept
@@ -84,11 +90,7 @@ struct Data {
         last_hot(other.last_hot),
         last_calib(other.last_calib),
         last_noise(other.last_noise),
-        avg_target(other.avg_target),
-        avg_cold(other.avg_cold),
-        avg_hot(other.avg_hot),
         avg_calib(other.avg_calib),
-        avg_noise(other.avg_noise),
         tcold(other.tcold),
         thot(other.thot),
         num_measurements(other.num_measurements),
@@ -108,11 +110,7 @@ struct Data {
     last_hot = other.last_hot;
     last_calib = other.last_calib;
     last_noise = other.last_noise;
-    avg_target = other.avg_target;
-    avg_cold = other.avg_cold;
-    avg_hot = other.avg_hot;
     avg_calib = other.avg_calib;
-    avg_noise = other.avg_noise;
     tcold = other.tcold;
     thot = other.thot;
     num_measurements = other.num_measurements;
@@ -136,29 +134,21 @@ struct Data {
         last_hot(f),
         last_calib(f),
         last_noise(f),
-        avg_target(f),
-        avg_cold(f),
-        avg_hot(f),
         avg_calib(f),
-        avg_noise(f),
         tcold(std::numeric_limits<double>::max()),
         thot(std::numeric_limits<double>::max()),
         num_measurements(0),
-        num_to_avg(std::numeric_limits<size_t>::max()),
+        num_to_avg(std::numeric_limits<std::size_t>::max()),
         avg_count(0) {
-    for (size_t i = 0; i < f.size(); i++) {
-      for (size_t j = 0; j < f[i].size(); j++) {
+    for (std::size_t i = 0; i < f.size(); i++) {
+      for (std::size_t j = 0; j < f[i].size(); j++) {
         f[i][j] = freq_grid[i][j];
         last_target[i][j] = 0;
         last_cold[i][j] = 0;
         last_hot[i][j] = 0;
         last_calib[i][j] = 0;
         last_noise[i][j] = 0;
-        avg_target[i][j] = 0;
-        avg_cold[i][j] = 0;
-        avg_hot[i][j] = 0;
         avg_calib[i][j] = 0;
-        avg_noise[i][j] = 0;
       }
     }
   }
@@ -172,8 +162,8 @@ struct Data {
     // Deal with cold load
     if (target == Chopper::ChopperPos::Cold) {
       tcold = tc;
-      for (size_t i = 0; i < data.size(); i++)
-        for (size_t j = 0; j < data[i].size(); j++)
+      for (std::size_t i = 0; i < data.size(); i++)
+        for (std::size_t j = 0; j < data[i].size(); j++)
           last_cold[i][j] = data[i][j] - 1;  // FIXME
       has_cold = true;
     }
@@ -181,33 +171,33 @@ struct Data {
     // Deal with hot load
     if (target == Chopper::ChopperPos::Hot) {
       thot = th;
-      for (size_t i = 0; i < data.size(); i++)
-        for (size_t j = 0; j < data[i].size(); j++)
+      for (std::size_t i = 0; i < data.size(); i++)
+        for (std::size_t j = 0; j < data[i].size(); j++)
           last_hot[i][j] = data[i][j] + 1;  // FIXME
       has_hot = true;
     }
 
     // Deal with target
     if (target == Chopper::ChopperPos::Antenna) {
-      for (size_t i = 0; i < data.size(); i++)
-        for (size_t j = 0; j < data[i].size(); j++)
+      for (std::size_t i = 0; i < data.size(); i++)
+        for (std::size_t j = 0; j < data[i].size(); j++)
           last_target[i][j] = data[i][j];
       has_target = true;
     }
 
     // Deal with noise
     if (has_cold and has_hot) {
-      for (size_t i = 0; i < data.size(); i++)
-        for (size_t j = 0; j < data[i].size(); j++)
+      for (std::size_t i = 0; i < data.size(); i++)
+        for (std::size_t j = 0; j < data[i].size(); j++)
           last_noise[i][j] = (thot * last_cold[i][j] - tcold * last_hot[i][j]) /
                              (last_hot[i][j] - last_cold[i][j]);
       has_noise = true;
     }
 
     // Deal with calibration
-    if (has_cold and has_hot and has_target) {
-      for (size_t i = 0; i < data.size(); i++)
-        for (size_t j = 0; j < data[i].size(); j++)
+    if (has_cold and has_hot and has_target and (target == Chopper::ChopperPos::Cold or target == Chopper::ChopperPos::Hot)) {
+      for (std::size_t i = 0; i < data.size(); i++)
+        for (std::size_t j = 0; j < data[i].size(); j++)
           last_calib[i][j] = tcold + (thot - tcold) *
                                          (last_target[i][j] - last_cold[i][j]) /
                                          (last_hot[i][j] - last_cold[i][j]);
@@ -215,80 +205,26 @@ struct Data {
     }
 
     mtx.lock();
-    // Deal with averaging
-    if (avg_count < num_to_avg) avg_count++;
-    std::cout << avg_count << " " << num_to_avg << '\n';
-
-    // cold load
-    if (target == Chopper::ChopperPos::Cold) {
-      if (avg_count not_eq 1) {
-        for (size_t i = 0; i < data.size(); i++)
-          for (size_t j = 0; j < data[i].size(); j++)
-            avg_cold[i][j] =
-                (avg_cold[i][j] * (avg_count - 1) + last_cold[i][j]) /
-                double(avg_count);
-      } else {
-        avg_cold = last_cold;
-      }
-    }
-
-    // hot load
-    if (target == Chopper::ChopperPos::Hot) {
-      if (avg_count not_eq 1) {
-        for (size_t i = 0; i < data.size(); i++)
-          for (size_t j = 0; j < data[i].size(); j++)
-            avg_hot[i][j] = (avg_hot[i][j] * (avg_count - 1) + last_hot[i][j]) /
-                            double(avg_count);
-      } else {
-        avg_hot = last_hot;
-      }
-    }
-
-    // target load
-    if (target == Chopper::ChopperPos::Antenna) {
-      if (avg_count not_eq 1) {
-        for (size_t i = 0; i < data.size(); i++)
-          for (size_t j = 0; j < data[i].size(); j++)
-            avg_target[i][j] =
-                (avg_target[i][j] * (avg_count - 1) + last_target[i][j]) /
-                double(avg_count);
-      } else {
-        avg_target = last_target;
-      }
-    }
-
-    // noise
-    if (has_hot and has_cold and
-        (target == Chopper::ChopperPos::Cold or
-         target == Chopper::ChopperPos::Hot)) {
-      if (avg_count not_eq 1) {
-        for (size_t i = 0; i < data.size(); i++)
-          for (size_t j = 0; j < data[i].size(); j++)
-            avg_noise[i][j] =
-                (avg_noise[i][j] * (avg_count - 1) + last_noise[i][j]) /
-                double(avg_count);
-      } else {
-        avg_noise = last_noise;
-      }
-    }
-
+    
     // calib
-    if (has_hot and has_cold and has_target and
-        (target == Chopper::ChopperPos::Antenna or not has_calib_avg)) {
-      if (avg_count not_eq 1) {
-        for (size_t i = 0; i < data.size(); i++)
-          for (size_t j = 0; j < data[i].size(); j++)
-            avg_calib[i][j] =
-                (avg_calib[i][j] * (avg_count - 1) + last_calib[i][j]) /
-                double(avg_count);
+    if (has_hot and has_cold and has_target and (target == Chopper::ChopperPos::Cold or target == Chopper::ChopperPos::Hot)) {
+      if (avg_count == 0) {
+        for (std::size_t i = 0; i < data.size(); i++)
+          for (std::size_t j = 0; j < data[i].size(); j++)
+            avg_calib[i][j] = last_calib[i][j];
       } else {
-        avg_calib = last_calib;
+        const double oldw = double(avg_count) / double(avg_count + 1);
+        const double neww = 1.0 / double(avg_count + 1);
+        for (std::size_t i = 0; i < data.size(); i++)
+          for (std::size_t j = 0; j < data[i].size(); j++)
+            avg_calib[i][j] =  oldw * avg_calib[i][j] + neww * last_calib[i][j];
       }
+      
+      if (num_to_avg not_eq avg_count) 
+        avg_count++;
       has_calib_avg = true;
     }
-
-    // Deal with bad avg
-    if (avg_count > num_to_avg) avg_count--;
+    
     mtx.unlock();
 
     newdata.store(true);
@@ -297,7 +233,7 @@ struct Data {
 
 class DataSaver {
   std::mutex updatepath;
-  size_t daily_copies;
+  std::size_t daily_copies;
   bool newfile;
   std::string basename;
   std::string timename;
@@ -356,7 +292,7 @@ class DataSaver {
     update_time(true);
   }
 
-  template <size_t N>
+  template <std::size_t N>
   void save(const Chopper::ChopperPos &last,
             const std::map<std::string, double> &hk_data,
             const std::map<std::string, double> &frontend_data,
@@ -380,7 +316,7 @@ class DataSaver {
       metadatafile.new_child("Housekeeping");
       metadatafile.add_attribute("Type", "double");
       metadatafile.add_attribute("size", hk_data.size());
-      size_t counter = 0;
+      std::size_t counter = 0;
       for (auto &hk : hk_data) {
         metadatafile.add_attribute(
             (std::string{"Data"} + std::to_string(counter)).c_str(),
@@ -404,7 +340,7 @@ class DataSaver {
       metadatafile.new_child("Backends");
       metadatafile.add_attribute("NumberOfBackends", N);
       metadatafile.add_attribute("Type", "VectorOfVector");
-      for (size_t i = 0; i < N; i++) {
+      for (std::size_t i = 0; i < N; i++) {
         metadatafile.new_child(
             (std::string{"Data"} + std::to_string(i)).c_str());
         metadatafile.add_attribute("Type", "float");
@@ -423,7 +359,7 @@ class DataSaver {
 
     File::File<File::Operation::AppendBinary, File::Type::Xml> datafile(
         filename);
-    size_t n = 0;
+    std::size_t n = 0;
     n += datafile.write(Time());
     n += datafile.write(int(last));
     for (auto &hk : hk_data) n += datafile.write(hk.second);
@@ -490,7 +426,7 @@ void InitAll(Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
     chopper_ctrl.init = true;
   }
 
-  for (size_t i = 0; i < backends.N; i++) {
+  for (std::size_t i = 0; i < backends.N; i++) {
     std::cout << Time() << ' ' << "Binding backend " << i + 1 << "\n";
     backends.startup(i, backend_ctrls[i].host, backend_ctrls[i].tcp_port,
                      backend_ctrls[i].udp_port, backend_ctrls[i].freq_limits,
@@ -532,7 +468,7 @@ void CloseAll(Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
   frontend.close();
   frontend_ctrl.init = false;
 
-  for (size_t i = 0; i < backends.N; i++) {
+  for (std::size_t i = 0; i < backends.N; i++) {
     backends.close(i);
     backend_ctrls[i].init = false;
   }
@@ -630,7 +566,7 @@ void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
       ImGui::RadioButton("Housekeeping", housekeeping_ctrl.init.load());
       ImGui::SameLine();
       ImGui::RadioButton(frontend.name().c_str(), frontend_ctrl.init.load());
-      for (size_t i = 0; i < backends.N; i++) {
+      for (std::size_t i = 0; i < backends.N; i++) {
         ImGui::SameLine();
         ImGui::RadioButton(backends.name(i).c_str(),
                            backend_ctrls[i].init.load());
@@ -645,7 +581,7 @@ void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
       ImGui::RadioButton("Housekeeping", housekeeping_ctrl.run.load());
       ImGui::SameLine();
       ImGui::RadioButton(frontend.name().c_str(), frontend_ctrl.run.load());
-      for (size_t i = 0; i < backends.N; i++) {
+      for (std::size_t i = 0; i < backends.N; i++) {
         ImGui::SameLine();
         ImGui::RadioButton(backends.name(i).c_str(),
                            backend_ctrls[i].run.load());
@@ -660,7 +596,7 @@ void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
       ImGui::RadioButton("Housekeeping", housekeeping_ctrl.waiting.load());
       ImGui::SameLine();
       ImGui::RadioButton(frontend.name().c_str(), frontend_ctrl.waiting.load());
-      for (size_t i = 0; i < backends.N; i++) {
+      for (std::size_t i = 0; i < backends.N; i++) {
         ImGui::SameLine();
         ImGui::RadioButton(backends.name(i).c_str(),
                            backend_ctrls[i].waiting.load());
@@ -676,7 +612,7 @@ void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
       ImGui::SameLine();
       ImGui::RadioButton(frontend.name().c_str(),
                          frontend_ctrl.operating.load());
-      for (size_t i = 0; i < backends.N; i++) {
+      for (std::size_t i = 0; i < backends.N; i++) {
         ImGui::SameLine();
         ImGui::RadioButton(backends.name(i).c_str(),
                            backend_ctrls[i].operating.load());
@@ -759,7 +695,7 @@ std::vector<std::string> RunExperiment(
                 "Need the same number of positions");
 
   std::vector<std::string> errors(0);
-  size_t pos = 0;
+  std::size_t pos = 0;
   bool run = false;
   bool init = false;
   bool quit = false;
@@ -811,7 +747,7 @@ loop:
   frontend.run();
 
   // Run Backends
-  for (size_t i = 0; i < backends.N; i++) {
+  for (std::size_t i = 0; i < backends.N; i++) {
     std::cout << Time() << " Running Backend " << i + 1 << "\n";
     backends.run(i);
     backend_ctrls[i].operating = true;
@@ -823,7 +759,7 @@ loop:
   hk.run();
 
   // Get Backends data
-  for (size_t i = 0; i < backends.N; i++) {
+  for (std::size_t i = 0; i < backends.N; i++) {
     std::cout << Time() << " Get Data Backend " << i + 1 << "\n";
     backend_ctrls[i].waiting = true;
     backends.get_data(i, pos);
@@ -861,7 +797,7 @@ loop:
   // Store the measurements in the controller
   std::cout << Time() << " Store Chopper\n";
   chopper_ctrl.lasttarget = chopper_ctrl.pos[pos];
-  for (size_t i = 0; i < backends.N; i++) {
+  for (std::size_t i = 0; i < backends.N; i++) {
     std::cout << Time() << " Store Backend " << i + 1 << "\n";
     backend_ctrls[i].d = backends.datavec(i);
   }
@@ -925,7 +861,7 @@ stop:
     errors.push_back(e.what());
   }
 
-  for (size_t i = 0; i < backends.N; i++) {
+  for (std::size_t i = 0; i < backends.N; i++) {
     try {
       if (backend_ctrls[i].init) backends.close(i);
     } catch (const std::exception &e) {
@@ -936,8 +872,8 @@ stop:
   return errors;
 }
 
-template <size_t N, typename ChopperController, typename HousekeepingController,
-          typename FrontendController, size_t CAHA_N, size_t CAHA_M>
+template <std::size_t N, typename ChopperController, typename HousekeepingController,
+          typename FrontendController, std::size_t CAHA_N, std::size_t CAHA_M>
 void ExchangeData(
     std::array<Spectrometer::Controller, N> &backend_ctrls,
     ChopperController &chopper_ctrl, HousekeepingController &housekeeping_ctrl,
@@ -952,7 +888,7 @@ void ExchangeData(
   std::array<std::vector<std::vector<float>>, N> backends_data;
   std::array<std::string, N> backend_names;
 
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     backend_names[i] = backend_ctrls[i].name;
     data[i] = Data(backend_ctrls[i].f);
     data[i].newdata.store(false);
@@ -977,7 +913,7 @@ loop:
   last = chopper_ctrl.lasttarget;
   hk_data = housekeeping_ctrl.data;
   frontend_data = frontend_ctrl.data;
-  for (size_t i = 0; i < N; i++) backends_data[i] = backend_ctrls[i].d;
+  for (std::size_t i = 0; i < N; i++) backends_data[i] = backend_ctrls[i].d;
 
   chopper_ctrl.newdata.store(false);
   housekeeping_ctrl.newdata.store(false);
@@ -988,12 +924,12 @@ loop:
   saver.save(last, hk_data, frontend_data, backends_data, backend_names);
 
   // Update plotting tools data
-  for (size_t i = 0; i < N; i++) {
+  for (std::size_t i = 0; i < N; i++) {
     data[i].update(last, hk_data["Cold Load Temperature"],
                    hk_data["Hot Load Temperature"], backends_data[i]);
 
     // Fill rawplots
-    for (size_t j = 0; j < data[i].f.size(); j++) {
+    for (std::size_t j = 0; j < data[i].f.size(); j++) {
       if (last == Chopper::ChopperPos::Cold)
         rawplots[i].Raw()[3 * j + 0].setY(data[i].last_cold[j]);
       if (last == Chopper::ChopperPos::Antenna)
