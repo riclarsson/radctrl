@@ -14,6 +14,8 @@
 
 namespace Instrument {
 namespace Chopper {
+
+/*! List of all possible Chopper named states */
 ENUMCLASS(ChopperPos, int, Cold, Hot, Antenna, Reference)
 
 template <ChopperPos... StartPos>

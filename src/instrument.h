@@ -17,8 +17,11 @@
 #include "file.h"
 #include "gui.h"
 #include "timeclass.h"
+#include "wobbler.h"
 
 namespace Instrument {
+  
+/*! Main data class for saving and plotting */
 struct Data {
   // New variable (FIXME: should be respected to not overwrite any when true)
   std::atomic<bool> newdata;
@@ -522,6 +525,171 @@ template <typename Chopper, typename ChopperController, typename Wobbler,
           typename WobblerController, typename Housekeeping,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
+          typename BackendControllers>
+void AllControl(GUI::Config& config, std::filesystem::path& save_path,
+                ImGui::FileBrowser& directoryBrowser, DataSaver& datasaver,
+                Chopper &chop, ChopperController &chopper_ctrl,
+                Wobbler &wob, WobblerController &wobbler_ctrl,
+                Housekeeping &hk,
+                HousekeepingController &housekeeping_ctrl,
+                Frontend &frontend, FrontendController &frontend_ctrl,
+                Backends &backends, BackendControllers &backend_ctrls) noexcept {
+  static const std::vector<std::string> devices =
+      File::Devices({"USB", "S", "chopper", "wobbler", "sensors", "ACM"}, 100);
+  
+  if (ImGui::BeginTabBar("GUI Control")) {
+    if (ImGui::BeginTabItem(" Main ")) {
+      bool none_init =
+      not housekeeping_ctrl.init.load() and
+      not chopper_ctrl.init.load() and not wobbler_ctrl.init.load() and
+      not frontend_ctrl.init.load() and
+      std::none_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+                    [](auto &x) { return x.init.load(); });
+      bool all_init =
+      housekeeping_ctrl.init.load() and chopper_ctrl.init.load() and
+      wobbler_ctrl.init.load() and frontend_ctrl.init.load() and
+      std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+                  [](auto &x) { return x.init.load(); });
+      
+      if (ImGui::Button(" Initialize all ")) {
+        if (none_init)
+          Instrument::InitAll(chop, chopper_ctrl, wob, wobbler_ctrl, hk,
+                              housekeeping_ctrl, frontend, frontend_ctrl,
+                              backends, backend_ctrls);
+          else {
+            config.gui_error = true;
+            config.gui_errors.push_back(
+              "Cannot initialize all because some machines are initialized");
+          }
+      }
+      
+      ImGui::SameLine();
+      
+      if (ImGui::Button(" Close all ")) {
+        if (all_init) {
+          Instrument::CloseAll(chop, chopper_ctrl, wob, wobbler_ctrl, hk,
+                                housekeeping_ctrl, frontend, frontend_ctrl,
+                                backends, backend_ctrls);
+        } else {
+          config.gui_error = true;
+          config.gui_errors.push_back(
+            "Cannot close all because some machines are not initialized");
+        }
+      }
+      
+      auto tmp_save_path = save_path.string();
+      if (ImGui::InputText("Path", &tmp_save_path,
+        ImGuiInputTextFlags_EnterReturnsTrue)) {
+        if (std::filesystem::is_directory(tmp_save_path)) {
+          save_path = tmp_save_path;
+          directoryBrowser.SetPwd(save_path);
+          config.new_save_path = true;
+        } else {
+          config.gui_error = true;
+          config.gui_errors.push_back("Invalid directory");
+        }
+        }
+        
+        ImGui::SameLine();
+        
+        if (ImGui::Button(" Select Path ")) {
+          directoryBrowser.Open();
+        }
+        
+        if (ImGui::Button(" Ready to Run ")) {
+          if (all_init) {
+            Instrument::ReadyRunAll(chopper_ctrl, wobbler_ctrl,
+                                    housekeeping_ctrl, frontend_ctrl,
+                                    backend_ctrls);
+          } else {
+            config.gui_error = true;
+            config.gui_errors.push_back(
+              "Cannot run the experiment because not all machines are "
+              "initialized");
+          }
+        }
+        
+        ImGui::SameLine();
+        
+        if (ImGui::Button(" Stop Running ")) {
+          if (all_init) {
+            Instrument::UnreadyRunAll(chopper_ctrl, wobbler_ctrl,
+                                      housekeeping_ctrl, frontend_ctrl,
+                                      backend_ctrls);
+          } else {
+            config.gui_error = true;
+            config.gui_errors.push_back(
+              "Cannot stop the experiment because it is not running");
+          }
+        }
+        
+        ImGui::EndTabItem();
+    }
+    
+    if (ImGui::BeginTabItem(" Chopper ")) {
+      Instrument::Chopper::GuiSetup(chop, chopper_ctrl, devices);
+      ImGui::EndTabItem();
+    }
+    
+    if (ImGui::BeginTabItem(" Wobbler ")) {
+      Instrument::Wobbler::GuiSetup(wob, wobbler_ctrl, devices);
+      ImGui::EndTabItem();
+    }
+    
+    if (ImGui::BeginTabItem(" Spectrometers ")) {
+      Instrument::Spectrometer::GuiSetup(backends, backend_ctrls);
+      ImGui::EndTabItem();
+    }
+    
+    if (ImGui::BeginTabItem(" Housekeeping ")) {
+      Instrument::Housekeeping::GuiSetup(hk, housekeeping_ctrl, devices);
+      ImGui::EndTabItem();
+    }
+    
+    if (ImGui::BeginTabItem(" Frontend ")) {
+      Instrument::Frontend::GuiSetup(frontend, frontend_ctrl);
+      ImGui::EndTabItem();
+    }
+    
+    ImGui::EndTabBar();
+  }
+  
+  // Select the directory  FIXME: Should be modal if running
+  directoryBrowser.Display();
+  if (directoryBrowser.HasSelected()) {
+    config.new_save_path = true;
+    save_path = directoryBrowser.GetSelected().string();
+    directoryBrowser.ClearSelected();
+  }
+  
+  if (config.new_save_path) {
+    ImGui::OpenPopup("DirectoryChooser");
+    config.new_save_path = false;
+  }
+  
+  // Directory popup question
+  if (ImGui::BeginPopupModal("DirectoryChooser")) {
+    ImGui::Text("\n You are changing directory to %s\t", save_path.c_str());
+    ImGui::TextWrapped(
+      " This will reset the current save (even if you are choosing the same "
+      "directory)."
+      " Is this OK?");
+    if (ImGui::Button(" OK ", {80.0f, 30.0f})) {
+      datasaver.updatePath(save_path);
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(" Cancel ", {80.0f, 30.0f})) {
+      ImGui::CloseCurrentPopup();
+    }
+    ImGui::EndPopup();
+  }
+}
+
+template <typename Chopper, typename ChopperController, typename Wobbler,
+          typename WobblerController, typename Housekeeping,
+          typename HousekeepingController, typename Frontend,
+          typename FrontendController, typename Backends,
           typename BackendControllers, typename BackendData>
 void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
                     Wobbler &wob, WobblerController &wobbler_ctrl,
@@ -965,6 +1133,113 @@ loop:
 
   goto loop;
 stop : {}
+}
+
+
+/*! Handle errors.  If it returns false, errors cannot be handled */
+template <typename Chopper, typename ChopperController, typename Wobbler,
+typename WobblerController, typename Housekeeping,
+typename HousekeepingController, typename Frontend,
+typename FrontendController, typename Backends,
+typename BackendControllers>
+bool AllErrors(GUI::Config& config,
+               Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
+               WobblerController &wobbler_ctrl, Housekeeping &hk,
+               HousekeepingController &housekeeping_ctrl, Frontend &frontend,
+               FrontendController &frontend_ctrl, Backends &backends,
+               BackendControllers &backend_ctrls) {
+  // Error handling (only if there are no known errors)
+  if (config.active_errors == 0) {
+    if (chopper_ctrl.error) {
+      ImGui::OpenPopup("Error");
+      chopper_ctrl.error = false;
+      config.active_errors++;
+    }
+    if (wobbler_ctrl.error) {
+      ImGui::OpenPopup("Error");
+      wobbler_ctrl.error = false;
+      config.active_errors++;
+    }
+    for (auto &backend_ctrl : backend_ctrls) {
+      if (backend_ctrl.error) {
+        ImGui::OpenPopup("Error");
+        backend_ctrl.error = false;
+        config.active_errors++;
+      }
+    }
+    if (housekeeping_ctrl.error) {
+      ImGui::OpenPopup("Error");
+      housekeeping_ctrl.error = false;
+      config.active_errors++;
+    }
+    if (frontend_ctrl.error) {
+      ImGui::OpenPopup("Error");
+      frontend_ctrl.error = false;
+      config.active_errors++;
+    }
+  }
+  
+  // Error popup
+  if (ImGui::BeginPopupModal("Error")) {
+    ImGui::Text(
+      " Found %i error(s). These are cleaned up by pressing OK, but they "
+      "must be fixed\t",
+      config.active_errors);
+    
+    ImGui::TextWrapped(" Chopper: %s", chop.error_string().c_str());
+    ImGui::TextWrapped(" Wobbler: %s", wob.error_string().c_str());
+    for (size_t i = 0; i < backends.N; i++) {
+      ImGui::TextWrapped("%s: %s", backends.name(i).c_str(),
+                         backends.error_string(i).c_str());
+    }
+    ImGui::TextWrapped(" Housekeeping: %s", hk.error_string().c_str());
+    ImGui::TextWrapped(" Frontend: %s", frontend.error_string().c_str());
+    
+    ImGui::Text(" ");
+    if (ImGui::Button(" OK ", {80.0f, 30.0f})) {
+      chop.delete_error();
+      wob.delete_error();
+      for (size_t i = 0; i < backends.N; i++) {
+        backends.delete_error(i);
+      }
+      hk.delete_error();
+      frontend.delete_error();
+      ImGui::CloseCurrentPopup();
+      config.active_errors = 0;
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(" Quit ", {80.0f, 30.0f})) {
+      return false;
+    }
+    
+    ImGui::EndPopup();
+  }
+  
+  if (config.gui_error) {
+    ImGui::OpenPopup("GUI Error");
+    config.gui_error = false;
+  }
+  
+  if (ImGui::BeginPopupModal("GUI Error")) {
+    ImGui::Text("\tError! You performed invalid action(s)\t");
+    for (auto &t : config.gui_errors) {
+      ImGui::Text("%s\t", t.c_str());
+    }
+    
+    ImGui::Text(" ");
+    if (ImGui::Button(" OK ", {80.0f, 30.0f})) {
+      ImGui::CloseCurrentPopup();
+      config.gui_errors.resize(0);
+    }
+    ImGui::SameLine();
+    if (ImGui::Button(" Quit ", {80.0f, 30.0f})) {
+      return false;
+    }
+    
+    ImGui::EndPopup();
+  }
+  
+  return true;
 }
 }  // namespace Instrument
 
