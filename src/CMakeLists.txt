@@ -252,6 +252,13 @@ install (TARGETS waspam RUNTIME DESTINATION bin)
 ########################################################################################
 
 ########################################################################################
+# Waspam Kiruna runtime executable
+add_executable (waspam-kiruna waspam-kiruna.cpp)
+target_link_libraries(waspam-kiruna PUBLIC instrument_gui_controller)
+install (TARGETS waspam-kiruna RUNTIME DESTINATION bin)
+########################################################################################
+
+########################################################################################
 # IRAM runtime executable
 add_executable (iram iram.cpp)
 target_link_libraries(iram PUBLIC instrument_gui_controller)
