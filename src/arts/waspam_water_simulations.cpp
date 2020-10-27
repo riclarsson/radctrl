@@ -51,6 +51,7 @@ void compute() {
   Method::Touch(ws, Var::mag_w_field(ws));
   Method::Touch(ws, Var::nlte_field(ws));
 
+  // Set planet and spin
   Method::refellipsoidEarth(ws, Group::String{"Sphere"});
   Method::Touch(ws, Var::rte_alonglos_v(ws));
   Method::z_surfaceConstantAltitude(ws);
@@ -74,12 +75,10 @@ void compute() {
   
   // Set up the Retrievals
   Method::retrievalDefInit(ws);
-//   arts.covmat_block = copy(sa1)
-//   Method::retrievalAddAbsSpecies(ws, Var::p_grid(ws), Group::Vector{}, Group::Vector{}, Group::String{"H2O"}, Group::String{"vmr"}, 0);
-//   arts.covmat_block = sp.sparse.csc.csc_matrix(100*np.ones((1, 1)))
-//   Method::retrievalAddWind(ws, Group::Vector(1, 1e4), Group::Vector{}, Group::Vector{}, Group::String{"strength"});
-//   arts.covmat_block = sp.sparse.csc.csc_matrix(np.ones((1, 1)))
-//   Method::retrievalAddPolyfit(ws, 1);
+  Method::covmatDiagonal(ws, Var::covmat_block(ws), Var::covmat_inv_block(ws), Group::Vector(Var::p_grid(ws).value().nelem(), 1e-6));
+  Method::retrievalAddAbsSpecies(ws, Var::p_grid(ws), Group::Vector{}, Group::Vector{}, Group::String{"H2O"}, Group::String{"vmr"}, 0);
+  Method::covmatDiagonal(ws, Var::covmat_block(ws), Var::covmat_inv_block(ws), Group::Vector(2, 1e-4));
+  Method::retrievalAddPolyfit(ws, 1, 1, 1, 1);
   Method::covmatDiagonal(ws, Var::covmat_block(ws), Var::covmat_inv_block(ws), Group::Vector(2, 1e-4));
   Method::retrievalAddSinefit(ws, Group::Vector{5e6, 10e6, 20e6, 40e6});
   Method::retrievalDefClose(ws);
