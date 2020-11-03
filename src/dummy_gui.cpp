@@ -72,6 +72,9 @@ int main() try {
   std::filesystem::path save_path{"pathname?"};
   directoryBrowser.SetPwd(save_path);
   directoryBrowser.SetTypeFilters({"[D]"});
+  
+  // Housekeeping data for long-term view
+  Instrument::HousekeepingData house_data(10000);
 
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "IRAM");
@@ -98,6 +101,9 @@ int main() try {
   }
   config.tabs.push_back(" All ");
   config.tabs.push_back(" Retrieval ");
+  constexpr std::size_t ret_tab = backends.N + 1;
+  config.tabs.push_back(" Housekeeping ");
+  constexpr std::size_t house_tab = backends.N + 2;
   config.tabspos = 0;
 
   // Helpers
@@ -116,7 +122,7 @@ int main() try {
   GUI::Plotting::caha_mainmenu(backend_frames);
   const size_t current_tab = GUI::MainMenu::tabselect(config);
 
-  // Drawer helper
+  // Drawer helper (after tabs and menu)
   const auto startpos = ImGui::GetCursorPos();
 
   // Draw the individual tabs
@@ -124,8 +130,13 @@ int main() try {
     if (current_tab == i) backend_frames[i].plot(window, startpos);
 
   // Draw the combined backends
-  if (current_tab == backends.N)
+  if (current_tab == backends.N) {
     GUI::Plotting::plot_combined(window, startpos, backend_frames);
+  } else if (current_tab == ret_tab) {
+    // plot retrieval
+  } else if (current_tab == house_tab) {
+    // plot housekeeping
+  }
 
   // Control tool
   if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2,

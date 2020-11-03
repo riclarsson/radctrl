@@ -7,6 +7,7 @@
 #include <exception>
 #include <filesystem>
 #include <functional>
+#include <map>
 #include <mutex>
 #include <string>
 #include <thread>
@@ -368,6 +369,70 @@ class DataSaver {
     for (auto &hk : hk_data) n += datafile.write(hk.second);
     for (auto &fe : frontend_data) n += datafile.write(fe.second);
     for (auto &specdata : backends_data) n += datafile.write(specdata);
+  }
+};
+
+class HousekeepingData {
+  mutable std::mutex update;
+  std::size_t n;
+  std::size_t i;
+  std::vector<Time> time;
+  std::map<std::string, std::vector<double>> hk;
+
+public:
+  HousekeepingData(std::size_t N) noexcept : n(N), i(0), time(0), hk({}) {}
+  
+  void update_size(std::size_t N) noexcept {
+    update.lock();
+    if (N < n) {
+      time.resize(N);
+      for (auto& x: hk) x.second.resize(N);
+    }
+    n=N;
+    update.unlock();
+  }
+  
+  void update_data(const Time& t, const std::map<std::string, double>& data) noexcept {
+    update.lock();
+    if (i >= n)
+      i = 0;
+    
+    if (time.size() < n) {
+      for (auto& d: data) {
+        if (hk[d.first].size() != time.size()) {
+          hk[d.first].resize(time.size());
+        }
+        hk[d.first].push_back(d.second);
+      }
+      time.push_back(t);
+    } else {
+      for (auto& d: data) {
+        if (hk[d.first].size() != time.size()) {
+          hk[d.first].resize(time.size());
+        }
+        hk[d.first][i] = d.second;
+      }
+      time[i] = t;
+    }
+    
+    // Update
+    i++;
+    update.unlock();
+  }
+  
+  std::pair<std::vector<Time>, std::vector<double>> get_data(const std::string& key) const {
+    update.lock();
+    std::pair<std::vector<Time>, std::vector<double>> d = std::make_pair(time, hk.at(key));
+    update.unlock();
+    return d;
+  }
+  
+  std::vector<std::string> get_keys() const {
+    std::vector<std::string> keys;
+    update.lock();
+    for (auto& d: hk) keys.push_back(d.first);
+    update.unlock();
+    return keys;
   }
 };
 
