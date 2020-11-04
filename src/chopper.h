@@ -308,7 +308,7 @@ class PythonOriginal {
     error_found = false;
     error = "";
   }
-};  // PythonOriginalChopper
+};  // PythonOriginal
 }  // namespace Chopper
 }  // namespace Instrument
 

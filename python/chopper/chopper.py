@@ -73,14 +73,7 @@ class chopper:
         assert not old_pos[0]==b'E'[0], "Must reset the chopper controller"
 
         order=b"RAHC"
-        try: a,b=order.index(old_pos[0]),order.index(new_pos[0])
-        except:
-            print("Old: ",old_pos)
-            print("New: ",new_pos)
-            with open("/home/dabrowski/error.msg","w") as file: file.write("Chopper error!")
-            assert 0, "Chopper error"
-
-
+        a, b=order.index(old_pos[0]), order.index(new_pos[0])
 
         d=-1 if a>b else 1
         if old_pos[0]==new_pos[0]==b'A'[0]: r=[1]
@@ -109,7 +102,6 @@ class chopper:
         if answ[0]==b'E'[0]:
             answ=self._oldpos
             print("Problem with chopper, adjusting")
-#            with open("/home/dabrowski/chopper.msg","ab") as file: file.write(b"%c\n"%answ)
 
 
         return answ
