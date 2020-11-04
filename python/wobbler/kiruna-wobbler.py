@@ -68,7 +68,7 @@ class wobbler:
 		while self._serial.in_waiting==0:
 			self._write(cmd)
 			t0=time()
-			while self._serial.in_waiting==0 and time()-t0<timeout: sleep(.1)
+			while self._serial.in_waiting==0 and time()-t0<timeout: time.sleep(.1)
 
 		return self._read()
 
