@@ -41,6 +41,31 @@ endif()
 ########################################################################################
 
 ########################################################################################
+# Python Interface Library:  For calling python code
+set(Python_ADDITIONAL_VERSIONS 3)
+add_library(python STATIC python_interface.cpp)
+target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../3rdparty/pybind11/include/ ../3rdparty/)
+target_link_libraries(python PUBLIC ${PYTHON_LIBRARIES} pybind11::embed)
+########################################################################################
+
+########################################################################################
+# Multithreading interfaces
+find_package (Threads REQUIRED)
+find_package (TBB REQUIRED)
+add_library (multithread STATIC multithread.cpp)
+target_link_libraries(multithread PUBLIC Threads::Threads tbb)
+########################################################################################
+
+########################################################################################
+# ASIO Interface
+add_library (network STATIC
+             asio_interface.cpp
+             )
+target_include_directories(network PUBLIC ../3rdparty/asio/asio/include/)
+target_link_libraries(network PUBLIC multithread)
+########################################################################################
+
+########################################################################################
 # Species Library:  For equations and classes for computing the atmosphere
 add_library (species STATIC
              species.cpp
@@ -65,15 +90,6 @@ add_library (atm STATIC
              atm.cpp
              )
 target_link_libraries(atm PUBLIC files)
-########################################################################################
-
-########################################################################################
-# ASIO Interface
-add_library (network STATIC
-             asio_interface.cpp
-             )
-target_include_directories(network PUBLIC ../3rdparty/asio/asio/include/)
-target_link_libraries(network PUBLIC multithread)
 ########################################################################################
 
 ########################################################################################
@@ -216,25 +232,9 @@ target_link_libraries(background PUBLIC rte atm)
 ########################################################################################
 
 ########################################################################################
-# Python Interface Library:  For calling python code
-set(Python_ADDITIONAL_VERSIONS 3)
-add_library(python STATIC python_interface.cpp)
-target_include_directories(python PUBLIC ${PYTHON_INCLUDE_DIRS} ../3rdparty/pybind11/include/ ../3rdparty/)
-target_link_libraries(python PUBLIC ${PYTHON_LIBRARIES} pybind11::embed)
-########################################################################################
-
-########################################################################################
-# Multithreading interfaces
-find_package (Threads REQUIRED)
-find_package (TBB REQUIRED)
-add_library (multithread STATIC multithread.cpp)
-target_link_libraries(multithread PUBLIC Threads::Threads tbb)
-########################################################################################
-
-########################################################################################
 # Instrument GUI libraries
-add_library (instrument_gui_controller STATIC dummy_gui.cpp)
-target_link_libraries(instrument_gui_controller PUBLIC gui python files chopper wobbler housekeeping backend multithread frontend cli)
+add_library (instrument_gui_controller INTERFACE)
+target_link_libraries(instrument_gui_controller INTERFACE gui python files chopper wobbler housekeeping backend multithread frontend cli)
 ########################################################################################
 
 ########################################################################################
@@ -366,6 +366,12 @@ target_link_libraries(test_arts PUBLIC arts_interface)
 ########################################################################################
 
 ########################################################################################
+# Tests to understand CPP
+add_executable(test_cpp test_cpp.cpp)
+target_link_libraries(test_cpp PUBLIC math multithread)
+########################################################################################
+
+########################################################################################
 ########################################################################################
 ########################################################################################
 ################################################################################ Special
@@ -378,3 +384,10 @@ if (ACS2020)
 else()
   message(STATUS "No ACS2020 (use -DACS2020=1 when running CMake to enable if you have the files)")
 endif()
+########################################################################################
+########################################################################################
+########################################################################################
+################################################################################ Special
+########################################################################################
+########################################################################################
+########################################################################################
