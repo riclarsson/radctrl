@@ -7,6 +7,7 @@
 #include <imfilebrowser.h>
 #include <imgui_stdlib.h>
 #include <implot.h>
+#include <implot_internal.h>
 
 #include <string>
 #include <vector>

@@ -1,8 +1,6 @@
 #ifndef gui_plotting_h
 #define gui_plotting_h
 
-#include <implot.h>
-
 #include <algorithm>
 #include <array>
 #include <limits>
@@ -328,7 +326,7 @@ void plot_combined(GLFWwindow *window, const ImVec2 startpos,
                           cahas[0].Integration().ylabel().c_str(), {-1, -1})) {
       for (auto &caha : cahas)
         for (auto &line : caha.Integration())
-          ImPlot::PlotLine(
+          ImPlot::PlotLineG(
             (caha.name() + space + line.name()).c_str(),
               line.getter(), (void *)&line, line.size());
       ImPlot::EndPlot();
@@ -342,7 +340,7 @@ void plot_combined(GLFWwindow *window, const ImVec2 startpos,
                           cahas[0].Averaging().ylabel().c_str(), {-1, -1})) {
       for (auto &caha : cahas)
         for (auto &line : caha.Averaging())
-          ImPlot::PlotLine(
+          ImPlot::PlotLineG(
             (caha.name() + space + line.name()).c_str(),
               line.getter(), (void *)&line, line.size());
       ImPlot::EndPlot();
@@ -357,7 +355,7 @@ void plot_combined(GLFWwindow *window, const ImVec2 startpos,
                           cahas[0].Noise().ylabel().c_str(), {-1, -1})) {
       for (auto &caha : cahas)
         for (auto &line : caha.Noise())
-          ImPlot::PlotLine(
+          ImPlot::PlotLineG(
             (caha.name() + space + line.name()).c_str(),
               line.getter(), (void *)&line, line.size());
       ImPlot::EndPlot();

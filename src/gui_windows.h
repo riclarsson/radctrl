@@ -1,3 +1,6 @@
+#ifndef gui_windows_h
+#define gui_windows_h
+
 #include "gui_macros.h"
 
 namespace GUI {
@@ -43,3 +46,5 @@ inline bool full(GLFWwindow *window, const ImVec2 origpos, const char *name) {
 inline void end() { ImGui::End(); }
 }  // namespace Windows
 }  // namespace GUI
+
+#endif  // gui_windows_h

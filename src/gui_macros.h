@@ -7,6 +7,10 @@
 #include <imgui_impl_opengl3.h>
 #include <stdio.h>
 
+#include <imgui.h>
+#include <implot.h>
+#include <implot_internal.h>
+
 #include <iostream>
 
 extern "C" {
@@ -89,6 +93,7 @@ inline static void glfw_error_callback(int error, const char *description) {
                                                                            \
   IMGUI_CHECKVERSION();                                                    \
   ImGui::CreateContext();                                                  \
+  ImPlot::CreateContext();                                                 \
   ImGui::StyleColorsDark();                                                \
                                                                            \
   ImGui_ImplGlfw_InitForOpenGL(window, true);                              \
@@ -104,6 +109,7 @@ inline static void glfw_error_callback(int error, const char *description) {
 #define CleanupGUI              \
   ImGui_ImplOpenGL3_Shutdown(); \
   ImGui_ImplGlfw_Shutdown();    \
+  ImPlot::DestroyContext();     \
   ImGui::DestroyContext();      \
                                 \
   glfwDestroyWindow(window);    \
