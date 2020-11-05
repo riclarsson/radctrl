@@ -74,7 +74,7 @@ int main() try {
   directoryBrowser.SetTypeFilters({"[D]"});
   
   // Housekeeping data for long-term view
-  Instrument::HousekeepingData house_data(10000);
+//   Instrument::HousekeepingData house_data(10000);
 
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "IRAM");

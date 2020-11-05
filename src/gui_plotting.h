@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include <array>
+#include <limits>
+#include <map>
 #include <mutex>
 #include <vector>
 
@@ -241,24 +243,30 @@ class CAHA {
         noise("tmp", "tmp", "tmp", {}),
         integration("tmp", "tmp", "tmp", {}),
         averaging("tmp", "tmp", "tmp", {}) {
+    const std::string cold = "Cold ";
+    const std::string target = "Target ";
+    const std::string hot = "Hot ";
+    const std::string sys = "System Noise ";
+    const std::string avg = "Average Measurement ";
+    const std::string last = "Last Measurement ";
     std::vector<Line> raws;
     std::vector<Line> noises;
     std::vector<Line> averagings;
     std::vector<Line> integrations;
     for (size_t i = 0; i < f.size(); i++) {
       raws.push_back(GUI::Plotting::Line(
-          std::string{"Cold "} + std::to_string(i), f[i], f[i].size()));
+        cold + std::to_string(i), f[i], f[i].size()));
       raws.push_back(GUI::Plotting::Line(
-          std::string{"Target "} + std::to_string(i), f[i], f[i].size()));
+        target + std::to_string(i), f[i], f[i].size()));
       raws.push_back(GUI::Plotting::Line(
-          std::string{"Hot "} + std::to_string(i), f[i], f[i].size()));
+        hot + std::to_string(i), f[i], f[i].size()));
       noises.push_back(GUI::Plotting::Line(
-          std::string{"System Noise "} + std::to_string(i), f[i], f[i].size()));
+        sys + std::to_string(i), f[i], f[i].size()));
       averagings.push_back(GUI::Plotting::Line(
-          std::string{"Average Measurement "} + std::to_string(i), f[i],
+        avg + std::to_string(i), f[i],
           f[i].size()));
       integrations.push_back(GUI::Plotting::Line(
-          std::string{"Last Measurement "} + std::to_string(i), f[i],
+        last + std::to_string(i), f[i],
           f[i].size()));
     }
     raw = Frame("Raw", "Frequency", "Counts", raws);
@@ -279,23 +287,28 @@ class CAHA {
   const Frame &Integration() const { return integration; }
 
   void plot(GLFWwindow *window, const ImVec2 startpos) {
+    const std::string raw_text = "raw";
+    const std::string noi_text = "noise";
+    const std::string itg_text = "integration";
+    const std::string avg_text = "averaging";
+    
     if (GUI::Windows::sub<2, Height, 0, 0, 1, PartOfHeight / 2>(
-            window, startpos, (mname + std::string{"raw"}).c_str())) {
+      window, startpos, (mname + raw_text).c_str())) {
       plot_frame(raw);
     }
     GUI::Windows::end();
     if (GUI::Windows::sub<2, Height, 0, PartOfHeight / 2, 1, PartOfHeight / 2>(
-            window, startpos, (mname + std::string{"noise"}).c_str())) {
+      window, startpos, (mname + noi_text).c_str())) {
       plot_frame(noise);
     }
     GUI::Windows::end();
     if (GUI::Windows::sub<2, Height, 1, 0, 1, PartOfHeight / 2>(
-            window, startpos, (mname + std::string{"integration"}).c_str())) {
+      window, startpos, (mname + itg_text).c_str())) {
       plot_frame(integration);
     }
     GUI::Windows::end();
     if (GUI::Windows::sub<2, Height, 1, PartOfHeight / 2, 1, PartOfHeight / 2>(
-            window, startpos, (mname + std::string{"averaging"}).c_str())) {
+      window, startpos, (mname + avg_text).c_str())) {
       plot_frame(averaging);
     }
     GUI::Windows::end();
@@ -307,6 +320,7 @@ class CAHA {
 template <size_t Height, size_t PartOfHeight, size_t N>
 void plot_combined(GLFWwindow *window, const ImVec2 startpos,
                    std::array<CAHA<Height, PartOfHeight>, N> &cahas) {
+  const std::string space = " ";
   if (GUI::Windows::sub<1, Height, 0, 0, 1, PartOfHeight / 3>(
           window, startpos, "Combined Last Measurement Integration TILE")) {
     if (ImPlot::BeginPlot(cahas[0].Integration().title().c_str(),
@@ -315,7 +329,7 @@ void plot_combined(GLFWwindow *window, const ImVec2 startpos,
       for (auto &caha : cahas)
         for (auto &line : caha.Integration())
           ImPlot::PlotLine(
-              (caha.name() + std::string{" "} + line.name()).c_str(),
+            (caha.name() + space + line.name()).c_str(),
               line.getter(), (void *)&line, line.size());
       ImPlot::EndPlot();
     }
@@ -329,7 +343,7 @@ void plot_combined(GLFWwindow *window, const ImVec2 startpos,
       for (auto &caha : cahas)
         for (auto &line : caha.Averaging())
           ImPlot::PlotLine(
-              (caha.name() + std::string{" "} + line.name()).c_str(),
+            (caha.name() + space + line.name()).c_str(),
               line.getter(), (void *)&line, line.size());
       ImPlot::EndPlot();
     }
@@ -344,7 +358,7 @@ void plot_combined(GLFWwindow *window, const ImVec2 startpos,
       for (auto &caha : cahas)
         for (auto &line : caha.Noise())
           ImPlot::PlotLine(
-              (caha.name() + std::string{" "} + line.name()).c_str(),
+            (caha.name() + space + line.name()).c_str(),
               line.getter(), (void *)&line, line.size());
       ImPlot::EndPlot();
     }
@@ -379,6 +393,92 @@ void caha_mainmenu(std::array<CAHA<Height, PartOfHeight>, N> &cahas) {
     ImGui::EndMainMenuBar();
   }
 }
+
+class ListOfLines {
+  struct LineData {
+    std::vector<double> data;
+    std::string name;
+    std::string ylabel;
+    bool do_plot;
+    std::size_t line_pos;
+    std::size_t ylabel_pos;
+    
+    LineData(std::size_t current_size, const std::string& nm, const std::string& yl) : 
+      data(current_size, std::numeric_limits<double>::quiet_NaN()),
+      name(nm), ylabel(yl), do_plot(false), line_pos(0), ylabel_pos(-1) {}
+  };
+  
+  mutable std::mutex update;
+  std::size_t n, i;
+  std::vector<double> x;
+  std::vector<LineData> data;
+  std::string mtitle;
+  std::string mxlabel;
+  std::array<std::string, 3> mylabels;
+  std::vector<Line> lines;
+  
+public:
+  ListOfLines(std::size_t N, const std::string& title, const std::string& xlabel) : n(N), i(0), mtitle(title), mxlabel(xlabel) {};
+  
+  void update_size(std::size_t N) {
+    update.lock();
+    if (N < n) {
+      x.resize(N);
+      for (auto& d: data) d.data.resize(N);
+    }
+    n=N;
+    update.unlock();
+  }
+  
+  void update_data(const double& xnew, const std::map<std::string, double>& datanew) {
+    update.lock();
+    if (i >= n)
+      i = 0;
+    
+    if (x.size() < n) {  // push_back
+      for (auto& d: data) {
+        if (const auto entry = datanew.find(d.name); datanew.end() not_eq entry) {
+          d.data.push_back(entry -> second);
+        } else {
+          d.data.push_back(std::numeric_limits<double>::quiet_NaN());
+        }
+      }
+      x.push_back(xnew);
+      
+    } else {  // replace
+      for (auto& d: data) {
+        if (const auto entry = datanew.find(d.name); datanew.end() not_eq entry) {
+          d.data[i] = entry -> second;
+        } else {
+          d.data[i] = std::numeric_limits<double>::quiet_NaN();
+        }
+      }
+      x[i] = xnew;
+    }
+    
+    // Update
+    i++;
+    update.unlock();
+  }
+  
+  void new_dataline(const std::string& name, const std::string& ylabel) {
+    update.lock();
+    if (not std::any_of(data.cbegin(), data.cend(), [&](auto& d){return d.name == name;}))
+      data.push_back(LineData(n, name, ylabel));
+    update.unlock();
+  }
+  
+  void update_lines() {
+    update.lock();
+    for (auto& d: data) {
+      if (d.do_plot) {
+        lines[d.line_pos].setX(x);
+        lines[d.line_pos].setY(d.data);
+      }
+    }
+    update.unlock();
+  }
+};
 
 }  // namespace Plotting
 }  // namespace GUI

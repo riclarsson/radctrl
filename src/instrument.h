@@ -24,7 +24,6 @@ namespace Instrument {
   
 /*! Main data class for saving and plotting */
 struct Data {
-  // New variable (FIXME: should be respected to not overwrite any when true)
   std::atomic<bool> newdata;
 
   // Multithread guard
@@ -65,17 +64,21 @@ struct Data {
   std::size_t num_to_avg;        // Number to average
   std::size_t avg_count;         //  Count of current averages
   
+  /*! reset the average count */
   void reset_average() noexcept {
     mtx.lock();
     avg_count = 0;
     mtx.unlock();
   }
   
+  /*! set the average count maximum */
   void set_average_max_count(std::size_t num) noexcept {
     mtx.lock();
-    num_to_avg = std::max(std::size_t{1}, num);
-    if (avg_count > num_to_avg)
+    constexpr std::size_t one = 1;
+    num_to_avg = std::max(one, num);
+    if (avg_count > num_to_avg) {
       avg_count = num_to_avg;
+    }
     mtx.unlock();
   }
 
@@ -245,9 +248,11 @@ class DataSaver {
   std::filesystem::path savedir;
 
   std::string filename_composer() noexcept {
-    return savedir.string() + basename + std::string{"."} + timename +
-           std::string{"."} + std::to_string(daily_copies) +
-           std::string{".xml"};
+    const std::string dot = ".";
+    const std::string xml = ".xml";
+    return savedir.string() + basename + dot + timename +
+           dot + std::to_string(daily_copies) +
+           xml;
   }
 
   void update_time(bool newname = false) noexcept {
@@ -305,6 +310,8 @@ class DataSaver {
     update_time(not std::filesystem::exists(filename));
 
     if (newfile) {
+      const std::string data = "Data";
+      
       File::File<File::Operation::Write, File::Type::Xml> metadatafile(
           filename);
 
@@ -323,7 +330,7 @@ class DataSaver {
       std::size_t counter = 0;
       for (auto &hk : hk_data) {
         metadatafile.add_attribute(
-            (std::string{"Data"} + std::to_string(counter)).c_str(),
+          (data + std::to_string(counter)).c_str(),
             hk.first.c_str());
         counter += 1;
       }
@@ -335,7 +342,7 @@ class DataSaver {
       counter = 0;
       for (auto &fe : frontend_data) {
         metadatafile.add_attribute(
-            (std::string{"Data"} + std::to_string(counter)).c_str(),
+          (data + std::to_string(counter)).c_str(),
             fe.first.c_str());
         counter += 1;
       }
@@ -346,7 +353,7 @@ class DataSaver {
       metadatafile.add_attribute("Type", "VectorOfVector");
       for (std::size_t i = 0; i < N; i++) {
         metadatafile.new_child(
-            (std::string{"Data"} + std::to_string(i)).c_str());
+          (data + std::to_string(i)).c_str());
         metadatafile.add_attribute("Type", "float");
         metadatafile.add_attribute("Name", backend_names[i].c_str());
         metadatafile.add_attribute("NumberOfBoards", backends_data[i].size());
@@ -369,70 +376,6 @@ class DataSaver {
     for (auto &hk : hk_data) n += datafile.write(hk.second);
     for (auto &fe : frontend_data) n += datafile.write(fe.second);
     for (auto &specdata : backends_data) n += datafile.write(specdata);
-  }
-};
-
-class HousekeepingData {
-  mutable std::mutex update;
-  std::size_t n;
-  std::size_t i;
-  std::vector<Time> time;
-  std::map<std::string, std::vector<double>> hk;
-
-public:
-  HousekeepingData(std::size_t N) noexcept : n(N), i(0), time(0), hk({}) {}
-  
-  void update_size(std::size_t N) noexcept {
-    update.lock();
-    if (N < n) {
-      time.resize(N);
-      for (auto& x: hk) x.second.resize(N);
-    }
-    n=N;
-    update.unlock();
-  }
-  
-  void update_data(const Time& t, const std::map<std::string, double>& data) noexcept {
-    update.lock();
-    if (i >= n)
-      i = 0;
-    
-    if (time.size() < n) {
-      for (auto& d: data) {
-        if (hk[d.first].size() != time.size()) {
-          hk[d.first].resize(time.size());
-        }
-        hk[d.first].push_back(d.second);
-      }
-      time.push_back(t);
-    } else {
-      for (auto& d: data) {
-        if (hk[d.first].size() != time.size()) {
-          hk[d.first].resize(time.size());
-        }
-        hk[d.first][i] = d.second;
-      }
-      time[i] = t;
-    }
-    
-    // Update
-    i++;
-    update.unlock();
-  }
-  
-  std::pair<std::vector<Time>, std::vector<double>> get_data(const std::string& key) const {
-    update.lock();
-    std::pair<std::vector<Time>, std::vector<double>> d = std::make_pair(time, hk.at(key));
-    update.unlock();
-    return d;
-  }
-  
-  std::vector<std::string> get_keys() const {
-    std::vector<std::string> keys;
-    update.lock();
-    for (auto& d: hk) keys.push_back(d.first);
-    update.unlock();
-    return keys;
   }
 };
 
