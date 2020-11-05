@@ -32,7 +32,11 @@ add_library (math STATIC
              openblas_interface.cpp
              )
 target_include_directories(math PUBLIC ../3rdparty/ ../3rdparty/wigner/ ../3rdparty/Faddeeva/)
-target_link_libraries(math PUBLIC radctrl_wigner radctrl_Faddeeva openblas lapack kernel)
+include(FindLAPACK)
+set(BLA_STATIC ON)
+set(BLA_VENDOR OpenBLAS)
+find_package(LAPACK REQUIRED)
+target_link_libraries(math PUBLIC radctrl_wigner radctrl_Faddeeva ${LAPACK_LIBRARIES})
 if(FASTWIGNER)
   target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_3J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.3j\"")
   target_compile_definitions(math PUBLIC "-DFAST_WIGNER_PATH_6J=\"${RADCALC_BINARY_DIR}/3rdparty/wigner/fastwigxj/fasttable.6j\"")
