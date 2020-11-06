@@ -1081,6 +1081,7 @@ void ExchangeData(
   Chopper::ChopperPos last;
   const std::string med = " Median ";
   std::map<std::string, double> hk_data_longterm;
+  std::vector<std::vector<double>> last_calib;
   std::map<std::string, double> hk_data;
   std::map<std::string, double> frontend_data;
   std::array<std::vector<std::vector<float>>, N> backends_data;
@@ -1147,7 +1148,7 @@ loop:
   for (auto& d: frontend_data) hk_data_longterm[d.first] = d.second;
   for (std::size_t i=0; i<N; i++) {
     if (data[i].has_calib) {
-      std::vector<std::vector<double>> last_calib = data[i].last_calib;
+      last_calib = data[i].last_calib;
       for (std::size_t j=0; j<last_calib.size(); j++) {
         if (last_calib[j].size()) {
           std::sort(last_calib[j].begin(), last_calib[j].end());
