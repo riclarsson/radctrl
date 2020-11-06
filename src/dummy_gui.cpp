@@ -74,7 +74,7 @@ int main() try {
   directoryBrowser.SetTypeFilters({"[D]"});
   
   // Housekeeping data for long-term view
-//   Instrument::HousekeepingData house_data(10000);
+  GUI::Plotting::ListOfLines<height_of_window, part_for_plot> hk_frames(1'000'000, "Housekeeping", "Time");
 
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "IRAM");
@@ -93,7 +93,7 @@ int main() try {
           backends.N, decltype(chopper_ctrl), decltype(housekeeping_ctrl),
           decltype(frontend_ctrl), height_of_window, part_for_plot>,
       backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl,
-      backend_data, datasaver, backend_frames);
+      backend_data, datasaver, backend_frames, hk_frames);
 
   // Setup of the tabs
   for (size_t i = 0; i < backends.N; i++) {
@@ -120,6 +120,7 @@ int main() try {
   GUI::MainMenu::fullscreen(config, window);
   GUI::MainMenu::quitscreen(config, window);
   GUI::Plotting::caha_mainmenu(backend_frames);
+  GUI::Plotting::listoflines_mainmenu(hk_frames);
   const size_t current_tab = GUI::MainMenu::tabselect(config);
 
   // Drawer helper (after tabs and menu)
@@ -131,11 +132,11 @@ int main() try {
 
   // Draw the combined backends
   if (current_tab == backends.N) {
-    GUI::Plotting::plot_combined(window, startpos, backend_frames);
+    GUI::Plotting::caha_plot_combined(window, startpos, backend_frames);
   } else if (current_tab == ret_tab) {
     // plot retrieval
   } else if (current_tab == house_tab) {
-    // plot housekeeping
+    hk_frames.plot(window, startpos);
   }
 
   // Control tool

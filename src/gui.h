@@ -128,6 +128,11 @@ inline void LayoutAndStyleSettings() {
       ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
   style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
   style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+  
+  auto &plot_style = ImPlot::GetStyle();
+  plot_style.UseLocalTime = true;
+  plot_style.UseISO8601 = true;
+  plot_style.Use24HourClock = true;
 }
 
 GLFWmonitor *get_current_monitor(GLFWwindow *window);

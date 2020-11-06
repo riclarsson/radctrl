@@ -1068,16 +1068,19 @@ stop:
 }
 
 template <std::size_t N, typename ChopperController, typename HousekeepingController,
-          typename FrontendController, std::size_t CAHA_N, std::size_t CAHA_M>
+          typename FrontendController, std::size_t PLOT_H, std::size_t PLOT_P>
 void ExchangeData(
     std::array<Spectrometer::Controller, N> &backend_ctrls,
     ChopperController &chopper_ctrl, HousekeepingController &housekeeping_ctrl,
     FrontendController &frontend_ctrl, std::array<Data, N> &data,
     DataSaver &saver,
-    std::array<GUI::Plotting::CAHA<CAHA_N, CAHA_M>, N> &rawplots) noexcept {
+    std::array<GUI::Plotting::CAHA<PLOT_H, PLOT_P>, N> &rawplots,
+    GUI::Plotting::ListOfLines<PLOT_H, PLOT_P> &hkplots) noexcept {
   bool allnew = false;
   bool quit = false;
   Chopper::ChopperPos last;
+  const std::string med = " Median ";
+  std::map<std::string, double> hk_data_longterm;
   std::map<std::string, double> hk_data;
   std::map<std::string, double> frontend_data;
   std::array<std::vector<std::vector<float>>, N> backends_data;
@@ -1138,6 +1141,27 @@ loop:
         rawplots[i].Averaging()[j].setY(data[i].avg_calib[j]);
     }
   }
+  
+  // Update the housekeeping data
+  for (auto& d: hk_data) hk_data_longterm[d.first] = d.second;
+  for (auto& d: frontend_data) hk_data_longterm[d.first] = d.second;
+  for (std::size_t i=0; i<N; i++) {
+    if (data[i].has_calib) {
+      std::vector<std::vector<double>> last_calib = data[i].last_calib;
+      for (std::size_t j=0; j<last_calib.size(); j++) {
+        if (last_calib[j].size()) {
+          std::sort(last_calib[j].begin(), last_calib[j].end());
+          if (last_calib.size() > 1) {
+            hk_data_longterm[backend_names[i] + med + std::to_string(j)] = last_calib[j][last_calib[j].size()/2];
+          } else {
+            hk_data_longterm[backend_names[i] + med] = last_calib[j][last_calib[j].size()/2];
+          }
+        }
+      }
+    }
+  }
+  hkplots.update_data(Time().Seconds(), hk_data_longterm);
+  hkplots.update_lines();
 
   goto loop;
 stop : {}

@@ -98,6 +98,9 @@ int run(File::ConfigParser parser) try {
   std::filesystem::path save_path{parser("Savepath", "path")};
   directoryBrowser.SetPwd(save_path);
   directoryBrowser.SetTypeFilters({"[D]"});
+  
+  // Housekeeping data for long-term view
+  GUI::Plotting::ListOfLines<height_of_window, part_for_plot> hk_frames(1'000'000, "Housekeeping", "Time");
 
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "IRAM");
@@ -116,7 +119,7 @@ int run(File::ConfigParser parser) try {
           backends.N, decltype(chopper_ctrl), decltype(housekeeping_ctrl),
           decltype(frontend_ctrl), height_of_window, part_for_plot>,
       backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl,
-      backend_data, datasaver, backend_frames);
+      backend_data, datasaver, backend_frames, hk_frames);
 
   // Setup of the tabs
   for (size_t i = 0; i < backends.N; i++) {
@@ -124,6 +127,9 @@ int run(File::ConfigParser parser) try {
   }
   config.tabs.push_back(" All ");
   config.tabs.push_back(" Retrieval ");
+  constexpr std::size_t ret_tab = backends.N + 1;
+  config.tabs.push_back(" Housekeeping ");
+  constexpr std::size_t house_tab = backends.N + 2;
   config.tabspos = 0;
 
   // Helpers
@@ -140,6 +146,7 @@ int run(File::ConfigParser parser) try {
   GUI::MainMenu::fullscreen(config, window);
   GUI::MainMenu::quitscreen(config, window);
   GUI::Plotting::caha_mainmenu(backend_frames);
+  GUI::Plotting::listoflines_mainmenu(hk_frames);
   const size_t current_tab = GUI::MainMenu::tabselect(config);
 
   // Drawer helper
@@ -150,8 +157,13 @@ int run(File::ConfigParser parser) try {
     if (current_tab == i) backend_frames[i].plot(window, startpos);
 
   // Draw the combined backends
-  if (current_tab == backends.N)
-    GUI::Plotting::plot_combined(window, startpos, backend_frames);
+  if (current_tab == backends.N) {
+    GUI::Plotting::caha_plot_combined(window, startpos, backend_frames);
+  } else if (current_tab == ret_tab) {
+    // plot retrieval
+  } else if (current_tab == house_tab) {
+    hk_frames.plot(window, startpos);
+  }
 
   // Control tool
   if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2,

@@ -90,6 +90,9 @@ int run(File::ConfigParser parser) try {
   std::filesystem::path save_path{parser("Savepath", "path")};
   directoryBrowser.SetPwd(save_path);
   directoryBrowser.SetTypeFilters({"[D]"});
+  
+  // Housekeeping data for long-term view
+  GUI::Plotting::ListOfLines<height_of_window, part_for_plot> hk_frames(1'000'000, "Housekeeping", "Time");
 
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "WASPAM");
@@ -108,7 +111,7 @@ int run(File::ConfigParser parser) try {
           backends.N, decltype(chopper_ctrl), decltype(housekeeping_ctrl),
           decltype(frontend_ctrl), height_of_window, part_for_plot>,
       backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl,
-      backend_data, datasaver, backend_frames);
+      backend_data, datasaver, backend_frames, hk_frames);
 
   // Setup of the tabs
   for (size_t i = 0; i < backends.N; i++) {
@@ -139,7 +142,7 @@ int run(File::ConfigParser parser) try {
 
   // Draw the combined backends
   if (current_tab == backends.N)
-    GUI::Plotting::plot_combined(window, startpos, backend_frames);
+    GUI::Plotting::caha_plot_combined(window, startpos, backend_frames);
 
   // Control tool
   if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2,
