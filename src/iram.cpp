@@ -146,7 +146,7 @@ int run(File::ConfigParser parser) try {
   GUI::MainMenu::fullscreen(config, window);
   GUI::MainMenu::quitscreen(config, window);
   GUI::Plotting::caha_mainmenu(backend_frames);
-  GUI::Plotting::listoflines_mainmenu(hk_frames);
+  hk_frames.mainmenu();
   const size_t current_tab = GUI::MainMenu::tabselect(config);
 
   // Drawer helper

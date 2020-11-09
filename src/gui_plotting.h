@@ -227,7 +227,9 @@ class Frame {
 
 void plot_frame(Frame &frame);
 
-void frame_menuitem(Frame &frame);
+void frame_menuitem(Frame &frame, const bool do_freq);
+
+void line_menuitem(Line &line, const bool do_freq);
 
 template <size_t Height, size_t PartOfHeight>
 class CAHA {
@@ -374,13 +376,13 @@ void caha_plot_combined(GLFWwindow *window, const ImVec2 startpos,
 template <size_t Height, size_t PartOfHeight>
 void caha_menuitem(CAHA<Height, PartOfHeight> &caha) {
   if (ImGui::BeginMenu(caha.name().c_str())) {
-    frame_menuitem(caha.Raw());
+    frame_menuitem(caha.Raw(), true);
     ImGui::Separator();
-    frame_menuitem(caha.Noise());
+    frame_menuitem(caha.Noise(), true);
     ImGui::Separator();
-    frame_menuitem(caha.Integration());
+    frame_menuitem(caha.Integration(), true);
     ImGui::Separator();
-    frame_menuitem(caha.Averaging());
+    frame_menuitem(caha.Averaging(), true);
     ImGui::EndMenu();
   }
 }
@@ -403,15 +405,16 @@ template <size_t Height, size_t PartOfHeight>
 class ListOfLines {
 public:
   struct LineData {
+    bool is_new;
     bool do_plot;
     std::vector<double> data;
     std::string name;
     std::size_t line_pos;
     
-    LineData(std::size_t current_size, const std::string& nm) : 
+    LineData(std::size_t current_size, const std::string& nm) : is_new(true),
       do_plot(false), data(current_size, std::numeric_limits<double>::quiet_NaN()),
       name(nm), line_pos(std::numeric_limits<std::size_t>::max()) {}
-    LineData() : do_plot(false), data(0), name(""), line_pos(std::numeric_limits<std::size_t>::max()) {}
+    LineData() : is_new(true), do_plot(false), data(0), name(""), line_pos(std::numeric_limits<std::size_t>::max()) {}
   };
 
 private:
@@ -458,9 +461,10 @@ public:
     // Append keys and data
     for (auto& d: datanew) {
       auto& dataentry = data[d.first];
-      if (dataentry.data.size() not_eq n) {
-        dataentry.data.resize(n);
+      if (dataentry.is_new) {
+        dataentry.data = std::vector<double>(n, std::numeric_limits<double>::quiet_NaN());
         dataentry.name = d.first;
+        dataentry.is_new = false;
       }
       data[d.first].data[i] = d.second;
     }
@@ -561,6 +565,60 @@ public:
     mylabel = ylabel;
     mtx.unlock();
   }
+  
+  void mainmenu() {
+    if (ImGui::BeginMainMenuBar()) {
+      if (ImGui::BeginMenu("Plots")) {
+        mtx.lock();
+        
+        if (ImGui::BeginMenu(mtitle.c_str())) {
+          // Set y-label
+          ImGui::InputText(" Y-label ", &mylabel);
+          ImGui::Separator();
+          
+          // Select plots
+          for (auto& d: data) {
+            if (ImGui::BeginMenu(d.first.c_str())) {
+              
+              // Activate or deactivate data plotting
+              if (not d.second.do_plot) {
+                if (ImGui::Button(" Activate ")) {
+                  mtx.unlock();
+                  activate_data(d.first);
+                  mtx.lock();
+                }
+              } else {
+                if (ImGui::Button(" Deactivate ")) {
+                  mtx.unlock();
+                  deactivate_data(d.first);
+                  mtx.lock();
+                }
+              }
+              ImGui::Separator();
+              
+              // Set new name
+              ImGui::InputText("Name", &d.second.name);
+              ImGui::Separator();
+              
+              if (ImGui::BeginMenu("Line Properties", d.second.do_plot)) {
+                line_menuitem(lines[d.second.line_pos], false);
+                ImGui::EndMenu();
+              }
+              
+              ImGui::EndMenu();
+            }
+            ImGui::Separator();
+          }
+          
+          ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+        
+        mtx.unlock();
+      }
+      ImGui::EndMainMenuBar();
+    }
+  }
 };
 
 
@@ -588,11 +646,6 @@ void listoflines_mainmenu(ListOfLines<Height, PartOfHeight> &lists) {
         // Select plots
         for (auto& d: data) {
           if (ImGui::BeginMenu(d.first.c_str())) {
-            // Set new name
-            if (ImGui::InputText("Name", &d.second.name)) {
-              lists.set_name(d.first, d.second.name);
-              data = lists.available_data();
-            }
             
             // Activate or deactivate data plotting
             if (not d.second.do_plot) {

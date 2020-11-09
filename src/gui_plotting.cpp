@@ -45,7 +45,7 @@ bool freq_scale(double &cur_freq_scale) {
   return newout;
 }
 
-void line_menuitem(Line &line) {
+void line_menuitem(Line &line, const bool do_freq) {
   if (ImGui::BeginMenu(line.name().c_str())) {
     bool update = false;
     int ra = line.RunAvgCount();
@@ -56,7 +56,7 @@ void line_menuitem(Line &line) {
                               ImGuiInputTextFlags_EnterReturnsTrue);
     if (ra < 1) ra = 1;
     ImGui::Separator();
-    update |= freq_scale(xs);
+    if (do_freq) update |= freq_scale(xs);
     update |= ImGui::InputDouble("X Offset", &xo, 0.0, 0.0, "%.6f",
                                  ImGuiInputTextFlags_EnterReturnsTrue);
     ImGui::Separator();
@@ -78,7 +78,7 @@ void line_menuitem(Line &line) {
   }
 }
 
-void frame_menuitem(Frame &frame) {
+void frame_menuitem(Frame &frame, const bool do_freq) {
   if (ImGui::BeginMenu(frame.title().c_str())) {
     int ra = frame[0].RunAvgCount();
     double xo = frame[0].Xoffset(), xs = frame[0].Xscale(),
@@ -94,10 +94,12 @@ void frame_menuitem(Frame &frame) {
     }
 
     ImGui::Separator();
-
-    if (freq_scale(xs)) {
-      for (auto &line : frame) {
-        line.Xscale(xs);
+    
+    if (do_freq) {
+      if (freq_scale(xs)) {
+        for (auto &line : frame) {
+          line.Xscale(xs);
+        }
       }
     }
 
@@ -128,7 +130,7 @@ void frame_menuitem(Frame &frame) {
 
     ImGui::Separator();
 
-    for (auto &line : frame) line_menuitem(line);
+    for (auto &line : frame) line_menuitem(line, do_freq);
     ImGui::EndMenu();
   }
 }

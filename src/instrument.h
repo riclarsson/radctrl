@@ -1079,9 +1079,13 @@ void ExchangeData(
   bool allnew = false;
   bool quit = false;
   Chopper::ChopperPos last;
-  const std::string med = " Median ";
+  const std::string med_str = " Median ";
+  const std::string med_noise_str = " Median Noise ";
+  const std::string raw_cold_str = " Raw Cold ";
+  const std::string raw_hot_str = " Raw Hot ";
+  const std::string raw_target_str = " Raw Target ";
   std::map<std::string, double> hk_data_longterm;
-  std::vector<std::vector<double>> last_calib;
+  std::vector<std::vector<double>> last_data;
   std::map<std::string, double> hk_data;
   std::map<std::string, double> frontend_data;
   std::array<std::vector<std::vector<float>>, N> backends_data;
@@ -1148,14 +1152,66 @@ loop:
   for (auto& d: frontend_data) hk_data_longterm[d.first] = d.second;
   for (std::size_t i=0; i<N; i++) {
     if (data[i].has_calib) {
-      last_calib = data[i].last_calib;
-      for (std::size_t j=0; j<last_calib.size(); j++) {
-        if (last_calib[j].size()) {
-          std::sort(last_calib[j].begin(), last_calib[j].end());
-          if (last_calib.size() > 1) {
-            hk_data_longterm[backend_names[i] + med + std::to_string(j)] = last_calib[j][last_calib[j].size()/2];
+      last_data = data[i].last_calib;
+      for (std::size_t j=0; j<last_data.size(); j++) {
+        if (last_data[j].size()) {
+          std::sort(last_data[j].begin(), last_data[j].end());
+          if (last_data.size() > 1) {
+            hk_data_longterm[backend_names[i] + med_str + std::to_string(j)] = last_data[j][last_data[j].size()/2];
           } else {
-            hk_data_longterm[backend_names[i] + med] = last_calib[j][last_calib[j].size()/2];
+            hk_data_longterm[backend_names[i] + med_str] = last_data[j][last_data[j].size()/2];
+          }
+        }
+      }
+    }
+    if (data[i].has_noise) {
+      last_data = data[i].last_noise;
+      for (std::size_t j=0; j<last_data.size(); j++) {
+        if (last_data[j].size()) {
+          std::sort(last_data[j].begin(), last_data[j].end());
+          if (last_data.size() > 1) {
+            hk_data_longterm[backend_names[i] + med_noise_str + std::to_string(j)] = last_data[j][last_data[j].size()/2];
+          } else {
+            hk_data_longterm[backend_names[i] + med_noise_str] = last_data[j][last_data[j].size()/2];
+          }
+        }
+      }
+    }
+    if (data[i].has_cold) {
+      last_data = data[i].last_cold;
+      for (std::size_t j=0; j<last_data.size(); j++) {
+        if (last_data[j].size()) {
+          std::sort(last_data[j].begin(), last_data[j].end());
+          if (last_data.size() > 1) {
+            hk_data_longterm[backend_names[i] + raw_cold_str + std::to_string(j)] = last_data[j][last_data[j].size()/2];
+          } else {
+            hk_data_longterm[backend_names[i] + raw_cold_str] = last_data[j][last_data[j].size()/2];
+          }
+        }
+      }
+    }
+    if (data[i].has_hot) {
+      last_data = data[i].last_hot;
+      for (std::size_t j=0; j<last_data.size(); j++) {
+        if (last_data[j].size()) {
+          std::sort(last_data[j].begin(), last_data[j].end());
+          if (last_data.size() > 1) {
+            hk_data_longterm[backend_names[i] + raw_hot_str + std::to_string(j)] = last_data[j][last_data[j].size()/2];
+          } else {
+            hk_data_longterm[backend_names[i] + raw_hot_str] = last_data[j][last_data[j].size()/2];
+          }
+        }
+      }
+    }
+    if (data[i].has_target) {
+      last_data = data[i].last_target;
+      for (std::size_t j=0; j<last_data.size(); j++) {
+        if (last_data[j].size()) {
+          std::sort(last_data[j].begin(), last_data[j].end());
+          if (last_data.size() > 1) {
+            hk_data_longterm[backend_names[i] + raw_target_str + std::to_string(j)] = last_data[j][last_data[j].size()/2];
+          } else {
+            hk_data_longterm[backend_names[i] + raw_target_str] = last_data[j][last_data[j].size()/2];
           }
         }
       }
