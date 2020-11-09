@@ -50,6 +50,7 @@ struct Config {
         height(720),
         xpos(50),
         ypos(50),
+        tabspos(0),
         tabs(0),
         gui_error(false),
         gui_errors(0),

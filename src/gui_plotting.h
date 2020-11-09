@@ -242,7 +242,7 @@ class CAHA {
   static constexpr size_t M = PartOfHeight;
   static_assert(N >= M);
 
-  CAHA(std::string plotname, const std::vector<std::vector<double>> &f)
+  CAHA(const std::string& plotname, const std::vector<std::vector<double>> &f)
       : mname(plotname),
         raw("tmp", "tmp", "tmp", {}),
         noise("tmp", "tmp", "tmp", {}),
@@ -411,7 +411,7 @@ public:
     LineData(std::size_t current_size, const std::string& nm) : 
       do_plot(false), data(current_size, std::numeric_limits<double>::quiet_NaN()),
       name(nm), line_pos(std::numeric_limits<std::size_t>::max()) {}
-    LineData() {}
+    LineData() : do_plot(false), data(0), name(""), line_pos(std::numeric_limits<std::size_t>::max()) {}
   };
 
 private:
@@ -443,7 +443,7 @@ public:
       x.resize(N);
       for (auto& d: data) d.data.resize(N);
       for (std::size_t ind=i+1; ind<N; ind++) x[ind] = std::numeric_limits<double>::quiet_NaN();
-      for (auto& d: data) for (std::size_t ind=ind+1; ind<N; ind++) d.data[ind] = std::numeric_limits<double>::quiet_NaN();
+      for (auto& d: data) for (std::size_t ind=i+1; ind<N; ind++) d.data[ind] = std::numeric_limits<double>::quiet_NaN();
     }
     n=N;
     mtx.unlock();
@@ -457,8 +457,10 @@ public:
     
     // Append keys and data
     for (auto& d: datanew) {
-      if (data.find(d.first) == data.cend()) {
-        data[d.first] = LineData(n, d.first);
+      auto& dataentry = data[d.first];
+      if (dataentry.data.size() not_eq n) {
+        dataentry.data.resize(n);
+        dataentry.name = d.first;
       }
       data[d.first].data[i] = d.second;
     }
@@ -481,13 +483,14 @@ public:
   
   void activate_data(const std::string& key) {
     mtx.lock();
-    if (auto dataptr = data.find(key); dataptr not_eq data.end()) {
+    auto dataptr = data.find(key);
+    if (dataptr not_eq data.end()) {
       if (not (dataptr -> second.do_plot)) {
         
         // Add a new line if this doesn't have one
         if ((dataptr -> second.line_pos) == std::numeric_limits<std::size_t>::max()) {
-          lines.push_back(Line(dataptr -> second.name, x, dataptr -> second.data));
           dataptr -> second.line_pos = lines.size();
+          lines.push_back(Line(dataptr -> second.name, x, dataptr -> second.data));
         }
         dataptr -> second.do_plot = true;
       }
@@ -497,7 +500,8 @@ public:
   
   void deactivate_data(const std::string& key) {
     mtx.lock();
-    if (auto dataptr = data.find(key); dataptr not_eq data.end()) {
+    auto dataptr = data.find(key);
+    if (dataptr not_eq data.end()) {
       dataptr -> second.do_plot = false;
     }
     mtx.unlock();
@@ -531,8 +535,9 @@ public:
   
   void set_name(const std::string& key, const std::string& name) {
     mtx.lock();
-    if (auto d = data.find(key); d not_eq data.end()) {
-      d -> second.name = name;
+    auto dataptr = data.find(key);
+    if (dataptr not_eq data.end()) {
+      dataptr -> second.name = name;
     }
     mtx.unlock();
   }
@@ -569,11 +574,10 @@ void listoflines_mainmenu(ListOfLines<Height, PartOfHeight> &lists) {
     if (ImGui::BeginMenu("Plots")) {
       if (ImGui::BeginMenu(title.c_str())) {
         
-        // Get new names
-        if (ImGui::Button(" Update names ")) {
+        // Update lists
+        if (ImGui::Button(" Update Name List ")) {
           data = lists.available_data();
         }
-        ImGui::Separator();
         
         // Set y-label
         if (ImGui::InputText(" Y-label ", &ylabel)) {
@@ -587,10 +591,20 @@ void listoflines_mainmenu(ListOfLines<Height, PartOfHeight> &lists) {
             // Set new name
             if (ImGui::InputText("Name", &d.second.name)) {
               lists.set_name(d.first, d.second.name);
+              data = lists.available_data();
             }
-            if (ImGui::Checkbox("Activate", &d.second.do_plot)) {
-              if (d.second.do_plot) lists.activate_data(d.first);
-              else lists.deactivate_data(d.first);
+            
+            // Activate or deactivate data plotting
+            if (not d.second.do_plot) {
+              if (ImGui::Button(" Activate ")) {
+                lists.activate_data(d.first);
+                d.second.do_plot = true;
+              }
+            } else {
+              if (ImGui::Button(" Deactivate ")) {
+                lists.deactivate_data(d.first);
+                d.second.do_plot = false;
+              }
             }
             ImGui::EndMenu();
           }
