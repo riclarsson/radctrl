@@ -100,7 +100,7 @@ int run(File::ConfigParser parser) try {
   directoryBrowser.SetTypeFilters({"[D]"});
   
   // Housekeeping data for long-term view
-  GUI::Plotting::ListOfLines<height_of_window, part_for_plot> hk_frames(1'000'000, "Housekeeping", "Time");
+  GUI::Plotting::ListOfLines<height_of_window, part_for_plot> hk_frames(100'000, "Housekeeping", "Time");
 
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "IRAM");

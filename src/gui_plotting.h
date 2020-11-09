@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <limits>
 #include <map>
 #include <mutex>
@@ -23,15 +24,6 @@ class Data {
       : use_second(true),
         data({std::vector<double>(n, 0), std::vector<double>(n, 0)}) {}
   Data(const Data &x) : use_second(true), data(x.data) {}
-  Data& operator=(const Data &other) noexcept {
-    mtx.lock();
-    other.mtx.lock();
-    use_second = other.use_second;
-    data = other.data;
-    other.mtx.unlock();
-    mtx.unlock();
-    return *this;
-  }
 
   double get(size_t i) const {
     mtx.lock();
@@ -41,8 +33,8 @@ class Data {
   }
 
   void set(const std::vector<double> &newdata) {
-    data[not use_second] = newdata;
     mtx.lock();
+    data[not use_second] = newdata;
     use_second = not use_second;
     mtx.unlock();
   }
@@ -129,21 +121,6 @@ class Line {
         yoffset(0) {
     if (X.N() not_eq Y.N()) throw std::runtime_error("Bad data size");
   }
-  Line& operator=(const Line &other) noexcept {
-    mtx.lock();
-    other.mtx.lock();
-    mname = other.mname;
-    xval = other.xval;
-    yval = other.yval;
-    running_avg = other.running_avg;
-    xscale = other.xscale;
-    yscale = other.yscale;
-    xoffset = other.xoffset;
-    yoffset = other.yoffset;
-    other.mtx.unlock();
-    mtx.unlock();
-    return *this;
-  }
   Line(const Line &other) noexcept
       : mname(other.mname),
         xval(other.xval),
@@ -156,7 +133,12 @@ class Line {
 
   void setX(const std::vector<double> &x) { xval.set(x); }
   void setY(const std::vector<double> &y) { yval.set(y); }
-  void setXY(const std::vector<double> &x, const std::vector<double> &y) {mtx.lock(); xval.set(x); yval.set(y); mtx.unlock();}
+  void setXY(const std::vector<double> &x, const std::vector<double> &y) {
+    mtx.lock();
+    yval.set(y);
+    xval.set(x);
+    mtx.unlock();
+  }
   int size() const {
     mtx.lock();
     const int val = yval.N() / running_avg;
@@ -424,16 +406,16 @@ public:
   
 private:
   struct LineData {
+    bool do_plot;
     std::vector<double> data;
     std::string name;
     std::string ylabel;
-    bool do_plot;
     std::size_t line_pos;
     std::size_t ylabel_pos;
     
     LineData(std::size_t current_size, const std::string& nm, const std::string& yl) : 
-      data(current_size, std::numeric_limits<double>::quiet_NaN()),
-      name(nm), ylabel(yl), do_plot(false), line_pos(0), ylabel_pos(std::numeric_limits<std::size_t>::max()) {}
+      do_plot(false), data(current_size, std::numeric_limits<double>::quiet_NaN()),
+      name(nm), ylabel(yl), line_pos(std::numeric_limits<std::size_t>::max()), ylabel_pos(std::numeric_limits<std::size_t>::max()) {}
     LineData() {}
   };
   
@@ -451,7 +433,7 @@ public:
   static constexpr size_t M = PartOfHeight;
   static_assert(N >= M);
   
-  ListOfLines(std::size_t N, const std::string& title, const std::string& xlabel) : n(N ? N : 1), i(0), mtitle(title), mxlabel(xlabel) {};
+  ListOfLines(std::size_t N, const std::string& title, const std::string& xlabel) : n(N ? N : 1), i(0), x(n, std::numeric_limits<double>::quiet_NaN()),  mtitle(title), mxlabel(xlabel) {};
   
   void update_size(std::size_t N) {
     N = N ? N : 1;
@@ -501,47 +483,33 @@ public:
   }
   
   void activate_data(const std::string& key) {
+    static_assert(ylabel_array_size == 3, "Must update the one-two system");
     mtx.lock();
-    if (auto dataptr = data.find(key); dataptr not_eq data.cend()) {
-      if (not dataptr -> second.do_plot) {
-        static_assert(ylabel_array_size == 3, "Must update the one-two system");
+    if (auto dataptr = data.find(key); dataptr not_eq data.end()) {
+      if (not (dataptr -> second.do_plot)) {
         const bool one = mylabels[0] == "" or mylabels[0] == dataptr -> second.ylabel;
         const bool two = mylabels[1] == "" or mylabels[1] == dataptr -> second.ylabel;
-        
-        dataptr -> second.do_plot = true;
-        dataptr -> second.line_pos = lines.size();
-        dataptr -> second.ylabel_pos = one ? 0 : two ? 1 : 2;
-        mylabels[dataptr -> second.ylabel_pos] = dataptr -> second.ylabel;
-        
-        lines.push_back(Line(dataptr -> second.name, x, dataptr -> second.data));
-      } else {
-        std::cerr << "Already active!\n";
+        const bool tre = mylabels[2] == "" or mylabels[2] == dataptr -> second.ylabel;
+        if (one or two or tre) {
+          dataptr -> second.ylabel_pos = one ? 0 : two ? 1 : 2;
+          mylabels[dataptr -> second.ylabel_pos] = dataptr -> second.ylabel;
+          
+          // Add a new line if this doesn't have one
+          if ((dataptr -> second.line_pos) == std::numeric_limits<std::size_t>::max()) {
+            lines.push_back(Line(dataptr -> second.name, x, dataptr -> second.data));
+            dataptr -> second.line_pos = lines.size();
+          }
+          dataptr -> second.do_plot = true;
+        }
       }
-    } else {
-      std::cerr << "Bad key!\n";
     }
     mtx.unlock();
   }
   
   void deactivate_data(const std::string& key) {
     mtx.lock();
-    if (auto dataptr = data.find(key); dataptr not_eq data.cend()) {
-      if (dataptr -> second.do_plot) {
-        static_assert(ylabel_array_size == 3, "Must update the one-two system");
-        const bool one = mylabels[0] == dataptr -> second.ylabel;
-        const bool two = mylabels[1] == dataptr -> second.ylabel;
-        
-        // Don't do plots and delete unused ylabels
-        dataptr -> second.do_plot = false;
-        if (auto yl = dataptr -> second.ylabel; std::count_if(data.cbegin(), data.cend(), [yl](auto& d){return d.second.ylabel == yl;}) == 1) mylabels[one ? 0 : two ? 1 : 2] = "";
-        
-        lines[dataptr -> second.line_pos] = lines[lines.size()-1];
-        lines.pop_back();
-      } else {
-        std::cerr << "Already inactive!\n";
-      }
-    } else {
-      std::cerr << "Bad key!\n";
+    if (auto dataptr = data.find(key); dataptr not_eq data.end()) {
+      dataptr -> second.do_plot = false;
     }
     mtx.unlock();
   }
@@ -615,17 +583,19 @@ public:
 template <size_t Height, size_t PartOfHeight>
 void listoflines_mainmenu(ListOfLines<Height, PartOfHeight> &lists) {
   static_assert(ListOfLines<Height, PartOfHeight>::ylabel_array_size == 3, "The one-two-tre selection would fail");
-  const std::string title = lists.title();
+  static const std::string title = lists.title();
+  static auto data = lists.available_data();
+  static auto ylabels = lists.ylabels();
   
+  bool need_new = false;
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("Plots")) {
       if (ImGui::BeginMenu(title.c_str())) {
         
-        auto data = lists.available_data();
-        auto ylabels = lists.ylabels();
-        const bool one = ylabels[0] not_eq "";
-        const bool two = ylabels[1] not_eq "";
-        const bool tre = ylabels[2] not_eq "";
+        if (ImGui::Button(" Update names ")) {
+          need_new = true;
+        }
+        ImGui::Separator();
         
         // Show present y-labels and available y-labels
         ImGui::InputText("Y-label 1", &ylabels[0], ImGuiInputTextFlags_ReadOnly);
@@ -634,30 +604,40 @@ void listoflines_mainmenu(ListOfLines<Height, PartOfHeight> &lists) {
         ImGui::Separator();
         
         // Show all the keys and if they are drawn and make a way to draw them
-        
         for (auto& d: data) {
           ImGui::TextUnformatted(d.first.c_str());
-          ImGui::SameLine();
-          ImGui::TextUnformatted(" | ");
-          ImGui::SameLine();
-          if (ImGui::InputText("Y-label", &d.second.ylabel, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_EnterReturnsTrue)) {
-            lists.update_ylabel(d.first, d.second.ylabel);
+          
+          std::string ylabel = d.second.ylabel;
+          if (ImGui::InputText((d.first + std::string(" Y-label")).c_str(), &ylabel)) {
+            lists.update_ylabel(d.first, ylabel);
+            need_new = true;
           }
-          ImGui::SameLine();
-          if (ImGui::InputText("Name", &d.second.name, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_EnterReturnsTrue)) {
-            lists.update_name(d.first, d.second.name);
+          
+          std::string name = d.second.name;
+          if (ImGui::InputText((d.first + std::string(" Name")).c_str(), &name)) {
+            lists.update_name(d.first, name);
+            need_new = true;
           }
-          ImGui::SameLine();
+          
           bool change = d.second.do_plot;
-          if (ImGui::Checkbox("Active: ", &change)) {
-            if (not d.second.do_plot) {
+          if (ImGui::Checkbox((d.first + std::string(" Active")).c_str(), &change)) {}
+          if (change not_eq d.second.do_plot) {
+            const bool one = ylabels[0] == "";
+            const bool two = ylabels[1] == "";
+            const bool tre = ylabels[2] == "";
+            
+            if (change) {
               if (one or two or tre or d.second.ylabel == ylabels[0] or d.second.ylabel == ylabels[1] or d.second.ylabel == ylabels[2]) {
                 lists.activate_data(d.first);
+                need_new = true;
               }
             } else {
               lists.deactivate_data(d.first);
+              need_new = true;
             }
           }
+          ImGui::Separator();
+          ImGui::Separator();
         }
         
         ImGui::EndMenu();
@@ -665,6 +645,11 @@ void listoflines_mainmenu(ListOfLines<Height, PartOfHeight> &lists) {
       ImGui::EndMenu();
     }
     ImGui::EndMainMenuBar();
+  }
+  
+  if (need_new) {
+    data = lists.available_data();
+    ylabels = lists.ylabels();
   }
 }
 

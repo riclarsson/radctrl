@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include <imgui.h>
+#include <imgui_stdlib.h>
 #include <implot.h>
 #include <implot_internal.h>
 
