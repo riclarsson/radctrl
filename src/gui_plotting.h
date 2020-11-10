@@ -576,6 +576,15 @@ public:
           ImGui::InputText(" Y-label ", &mylabel);
           ImGui::Separator();
           
+          // Active plots menu to manipulate the active line properties
+          if (ImGui::BeginMenu("Activated Options")) {
+            for (auto& d: data) {
+              if (d.second.line_pos not_eq std::numeric_limits<std::size_t>::max())
+                line_menuitem(lines[d.second.line_pos], false);
+            }
+            ImGui::EndMenu();
+          }
+          
           // Select plots
           for (auto& d: data) {
             if (ImGui::BeginMenu(d.first.c_str())) {
@@ -597,12 +606,9 @@ public:
               ImGui::Separator();
               
               // Set new name
-              ImGui::InputText("Name", &d.second.name);
-              ImGui::Separator();
-              
-              if (ImGui::BeginMenu("Line Properties", d.second.do_plot)) {
-                line_menuitem(lines[d.second.line_pos], false);
-                ImGui::EndMenu();
+              if (d.second.line_pos not_eq std::numeric_limits<std::size_t>::max()) {
+                ImGui::InputText("Line Name", &d.second.name);
+                ImGui::Separator();
               }
               
               ImGui::EndMenu();
