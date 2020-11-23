@@ -353,6 +353,8 @@ class File {
 
 std::vector<std::string> Devices(std::vector<std::string> contains,
                                  size_t maxN = 9);
+
+std::vector<std::vector<double>> parse_columndata(File<Operation::Read, Type::Raw> file, std::size_t skiprows);
 }  // namespace File
 
 #endif  // file_h
