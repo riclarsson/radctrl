@@ -1,7 +1,6 @@
 #ifndef cli_parsing_h
 #define cli_parsing_h
 
-#include <App.hpp>
 #include <CLI.hpp>
 #include <string>
 
@@ -23,6 +22,12 @@ class App {
 
   template <class T>
   void NewPlainOption(const std::string &name, T &var,
+                      const std::string &help = "") {
+    app.add_option(name, var, help);
+  }
+
+  template <class T>
+  void NewFlag(const std::string &name, T &var,
                       const std::string &help = "") {
     app.add_option(name, var, help);
   }

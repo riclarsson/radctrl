@@ -9,22 +9,58 @@
 #include <gui_plotting.h>
 
 namespace Plot {
-AxisData read_raw(const std::string& file, std::size_t skiprows) {
+AxisData read_raw(const std::string& file, int skiprows) {
   return File::parse_columndata(file, skiprows);
 }
 
 void menubar(AxisData& data, std::string& x, std::string& y) {
+  const int n=data.size();
   if (ImGui::BeginMainMenuBar()) {
+    if (ImGui::BeginMenu("Plot")) {
+      ImGui::InputText("X label", &x);
+      ImGui::InputText("Y label", &y);
+      for (int i=0; i<n; i++) {
+        if (ImGui::BeginMenu(data.line(i).c_str())) {
+          std::string line = data.line(i);
+          if (ImGui::InputText("Line label", &line, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            data.line(i) = line;
+          }
+          bool testx = data.isx(i);
+          if (ImGui::Checkbox("Make X-grid", &testx)) data.setx(i);
+          bool testy = data.isy(i);
+          if (ImGui::Checkbox("Make Y-grid", &testy)) data.sety(i);
+          ImGui::EndMenu();
+        }
+        ImGui::Separator();
+      }
+      ImGui::Separator();
+      ImGui::EndMenu();
+    }
     ImGui::EndMainMenuBar();
   }
 }
 
 void plot(AxisData& data, std::string& x, std::string& y) {
-  if (ImPlot::BeginPlot("PlotFrame", x.c_str(), y.c_str(), {-1, -1})) {
-//     for (auto &line : frame)
-//       ImPlot::PlotLine(line.name().c_str(), line.getter(), (void *)&line,
-//                        line.size());
+  auto xaxis = data.xaxis();
+  const int n = data.size();
+  if (xaxis.first not_eq nullptr) {
+    if (ImPlot::BeginPlot("PlotFrame", x.c_str(), y.c_str(), {-1, -1})) {
+      for (int i=0; i<n; i++) {
+        if (auto yaxis = data.yaxis(i); yaxis.first not_eq nullptr) {
+          ImPlot::PlotLine(data.line(i).c_str(), xaxis.first, yaxis.first, std::min(xaxis.second, yaxis.second));
+        }
+      }
       ImPlot::EndPlot();
+    }
+  } else {
+    if (ImPlot::BeginPlot("Plot Frame", x.c_str(), y.c_str(), {-1, -1})) {
+      for (int i=0; i<n; i++) {
+        if (auto yaxis = data.yaxis(i); yaxis.first not_eq nullptr) {
+          ImPlot::PlotLine(data.line(i).c_str(), yaxis.first, yaxis.second);
+        }
+      }
+      ImPlot::EndPlot();
+    }
   }
 }
 
@@ -61,25 +97,29 @@ void draw(AxisData& data, std::string& x, std::string& y) {
 }
 
 int main(int argc, char **argv) try {
-  CommandLine::App plot("Plot some data");
+  CommandLine::App plot("Plot some data and explore it\n\nKeywords:\n"
+    "\tRegular data: all data have the same length\n"
+  );
   
   std::string filename;
   plot.NewRequiredOption("-f,--filename", filename, "File to load");
+  
+  bool printdata=false;
+  plot.NewFlag("-p,--print", printdata, "Print the data to regular data columns without drawing");
   
   std::string xlabel="X";
   plot.NewDefaultOption("-x,--xlabel", xlabel, "X-label");
   
   std::string ylabel="Y";
-  plot.NewDefaultOption("-y,--ylabel", xlabel, "Y-label");
+  plot.NewDefaultOption("-y,--ylabel", ylabel, "Y-label");
   
   int option=0;
   plot.NewDefaultOption("-o,--option", option,
-                        "The type of data"
-                        "\n\t0: Pure ascii file of format [x, y1, y2, ... yn] in columns");
+                        "The type of data:\n"
+                        "\toption 0: Pure ascii file of format [f0, f1, f2, ... fn] in regular data columns\n");
   
   int skiprows=0;
-  plot.NewDefaultOption("-s,--skiprows", skiprows,
-                        "How many rows to skip in reading the file");
+  plot.NewDefaultOption("-s,--skiprows", skiprows, "How many rows to skip in reading the file");
   
   // Parse input options
   plot.Parse(argc, argv);
@@ -89,16 +129,35 @@ int main(int argc, char **argv) try {
     data = Plot::read_raw(filename, skiprows);
   } else {
     std::ostringstream os;
-    os << "Cannot understand the option: " << option << '\n' << "See --help for valid options\n";
+    os << "Cannot understand the option: " << option << '\n';
     throw std::runtime_error(os.str());
   }
   
-  // Draw the data
-  draw(data, xlabel, ylabel);
+  // Deal with the data
+  if (printdata) {
+    if (not data.size() {
+      throw std::runtime_error("No data");
+    } else if (not data.is_regular()) {
+      throw std::runtime_error("Irregular data");
+    } else {
+      for (int j=0; j<data.datasize(0); j++) {
+        for (int i=0; i<data.size(); i++) {
+          if (i) {
+            std::cout << ' ';
+          }
+          std::cout << data.get(i)[j];
+        }
+        std::cout << '\n';
+      }
+    }
+  } else {
+    // Draw the data
+    draw(data, xlabel, ylabel);
+  }
   
   // Finish
   return EXIT_SUCCESS;
 } catch (std::exception& e) {
-  std::cerr << "Error in execution:\n\n" << e.what() << '\n' << '\n';
+  std::cerr << "Error in execution:\n\n" << e.what() << "\n\nRun with --help for more information.\n\n";
   return EXIT_FAILURE;
 }

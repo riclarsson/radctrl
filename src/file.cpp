@@ -30,7 +30,7 @@ std::vector<std::vector<double>> parse_columndata(File<Operation::Read, Type::Ra
   for(std::size_t i=0; i<skiprows; i++) file.getline();
   const std::string first_str = file.getline();
   std::istringstream first_line(first_str);
-  std::vector<std::vector<double>> out(1);
+  std::vector<double> first_data;
   
   // Read the first line row
   constexpr std::size_t max_count = 1000;
@@ -39,7 +39,7 @@ std::vector<std::vector<double>> parse_columndata(File<Operation::Read, Type::Ra
     double x;
     first_line >> x;
     cur_count++;
-    out.back().emplace_back(x);
+    first_data.emplace_back(x);
     if (cur_count >= max_count) {
       std::ostringstream os;
       os << "Reached max count (" << max_count << ") on first line.  Line:\n\t" << "'" << first_str << "'";
@@ -47,18 +47,18 @@ std::vector<std::vector<double>> parse_columndata(File<Operation::Read, Type::Ra
     }
   }
   
-  const std::size_t n = out.back().size();
+  const std::size_t n = first_data.size();
+  std::vector<std::vector<double>> out(n, std::vector<double>(0));
+  for (std::size_t i=0; i<n; i++) out[i].emplace_back(first_data[i]);
   while (true) {
     for (std::size_t i=0; i<n; i++) {
       double x;
       file >> x;
       if (not i and file.at_end())
         return out;
-      else if (not i)
-        out.emplace_back(n);
-      else if (file.at_end())
+      else if (not i and file.at_end())
         throw std::runtime_error("Reached end of file unexpectedly");
-      out.back()[i] = x;
+      out[i].emplace_back(x);
     }
   }
 }
