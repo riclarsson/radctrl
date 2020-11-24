@@ -12,6 +12,18 @@ namespace Plot {
 AxisData read_raw(const std::string& file, int skiprows) {
   return File::parse_columndata(file, skiprows);
 }
+AxisData read_json(const std::string& file) {
+  const File::json a = File::Json(file).read();
+  std::vector<std::vector<double>> data(0);
+  std::vector<std::string> keys(0);
+  for(auto& x: a.items()) {
+    if (x.value().is_array()) {
+      keys.push_back(x.key());
+      data.push_back(x.value().get<std::vector<double>>());
+    }
+  }
+  return AxisData(std::move(keys), std::move(data));
+}
 
 void menubar(AxisData& data, std::string& x, std::string& y) {
   const int n=data.size();
@@ -113,10 +125,13 @@ int main(int argc, char **argv) try {
   std::string ylabel="Y";
   plot.NewDefaultOption("-y,--ylabel", ylabel, "Y-label");
   
-  int option=0;
+  int option=1;
   plot.NewDefaultOption("-o,--option", option,
                         "The type of data:\n"
-                        "\toption 0: Pure ascii file of format [f0, f1, f2, ... fn] in regular data columns\n");
+                        "\toption 0: Will guess the file-type (NOT IMPLEMENTED)\n"
+                        "\toption 1: Pure ascii file of format [f0, f1, f2, ... fn] in regular data columns\n"
+                        "\toption 2: JSON file (maybe regular data; will only parse array values)\n"
+                       );
   
   int skiprows=0;
   plot.NewDefaultOption("-s,--skiprows", skiprows, "How many rows to skip in reading the file");
@@ -125,8 +140,10 @@ int main(int argc, char **argv) try {
   plot.Parse(argc, argv);
   
   Plot::AxisData data;
-  if (option == 0) {
+  if (option == 1) {
     data = Plot::read_raw(filename, skiprows);
+  } else if (option == 2) {
+    data = Plot::read_json(filename);
   } else {
     std::ostringstream os;
     os << "Cannot understand the option: " << option << '\n';
@@ -135,7 +152,7 @@ int main(int argc, char **argv) try {
   
   // Deal with the data
   if (printdata) {
-    if (not data.size() {
+    if (not data.size()) {
       throw std::runtime_error("No data");
     } else if (not data.is_regular()) {
       throw std::runtime_error("Irregular data");

@@ -75,15 +75,6 @@ target_link_libraries(network PUBLIC multithread)
 ########################################################################################
 
 ########################################################################################
-# Species Library:  For equations and classes for computing the atmosphere
-add_library (species STATIC
-             species.cpp
-             hitran.cpp
-             )
-target_link_libraries(species PUBLIC math)
-########################################################################################
-
-########################################################################################
 # Atmospheric Library:  For equations and classes for computing the atmosphere
 add_library (files STATIC
              file.cpp
@@ -91,6 +82,16 @@ add_library (files STATIC
              )
 target_link_libraries(files PUBLIC xml)
 target_include_directories(files PUBLIC ../3rdparty/pugixml/)
+target_include_directories(files PUBLIC ../3rdparty/json/single_include/)
+########################################################################################
+
+########################################################################################
+# Species Library:  For equations and classes for computing the atmosphere
+add_library (species STATIC
+             species.cpp
+             hitran.cpp
+             )
+target_link_libraries(species PUBLIC math)
 ########################################################################################
 
 ########################################################################################

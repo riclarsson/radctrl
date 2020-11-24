@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include <nlohmann/json.hpp>
+
 #include "enums.h"
 
 namespace File {
@@ -355,6 +357,34 @@ std::vector<std::string> Devices(std::vector<std::string> contains,
                                  size_t maxN = 9);
 
 std::vector<std::vector<double>> parse_columndata(File<Operation::Read, Type::Raw> file, std::size_t skiprows);
+
+using json = nlohmann::json;
+
+template <Operation X=Operation::Read>
+class Json {
+  static_assert(X == Operation::Read or X == Operation::Write);
+  
+  std::fstream fil;
+  std::filesystem::path path;
+public:
+  Json(const std::string &p) : path(p) {
+    if constexpr (X == Operation::Read) {
+      if (not std::filesystem::exists(path)) {
+        std::ostringstream os;
+        os << '"' << path << '"' << " does not exist.  Cannot read it.";
+        throw std::runtime_error(os.str());
+      }
+    }
+    
+    if constexpr (X == Operation::Read) {
+      fil.open(path, std::ios::in);
+    }
+  }
+  
+  json read() {
+    return json::parse(fil);
+  }
+};
 }  // namespace File
 
 #endif  // file_h

@@ -21,6 +21,7 @@ public:
       name[i] = std::string("line ") + std::to_string(i);
     }
   }
+  AxisData(std::vector<std::string>&& k, std::vector<std::vector<double>>&& d) : x(d.size(), false), y(d.size(), false), name(std::move(k)), data(std::move(d)) {}
   AxisData(const AxisData& d) = default;
   AxisData& operator=(const AxisData& d) = default;
   AxisData() noexcept {}

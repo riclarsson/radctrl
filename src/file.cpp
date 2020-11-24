@@ -42,7 +42,7 @@ std::vector<std::vector<double>> parse_columndata(File<Operation::Read, Type::Ra
     first_data.emplace_back(x);
     if (cur_count >= max_count) {
       std::ostringstream os;
-      os << "Reached max count (" << max_count << ") on first line.  Line:\n\t" << "'" << first_str << "'";
+      os << "Failed parsing column data.  Reached max count (" << max_count << ") on first line.  Line:\n\t" << "'" << first_str << "'";
       throw std::runtime_error(os.str());
     }
   }
