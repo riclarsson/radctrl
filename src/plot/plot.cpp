@@ -150,11 +150,14 @@ int main(int argc, char **argv) try {
     throw std::runtime_error(os.str());
   }
   
+  // We must now have some data
+  if (not data.size()) {
+    throw std::runtime_error("No data");
+  }
+  
   // Deal with the data
   if (printdata) {
-    if (not data.size()) {
-      throw std::runtime_error("No data");
-    } else if (not data.is_regular()) {
+    if (not data.is_regular()) {
       throw std::runtime_error("Irregular data");
     } else {
       for (int j=0; j<data.datasize(0); j++) {
