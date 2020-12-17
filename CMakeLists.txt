@@ -18,7 +18,13 @@ include(cmake/Cache.cmake)
 include(cmake/Doxygen.cmake)
 enable_doxygen()
 
+#enable latex
+
+include(cmake/UseLATEX.cmake)
+
 add_subdirectory(3rdparty)
 add_subdirectory(python)
 add_subdirectory(src)
 add_subdirectory(icons)
+add_subdirectory(doc)
+

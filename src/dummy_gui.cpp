@@ -1,5 +1,6 @@
 #include "backend.h"
 #include "chopper.h"
+#include "cli_parsing.h"
 #include "file.h"
 #include "frontend.h"
 #include "gui.h"
@@ -9,11 +10,11 @@
 #include "python_interface.h"
 #include "wobbler.h"
 
-int main() try {
+int run() try {
   constexpr size_t height_of_window = 7;  // Any size larger than part_for_plot
   constexpr size_t part_for_plot = 6;     // multiple of 2 and 3
   static_assert(part_for_plot % 6 == 0, "part_of_plot must be a multiple of 6");
-
+  
   // Start a python interpreter in case python code will be executed
   auto py = Python::createPython();
 
@@ -120,10 +121,10 @@ int main() try {
   GUI::MainMenu::fullscreen(config, window);
   GUI::MainMenu::quitscreen(config, window);
   GUI::Plotting::caha_mainmenu(backend_frames);
-  GUI::Plotting::listoflines_mainmenu(hk_frames);
+  hk_frames.mainmenu();
   const size_t current_tab = GUI::MainMenu::tabselect(config);
 
-  // Drawer helper (after tabs and menu)
+  // Drawer helper
   const auto startpos = ImGui::GetCursorPos();
 
   // Draw the individual tabs
@@ -187,4 +188,12 @@ int main() try {
   os << "Terminated with errors:\n" << e.what() << '\n';
   std::cerr << os.str();
   return EXIT_FAILURE;
+}
+
+int main(int argc, char **argv) {
+  CommandLine::App rad("Run the Dummy GUI");
+  
+  rad.Parse(argc, argv);
+  
+  run();
 }

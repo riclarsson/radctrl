@@ -28,7 +28,7 @@ class App {
 
   template <class T>
   void NewFlag(const std::string &name, T &var,
-                      const std::string &help = "") {
+               const std::string &help = "") {
     app.add_option(name, var, help);
   }
 

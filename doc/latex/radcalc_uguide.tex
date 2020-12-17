@@ -1,0 +1,76 @@
+\documentclass[a4paper,10pt]{book}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+
+%Import natbib and set style
+\usepackage{natbib}
+\bibliographystyle{abbrvnat}
+\setcitestyle{authoryear,open={(},close={)}}
+
+%Import and use indexing packages
+\usepackage{makeidx}
+\makeindex
+
+% Title and point of report
+\title{RADCTRL --- User Guide}
+\author{Richard Larsson}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+
+\chapter{Graphical User Interface}
+The graphical user interface (GUI) \index{GUI} is built upon the Dear ImGui \citep{DearImGui}
+framework.  We use ImPlot \citep{ImPlot} as plotting backend and imgui-filebrowser \citep{imgui-filebrowser} for file system interaction.
+
+\section{Overview}
+The GUI \index{GUI} consists of several sub-components.  From top to bottom, left to right, we have
+\begin{itemize}
+ \item The Menu Bar \index{Menu}
+ \item The Plot Tab Selector
+ \item The Plotting Windows
+ \item The Instrument Controller
+ \item The Measurement Overview and Plot Controller
+\end{itemize}
+Depending on experiment, these will all operate slightly differently but your overall interaction with these components will always the same.
+
+\subsection{The Menu Bar}
+The menu bar \index{Menu} consists of two sub-menus
+\begin{enumerate}
+ \item File
+ \item Plots
+\end{enumerate}
+They do different things, details can be found below.
+
+\subsubsection{File}
+The file submenu gives two options
+\begin{itemize}
+ \item Fullscreen (short-cut F11)
+ \item Quit (short-cut Ctrl+X)
+\end{itemize}
+Fullscreen will simply take the window fullscreen.  The leave fullscreen mode, use the menu item once again or press the escape key.
+
+Quit sends the stop command to the window and to all instruments.  The program will try to close gracefully.  Note that similar things happens when you close the window using operating system close button.  The only way the program exits without grace is via sending operating system signals.  Most of them should be handled well, but this is not as well tested and does not guarantee a graceful exit.
+
+\subsubsection{Plots}
+The plots submenu gives access to two different options.  You can either interact with
+spectrometer data or select housekeeping data to track.  First in the submenu is the list of spectrometer data.  Then is the housekeeping tracker.
+
+For each spectrometer, you can change how \index{Raw} Raw, \index{Noise} Noise, Integration, and Averaging data is displayed.  You can choose to change either individual lines or the entire spectrometer dataset.  The latter is first in the list.  
+Changing it overrides changes to individual lines. The options you can choose to change about the display of the lines are their running average count, their X-axis scale, their X-axis offset, their Y-axis scaling, and their Y-axis offset.  Note that the base frequency scaling is in Hertz, so the X-axis offset must be given in Hertz.  Note also that the Y-axis scale is from 0, not between min and max of the output.
+
+The housekeeping data must first be activated before it can be displayed.  This is done by selecting the named parameter that you want to display and pressing its Activate button.  To remove the data, you can Deactivate them.  All active data will be shown in the housekeeping plot tab.
+
+\section{WASPAM Göttingen}
+\section{IRAM Göttingen}
+\section{WASPAM Kiruna}
+
+\newpage
+
+\bibliography{references} 
+
+\printindex
+
+\end{document}
