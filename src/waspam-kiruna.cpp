@@ -321,7 +321,7 @@ int main(int argc, char **argv) {
                         "Configuration file for the Radiometer");
   
   bool no_gui = false;
-  rad.NewFlag("--no-gui", no_gui, "Turn off the GUI and automatically initialize and run the measurements from XML");
+  rad.NewFlag("--nogui", no_gui, "Turn off the GUI and automatically initialize and run the measurements from XML");
 
   rad.Parse(argc, argv);
 
