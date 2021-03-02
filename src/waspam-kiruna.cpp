@@ -35,8 +35,8 @@ int run(File::ConfigParser parser) try {
                    std::stod(parser("Chopper", "sleeptime"))};
 
   // Wobbler declaration
-  Instrument::Wobbler::PythonOriginalWASPAM wob{parser("Wobbler", "path")};
-  Instrument::Wobbler::Controller<4> wobbler_ctrl{
+  Instrument::Wobbler::Controller wobbler_ctrl{
+      Instrument::Wobbler::PythonOriginalWASPAM(parser("Wobbler", "path")),
       parser("Wobbler", "dev"), std::stoi(parser("Wobbler", "baudrate")),
       parser("Wobbler", "address")[0]};
   wobbler_ctrl.pos = {std::stoi(parser("Wobbler", "start")),
@@ -98,11 +98,11 @@ int run(File::ConfigParser parser) try {
   Instrument::DataSaver datasaver(save_path, "WASPAM");
   auto runner = AsyncRef(
       &Instrument::RunExperiment<decltype(chop), decltype(chopper_ctrl),
-                                 decltype(wob), decltype(wobbler_ctrl),
+                                 decltype(wobbler_ctrl),
                                  decltype(hk), decltype(housekeeping_ctrl),
                                  decltype(frontend), decltype(frontend_ctrl),
                                  decltype(backends), decltype(backend_ctrls)>,
-      chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, frontend,
+      chop, chopper_ctrl, wobbler_ctrl, hk, housekeeping_ctrl, frontend,
       frontend_ctrl, backends, backend_ctrls);
 
   // Start interchange between output data and operations on yet another thread
@@ -149,7 +149,7 @@ int run(File::ConfigParser parser) try {
                         height_of_window - part_for_plot>(window, startpos,
                                                           "CTRL Tool 1")) {
     Instrument::AllControl(config, save_path, directoryBrowser, datasaver, chop,
-                           chopper_ctrl, wob, wobbler_ctrl, hk,
+                           chopper_ctrl, wobbler_ctrl, hk,
                            housekeeping_ctrl, frontend, frontend_ctrl, backends,
                            backend_ctrls);
   }
@@ -159,14 +159,14 @@ int run(File::ConfigParser parser) try {
   if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3,
                         height_of_window - part_for_plot>(window, startpos,
                                                           "DATA Tool 1")) {
-    Instrument::AllInformation(chop, chopper_ctrl, wob, wobbler_ctrl, hk,
+    Instrument::AllInformation(chop, chopper_ctrl, wobbler_ctrl, hk,
                                housekeeping_ctrl, frontend, frontend_ctrl,
                                backends, backend_ctrls, backend_data);
   }
   GUI::Windows::end();
 
   // Error handling
-  if (not Instrument::AllErrors(config, chop, chopper_ctrl, wob, wobbler_ctrl,
+  if (not Instrument::AllErrors(config, chop, chopper_ctrl, wobbler_ctrl,
                                 hk, housekeeping_ctrl, frontend, frontend_ctrl,
                                 backends, backend_ctrls)) {
     glfwSetWindowShouldClose(window, 1);
@@ -214,8 +214,8 @@ int run_no_gui(File::ConfigParser parser) try {
                    std::stod(parser("Chopper", "sleeptime"))};
 
   // Wobbler declaration
-  Instrument::Wobbler::PythonOriginalWASPAM wob{parser("Wobbler", "path")};
-  Instrument::Wobbler::Controller<4> wobbler_ctrl{
+  Instrument::Wobbler::Controller wobbler_ctrl{
+      Instrument::Wobbler::PythonOriginalWASPAM(parser("Wobbler", "path")),
       parser("Wobbler", "dev"), std::stoi(parser("Wobbler", "baudrate")),
       parser("Wobbler", "address")[0]};
   wobbler_ctrl.pos = {std::stoi(parser("Wobbler", "start")),
@@ -272,11 +272,11 @@ int run_no_gui(File::ConfigParser parser) try {
   
   auto runner = AsyncRef(
       &Instrument::RunExperiment<decltype(chop), decltype(chopper_ctrl),
-                                 decltype(wob), decltype(wobbler_ctrl),
+                                 decltype(wobbler_ctrl),
                                  decltype(hk), decltype(housekeeping_ctrl),
                                  decltype(frontend), decltype(frontend_ctrl),
                                  decltype(backends), decltype(backend_ctrls)>,
-      chop, chopper_ctrl, wob, wobbler_ctrl, hk, housekeeping_ctrl, frontend,
+      chop, chopper_ctrl, wobbler_ctrl, hk, housekeeping_ctrl, frontend,
       frontend_ctrl, backends, backend_ctrls);
 
   // Start interchange between output data and operations on yet another thread
@@ -287,7 +287,7 @@ int run_no_gui(File::ConfigParser parser) try {
       backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl,
       backend_data, datasaver, backend_frames, hk_frames);
   
-  Instrument::InitAll(chop, chopper_ctrl, wob, wobbler_ctrl, hk,
+  Instrument::InitAll(chop, chopper_ctrl, wobbler_ctrl, hk,
                       housekeeping_ctrl, frontend, frontend_ctrl,
                       backends, backend_ctrls);
   

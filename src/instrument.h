@@ -379,12 +379,12 @@ class DataSaver {
   }
 };
 
-template <typename Chopper, typename ChopperController, typename Wobbler,
+template <typename Chopper, typename ChopperController,
           typename WobblerController, typename Housekeeping,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
           typename BackendControllers>
-void InitAll(Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
+void InitAll(Chopper &chop, ChopperController &chopper_ctrl,
              WobblerController &wobbler_ctrl, Housekeeping &hk,
              HousekeepingController &housekeeping_ctrl, Frontend &frontend,
              FrontendController &frontend_ctrl, Backends &backends,
@@ -414,10 +414,10 @@ void InitAll(Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
   }
 
   std::cout << Time() << ' ' << "Binding wobbler\n";
-  wob.startup(wobbler_ctrl.dev, wobbler_ctrl.baudrate, wobbler_ctrl.address);
+  std::visit([&wobbler_ctrl](auto&& wob) {wob.startup(wobbler_ctrl.dev, wobbler_ctrl.baudrate, wobbler_ctrl.address);}, wobbler_ctrl.wob);
   std::cout << Time() << ' ' << "Initializing wobbler\n";
-  wob.init(wobbler_ctrl.pos[0], false);
-  if (wob.has_error()) {
+  std::visit([&wobbler_ctrl](auto&& wob) {wob.init(wobbler_ctrl.pos[0], false);}, wobbler_ctrl.wob);
+  if (std::visit([](auto&& wob) {return wob.has_error();}, wobbler_ctrl.wob)) {
     std::cout << Time() << ' ' << "Error wobbler\n";
     wobbler_ctrl.error = true;
   } else {
@@ -457,12 +457,12 @@ void InitAll(Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
   }
 }
 
-template <typename Chopper, typename ChopperController, typename Wobbler,
+template <typename Chopper, typename ChopperController,
           typename WobblerController, typename Housekeeping,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
           typename BackendControllers>
-void CloseAll(Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
+void CloseAll(Chopper &chop, ChopperController &chopper_ctrl,
               WobblerController &wobbler_ctrl, Housekeeping &hk,
               HousekeepingController &housekeeping_ctrl, Frontend &frontend,
               FrontendController &frontend_ctrl, Backends &backends,
@@ -470,7 +470,7 @@ void CloseAll(Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
   chop.close();
   chopper_ctrl.init = false;
 
-  wob.close();
+  std::visit([](auto&& wob){wob.close();}, wobbler_ctrl.wob);
   wobbler_ctrl.init = false;
 
   hk.close();
@@ -529,7 +529,7 @@ void QuitAll(ChopperController &chopper_ctrl, WobblerController &wobbler_ctrl,
   for (auto &ctrl : backend_ctrls) ctrl.quit = true;
 }
 
-template <typename Chopper, typename ChopperController, typename Wobbler,
+template <typename Chopper, typename ChopperController,
           typename WobblerController, typename Housekeeping,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
@@ -537,7 +537,7 @@ template <typename Chopper, typename ChopperController, typename Wobbler,
 void AllControl(GUI::Config& config, std::filesystem::path& save_path,
                 ImGui::FileBrowser& directoryBrowser, DataSaver& datasaver,
                 Chopper &chop, ChopperController &chopper_ctrl,
-                Wobbler &wob, WobblerController &wobbler_ctrl,
+                WobblerController &wobbler_ctrl,
                 Housekeeping &hk,
                 HousekeepingController &housekeeping_ctrl,
                 Frontend &frontend, FrontendController &frontend_ctrl,
@@ -561,7 +561,7 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
       
       if (ImGui::Button(" Initialize all ")) {
         if (none_init)
-          Instrument::InitAll(chop, chopper_ctrl, wob, wobbler_ctrl, hk,
+          Instrument::InitAll(chop, chopper_ctrl, wobbler_ctrl, hk,
                               housekeeping_ctrl, frontend, frontend_ctrl,
                               backends, backend_ctrls);
           else {
@@ -575,7 +575,7 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
       
       if (ImGui::Button(" Close all ")) {
         if (all_init) {
-          Instrument::CloseAll(chop, chopper_ctrl, wob, wobbler_ctrl, hk,
+          Instrument::CloseAll(chop, chopper_ctrl, wobbler_ctrl, hk,
                                 housekeeping_ctrl, frontend, frontend_ctrl,
                                 backends, backend_ctrls);
         } else {
@@ -640,7 +640,7 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
     }
     
     if (ImGui::BeginTabItem(" Wobbler ")) {
-      Instrument::Wobbler::GuiSetup(wob, wobbler_ctrl, devices);
+      Instrument::Wobbler::GuiSetup(wobbler_ctrl, devices);
       ImGui::EndTabItem();
     }
     
@@ -694,13 +694,13 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
   }
 }
 
-template <typename Chopper, typename ChopperController, typename Wobbler,
+template <typename Chopper, typename ChopperController,
           typename WobblerController, typename Housekeeping,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
           typename BackendControllers, typename BackendData>
 void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
-                    Wobbler &wob, WobblerController &wobbler_ctrl,
+                    WobblerController &wobbler_ctrl,
                     Housekeeping & /*hk*/,
                     HousekeepingController &housekeeping_ctrl,
                     Frontend &frontend, FrontendController &frontend_ctrl,
@@ -715,7 +715,7 @@ void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
 
       ImGui::SameLine();
       ImGui::SetCursorPosX(x0 + dx * 14);
-      ImGui::Text("Wobbler Target: %i", wob.get_data());
+      ImGui::Text("Wobbler Target: %i", std::visit([](auto && wob){return wob.get_data();}, wobbler_ctrl.wob));
 
       ImGui::SameLine();
       ImGui::SetCursorPosX(x0 + dx * 27);
@@ -875,13 +875,13 @@ void AllInformation(Chopper &chop, ChopperController &chopper_ctrl,
   }
 }
 
-template <typename Chopper, typename ChopperController, typename Wobbler,
+template <typename Chopper, typename ChopperController,
           typename WobblerController, typename Housekeeping,
           typename HousekeepingController, typename Frontend,
           typename FrontendController, typename Backends,
           typename BackendControllers>
 std::vector<std::string> RunExperiment(
-    Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
+    Chopper &chop, ChopperController &chopper_ctrl,
     WobblerController &wobbler_ctrl, Housekeeping &hk,
     HousekeepingController &housekeeping_ctrl, Frontend &frontend,
     FrontendController &frontend_ctrl, Backends &backends,
@@ -911,7 +911,9 @@ loop:
         housekeeping_ctrl.run.load() and frontend_ctrl.run.load() and
         std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
                     [](auto &x) { return x.run.load(); });
-  error = chop.has_error() or wob.has_error() or hk.has_error() or
+  error = chop.has_error() or
+          std::visit([](auto &&wob){return wob.has_error();}, wobbler_ctrl.wob) or
+  hk.has_error() or
           frontend.has_error() or backends.has_any_errors();
   quit = chopper_ctrl.quit.load() or wobbler_ctrl.quit.load() or
          housekeeping_ctrl.quit.load() or frontend_ctrl.quit.load() or
@@ -934,7 +936,7 @@ loop:
   // Run Wobbler
   std::cout << Time() << " Running Wobbler\n";
   wobbler_ctrl.operating = true;
-  wob.move(wobbler_ctrl.pos[pos]);
+  std::visit([&wobbler_ctrl, pos](auto &&wob){wob.move(wobbler_ctrl.pos[pos]);}, wobbler_ctrl.wob);
 
   // Run Frontend
   std::cout << Time() << " Running Frontend\n";
@@ -1022,7 +1024,7 @@ loop:
   // Finally just wait for the wobbler to be happy
   std::cout << Time() << " Wait for Wobbler\n";
   wobbler_ctrl.waiting = true;
-  wob.wait();
+  std::visit([](auto &&wob){wob.wait();}, wobbler_ctrl.wob);
   wobbler_ctrl.waiting = wobbler_ctrl.operating = false;
   std::cout << Time() << " Done Wobbler\n";
 
@@ -1039,7 +1041,7 @@ stop:
   }
 
   try {
-    if (wobbler_ctrl.init) wob.close();
+    if (wobbler_ctrl.init) std::visit([](auto &&wob){wob.close();}, wobbler_ctrl.wob);
   } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
@@ -1226,13 +1228,13 @@ stop : {}
 
 
 /*! Handle errors.  If it returns false, errors cannot be handled */
-template <typename Chopper, typename ChopperController, typename Wobbler,
+template <typename Chopper, typename ChopperController,
 typename WobblerController, typename Housekeeping,
 typename HousekeepingController, typename Frontend,
 typename FrontendController, typename Backends,
 typename BackendControllers>
 bool AllErrors(GUI::Config& config,
-               Chopper &chop, ChopperController &chopper_ctrl, Wobbler &wob,
+               Chopper &chop, ChopperController &chopper_ctrl,
                WobblerController &wobbler_ctrl, Housekeeping &hk,
                HousekeepingController &housekeeping_ctrl, Frontend &frontend,
                FrontendController &frontend_ctrl, Backends &backends,
@@ -1276,7 +1278,7 @@ bool AllErrors(GUI::Config& config,
       config.active_errors);
     
     ImGui::TextWrapped(" Chopper: %s", chop.error_string().c_str());
-    ImGui::TextWrapped(" Wobbler: %s", wob.error_string().c_str());
+    ImGui::TextWrapped(" Wobbler: %s", std::visit([](auto && wob){return wob.error_string().c_str();}, wobbler_ctrl.wob));
     for (size_t i = 0; i < backends.N; i++) {
       ImGui::TextWrapped("%s: %s", backends.name(i).c_str(),
                          backends.error_string(i).c_str());
@@ -1287,7 +1289,7 @@ bool AllErrors(GUI::Config& config,
     ImGui::Text(" ");
     if (ImGui::Button(" OK ", {80.0f, 30.0f})) {
       chop.delete_error();
-      wob.delete_error();
+      std::visit([](auto && wob){wob.delete_error();}, wobbler_ctrl.wob);
       for (size_t i = 0; i < backends.N; i++) {
         backends.delete_error(i);
       }

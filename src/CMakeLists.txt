@@ -118,7 +118,8 @@ set_target_properties(chopper_bin PROPERTIES OUTPUT_NAME "chopper")
 add_library (wobbler STATIC
              wobbler.cpp
              )
-target_link_libraries(wobbler PUBLIC gui python)
+target_link_libraries(wobbler PUBLIC wobbler_impl)
+add_subdirectory(wobbler)
 ########################################################################################
 
 ########################################################################################
