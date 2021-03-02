@@ -107,10 +107,10 @@ target_link_libraries(atm PUBLIC files)
 add_library (chopper STATIC
              chopper.cpp
              )
-target_link_libraries(chopper PUBLIC gui python cli)
-add_executable (chopper_bin chopper.cpp)
-target_link_libraries(chopper_bin PUBLIC chopper)
-set_target_properties(chopper_bin PROPERTIES OUTPUT_NAME "chopper")
+target_link_libraries(chopper PUBLIC chopper_impl)
+add_executable (chopper_cli chopper_cli.cpp)
+target_link_libraries(chopper_cli PUBLIC chopper cli)
+add_subdirectory(chopper)
 ########################################################################################
 
 ########################################################################################

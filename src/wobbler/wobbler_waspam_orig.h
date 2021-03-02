@@ -1,6 +1,9 @@
 #ifndef wobbler_waspam_orig_h
 #define wobbler_waspam_orig_h
 
+#include <filesystem>
+#include <string>
+
 #include "../python_interface.h"
 
 namespace Instrument::Wobbler {

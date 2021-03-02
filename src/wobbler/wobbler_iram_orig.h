@@ -2,6 +2,7 @@
 #define wobbler_iram_orig_h
 
 #include <filesystem>
+#include <string>
 
 #include "../python_interface.h"
 

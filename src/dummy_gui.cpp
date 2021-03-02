@@ -25,12 +25,14 @@ int run() try {
   GUI::Config config;
 
   // Chopper declaration
-  Instrument::Chopper::Dummy chop{"filename?"};
-  Instrument::Chopper::Controller<Instrument::Chopper::ChopperPos::Cold,
-                                  Instrument::Chopper::ChopperPos::Antenna,
-                                  Instrument::Chopper::ChopperPos::Hot,
-                                  Instrument::Chopper::ChopperPos::Antenna>
-      chopper_ctrl{"/dev/chopper", 1000, 0.0};
+  Instrument::Chopper::Controller
+      chopper_ctrl{
+        Instrument::Chopper::Dummy("filename?"),
+        "/dev/chopper", 1000, 0.0,
+        Instrument::Chopper::ChopperPos::Cold,
+        Instrument::Chopper::ChopperPos::Antenna,
+        Instrument::Chopper::ChopperPos::Hot,
+        Instrument::Chopper::ChopperPos::Antenna};
 
   // Wobbler declaration
       Instrument::Wobbler::Controller wobbler_ctrl{Instrument::Wobbler::Dummy("filename?"), "/dev/wobbler", 115200, '0'};
@@ -79,12 +81,12 @@ int run() try {
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "IRAM");
   auto runner = AsyncRef(
-      &Instrument::RunExperiment<decltype(chop), decltype(chopper_ctrl),
+      &Instrument::RunExperiment<decltype(chopper_ctrl),
                                  decltype(wobbler_ctrl),
                                  decltype(hk), decltype(housekeeping_ctrl),
                                  decltype(frontend), decltype(frontend_ctrl),
                                  decltype(backends), decltype(backend_ctrls)>,
-      chop, chopper_ctrl, wobbler_ctrl, hk, housekeeping_ctrl, frontend,
+      chopper_ctrl, wobbler_ctrl, hk, housekeeping_ctrl, frontend,
       frontend_ctrl, backends, backend_ctrls);
 
   // Start interchange between output data and operations on yet another thread
@@ -143,7 +145,7 @@ int run() try {
   if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2,
                         height_of_window - part_for_plot>(window, startpos,
                                                           "CTRL Tool 1")) {
-    Instrument::AllControl(config, save_path, directoryBrowser, datasaver, chop,
+    Instrument::AllControl(config, save_path, directoryBrowser, datasaver,
                            chopper_ctrl, wobbler_ctrl, hk,
                            housekeeping_ctrl, frontend, frontend_ctrl, backends,
                            backend_ctrls);
@@ -154,14 +156,14 @@ int run() try {
   if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3,
                         height_of_window - part_for_plot>(window, startpos,
                                                           "DATA Tool 1")) {
-    Instrument::AllInformation(chop, chopper_ctrl, wobbler_ctrl, hk,
+    Instrument::AllInformation(chopper_ctrl, wobbler_ctrl, hk,
                                housekeeping_ctrl, frontend, frontend_ctrl,
                                backends, backend_ctrls, backend_data);
   }
   GUI::Windows::end();
 
   // Error handling
-  if (not Instrument::AllErrors(config, chop, chopper_ctrl, wobbler_ctrl,
+  if (not Instrument::AllErrors(config, chopper_ctrl, wobbler_ctrl,
                                 hk, housekeeping_ctrl, frontend, frontend_ctrl,
                                 backends, backend_ctrls)) {
     glfwSetWindowShouldClose(window, 1);
