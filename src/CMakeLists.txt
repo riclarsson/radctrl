@@ -140,10 +140,10 @@ endif()
 add_library (frontend STATIC
              frontend.cpp
              )
-target_link_libraries(frontend PUBLIC gui python cli)
-add_executable (frontend_bin frontend.cpp)
-target_link_libraries(frontend_bin PUBLIC frontend)
-set_target_properties(frontend_bin PROPERTIES OUTPUT_NAME "frontend")
+target_link_libraries(frontend PUBLIC frontend_impl)
+add_executable (frontend_cli frontend_cli.cpp)
+target_link_libraries(frontend_cli PUBLIC frontend cli)
+add_subdirectory(frontend)
 ########################################################################################
 
 ########################################################################################

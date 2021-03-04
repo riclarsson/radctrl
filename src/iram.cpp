@@ -54,8 +54,8 @@ int run(File::ConfigParser parser) try {
       std::stoi(parser("Housekeeping", "baudrate"))};
 
   // Frontend declaration
-  Instrument::Frontend::DBR frontend{parser("Frontend", "path")};
   Instrument::Frontend::Controller frontend_ctrl{
+      Instrument::Frontend::DBR(parser("Frontend", "path")),
       parser("Frontend", "server"), std::stoi(parser("Frontend", "port"))};
 
   // Spectrometers declarations
@@ -110,9 +110,9 @@ int run(File::ConfigParser parser) try {
       &Instrument::RunExperiment<decltype(chopper_ctrl),
                                  decltype(wobbler_ctrl),
                                  decltype(hk), decltype(housekeeping_ctrl),
-                                 decltype(frontend), decltype(frontend_ctrl),
+                                 decltype(frontend_ctrl),
                                  decltype(backends), decltype(backend_ctrls)>,
-      chopper_ctrl, wobbler_ctrl, hk, housekeeping_ctrl, frontend,
+      chopper_ctrl, wobbler_ctrl, hk, housekeeping_ctrl,
       frontend_ctrl, backends, backend_ctrls);
 
   // Start interchange between output data and operations on yet another thread
@@ -173,7 +173,7 @@ int run(File::ConfigParser parser) try {
                                                           "CTRL Tool 1")) {
     Instrument::AllControl(config, save_path, directoryBrowser, datasaver,
                            chopper_ctrl, wobbler_ctrl, hk,
-                           housekeeping_ctrl, frontend, frontend_ctrl, backends,
+                           housekeeping_ctrl, frontend_ctrl, backends,
                            backend_ctrls);
   }
   GUI::Windows::end();
@@ -183,14 +183,14 @@ int run(File::ConfigParser parser) try {
                         height_of_window - part_for_plot>(window, startpos,
                                                           "DATA Tool 1")) {
     Instrument::AllInformation(chopper_ctrl, wobbler_ctrl, hk,
-                               housekeeping_ctrl, frontend, frontend_ctrl,
+                               housekeeping_ctrl, frontend_ctrl,
                                backends, backend_ctrls, backend_data);
   }
   GUI::Windows::end();
 
   // Error handling
   if (not Instrument::AllErrors(config, chopper_ctrl, wobbler_ctrl,
-                                hk, housekeeping_ctrl, frontend, frontend_ctrl,
+                                hk, housekeeping_ctrl, frontend_ctrl,
                                 backends, backend_ctrls)) {
     glfwSetWindowShouldClose(window, 1);
   }
