@@ -48,8 +48,8 @@ int run(File::ConfigParser parser) try {
                       std::stoi(parser("Wobbler", "end"))};
 
   // Housekeeping declaration
-  Instrument::Housekeeping::PythonSensors hk{parser("Housekeeping", "path")};
   Instrument::Housekeeping::Controller housekeeping_ctrl{
+      Instrument::Housekeeping::PythonSensors(parser("Housekeeping", "path")),
       parser("Housekeeping", "dev"),
       std::stoi(parser("Housekeeping", "baudrate"))};
 
@@ -109,10 +109,10 @@ int run(File::ConfigParser parser) try {
   auto runner = AsyncRef(
       &Instrument::RunExperiment<decltype(chopper_ctrl),
                                  decltype(wobbler_ctrl),
-                                 decltype(hk), decltype(housekeeping_ctrl),
+                                 decltype(housekeeping_ctrl),
                                  decltype(frontend_ctrl),
                                  decltype(backends), decltype(backend_ctrls)>,
-      chopper_ctrl, wobbler_ctrl, hk, housekeeping_ctrl,
+      chopper_ctrl, wobbler_ctrl, housekeeping_ctrl,
       frontend_ctrl, backends, backend_ctrls);
 
   // Start interchange between output data and operations on yet another thread
@@ -172,7 +172,7 @@ int run(File::ConfigParser parser) try {
                         height_of_window - part_for_plot>(window, startpos,
                                                           "CTRL Tool 1")) {
     Instrument::AllControl(config, save_path, directoryBrowser, datasaver,
-                           chopper_ctrl, wobbler_ctrl, hk,
+                           chopper_ctrl, wobbler_ctrl,
                            housekeeping_ctrl, frontend_ctrl, backends,
                            backend_ctrls);
   }
@@ -182,7 +182,7 @@ int run(File::ConfigParser parser) try {
   if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3,
                         height_of_window - part_for_plot>(window, startpos,
                                                           "DATA Tool 1")) {
-    Instrument::AllInformation(chopper_ctrl, wobbler_ctrl, hk,
+    Instrument::AllInformation(chopper_ctrl, wobbler_ctrl,
                                housekeeping_ctrl, frontend_ctrl,
                                backends, backend_ctrls, backend_data);
   }
@@ -190,7 +190,7 @@ int run(File::ConfigParser parser) try {
 
   // Error handling
   if (not Instrument::AllErrors(config, chopper_ctrl, wobbler_ctrl,
-                                hk, housekeeping_ctrl, frontend_ctrl,
+                                housekeeping_ctrl, frontend_ctrl,
                                 backends, backend_ctrls)) {
     glfwSetWindowShouldClose(window, 1);
   }

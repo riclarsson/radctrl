@@ -18,6 +18,15 @@ class Serial {
     open(dev);
     set_baudrate(baudrate);
   }
+  
+  Serial(Serial && s) noexcept : serial(std::move(s.serial)) {}
+  
+  Serial(const Serial & s) {
+    if (s.serial.is_open()) throw std::runtime_error("Cannot copy open port");
+    asio::serial_port_base::baud_rate val;
+    s.serial.get_option(val);
+    serial.set_option(val);
+  }
 
   void set_baudrate(unsigned int baudrate) {
     serial.set_option(asio::serial_port::baud_rate(baudrate));

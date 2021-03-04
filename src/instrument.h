@@ -380,20 +380,20 @@ class DataSaver {
 };  // DataSaver
 
 template <typename ChopperController,
-          typename WobblerController, typename Housekeeping,
+          typename WobblerController,
           typename HousekeepingController,
           typename FrontendController, typename Backends,
           typename BackendControllers>
 void InitAll(ChopperController &chopper_ctrl,
-             WobblerController &wobbler_ctrl, Housekeeping &hk,
+             WobblerController &wobbler_ctrl,
              HousekeepingController &housekeeping_ctrl,
              FrontendController &frontend_ctrl, Backends &backends,
              BackendControllers &backend_ctrls) {
   std::cout << Time() << ' ' << "Binding housekeeping\n";
-  hk.startup(housekeeping_ctrl.dev, housekeeping_ctrl.baudrate);
+  std::visit([&housekeeping_ctrl](auto && hk){hk.startup(housekeeping_ctrl.dev, housekeeping_ctrl.baudrate);}, housekeeping_ctrl.hk);
   std::cout << Time() << ' ' << "Initializing housekeeping\n";
-  hk.init(false);
-  if (hk.has_error()) {
+  std::visit([](auto && hk){hk.init(false);}, housekeeping_ctrl.hk);
+  if (std::visit([](auto && hk){return hk.has_error();}, housekeeping_ctrl.hk)) {
     housekeeping_ctrl.error = true;
     std::cout << Time() << ' ' << "Error housekeeping\n";
   } else {
@@ -458,12 +458,12 @@ void InitAll(ChopperController &chopper_ctrl,
 }
 
 template <typename ChopperController,
-          typename WobblerController, typename Housekeeping,
+          typename WobblerController,
           typename HousekeepingController,
           typename FrontendController, typename Backends,
           typename BackendControllers>
 void CloseAll(ChopperController &chopper_ctrl,
-              WobblerController &wobbler_ctrl, Housekeeping &hk,
+              WobblerController &wobbler_ctrl,
               HousekeepingController &housekeeping_ctrl,
               FrontendController &frontend_ctrl, Backends &backends,
               BackendControllers &backend_ctrls) {
@@ -473,7 +473,7 @@ void CloseAll(ChopperController &chopper_ctrl,
   std::visit([](auto&& wob){wob.close();}, wobbler_ctrl.wob);
   wobbler_ctrl.init = false;
 
-  hk.close();
+  std::visit([](auto && hk){hk.close();}, housekeeping_ctrl.hk);
   housekeeping_ctrl.init = false;
 
   std::visit([](auto && frontend){frontend.close();}, frontend_ctrl.frontend);
@@ -530,7 +530,7 @@ void QuitAll(ChopperController &chopper_ctrl, WobblerController &wobbler_ctrl,
 }
 
 template <typename ChopperController,
-          typename WobblerController, typename Housekeeping,
+          typename WobblerController,
           typename HousekeepingController,
           typename FrontendController, typename Backends,
           typename BackendControllers>
@@ -538,7 +538,6 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
                 ImGui::FileBrowser& directoryBrowser, DataSaver& datasaver,
                 ChopperController &chopper_ctrl,
                 WobblerController &wobbler_ctrl,
-                Housekeeping &hk,
                 HousekeepingController &housekeeping_ctrl,
                 FrontendController &frontend_ctrl,
                 Backends &backends, BackendControllers &backend_ctrls) noexcept {
@@ -561,7 +560,7 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
       
       if (ImGui::Button(" Initialize all ")) {
         if (none_init)
-          Instrument::InitAll(chopper_ctrl, wobbler_ctrl, hk,
+          Instrument::InitAll(chopper_ctrl, wobbler_ctrl,
                               housekeeping_ctrl, frontend_ctrl,
                               backends, backend_ctrls);
           else {
@@ -575,7 +574,7 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
       
       if (ImGui::Button(" Close all ")) {
         if (all_init) {
-          Instrument::CloseAll(chopper_ctrl, wobbler_ctrl, hk,
+          Instrument::CloseAll(chopper_ctrl, wobbler_ctrl,
                                 housekeeping_ctrl, frontend_ctrl,
                                 backends, backend_ctrls);
         } else {
@@ -650,7 +649,7 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
     }
     
     if (ImGui::BeginTabItem(" Housekeeping ")) {
-      Instrument::Housekeeping::GuiSetup(hk, housekeeping_ctrl, devices);
+      Instrument::Housekeeping::GuiSetup(housekeeping_ctrl, devices);
       ImGui::EndTabItem();
     }
     
@@ -695,13 +694,12 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
 }
 
 template <typename ChopperController,
-          typename WobblerController, typename Housekeeping,
+          typename WobblerController,
           typename HousekeepingController,
           typename FrontendController, typename Backends,
           typename BackendControllers, typename BackendData>
 void AllInformation(ChopperController &chopper_ctrl,
                     WobblerController &wobbler_ctrl,
-                    Housekeeping & /*hk*/,
                     HousekeepingController &housekeeping_ctrl,
                     FrontendController &frontend_ctrl,
                     Backends &backends,
@@ -876,13 +874,13 @@ void AllInformation(ChopperController &chopper_ctrl,
 }
 
 template <typename ChopperController,
-          typename WobblerController, typename Housekeeping,
+          typename WobblerController,
           typename HousekeepingController,
           typename FrontendController, typename Backends,
           typename BackendControllers>
 std::vector<std::string> RunExperiment(
     ChopperController &chopper_ctrl,
-    WobblerController &wobbler_ctrl, Housekeeping &hk,
+    WobblerController &wobbler_ctrl,
     HousekeepingController &housekeeping_ctrl,
     FrontendController &frontend_ctrl, Backends &backends,
     BackendControllers &backend_ctrls) noexcept {
@@ -913,7 +911,7 @@ loop:
                     [](auto &x) { return x.run.load(); });
   error = std::visit([](auto&& chop){return chop.has_error();}, chopper_ctrl.chop) or
           std::visit([](auto &&wob){return wob.has_error();}, wobbler_ctrl.wob) or
-          hk.has_error() or
+          std::visit([](auto && hk){return hk.has_error();}, housekeeping_ctrl.hk) or
           std::visit([](auto && frontend){return frontend.has_error();}, frontend_ctrl.frontend) or backends.has_any_errors();
   quit = chopper_ctrl.quit.load() or wobbler_ctrl.quit.load() or
          housekeeping_ctrl.quit.load() or frontend_ctrl.quit.load() or
@@ -953,7 +951,7 @@ loop:
   // Run Housekeeping
   std::cout << Time() << " Running Housekeeping\n";
   housekeeping_ctrl.operating = true;
-  hk.run();
+  std::visit([](auto && hk){hk.run();}, housekeeping_ctrl.hk);
 
   // Get Backends data
   for (std::size_t i = 0; i < backends.N; i++) {
@@ -967,7 +965,7 @@ loop:
   // Get Housekeeping data
   std::cout << Time() << " Get Data Housekeeping\n";
   housekeeping_ctrl.waiting = true;
-  hk.get_data();
+  std::visit([](auto && hk){hk.get_data();}, housekeeping_ctrl.hk);
   housekeeping_ctrl.waiting = housekeeping_ctrl.operating = false;
   std::cout << Time() << " Done Housekeeping\n";
 
@@ -999,7 +997,7 @@ loop:
     backend_ctrls[i].d = backends.datavec(i);
   }
   std::cout << Time() << " Store Housekeeping\n";
-  housekeeping_ctrl.data = hk.data();
+  housekeeping_ctrl.data = std::visit([](auto && hk){return hk.data();}, housekeeping_ctrl.hk);
   std::cout << Time() << " Store Frontend\n";
   frontend_ctrl.data = std::visit([](auto && frontend){return frontend.data();}, frontend_ctrl.frontend);
 
@@ -1049,7 +1047,7 @@ stop:
   }
 
   try {
-    if (housekeeping_ctrl.init) hk.close();
+    if (housekeeping_ctrl.init) std::visit([](auto && hk){hk.close();}, housekeeping_ctrl.hk);
   } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
@@ -1231,13 +1229,13 @@ stop : {}
 
 /*! Handle errors.  If it returns false, errors cannot be handled */
 template <typename ChopperController,
-typename WobblerController, typename Housekeeping,
+typename WobblerController,
 typename HousekeepingController,
 typename FrontendController, typename Backends,
 typename BackendControllers>
 bool AllErrors(GUI::Config& config,
                ChopperController &chopper_ctrl,
-               WobblerController &wobbler_ctrl, Housekeeping &hk,
+               WobblerController &wobbler_ctrl,
                HousekeepingController &housekeeping_ctrl,
                FrontendController &frontend_ctrl, Backends &backends,
                BackendControllers &backend_ctrls) {
@@ -1285,7 +1283,7 @@ bool AllErrors(GUI::Config& config,
       ImGui::TextWrapped("%s: %s", backends.name(i).c_str(),
                          backends.error_string(i).c_str());
     }
-    ImGui::TextWrapped(" Housekeeping: %s", hk.error_string().c_str());
+    ImGui::TextWrapped(" Housekeeping: %s", std::visit([](auto && hk){return hk.error_string().c_str();}, housekeeping_ctrl.hk));
     ImGui::TextWrapped(" Frontend: %s", std::visit([](auto && frontend){return frontend.error_string().c_str();}, frontend_ctrl.frontend));
     
     ImGui::Text(" ");
@@ -1295,7 +1293,7 @@ bool AllErrors(GUI::Config& config,
       for (size_t i = 0; i < backends.N; i++) {
         backends.delete_error(i);
       }
-      hk.delete_error();
+      std::visit([](auto && hk){hk.delete_error();}, housekeeping_ctrl.hk);
       std::visit([](auto && frontend){frontend.delete_error();}, frontend_ctrl.frontend);
       ImGui::CloseCurrentPopup();
       config.active_errors = 0;

@@ -39,8 +39,7 @@ int run() try {
   wobbler_ctrl.pos = {3000, 7000, 3000, 7000};
 
   // Housekeeping declaration
-  Instrument::Housekeeping::Dummy hk{"filename?"};
-  Instrument::Housekeeping::Controller housekeeping_ctrl{"some-device", 12345};
+  Instrument::Housekeeping::Controller housekeeping_ctrl{Instrument::Housekeeping::Dummy("filename?"), "some-device", 12345};
 
   // Frontend declaration
   Instrument::Frontend::Controller frontend_ctrl{Instrument::Frontend::Dummy("filename?"), "some-server", 1234};
@@ -82,10 +81,10 @@ int run() try {
   auto runner = AsyncRef(
       &Instrument::RunExperiment<decltype(chopper_ctrl),
                                  decltype(wobbler_ctrl),
-                                 decltype(hk), decltype(housekeeping_ctrl),
+                                 decltype(housekeeping_ctrl),
                                  decltype(frontend_ctrl),
                                  decltype(backends), decltype(backend_ctrls)>,
-      chopper_ctrl, wobbler_ctrl, hk, housekeeping_ctrl,
+      chopper_ctrl, wobbler_ctrl, housekeeping_ctrl,
       frontend_ctrl, backends, backend_ctrls);
 
   // Start interchange between output data and operations on yet another thread
@@ -145,7 +144,7 @@ int run() try {
                         height_of_window - part_for_plot>(window, startpos,
                                                           "CTRL Tool 1")) {
     Instrument::AllControl(config, save_path, directoryBrowser, datasaver,
-                           chopper_ctrl, wobbler_ctrl, hk,
+                           chopper_ctrl, wobbler_ctrl,
                            housekeeping_ctrl, frontend_ctrl, backends,
                            backend_ctrls);
   }
@@ -155,7 +154,7 @@ int run() try {
   if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3,
                         height_of_window - part_for_plot>(window, startpos,
                                                           "DATA Tool 1")) {
-    Instrument::AllInformation(chopper_ctrl, wobbler_ctrl, hk,
+    Instrument::AllInformation(chopper_ctrl, wobbler_ctrl,
                                housekeeping_ctrl, frontend_ctrl,
                                backends, backend_ctrls, backend_data);
   }
@@ -163,7 +162,7 @@ int run() try {
 
   // Error handling
   if (not Instrument::AllErrors(config, chopper_ctrl, wobbler_ctrl,
-                                hk, housekeeping_ctrl, frontend_ctrl,
+                                housekeeping_ctrl, frontend_ctrl,
                                 backends, backend_ctrls)) {
     glfwSetWindowShouldClose(window, 1);
   }

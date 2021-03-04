@@ -151,10 +151,10 @@ add_subdirectory(frontend)
 add_library (housekeeping STATIC
              housekeeping.cpp
              )
-target_link_libraries(housekeeping PUBLIC gui python network cli)
-add_executable (housekeeping_bin housekeeping.cpp)
-target_link_libraries(housekeeping_bin PUBLIC housekeeping)
-set_target_properties(housekeeping_bin PROPERTIES OUTPUT_NAME "housekeeping")
+target_link_libraries(housekeeping PUBLIC housekeeping_impl)
+add_executable (housekeeping_cli housekeeping_cli.cpp)
+target_link_libraries(housekeeping_cli PUBLIC housekeeping cli)
+add_subdirectory(housekeeping)
 ########################################################################################
 
 ########################################################################################
