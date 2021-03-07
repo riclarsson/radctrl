@@ -15,6 +15,44 @@ baudrate(b),
 address(a) {
   pos.fill(0);
 }
+
+void Controller::startup() {
+  std::visit([this](auto&& wob){wob.startup(dev, baudrate, address);}, wob);
+}
+
+void Controller::initialize(int pos, bool manual) {
+  std::visit([pos, manual](auto&& wob){wob.init(pos, manual);}, wob);
+  init = true;
+}
+
+void Controller::close() {
+  std::visit([](auto&& wob){wob.close();}, wob);
+  init = false;
+}
+
+int Controller::get_pos() {
+  return std::visit([](auto&& wob){return wob.get_data();}, wob);
+}
+
+void Controller::change_pos(int pos) {
+  std::visit([pos](auto &&wob){wob.move(pos);}, wob);
+}
+
+bool Controller::has_error() {
+  return std::visit([](auto&& wob) {return wob.has_error();}, wob);
+}
+
+void Controller::wait() {
+  std::visit([](auto &&wob){wob.wait();}, wob);
+}
+
+const std::string& Controller::error_string() const {
+  return std::visit([](auto && wob) -> const std::string& {return wob.error_string();}, wob);
+}
+
+void Controller::delete_error() {
+  std::visit([](auto && wob){wob.delete_error();}, wob);
+}
   
 void GuiSetup(Controller &ctrl,
               const std::vector<std::string> &devs) {
@@ -47,10 +85,10 @@ void GuiSetup(Controller &ctrl,
 
   if (change) {
     if (ctrl.init) {
-      std::visit([&ctrl](auto&& wob) {wob.startup(ctrl.dev, ctrl.baudrate, ctrl.address);}, ctrl.wob);
-      std::visit([&ctrl, manual](auto&& wob) {wob.init(ctrl.pos[0], manual);}, ctrl.wob);
+      ctrl.startup();
+      ctrl.initialize(ctrl.pos[0], manual);
     } else {
-      std::visit([](auto&& wob) {wob.close();}, ctrl.wob);
+      ctrl.close();
     }
   }
 
@@ -115,10 +153,9 @@ void GuiSetup(Controller &ctrl,
                    ImGuiInputTextFlags_AutoSelectAll);
   ImGui::PopItemWidth();
 
-  ImGui::Text("Target Position: %i", 
-              std::visit([](auto&& wob) {return wob.get_data();}, ctrl.wob));
+  ImGui::Text("Target Position: %i", ctrl.get_pos());
 
-  if (std::visit([](auto&& wob) {return wob.has_error();}, ctrl.wob)) {
+  if (ctrl.has_error()) {
     ctrl.init = false;
     ctrl.error = true;
   } else

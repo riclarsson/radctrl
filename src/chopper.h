@@ -89,6 +89,24 @@ struct Controller {
         sleeptime(s),
         lasttarget(ChopperPos::FINAL),
         pos({pos1, pos2, pos3, pos4}) {}
+  
+  void startup();
+  
+  void initialize(bool manual);
+  
+  void close();
+  
+  bool manual_run();
+  
+  void change_pos(ChopperPos);
+  
+  ChopperPos get_pos();
+  
+  bool has_error();
+  
+  const std::string& error_string() const;
+  
+  void delete_error();
 };
 
 void GuiSetup(Controller &ctrl,

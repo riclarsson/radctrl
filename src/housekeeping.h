@@ -85,87 +85,27 @@ struct Controller {
         dev(d),
         baudrate(b),
         data() {}
+  
+  void startup();
+  
+  void initialize(bool manual);
+  
+  void close();
+  
+  bool has_error();
+  
+  void run_machine();
+  
+  void get_data();
+  
+  std::map<std::string, double> data_load();
+  
+  void delete_error();
+  
+  const std::string& error_string() const;
 };
 
-inline
-void GuiSetup(Controller &ctrl, const std::vector<std::string> &devs) {
-  bool change = false;
-  bool manual = false;
-  if (not ctrl.init) {
-    if (ImGui::Button(" Manual Init ")) {
-      change = true;
-      manual = true;
-      ctrl.init = true;
-    }
-    ImGui::SameLine();
-    if (ImGui::Button(" Automatic Init ")) {
-      change = true;
-      manual = false;
-      ctrl.init = true;
-    }
-    ImGui::SameLine();
-    ImGui::Text(" Close ");
-  } else {
-    ImGui::Text(" Manual Init ");
-    ImGui::SameLine();
-    ImGui::Text(" Automatic Init ");
-    ImGui::SameLine();
-    if (ImGui::Button(" Close ")) {
-      change = true;
-      ctrl.init = false;
-    }
-  }
-
-  if (change) {
-    if (ctrl.init) {
-      std::visit([&ctrl](auto && hk){hk.startup(ctrl.dev, ctrl.baudrate);}, ctrl.hk);
-      std::visit([manual](auto && hk){hk.init(manual);}, ctrl.hk);
-    } else {
-      ;
-    }
-  }
-
-  ImGui::PushItemWidth(120.0f);
-  if (auto dev = ctrl.dev.c_str(); ImGui::BeginCombo("Device", dev)) {
-    bool newselection = false;
-    for (auto &d : devs) {
-      auto dev2 = d.c_str();
-      bool is_selected =
-          (dev == dev2);  // You can store your selection however you want,
-                          // outside or inside your objects
-      if (ImGui::Selectable(dev2, is_selected)) {
-        newselection = true;
-        dev = dev2;
-      }
-    }
-    ImGui::EndCombo();
-
-    if (not ctrl.init and newselection) ctrl.dev = dev;
-  }
-
-  ImGui::PushItemWidth(100.0f);
-  ImGui::SameLine();
-  if (ctrl.init)
-    ImGui::InputInt("Baud Rate", &ctrl.baudrate, 1, 100,
-                    ImGuiInputTextFlags_CharsDecimal |
-                        ImGuiInputTextFlags_CharsNoBlank |
-                        ImGuiInputTextFlags_AutoSelectAll |
-                        ImGuiInputTextFlags_NoHorizontalScroll |
-                        ImGuiInputTextFlags_ReadOnly);
-  else
-    ImGui::InputInt("Baud Rate", &ctrl.baudrate, 1, 100,
-                    ImGuiInputTextFlags_CharsDecimal |
-                        ImGuiInputTextFlags_CharsNoBlank |
-                        ImGuiInputTextFlags_AutoSelectAll |
-                        ImGuiInputTextFlags_NoHorizontalScroll);
-  ImGui::PopItemWidth();
-
-  if (std::visit([](auto && hk){return hk.has_error();}, ctrl.hk)) {
-    ctrl.init = false;
-    ctrl.error = true;
-  } else
-    ctrl.error = false;
-}
+void GuiSetup(Controller &ctrl, const std::vector<std::string> &devs);
 
 }  // namespace Instrument::Housekeeping
 

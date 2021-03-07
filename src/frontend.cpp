@@ -1,6 +1,72 @@
 #include "frontend.h"
 
+#include "timeclass.h"
+
 namespace Instrument::Frontend {
+bool Controller::has_error() {
+  return std::visit([](auto && frontend){return frontend.has_error();}, frontend);
+}
+
+const std::string& Controller::error_string() const {
+  return std::visit([](auto && frontend) -> const std::string& {return frontend.error_string();}, frontend);
+}
+
+const std::string& Controller::name() const {
+  return std::visit([](auto && frontend) -> const std::string& {return frontend.name();}, frontend);
+}
+
+void Controller::delete_error() {
+  std::visit([](auto && frontend){frontend.delete_error();}, frontend);
+}
+
+void Controller::startup() {
+  std::visit([this](auto && frontend){frontend.startup(server, port);}, frontend);
+}
+
+void Controller::initialize(bool manual) {
+  std::visit([manual](auto && frontend){frontend.init(manual);}, frontend);
+  init = true;
+}
+
+void Controller::close() {
+  std::visit([](auto && frontend){frontend.close();}, frontend);
+  init = false;
+}
+
+void Controller::run_machine() {
+  std::visit([](auto && frontend){frontend.run();}, frontend);
+}
+
+void Controller::set_cold(double& cold) {
+  cold = std::visit([cold](auto && frontend){
+    if constexpr (frontend.has_cold_load) {
+      std::cout << Time() << " Copy Frontend Cold Load\n";
+      return frontend.cold_load();
+    } else {
+      return cold;
+    }
+  }, frontend);
+}
+
+void Controller::set_hot(double& hot) {
+  hot = std::visit([hot](auto && frontend){
+    if constexpr (frontend.has_hot_load) {
+      std::cout << Time() << " Copy Frontend Hot Load\n";
+      return frontend.hot_load();
+    } else {
+      return hot;
+    }
+  }, frontend);
+}
+
+void Controller::get_data() {
+  std::visit([](auto && frontend){frontend.get_data();}, frontend);
+}
+
+std::map<std::string, double> Controller::data_load() {
+  return std::visit([](auto && frontend){return frontend.data();}, frontend);
+}
+
 void GuiSetup(Controller &ctrl) {
   bool change = false;
   bool manual = false;
@@ -31,10 +97,10 @@ void GuiSetup(Controller &ctrl) {
 
   if (change) {
     if (ctrl.init) {
-      std::visit([&ctrl](auto && frontend){frontend.startup(ctrl.server, ctrl.port);}, ctrl.frontend);
-      std::visit([manual](auto && frontend){frontend.init(manual);}, ctrl.frontend);
+      ctrl.startup();
+      ctrl.initialize(manual);
     } else {
-      std::visit([](auto && frontend){frontend.close();}, ctrl.frontend);
+      ctrl.close();
     }
   }
 
@@ -82,7 +148,7 @@ void GuiSetup(Controller &ctrl) {
     }
   }, ctrl.frontend);
 
-  if (std::visit([](auto && frontend){return frontend.has_error();}, ctrl.frontend)) {
+  if (ctrl.has_error()) {
     ctrl.init = false;
     ctrl.error = true;
   } else

@@ -127,12 +127,12 @@ add_subdirectory(wobbler)
 add_library (backend STATIC
              backend.cpp
              )
-target_link_libraries(backend PUBLIC files gui python math)
+target_link_libraries(backend PUBLIC backend_impl files)
 if (ACS2020)
   target_link_libraries(backend PUBLIC fm_acs)
   target_compile_definitions(backend PUBLIC HAS_ACS2020=1)
 endif()
-
+add_subdirectory(backend)
 ########################################################################################
 
 ########################################################################################
@@ -244,35 +244,35 @@ target_link_libraries(background PUBLIC rte atm)
 
 ########################################################################################
 # Instrument GUI libraries
-add_library (instrument_gui_controller INTERFACE)
-target_link_libraries(instrument_gui_controller INTERFACE gui python files chopper wobbler housekeeping backend multithread frontend cli)
+add_library (instrument STATIC instrument.cpp)
+target_link_libraries(instrument PUBLIC gui math python files chopper wobbler housekeeping backend multithread frontend cli)
 ########################################################################################
 
 ########################################################################################
 # Dummy GUI
 add_executable (dummy_gui dummy_gui.cpp)
-target_link_libraries(dummy_gui PUBLIC instrument_gui_controller)
+target_link_libraries(dummy_gui PUBLIC instrument)
 install (TARGETS dummy_gui RUNTIME DESTINATION bin)
 ########################################################################################
 
 ########################################################################################
 # Waspam runtime executable
 add_executable (waspam waspam.cpp)
-target_link_libraries(waspam PUBLIC instrument_gui_controller)
+target_link_libraries(waspam PUBLIC instrument)
 install (TARGETS waspam RUNTIME DESTINATION bin)
 ########################################################################################
 
 ########################################################################################
 # Waspam Kiruna runtime executable
 add_executable (waspam-kiruna waspam-kiruna.cpp)
-target_link_libraries(waspam-kiruna PUBLIC instrument_gui_controller)
+target_link_libraries(waspam-kiruna PUBLIC instrument)
 install (TARGETS waspam-kiruna RUNTIME DESTINATION bin)
 ########################################################################################
 
 ########################################################################################
 # IRAM runtime executable
 add_executable (iram iram.cpp)
-target_link_libraries(iram PUBLIC instrument_gui_controller)
+target_link_libraries(iram PUBLIC instrument)
 install (TARGETS iram RUNTIME DESTINATION bin)
 ########################################################################################
 

@@ -89,6 +89,30 @@ struct Controller {
         newdata(false),
         server(s),
         port(p) {}
+  
+  bool has_error();
+  
+  const std::string& error_string() const;
+  
+  const std::string& name() const;
+  
+  void delete_error();
+  
+  void startup();
+  
+  void initialize(bool manual);
+  
+  void close();
+  
+  void run_machine();
+  
+  void set_cold(double& cold);
+  
+  void set_hot(double& hot);
+  
+  void get_data();
+  
+  std::map<std::string, double> data_load();
 };
 
 void GuiSetup(Controller &ctrl);

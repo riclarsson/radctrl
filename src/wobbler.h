@@ -70,6 +70,24 @@ struct Controller {
   std::array<int, N> pos;
   
   Controller(Interface&& iface, const std::string &d, int b, char a) noexcept;
+  
+  void startup();
+  
+  void initialize(int pos, bool manual);
+  
+  void close();
+  
+  int get_pos();
+  
+  void change_pos(int pos);
+  
+  bool has_error();
+  
+  void wait();
+  
+  const std::string& error_string() const;
+  
+  void delete_error();
 };
 
 void GuiSetup(Controller &ctrl,

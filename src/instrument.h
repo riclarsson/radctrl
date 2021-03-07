@@ -16,7 +16,9 @@
 #include "backend.h"
 #include "chopper.h"
 #include "file.h"
+#include "frontend.h"
 #include "gui.h"
+#include "housekeeping.h"
 #include "timeclass.h"
 #include "wobbler.h"
 
@@ -379,21 +381,17 @@ class DataSaver {
   }
 };  // DataSaver
 
-template <typename ChopperController,
-          typename WobblerController,
-          typename HousekeepingController,
-          typename FrontendController, typename Backends,
-          typename BackendControllers>
-void InitAll(ChopperController &chopper_ctrl,
-             WobblerController &wobbler_ctrl,
-             HousekeepingController &housekeeping_ctrl,
-             FrontendController &frontend_ctrl, Backends &backends,
-             BackendControllers &backend_ctrls) {
+inline
+void InitAll(Chopper::Controller &chopper_ctrl,
+             Wobbler::Controller &wobbler_ctrl,
+             Housekeeping::Controller &housekeeping_ctrl,
+             Frontend::Controller &frontend_ctrl,
+             Spectrometer::Controllers &spectrometer_ctrls) {
   std::cout << Time() << ' ' << "Binding housekeeping\n";
-  std::visit([&housekeeping_ctrl](auto && hk){hk.startup(housekeeping_ctrl.dev, housekeeping_ctrl.baudrate);}, housekeeping_ctrl.hk);
+  housekeeping_ctrl.startup();
   std::cout << Time() << ' ' << "Initializing housekeeping\n";
-  std::visit([](auto && hk){hk.init(false);}, housekeeping_ctrl.hk);
-  if (std::visit([](auto && hk){return hk.has_error();}, housekeeping_ctrl.hk)) {
+  housekeeping_ctrl.initialize(false);
+  if (housekeeping_ctrl.has_error()) {
     housekeeping_ctrl.error = true;
     std::cout << Time() << ' ' << "Error housekeeping\n";
   } else {
@@ -402,10 +400,10 @@ void InitAll(ChopperController &chopper_ctrl,
   }
 
   std::cout << Time() << ' ' << "Binding frontend\n";
-  std::visit([&frontend_ctrl](auto && frontend){frontend.startup(frontend_ctrl.server, frontend_ctrl.port);}, frontend_ctrl.frontend);
+  frontend_ctrl.startup();
   std::cout << Time() << ' ' << "Initializing frontend\n";
-  std::visit([](auto && frontend){frontend.init(false);}, frontend_ctrl.frontend);
-  if (std::visit([](auto && frontend){return frontend.has_error();}, frontend_ctrl.frontend)) {
+  frontend_ctrl.initialize(false);
+  if (frontend_ctrl.has_error()) {
     std::cout << Time() << ' ' << "Error frontend\n";
     frontend_ctrl.error = true;
   } else {
@@ -414,10 +412,10 @@ void InitAll(ChopperController &chopper_ctrl,
   }
 
   std::cout << Time() << ' ' << "Binding wobbler\n";
-  std::visit([&wobbler_ctrl](auto&& wob) {wob.startup(wobbler_ctrl.dev, wobbler_ctrl.baudrate, wobbler_ctrl.address);}, wobbler_ctrl.wob);
+  wobbler_ctrl.startup();
   std::cout << Time() << ' ' << "Initializing wobbler\n";
-  std::visit([&wobbler_ctrl](auto&& wob) {wob.init(wobbler_ctrl.pos[0], false);}, wobbler_ctrl.wob);
-  if (std::visit([](auto&& wob) {return wob.has_error();}, wobbler_ctrl.wob)) {
+  wobbler_ctrl.initialize(wobbler_ctrl.pos[0], false);
+  if (wobbler_ctrl.has_error()) {
     std::cout << Time() << ' ' << "Error wobbler\n";
     wobbler_ctrl.error = true;
   } else {
@@ -426,10 +424,10 @@ void InitAll(ChopperController &chopper_ctrl,
   }
 
   std::cout << Time() << ' ' << "Binding chopper\n";
-  std::visit([&chopper_ctrl](auto && chop){chop.startup(chopper_ctrl.dev, chopper_ctrl.offset, chopper_ctrl.sleeptime);}, chopper_ctrl.chop);
+  chopper_ctrl.startup();
   std::cout << Time() << ' ' << "Initializing chopper\n";
-  std::visit([](auto && chop){chop.init(false);}, chopper_ctrl.chop);
-  if (std::visit([](auto && chop){return chop.has_error();}, chopper_ctrl.chop)) {
+  chopper_ctrl.initialize(false);
+  if (chopper_ctrl.has_error()) {
     std::cout << Time() << ' ' << "Error chopper\n";
     chopper_ctrl.error = true;
   } else {
@@ -437,110 +435,91 @@ void InitAll(ChopperController &chopper_ctrl,
     chopper_ctrl.init = true;
   }
 
-  for (std::size_t i = 0; i < backends.N; i++) {
-    std::cout << Time() << ' ' << "Binding backend " << i + 1 << "\n";
-    backends.startup(i, backend_ctrls[i].host, backend_ctrls[i].tcp_port,
-                     backend_ctrls[i].udp_port, backend_ctrls[i].freq_limits,
-                     backend_ctrls[i].freq_counts,
-                     backend_ctrls[i].integration_time_microsecs,
-                     backend_ctrls[i].blank_time_microsecs,
-                     backend_ctrls[i].mirror);
-    std::cout << Time() << ' ' << "Initializing backend " << i + 1 << "\n";
-    backends.init(i, false);
-    if (backends.has_error(i)) {
-      std::cout << Time() << ' ' << "Error backend " << i + 1 << "\n";
-      backend_ctrls[i].error = true;
+  for (auto& spec: spectrometer_ctrls.backends) {
+    std::cout << Time() << ' ' << "Binding backend " << spec.name << "\n";
+    spec.startup();
+    std::cout << Time() << ' ' << "Initializing backend " << spec.name << "\n";
+    spec.initialize(false);
+    if (spec.has_error()) {
+      std::cout << Time() << ' ' << "Error backend " << spec.name << "\n";
+      spec.error = true;
     } else {
-      std::cout << Time() << ' ' << "Done backend " << i + 1 << "\n";
-      backend_ctrls[i].init = true;
+      std::cout << Time() << ' ' << "Done backend " << spec.name << "\n";
+      spec.init = true;
     }
   }
 }
 
-template <typename ChopperController,
-          typename WobblerController,
-          typename HousekeepingController,
-          typename FrontendController, typename Backends,
-          typename BackendControllers>
-void CloseAll(ChopperController &chopper_ctrl,
-              WobblerController &wobbler_ctrl,
-              HousekeepingController &housekeeping_ctrl,
-              FrontendController &frontend_ctrl, Backends &backends,
-              BackendControllers &backend_ctrls) {
-  std::visit([](auto && chop){chop.close();;}, chopper_ctrl.chop);
+inline
+void CloseAll(Chopper::Controller &chopper_ctrl,
+              Wobbler::Controller &wobbler_ctrl,
+              Housekeeping::Controller &housekeeping_ctrl,
+              Frontend::Controller &frontend_ctrl,
+              Spectrometer::Controllers &spectrometer_ctrls) {
+  chopper_ctrl.close();
   chopper_ctrl.init = false;
 
-  std::visit([](auto&& wob){wob.close();}, wobbler_ctrl.wob);
+  wobbler_ctrl.close();
   wobbler_ctrl.init = false;
 
-  std::visit([](auto && hk){hk.close();}, housekeeping_ctrl.hk);
+  housekeeping_ctrl.close();
   housekeeping_ctrl.init = false;
 
-  std::visit([](auto && frontend){frontend.close();}, frontend_ctrl.frontend);
+  frontend_ctrl.close();
   frontend_ctrl.init = false;
 
-  for (std::size_t i = 0; i < backends.N; i++) {
-    backends.close(i);
-    backend_ctrls[i].init = false;
+  for (auto& spec: spectrometer_ctrls.backends) {
+    spec.close();
+    spec.init = false;
   }
 }
 
-template <typename ChopperController, typename WobblerController,
-          typename HousekeepingController, typename FrontendController,
-          typename BackendControllers>
-void ReadyRunAll(ChopperController &chopper_ctrl,
-                 WobblerController &wobbler_ctrl,
-                 HousekeepingController &housekeeping_ctrl,
-                 FrontendController &frontend_ctrl,
-                 BackendControllers &backend_ctrls) noexcept {
+inline
+void ReadyRunAll(Chopper::Controller &chopper_ctrl,
+                 Wobbler::Controller &wobbler_ctrl,
+                 Housekeeping::Controller &housekeeping_ctrl,
+                 Frontend::Controller &frontend_ctrl,
+                 Spectrometer::Controllers &spectrometer_ctrls) noexcept {
   chopper_ctrl.run = true;
   wobbler_ctrl.run = true;
   housekeeping_ctrl.run = true;
   frontend_ctrl.run = true;
-  for (auto &ctrl : backend_ctrls) ctrl.run = true;
+  for (auto &spec : spectrometer_ctrls.backends) spec.run = true;
 }
 
-template <typename ChopperController, typename WobblerController,
-          typename HousekeepingController, typename FrontendController,
-          typename BackendControllers>
-void UnreadyRunAll(ChopperController &chopper_ctrl,
-                   WobblerController &wobbler_ctrl,
-                   HousekeepingController &housekeeping_ctrl,
-                   FrontendController &frontend_ctrl,
-                   BackendControllers &backend_ctrls) noexcept {
+inline
+void UnreadyRunAll(Chopper::Controller &chopper_ctrl,
+                   Wobbler::Controller &wobbler_ctrl,
+                   Housekeeping::Controller &housekeeping_ctrl,
+                   Frontend::Controller &frontend_ctrl,
+                   Spectrometer::Controllers &spectrometer_ctrls) noexcept {
   chopper_ctrl.run = false;
   wobbler_ctrl.run = false;
   housekeeping_ctrl.run = false;
   frontend_ctrl.run = false;
-  for (auto &ctrl : backend_ctrls) ctrl.run = false;
+  for (auto &spec : spectrometer_ctrls.backends) spec.run = false;
 }
 
-template <typename ChopperController, typename WobblerController,
-          typename HousekeepingController, typename FrontendController,
-          typename BackendControllers>
-void QuitAll(ChopperController &chopper_ctrl, WobblerController &wobbler_ctrl,
-             HousekeepingController &housekeeping_ctrl,
-             FrontendController &frontend_ctrl,
-             BackendControllers &backend_ctrls) noexcept {
+inline
+void QuitAll(Chopper::Controller &chopper_ctrl, Wobbler::Controller &wobbler_ctrl,
+             Housekeeping::Controller &housekeeping_ctrl,
+             Frontend::Controller &frontend_ctrl,
+             Spectrometer::Controllers &spectrometer_ctrls) noexcept {
   chopper_ctrl.quit = true;
   wobbler_ctrl.quit = true;
   housekeeping_ctrl.quit = true;
   frontend_ctrl.quit = true;
-  for (auto &ctrl : backend_ctrls) ctrl.quit = true;
+  for (auto &spec : spectrometer_ctrls.backends) spec.quit = true;
 }
 
-template <typename ChopperController,
-          typename WobblerController,
-          typename HousekeepingController,
-          typename FrontendController, typename Backends,
-          typename BackendControllers>
+inline
 void AllControl(GUI::Config& config, std::filesystem::path& save_path,
                 ImGui::FileBrowser& directoryBrowser, DataSaver& datasaver,
-                ChopperController &chopper_ctrl,
-                WobblerController &wobbler_ctrl,
-                HousekeepingController &housekeeping_ctrl,
-                FrontendController &frontend_ctrl,
-                Backends &backends, BackendControllers &backend_ctrls) noexcept {
+                Chopper::Controller &chopper_ctrl,
+                Wobbler::Controller &wobbler_ctrl,
+                Housekeeping::Controller &housekeeping_ctrl,
+                Frontend::Controller &frontend_ctrl,
+                Spectrometer::Controllers &spectrometer_ctrls) noexcept {
   static const std::vector<std::string> devices =
       File::Devices({"USB", "S", "chopper", "wobbler", "sensors", "ACM"}, 100);
   
@@ -550,19 +529,19 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
       not housekeeping_ctrl.init.load() and
       not chopper_ctrl.init.load() and not wobbler_ctrl.init.load() and
       not frontend_ctrl.init.load() and
-      std::none_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+      std::none_of(spectrometer_ctrls.backends.cbegin(), spectrometer_ctrls.backends.cend(),
                     [](auto &x) { return x.init.load(); });
       bool all_init =
       housekeeping_ctrl.init.load() and chopper_ctrl.init.load() and
       wobbler_ctrl.init.load() and frontend_ctrl.init.load() and
-      std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+      std::all_of(spectrometer_ctrls.backends.cbegin(), spectrometer_ctrls.backends.cend(),
                   [](auto &x) { return x.init.load(); });
       
       if (ImGui::Button(" Initialize all ")) {
         if (none_init)
           Instrument::InitAll(chopper_ctrl, wobbler_ctrl,
                               housekeeping_ctrl, frontend_ctrl,
-                              backends, backend_ctrls);
+                              spectrometer_ctrls);
           else {
             config.gui_error = true;
             config.gui_errors.push_back(
@@ -575,8 +554,8 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
       if (ImGui::Button(" Close all ")) {
         if (all_init) {
           Instrument::CloseAll(chopper_ctrl, wobbler_ctrl,
-                                housekeeping_ctrl, frontend_ctrl,
-                                backends, backend_ctrls);
+                               housekeeping_ctrl, frontend_ctrl,
+                               spectrometer_ctrls);
         } else {
           config.gui_error = true;
           config.gui_errors.push_back(
@@ -607,7 +586,7 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
           if (all_init) {
             Instrument::ReadyRunAll(chopper_ctrl, wobbler_ctrl,
                                     housekeeping_ctrl, frontend_ctrl,
-                                    backend_ctrls);
+                                    spectrometer_ctrls);
           } else {
             config.gui_error = true;
             config.gui_errors.push_back(
@@ -622,7 +601,7 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
           if (all_init) {
             Instrument::UnreadyRunAll(chopper_ctrl, wobbler_ctrl,
                                       housekeeping_ctrl, frontend_ctrl,
-                                      backend_ctrls);
+                                      spectrometer_ctrls);
           } else {
             config.gui_error = true;
             config.gui_errors.push_back(
@@ -644,7 +623,7 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
     }
     
     if (ImGui::BeginTabItem(" Spectrometers ")) {
-      Instrument::Spectrometer::GuiSetup(backends, backend_ctrls);
+      Instrument::Spectrometer::GuiSetup(spectrometer_ctrls);
       ImGui::EndTabItem();
     }
     
@@ -693,27 +672,22 @@ void AllControl(GUI::Config& config, std::filesystem::path& save_path,
   }
 }
 
-template <typename ChopperController,
-          typename WobblerController,
-          typename HousekeepingController,
-          typename FrontendController, typename Backends,
-          typename BackendControllers, typename BackendData>
-void AllInformation(ChopperController &chopper_ctrl,
-                    WobblerController &wobbler_ctrl,
-                    HousekeepingController &housekeeping_ctrl,
-                    FrontendController &frontend_ctrl,
-                    Backends &backends,
-                    BackendControllers &backend_ctrls, BackendData& backend_data) noexcept {
+template <typename BackendData>
+void AllInformation(Chopper::Controller &chopper_ctrl,
+                    Wobbler::Controller &wobbler_ctrl,
+                    Housekeeping::Controller &housekeeping_ctrl,
+                    Frontend::Controller &frontend_ctrl,
+                    Spectrometer::Controllers &spectrometer_ctrls, BackendData& backend_data) noexcept {
   float x0 = ImGui::GetCursorPosX();
   float dx = ImGui::GetFontSize();
 
   if (ImGui::BeginTabBar("All Information")) {
     if (ImGui::BeginTabItem(" Main ")) {
-      ImGui::Text("Chopper Target: %s", std::visit([](auto&& chop){return toString(chop.get_data()).c_str();}, chopper_ctrl.chop));
+      ImGui::Text("Chopper Target: %s", toString(chopper_ctrl.get_pos()).c_str());
 
       ImGui::SameLine();
       ImGui::SetCursorPosX(x0 + dx * 14);
-      ImGui::Text("Wobbler Target: %i", std::visit([](auto && wob){return wob.get_data();}, wobbler_ctrl.wob));
+      ImGui::Text("Wobbler Target: %i", wobbler_ctrl.get_pos());
 
       ImGui::SameLine();
       ImGui::SetCursorPosX(x0 + dx * 27);
@@ -739,11 +713,10 @@ void AllInformation(ChopperController &chopper_ctrl,
       ImGui::SameLine();
       ImGui::RadioButton("Housekeeping", housekeeping_ctrl.init.load());
       ImGui::SameLine();
-      ImGui::RadioButton(std::visit([](auto && frontend){return frontend.name().c_str();}, frontend_ctrl.frontend), frontend_ctrl.init.load());
-      for (std::size_t i = 0; i < backends.N; i++) {
+      ImGui::RadioButton(frontend_ctrl.name().c_str(), frontend_ctrl.init.load());
+      for (auto& spec: spectrometer_ctrls.backends) {
         ImGui::SameLine();
-        ImGui::RadioButton(backends.name(i).c_str(),
-                           backend_ctrls[i].init.load());
+        ImGui::RadioButton(spec.name.c_str(), spec.init.load());
       }
 
       ImGui::Text("Running:     ");
@@ -754,11 +727,10 @@ void AllInformation(ChopperController &chopper_ctrl,
       ImGui::SameLine();
       ImGui::RadioButton("Housekeeping", housekeeping_ctrl.run.load());
       ImGui::SameLine();
-      ImGui::RadioButton(std::visit([](auto && frontend){return frontend.name().c_str();}, frontend_ctrl.frontend), frontend_ctrl.run.load());
-      for (std::size_t i = 0; i < backends.N; i++) {
+      ImGui::RadioButton(frontend_ctrl.name().c_str(), frontend_ctrl.run.load());
+      for (auto& spec: spectrometer_ctrls.backends) {
         ImGui::SameLine();
-        ImGui::RadioButton(backends.name(i).c_str(),
-                           backend_ctrls[i].run.load());
+        ImGui::RadioButton(spec.name.c_str(), spec.run.load());
       }
 
       ImGui::Text("Waiting:     ");
@@ -769,11 +741,10 @@ void AllInformation(ChopperController &chopper_ctrl,
       ImGui::SameLine();
       ImGui::RadioButton("Housekeeping", housekeeping_ctrl.waiting.load());
       ImGui::SameLine();
-      ImGui::RadioButton(std::visit([](auto && frontend){return frontend.name().c_str();}, frontend_ctrl.frontend), frontend_ctrl.waiting.load());
-      for (std::size_t i = 0; i < backends.N; i++) {
+      ImGui::RadioButton(frontend_ctrl.name().c_str(), frontend_ctrl.waiting.load());
+      for (auto& spec: spectrometer_ctrls.backends) {
         ImGui::SameLine();
-        ImGui::RadioButton(backends.name(i).c_str(),
-                           backend_ctrls[i].waiting.load());
+        ImGui::RadioButton(spec.name.c_str(), spec.waiting.load());
       }
 
       ImGui::Text("Operating:   ");
@@ -784,12 +755,10 @@ void AllInformation(ChopperController &chopper_ctrl,
       ImGui::SameLine();
       ImGui::RadioButton("Housekeeping", housekeeping_ctrl.operating.load());
       ImGui::SameLine();
-      ImGui::RadioButton(std::visit([](auto && frontend){return frontend.name().c_str();}, frontend_ctrl.frontend),
-                         frontend_ctrl.operating.load());
-      for (std::size_t i = 0; i < backends.N; i++) {
+      ImGui::RadioButton(frontend_ctrl.name().c_str(), frontend_ctrl.operating.load());
+      for (auto& spec: spectrometer_ctrls.backends) {
         ImGui::SameLine();
-        ImGui::RadioButton(backends.name(i).c_str(),
-                           backend_ctrls[i].operating.load());
+        ImGui::RadioButton(spec.name.c_str(), spec.operating.load());
       }
 
       ImGui::EndTabItem();
@@ -806,10 +775,11 @@ void AllInformation(ChopperController &chopper_ctrl,
     if (ImGui::BeginTabItem(" Spectrometers ")) {
       if (ImGui::BeginTabBar(" Spectrometer Information ")) {
         
-        for (std::size_t i = 0; i < backends.N; i++) {
-          if (ImGui::BeginTabItem(backends.name(i).c_str())) {
+        for (std::size_t i = 0; i < spectrometer_ctrls.backends.size(); i++) {
+          auto& spec = spectrometer_ctrls.backends[i];
+          if (ImGui::BeginTabItem(spec.name.c_str())) {
             std::stringstream ss;
-            ss << backends.now;
+            ss << spectrometer_ctrls.now;
             std::string ymd, hms;
             ss >> ymd >> hms;
             ImGui::Text("Last measurement: %s %s", ymd.c_str(), hms.c_str());
@@ -873,18 +843,14 @@ void AllInformation(ChopperController &chopper_ctrl,
   }
 }
 
-template <typename ChopperController,
-          typename WobblerController,
-          typename HousekeepingController,
-          typename FrontendController, typename Backends,
-          typename BackendControllers>
+inline
 std::vector<std::string> RunExperiment(
-    ChopperController &chopper_ctrl,
-    WobblerController &wobbler_ctrl,
-    HousekeepingController &housekeeping_ctrl,
-    FrontendController &frontend_ctrl, Backends &backends,
-    BackendControllers &backend_ctrls) noexcept {
-  static_assert(ChopperController::N == WobblerController::N,
+    Chopper::Controller &chopper_ctrl,
+    Wobbler::Controller &wobbler_ctrl,
+    Housekeeping::Controller &housekeeping_ctrl,
+    Frontend::Controller &frontend_ctrl,
+    Spectrometer::Controllers &spectrometer_ctrls) noexcept {
+  static_assert(Chopper::Controller::N == Wobbler::Controller::N,
                 "Need the same number of positions");
 
   std::vector<std::string> errors(0);
@@ -903,19 +869,19 @@ wait:
 loop:
   init = chopper_ctrl.init.load() and wobbler_ctrl.init.load() and
          housekeeping_ctrl.init.load() and frontend_ctrl.init.load() and
-         std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+         std::all_of(spectrometer_ctrls.backends.cbegin(), spectrometer_ctrls.backends.cend(),
                      [](auto &x) { return x.init.load(); });
   run = chopper_ctrl.run.load() and wobbler_ctrl.run.load() and
         housekeeping_ctrl.run.load() and frontend_ctrl.run.load() and
-        std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+        std::all_of(spectrometer_ctrls.backends.cbegin(), spectrometer_ctrls.backends.cend(),
                     [](auto &x) { return x.run.load(); });
-  error = std::visit([](auto&& chop){return chop.has_error();}, chopper_ctrl.chop) or
-          std::visit([](auto &&wob){return wob.has_error();}, wobbler_ctrl.wob) or
-          std::visit([](auto && hk){return hk.has_error();}, housekeeping_ctrl.hk) or
-          std::visit([](auto && frontend){return frontend.has_error();}, frontend_ctrl.frontend) or backends.has_any_errors();
+  error = chopper_ctrl.has_error() or
+          wobbler_ctrl.has_error() or
+          housekeeping_ctrl.has_error() or
+          frontend_ctrl.has_error() or spectrometer_ctrls.has_any_errors();
   quit = chopper_ctrl.quit.load() or wobbler_ctrl.quit.load() or
          housekeeping_ctrl.quit.load() or frontend_ctrl.quit.load() or
-         std::any_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+         std::any_of(spectrometer_ctrls.backends.cbegin(), spectrometer_ctrls.backends.cend(),
                      [](auto &x) { return x.quit.load(); });
 
   // Quit if any instrument wants it
@@ -927,64 +893,64 @@ loop:
   // Run Chopper
   std::cout << Time() << " Running Chopper\n";
   chopper_ctrl.operating = chopper_ctrl.waiting = true;
-  std::visit([&chopper_ctrl, pos](auto&& chop){chop.run(chopper_ctrl.pos[pos]);}, chopper_ctrl.chop);
+  chopper_ctrl.change_pos(chopper_ctrl.pos[pos]);
   chopper_ctrl.operating = chopper_ctrl.waiting = false;
   std::cout << Time() << " Done Chopper\n";
 
   // Run Wobbler
   std::cout << Time() << " Running Wobbler\n";
   wobbler_ctrl.operating = true;
-  std::visit([&wobbler_ctrl, pos](auto &&wob){wob.move(wobbler_ctrl.pos[pos]);}, wobbler_ctrl.wob);
+  wobbler_ctrl.change_pos(wobbler_ctrl.pos[pos]);
 
   // Run Frontend
   std::cout << Time() << " Running Frontend\n";
   frontend_ctrl.operating = true;
-  std::visit([](auto && frontend){frontend.run();}, frontend_ctrl.frontend);
+  frontend_ctrl.run_machine();
 
   // Run Backends
-  for (std::size_t i = 0; i < backends.N; i++) {
-    std::cout << Time() << " Running Backend " << i + 1 << "\n";
-    backends.run(i);
-    backend_ctrls[i].operating = true;
+  for (auto& spec : spectrometer_ctrls.backends) {
+    std::cout << Time() << " Running Backend " << spec.name << "\n";
+    spec.run_machine();
+    spec.operating = true;
   }
 
   // Run Housekeeping
   std::cout << Time() << " Running Housekeeping\n";
   housekeeping_ctrl.operating = true;
-  std::visit([](auto && hk){hk.run();}, housekeeping_ctrl.hk);
+  housekeeping_ctrl.run_machine();
 
   // Get Backends data
-  for (std::size_t i = 0; i < backends.N; i++) {
-    std::cout << Time() << " Get Data Backend " << i + 1 << "\n";
-    backend_ctrls[i].waiting = true;
-    backends.get_data(i, pos);
-    backend_ctrls[i].waiting = backend_ctrls[i].operating = false;
+  for (auto& spec : spectrometer_ctrls.backends) {
+    std::cout << Time() << " Get Data Backend " << spec.name << "\n";
+    spec.waiting = true;
+    spec.get_data(pos);
+    spec.waiting = spec.operating = false;
     std::cout << Time() << " Done Backend\n";
   }
 
   // Get Housekeeping data
   std::cout << Time() << " Get Data Housekeeping\n";
   housekeeping_ctrl.waiting = true;
-  std::visit([](auto && hk){hk.get_data();}, housekeeping_ctrl.hk);
+  housekeeping_ctrl.get_data();
   housekeeping_ctrl.waiting = housekeeping_ctrl.operating = false;
   std::cout << Time() << " Done Housekeeping\n";
 
   // Get Frontend data
   std::cout << Time() << " Get Data Frontend\n";
   frontend_ctrl.waiting = true;
-  std::visit([](auto && frontend){frontend.get_data();}, frontend_ctrl.frontend);
+  frontend_ctrl.get_data();
   frontend_ctrl.waiting = frontend_ctrl.operating = false;
   std::cout << Time() << " Done Frontend\n";
 
   // Wait with loading the data if the storing device is having problems keeping
   // up
-  while (std::any_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+  while (std::any_of(spectrometer_ctrls.backends.cbegin(), spectrometer_ctrls.backends.cend(),
                      [](auto &x) { return x.newdata.load(); }) or
          housekeeping_ctrl.newdata.load() or frontend_ctrl.newdata.load()) {
     Sleep(0.1);
     quit = chopper_ctrl.quit.load() or wobbler_ctrl.quit.load() or
            housekeeping_ctrl.quit.load() or frontend_ctrl.quit.load() or
-           std::any_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+           std::any_of(spectrometer_ctrls.backends.cbegin(), spectrometer_ctrls.backends.cend(),
                        [](auto &x) { return x.quit.load(); });
     if (quit) goto stop;
   }
@@ -992,31 +958,22 @@ loop:
   // Store the measurements in the controller
   std::cout << Time() << " Store Chopper\n";
   chopper_ctrl.lasttarget = chopper_ctrl.pos[pos];
-  for (std::size_t i = 0; i < backends.N; i++) {
-    std::cout << Time() << " Store Backend " << i + 1 << "\n";
-    backend_ctrls[i].d = backends.datavec(i);
+  for (auto& spec : spectrometer_ctrls.backends) {
+    std::cout << Time() << " Store Backend " << spec.name << "\n";
+    spec.store_data();
   }
   std::cout << Time() << " Store Housekeeping\n";
-  housekeeping_ctrl.data = std::visit([](auto && hk){return hk.data();}, housekeeping_ctrl.hk);
+  housekeeping_ctrl.data = housekeeping_ctrl.data_load();
   std::cout << Time() << " Store Frontend\n";
-  frontend_ctrl.data = std::visit([](auto && frontend){return frontend.data();}, frontend_ctrl.frontend);
+  frontend_ctrl.data = frontend_ctrl.data_load();
 
-  // If the front end contains the hot load or cold load, load those over to
-  // Housekeeping
-  std::visit([&housekeeping_ctrl](auto && frontend){
-    if constexpr (frontend.has_cold_load) {
-      std::cout << Time() << " Copy Frontend Cold Load\n";
-      housekeeping_ctrl.data["Cold Load Temperature"] = frontend.cold_load();
-    }
-    if constexpr (frontend.has_hot_load) {
-      std::cout << Time() << " Copy Frontend Hot Load\n";
-      housekeeping_ctrl.data["Hot Load Temperature"] = frontend.hot_load();
-    }
-  }, frontend_ctrl.frontend);
+  // If the front end contains the hot load or cold load, load thosehere
+  frontend_ctrl.set_cold(housekeeping_ctrl.data["Cold Load Temperature"]);
+  frontend_ctrl.set_hot(housekeeping_ctrl.data["Hot Load Temperature"]);
 
   // Tell the storing device that there is new data
   std::cout << Time() << " Set all to done\n";
-  for (auto &x : backend_ctrls) x.newdata.store(true);
+  for (auto &spec : spectrometer_ctrls.backends) spec.newdata.store(true);
   chopper_ctrl.newdata.store(true);
   housekeeping_ctrl.newdata.store(true);
   frontend_ctrl.newdata.store(true);
@@ -1024,7 +981,7 @@ loop:
   // Finally just wait for the wobbler to be happy
   std::cout << Time() << " Wait for Wobbler\n";
   wobbler_ctrl.waiting = true;
-  std::visit([](auto &&wob){wob.wait();}, wobbler_ctrl.wob);
+  wobbler_ctrl.wait();
   wobbler_ctrl.waiting = wobbler_ctrl.operating = false;
   std::cout << Time() << " Done Wobbler\n";
 
@@ -1035,32 +992,32 @@ loop:
 // Stop must kill all machines if necessary
 stop:
   try {
-    if (chopper_ctrl.init) std::visit([](auto&& chop){chop.close();;}, chopper_ctrl.chop);
+    if (chopper_ctrl.init) chopper_ctrl.close();
   } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
 
   try {
-    if (wobbler_ctrl.init) std::visit([](auto &&wob){wob.close();}, wobbler_ctrl.wob);
+    if (wobbler_ctrl.init) wobbler_ctrl.close();
   } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
 
   try {
-    if (housekeeping_ctrl.init) std::visit([](auto && hk){hk.close();}, housekeeping_ctrl.hk);
+    if (housekeeping_ctrl.init) housekeeping_ctrl.close();
   } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
 
   try {
-    if (frontend_ctrl.init) std::visit([](auto && frontend){frontend.close();}, frontend_ctrl.frontend);
+    if (frontend_ctrl.init) frontend_ctrl.close();
   } catch (const std::exception &e) {
     errors.push_back(e.what());
   }
 
-  for (std::size_t i = 0; i < backends.N; i++) {
+  for (auto &spec : spectrometer_ctrls.backends) {
     try {
-      if (backend_ctrls[i].init) backends.close(i);
+      if (spec.init) spec.close();
     } catch (const std::exception &e) {
       errors.push_back(e.what());
     }
@@ -1069,12 +1026,11 @@ stop:
   return errors;
 }
 
-template <std::size_t N, typename ChopperController, typename HousekeepingController,
-          typename FrontendController, std::size_t PLOT_H, std::size_t PLOT_P>
+template <std::size_t N, std::size_t PLOT_H, std::size_t PLOT_P>
 void ExchangeData(
-    std::array<Spectrometer::Controller, N> &backend_ctrls,
-    ChopperController &chopper_ctrl, HousekeepingController &housekeeping_ctrl,
-    FrontendController &frontend_ctrl, std::array<Data, N> &data,
+    Spectrometer::Controllers &spectrometer_ctrls,
+    Chopper::Controller &chopper_ctrl, Housekeeping::Controller &housekeeping_ctrl,
+    Frontend::Controller &frontend_ctrl, std::array<Data, N> &data,
     DataSaver &saver,
     std::array<GUI::Plotting::CAHA<PLOT_H, PLOT_P>, N> &rawplots,
     GUI::Plotting::ListOfLines<PLOT_H, PLOT_P> &hkplots) noexcept {
@@ -1094,8 +1050,8 @@ void ExchangeData(
   std::array<std::string, N> backend_names;
 
   for (std::size_t i = 0; i < N; i++) {
-    backend_names[i] = backend_ctrls[i].name;
-    data[i] = Data(backend_ctrls[i].f);
+    backend_names[i] = spectrometer_ctrls.backends[i].name;
+    data[i] = Data(spectrometer_ctrls.backends[i].f);
     data[i].newdata.store(false);
   }
 
@@ -1106,10 +1062,10 @@ wait:
 
 loop:
   allnew = housekeeping_ctrl.newdata.load() and frontend_ctrl.newdata.load() and
-           std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+           std::all_of(spectrometer_ctrls.backends.cbegin(), spectrometer_ctrls.backends.cend(),
                        [](auto &x) { return x.newdata.load(); });
   quit = housekeeping_ctrl.quit.load() and frontend_ctrl.quit.load() and
-         std::all_of(backend_ctrls.cbegin(), backend_ctrls.cend(),
+         std::all_of(spectrometer_ctrls.backends.cbegin(), spectrometer_ctrls.backends.cend(),
                      [](auto &x) { return x.quit.load(); });
 
   if (quit) goto stop;
@@ -1118,12 +1074,12 @@ loop:
   last = chopper_ctrl.lasttarget;
   hk_data = housekeeping_ctrl.data;
   frontend_data = frontend_ctrl.data;
-  for (std::size_t i = 0; i < N; i++) backends_data[i] = backend_ctrls[i].d;
+  for (std::size_t i = 0; i < N; i++) backends_data[i] = spectrometer_ctrls.backends[i].d;
 
   chopper_ctrl.newdata.store(false);
   housekeeping_ctrl.newdata.store(false);
   frontend_ctrl.newdata.store(false);
-  for (auto &ctrl : backend_ctrls) ctrl.newdata.store(false);
+  for (auto &spec : spectrometer_ctrls.backends) spec.newdata.store(false);
 
   // Save the raw data to file
   saver.save(last, hk_data, frontend_data, backends_data, backend_names);
@@ -1228,17 +1184,13 @@ stop : {}
 
 
 /*! Handle errors.  If it returns false, errors cannot be handled */
-template <typename ChopperController,
-typename WobblerController,
-typename HousekeepingController,
-typename FrontendController, typename Backends,
-typename BackendControllers>
+inline
 bool AllErrors(GUI::Config& config,
-               ChopperController &chopper_ctrl,
-               WobblerController &wobbler_ctrl,
-               HousekeepingController &housekeeping_ctrl,
-               FrontendController &frontend_ctrl, Backends &backends,
-               BackendControllers &backend_ctrls) {
+               Chopper::Controller &chopper_ctrl,
+               Wobbler::Controller &wobbler_ctrl,
+               Housekeeping::Controller &housekeeping_ctrl,
+               Frontend::Controller &frontend_ctrl,
+               Spectrometer::Controllers &spectrometer_ctrls) {
   // Error handling (only if there are no known errors)
   if (config.active_errors == 0) {
     if (chopper_ctrl.error) {
@@ -1251,10 +1203,10 @@ bool AllErrors(GUI::Config& config,
       wobbler_ctrl.error = false;
       config.active_errors++;
     }
-    for (auto &backend_ctrl : backend_ctrls) {
-      if (backend_ctrl.error) {
+    for (auto &spec : spectrometer_ctrls.backends) {
+      if (spec.error) {
         ImGui::OpenPopup("Error");
-        backend_ctrl.error = false;
+        spec.error = false;
         config.active_errors++;
       }
     }
@@ -1277,24 +1229,23 @@ bool AllErrors(GUI::Config& config,
       "must be fixed\t",
       config.active_errors);
     
-    ImGui::TextWrapped(" Chopper: %s", std::visit([](auto && chop){return chop.error_string().c_str();}, chopper_ctrl.chop));
-    ImGui::TextWrapped(" Wobbler: %s", std::visit([](auto && wob){return wob.error_string().c_str();}, wobbler_ctrl.wob));
-    for (size_t i = 0; i < backends.N; i++) {
-      ImGui::TextWrapped("%s: %s", backends.name(i).c_str(),
-                         backends.error_string(i).c_str());
+    ImGui::TextWrapped(" Chopper: %s", chopper_ctrl.error_string().c_str());
+    ImGui::TextWrapped(" Wobbler: %s", wobbler_ctrl.error_string().c_str());
+    for (auto &spec : spectrometer_ctrls.backends) {
+      ImGui::TextWrapped("%s: %s", spec.name.c_str(), spec.error_string().c_str());
     }
-    ImGui::TextWrapped(" Housekeeping: %s", std::visit([](auto && hk){return hk.error_string().c_str();}, housekeeping_ctrl.hk));
-    ImGui::TextWrapped(" Frontend: %s", std::visit([](auto && frontend){return frontend.error_string().c_str();}, frontend_ctrl.frontend));
+    ImGui::TextWrapped(" Housekeeping: %s", housekeeping_ctrl.error_string().c_str());
+    ImGui::TextWrapped(" Frontend: %s", frontend_ctrl.error_string().c_str());
     
     ImGui::Text(" ");
     if (ImGui::Button(" OK ", {80.0f, 30.0f})) {
-      std::visit([](auto && chop){chop.delete_error();}, chopper_ctrl.chop);
-      std::visit([](auto && wob){wob.delete_error();}, wobbler_ctrl.wob);
-      for (size_t i = 0; i < backends.N; i++) {
-        backends.delete_error(i);
+      chopper_ctrl.delete_error();
+      wobbler_ctrl.delete_error();
+      for (auto &spec : spectrometer_ctrls.backends) {
+        spec.delete_error();
       }
-      std::visit([](auto && hk){hk.delete_error();}, housekeeping_ctrl.hk);
-      std::visit([](auto && frontend){frontend.delete_error();}, frontend_ctrl.frontend);
+      housekeeping_ctrl.delete_error();
+      frontend_ctrl.delete_error();
       ImGui::CloseCurrentPopup();
       config.active_errors = 0;
     }

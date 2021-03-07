@@ -1,6 +1,44 @@
 #include "chopper.h"
 
 namespace Instrument::Chopper {
+void Controller::startup() {
+  std::visit([this](auto&& chop){chop.startup(dev, offset, sleeptime);}, chop);
+}
+
+void Controller::initialize(bool manual) {
+  std::visit([manual](auto&& chop){chop.init(manual);}, chop);
+  init = true;
+}
+
+void Controller::close() {
+  std::visit([](auto&& chop){chop.close();}, chop);
+  init = false;
+}
+
+bool Controller::manual_run() {
+  return std::visit([](auto&& chop){return chop.manual_run();}, chop);
+}
+
+void Controller::change_pos(ChopperPos pos) {
+  std::visit([pos](auto&& chop){chop.run(pos);}, chop);
+}
+
+ChopperPos Controller::get_pos() {
+  return std::visit([](auto&& chop){return chop.get_data();}, chop);
+}
+
+bool Controller::has_error() {
+  return std::visit([](auto&& chop){return chop.has_error();}, chop);
+}
+
+const std::string& Controller::error_string() const {
+  return std::visit([](auto&& chop) -> const std::string& {return chop.error_string();}, chop);
+}
+
+void Controller::delete_error() {
+  std::visit([](auto&& chop){chop.delete_error();}, chop);
+}
+
 void GuiSetup(Controller &ctrl,
               const std::vector<std::string> &devs) {
   bool change = false;
@@ -32,10 +70,10 @@ void GuiSetup(Controller &ctrl,
 
   if (change) {
     if (ctrl.init) {
-      std::visit([&ctrl](auto&& chop){chop.startup(ctrl.dev, ctrl.offset, ctrl.sleeptime);}, ctrl.chop);
-      std::visit([manual](auto&& chop){chop.init(manual);}, ctrl.chop);
+      ctrl.startup();
+      ctrl.initialize(manual);
     } else {
-      std::visit([](auto&& chop){chop.close();}, ctrl.chop);
+      ctrl.close();
     }
   }
 
@@ -82,24 +120,24 @@ void GuiSetup(Controller &ctrl,
   }
   ImGui::PopItemWidth();
 
-  if (ctrl.init and std::visit([](auto&& chop){return chop.manual_run();}, ctrl.chop)) {
+  if (ctrl.init and ctrl.manual_run()) {
     if (ImGui::Button(" Cold ")) {
-      std::visit([](auto&& chop){chop.run(ChopperPos::Cold);}, ctrl.chop);
+      ctrl.change_pos(ChopperPos::Cold);
     }
     ImGui::SameLine();
     if (ImGui::Button(" Hot ")) {
-      std::visit([](auto&& chop){chop.run(ChopperPos::Hot);}, ctrl.chop);
+      ctrl.change_pos(ChopperPos::Hot);
     }
     ImGui::SameLine();
     if (ImGui::Button(" Antenna ")) {
-      std::visit([](auto&& chop){chop.run(ChopperPos::Antenna);}, ctrl.chop);
+      ctrl.change_pos(ChopperPos::Antenna);
     }
     ImGui::SameLine();
     if (ImGui::Button(" Reference ")) {
-      std::visit([](auto&& chop){chop.run(ChopperPos::Reference);}, ctrl.chop);
+      ctrl.change_pos(ChopperPos::Reference);
     }
     ImGui::SameLine();
-    ImGui::Text("Expected state: %s", toString(std::visit([](auto&& chop){return chop.get_data();}, ctrl.chop)).c_str());
+    ImGui::Text("Expected state: %s", toString(ctrl.get_pos()).c_str());
   } else {
     ImGui::Text(" Cold ");
     ImGui::SameLine();
@@ -110,7 +148,7 @@ void GuiSetup(Controller &ctrl,
     ImGui::Text(" Reference ");
   }
 
-  if (std::visit([](auto&& chop){return chop.has_error();}, ctrl.chop)) {
+  if (ctrl.has_error()) {
     ctrl.init = false;
     ctrl.error = true;
   } else

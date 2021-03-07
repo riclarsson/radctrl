@@ -62,34 +62,22 @@ int run(File::ConfigParser parser) try {
   int integration_time_microseconds =
       std::stoi(parser("Operations", "integration_time"));
   int blank_time_microseconds = std::stoi(parser("Operations", "blank_time"));
-
-  // Spectrometers declarations
-  Instrument::Spectrometer::Backends backends{
-      Instrument::Spectrometer::dFFTS(parser("Backends", "spectormeter1"),
-                                      parser("Backends", "path1"))/*,
-      Instrument::Spectrometer::RCTS104(parser("Backends", "spectormeter2"),
-                                        parser("Backends", "path2")),
-      Instrument::Spectrometer::ACS(parser("Backends", "spectormeter3"),
-                                        parser("Backends", "path3"))*/};
-  std::array<Instrument::Spectrometer::Controller, backends.N> backend_ctrls{
-      Instrument::Spectrometer::Controller(
-          parser("Backends", "spectormeter1"), parser("Backends", "config1"),
-          integration_time_microseconds, blank_time_microseconds)/*,
-      Instrument::Spectrometer::Controller(
-          parser("Backends", "spectormeter2"), parser("Backends", "config2"),
-          integration_time_microseconds, blank_time_microseconds),
-      Instrument::Spectrometer::Controller(
-          parser("Backends", "spectormeter3"), parser("Backends", "config3"),
-          integration_time_microseconds, blank_time_microseconds)*/};
-  std::array<Instrument::Data, backends.N> backend_data;
-  std::array<GUI::Plotting::CAHA<height_of_window, part_for_plot>, backends.N>
+  
+  constexpr std::size_t N = 1;
+  
+  Instrument::Spectrometer::Controllers spectrometer_ctrls{
+    std::vector<Instrument::Spectrometer::SingleController>{
+      Instrument::Spectrometer::SingleController(
+        Instrument::Spectrometer::dFFTS(parser("Backends", "spectormeter1"), parser("Backends", "path1")),
+        parser("Backends", "spectormeter1"), parser("Backends", "config1"),
+        integration_time_microseconds, blank_time_microseconds)
+    }
+  };
+  std::array<Instrument::Data, N> backend_data;
+  std::array<GUI::Plotting::CAHA<height_of_window, part_for_plot>, N>
       backend_frames{GUI::Plotting::CAHA<height_of_window, part_for_plot>{
-                         backend_ctrls[0].name, backend_ctrls[0].f}/*,
-                     GUI::Plotting::CAHA<height_of_window, part_for_plot>{
-                       backend_ctrls[1].name, backend_ctrls[1].f},
-                       GUI::Plotting::CAHA<height_of_window, part_for_plot>{
-                         backend_ctrls[2].name, backend_ctrls[2].f}*/};
-  if (std::stoi(parser("Backends", "size")) not_eq backends.N)
+        spectrometer_ctrls.backends[0].name, spectrometer_ctrls.backends[0].f}};
+  if (std::stoi(parser("Backends", "size")) not_eq N)
     throw std::runtime_error("Bad backend count");
 
   // Files chooser
@@ -107,31 +95,25 @@ int run(File::ConfigParser parser) try {
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "IRAM");
   auto runner = AsyncRef(
-      &Instrument::RunExperiment<decltype(chopper_ctrl),
-                                 decltype(wobbler_ctrl),
-                                 decltype(housekeeping_ctrl),
-                                 decltype(frontend_ctrl),
-                                 decltype(backends), decltype(backend_ctrls)>,
+      &Instrument::RunExperiment,
       chopper_ctrl, wobbler_ctrl, housekeeping_ctrl,
-      frontend_ctrl, backends, backend_ctrls);
+      frontend_ctrl, spectrometer_ctrls);
 
   // Start interchange between output data and operations on yet another thread
   auto saver = AsyncRef(
-      &Instrument::ExchangeData<
-          backends.N, decltype(chopper_ctrl), decltype(housekeeping_ctrl),
-          decltype(frontend_ctrl), height_of_window, part_for_plot>,
-      backend_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl,
+      &Instrument::ExchangeData<N, height_of_window, part_for_plot>,
+          spectrometer_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl,
       backend_data, datasaver, backend_frames, hk_frames);
 
   // Setup of the tabs
-  for (size_t i = 0; i < backends.N; i++) {
-    config.tabs.push_back(backends.name(i));
+  for (auto& spec : spectrometer_ctrls.backends) {
+    config.tabs.push_back(spec.name);
   }
   config.tabs.push_back(" All ");
   config.tabs.push_back(" Retrieval ");
-  constexpr std::size_t ret_tab = backends.N + 1;
+  constexpr std::size_t ret_tab = N + 1;
   config.tabs.push_back(" Housekeeping ");
-  constexpr std::size_t house_tab = backends.N + 2;
+  constexpr std::size_t house_tab = N + 2;
   config.tabspos = 0;
 
   // Helpers
@@ -155,11 +137,11 @@ int run(File::ConfigParser parser) try {
   const auto startpos = ImGui::GetCursorPos();
 
   // Draw the individual tabs
-  for (size_t i = 0; i < backends.N; i++)
+  for (size_t i = 0; i < N; i++)
     if (current_tab == i) backend_frames[i].plot(window, startpos);
 
   // Draw the combined backends
-  if (current_tab == backends.N) {
+  if (current_tab == N) {
     GUI::Plotting::caha_plot_combined(window, startpos, backend_frames);
   } else if (current_tab == ret_tab) {
     // plot retrieval
@@ -173,8 +155,8 @@ int run(File::ConfigParser parser) try {
                                                           "CTRL Tool 1")) {
     Instrument::AllControl(config, save_path, directoryBrowser, datasaver,
                            chopper_ctrl, wobbler_ctrl,
-                           housekeeping_ctrl, frontend_ctrl, backends,
-                           backend_ctrls);
+                           housekeeping_ctrl, frontend_ctrl,
+                           spectrometer_ctrls);
   }
   GUI::Windows::end();
 
@@ -184,14 +166,14 @@ int run(File::ConfigParser parser) try {
                                                           "DATA Tool 1")) {
     Instrument::AllInformation(chopper_ctrl, wobbler_ctrl,
                                housekeeping_ctrl, frontend_ctrl,
-                               backends, backend_ctrls, backend_data);
+                               spectrometer_ctrls, backend_data);
   }
   GUI::Windows::end();
 
   // Error handling
   if (not Instrument::AllErrors(config, chopper_ctrl, wobbler_ctrl,
                                 housekeeping_ctrl, frontend_ctrl,
-                                backends, backend_ctrls)) {
+                                spectrometer_ctrls)) {
     glfwSetWindowShouldClose(window, 1);
   }
 
@@ -199,7 +181,7 @@ int run(File::ConfigParser parser) try {
   EndWhileLoopGUI;
 
   Instrument::QuitAll(chopper_ctrl, wobbler_ctrl, housekeeping_ctrl,
-                      frontend_ctrl, backend_ctrls);
+                      frontend_ctrl, spectrometer_ctrls);
   auto running_errors = runner.get();
   if (running_errors.size()) {
     std::cerr << "Errors while stopping runner:\n:";
