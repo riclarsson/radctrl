@@ -35,10 +35,7 @@ class Dummy {
   std::vector<float> dummy_x;
 
  public:
-  template <typename... Whatever> Dummy(Whatever ...) {}
-  
-  template <typename... Whatever>
-  constexpr Dummy(const std::string &n, Whatever...)
+  Dummy(const std::string &n="Dummy")  // default name so default-constructible
       : mname(n),
         manual(false),
         error_found(false),

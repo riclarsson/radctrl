@@ -86,7 +86,10 @@ SingleController::SingleController(SingleController && sc) noexcept
   integration_time_microsecs(std::move(sc.integration_time_microsecs)),
   blank_time_microsecs(std::move(sc.blank_time_microsecs)),
   mirror(std::move(sc.mirror)),
-  name(std::move(sc.name)) {}
+  name(std::move(sc.name)),
+  f(std::move(sc.f)),
+  d(std::move(sc.d))
+  {}
 
 SingleController::SingleController(const SingleController & sc) noexcept 
 : backend(sc.backend),
@@ -105,7 +108,9 @@ SingleController::SingleController(const SingleController & sc) noexcept
   integration_time_microsecs(sc.integration_time_microsecs),
   blank_time_microsecs(sc.blank_time_microsecs),
   mirror(sc.mirror),
-  name(sc.name) {}
+  name(sc.name),
+  f(sc.f),
+  d(sc.d) {}
 
 void SingleController::startup() {
   std::visit([this](auto&&spectrometer){
