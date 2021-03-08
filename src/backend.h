@@ -151,6 +151,8 @@ struct Controllers {
   Controllers(std::vector<SingleController> && sctrl) : backends(sctrl), now() {}
   
   bool has_any_errors();
+  
+  std::size_t size() noexcept {return backends.size();}
 };
 
 void GuiSetup(Controllers &ctrls);

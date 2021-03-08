@@ -12,6 +12,7 @@
 #include "gui.h"
 #include "python_interface.h"
 #include "timeclass.h"
+#include "xml_config.h"
 
 #include "chopper/chopper_orig.h"
 
@@ -111,6 +112,8 @@ struct Controller {
 
 void GuiSetup(Controller &ctrl,
               const std::vector<std::string> &devs);
+
+Controller parse(const File::ConfigParser& parser);
 }  // namespace Chopper
 }  // namespace Instrument
 

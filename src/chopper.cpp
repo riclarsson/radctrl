@@ -154,4 +154,29 @@ void GuiSetup(Controller &ctrl,
   } else
     ctrl.error = false;
 }
+
+Controller parse(const File::ConfigParser& parser) try {
+  std::string type = parser("Chopper", "type");
+  
+  if (type == "PythonOriginal") {
+    return  Controller{
+      PythonOriginal(parser("Chopper", "path")),
+      parser("Chopper", "dev"),
+      std::stoi(parser("Chopper", "offset")),
+      std::stod(parser("Chopper", "sleeptime")),
+      ChopperPos::Cold,
+      ChopperPos::Antenna,
+      ChopperPos::Hot,
+      ChopperPos::Antenna
+    };
+  } else {
+    std::ostringstream os;
+    os << "Cannot undestand type: " << type;
+    throw std::runtime_error(os.str());
+  }
+} catch (std::exception& e) {
+  std::ostringstream os;
+  os << "Cannot parse Chopper with error:\n" << e.what();
+  throw std::runtime_error(os.str());
+}
 }  // namespace Instrument::Chopper

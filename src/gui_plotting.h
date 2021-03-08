@@ -324,9 +324,11 @@ class CAHA {
   const std::string &name() const { return mname; }
 };
 
-template <size_t Height, size_t PartOfHeight, size_t N>
+using CAHA76 = CAHA<7, 6>;
+
+template <size_t Height, size_t PartOfHeight>
 void caha_plot_combined(GLFWwindow *window, const ImVec2 startpos,
-                        std::array<CAHA<Height, PartOfHeight>, N> &cahas) {
+                        std::vector<CAHA<Height, PartOfHeight>> &cahas) {
   const std::string space = " ";
   if (GUI::Windows::sub<1, Height, 0, 0, 1, PartOfHeight / 3>(
           window, startpos, "Combined Last Measurement Integration TILE")) {
@@ -387,8 +389,8 @@ void caha_menuitem(CAHA<Height, PartOfHeight> &caha) {
   }
 }
 
-template <size_t Height, size_t PartOfHeight, size_t N>
-void caha_mainmenu(std::array<CAHA<Height, PartOfHeight>, N> &cahas) {
+template <size_t Height, size_t PartOfHeight>
+void caha_mainmenu(std::vector<CAHA<Height, PartOfHeight>> &cahas) {
   if (ImGui::BeginMainMenuBar()) {
     if (ImGui::BeginMenu("Plots")) {
       for (auto &caha : cahas) {
@@ -627,6 +629,7 @@ public:
   }
 };
 
+using ListOfLines76 = ListOfLines<7, 6>;
 
 template <size_t Height, size_t PartOfHeight>
 void listoflines_mainmenu(ListOfLines<Height, PartOfHeight> &lists) {

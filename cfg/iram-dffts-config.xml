@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <RADCTRL>
-<Chopper path="../python/chopper/chopper.py" dev="/dev/ttyUSB0" offset="1000" sleeptime="0.0" />
+<Chopper type="PythonOriginal" path="../python/chopper/chopper.py" dev="/dev/ttyUSB0" offset="1000" sleeptime="0.0" />
 <Wobbler path="../python/wobbler/IRAM.py" dev="/dev/ttyS0" baudrate="9600" address="0" start="3000" end="7000" />
 <Housekeeping path="../python/housekeeping/sensors.py" dev="/dev/ttyUSB0" baudrate="-1" />
 <Frontend path="../python/frontend/dbr.py" server="dbr" port="1080" />

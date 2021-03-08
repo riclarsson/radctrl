@@ -107,7 +107,7 @@ target_link_libraries(atm PUBLIC files)
 add_library (chopper STATIC
              chopper.cpp
              )
-target_link_libraries(chopper PUBLIC chopper_impl)
+target_link_libraries(chopper PUBLIC chopper_impl files)
 add_executable (chopper_cli chopper_cli.cpp)
 target_link_libraries(chopper_cli PUBLIC chopper cli)
 add_subdirectory(chopper)

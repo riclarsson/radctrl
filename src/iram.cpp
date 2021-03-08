@@ -11,10 +11,6 @@
 #include "xml_config.h"
 
 int run(File::ConfigParser parser) try {
-  constexpr size_t height_of_window = 7;  // Any size larger than part_for_plot
-  constexpr size_t part_for_plot = 6;     // multiple of 2 and 3
-  static_assert(part_for_plot % 6 == 0, "part_of_plot must be a multiple of 6");
-
   // Start a python interpreter in case python code will be executed
   auto py = Python::createPython();
 
@@ -25,17 +21,7 @@ int run(File::ConfigParser parser) try {
   GUI::Config config;
 
   // Chopper declaration
-  Instrument::Chopper::Controller
-      chopper_ctrl{
-        Instrument::Chopper::PythonOriginal(parser("Chopper", "path")),
-        parser("Chopper", "dev"),
-        std::stoi(parser("Chopper", "offset")),
-        std::stod(parser("Chopper", "sleeptime")),
-        Instrument::Chopper::ChopperPos::Cold,
-        Instrument::Chopper::ChopperPos::Antenna,
-        Instrument::Chopper::ChopperPos::Hot,
-        Instrument::Chopper::ChopperPos::Antenna
-      };
+  Instrument::Chopper::Controller chopper_ctrl = Instrument::Chopper::parse(parser);
 
   // Wobbler declaration
   Instrument::Wobbler::Controller wobbler_ctrl{
@@ -63,8 +49,6 @@ int run(File::ConfigParser parser) try {
       std::stoi(parser("Operations", "integration_time"));
   int blank_time_microseconds = std::stoi(parser("Operations", "blank_time"));
   
-  constexpr std::size_t N = 1;
-  
   Instrument::Spectrometer::Controllers spectrometer_ctrls{
     std::vector<Instrument::Spectrometer::SingleController>{
       Instrument::Spectrometer::SingleController(
@@ -73,11 +57,11 @@ int run(File::ConfigParser parser) try {
         integration_time_microseconds, blank_time_microseconds)
     }
   };
-  std::array<Instrument::Data, N> backend_data;
-  std::array<GUI::Plotting::CAHA<height_of_window, part_for_plot>, N>
-      backend_frames{GUI::Plotting::CAHA<height_of_window, part_for_plot>{
+  const std::size_t N = spectrometer_ctrls.size();
+  std::vector<Instrument::Data> backend_data(spectrometer_ctrls.backends.size());
+  std::vector<GUI::Plotting::CAHA76> backend_frames{GUI::Plotting::CAHA76{
         spectrometer_ctrls.backends[0].name, spectrometer_ctrls.backends[0].f}};
-  if (std::stoi(parser("Backends", "size")) not_eq N)
+  if (size_t(std::stoi(parser("Backends", "size"))) not_eq N)
     throw std::runtime_error("Bad backend count");
 
   // Files chooser
@@ -90,7 +74,7 @@ int run(File::ConfigParser parser) try {
   directoryBrowser.SetTypeFilters({"[D]"});
   
   // Housekeeping data for long-term view
-  GUI::Plotting::ListOfLines<height_of_window, part_for_plot> hk_frames(100'000, "Housekeeping", "Time");
+  GUI::Plotting::ListOfLines76 hk_frames(100'000, "Housekeeping", "Time");
 
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "IRAM");
@@ -101,7 +85,7 @@ int run(File::ConfigParser parser) try {
 
   // Start interchange between output data and operations on yet another thread
   auto saver = AsyncRef(
-      &Instrument::ExchangeData<N, height_of_window, part_for_plot>,
+      &Instrument::ExchangeData,
           spectrometer_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl,
       backend_data, datasaver, backend_frames, hk_frames);
 
@@ -111,9 +95,9 @@ int run(File::ConfigParser parser) try {
   }
   config.tabs.push_back(" All ");
   config.tabs.push_back(" Retrieval ");
-  constexpr std::size_t ret_tab = N + 1;
+  const std::size_t ret_tab = N + 1;
   config.tabs.push_back(" Housekeeping ");
-  constexpr std::size_t house_tab = N + 2;
+  const std::size_t house_tab = N + 2;
   config.tabspos = 0;
 
   // Helpers
@@ -150,20 +134,15 @@ int run(File::ConfigParser parser) try {
   }
 
   // Control tool
-  if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2,
-                        height_of_window - part_for_plot>(window, startpos,
-                                                          "CTRL Tool 1")) {
+  if (GUI::Windows::sub<5, 7, 0, 6, 2, 1>(window, startpos, "CTRL Tool 1")) {
     Instrument::AllControl(config, save_path, directoryBrowser, datasaver,
                            chopper_ctrl, wobbler_ctrl,
-                           housekeeping_ctrl, frontend_ctrl,
-                           spectrometer_ctrls);
+                           housekeeping_ctrl, frontend_ctrl, spectrometer_ctrls);
   }
   GUI::Windows::end();
 
   // Information tool
-  if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3,
-                        height_of_window - part_for_plot>(window, startpos,
-                                                          "DATA Tool 1")) {
+  if (GUI::Windows::sub<5, 7, 2, 6, 3, 1>(window, startpos, "DATA Tool 1")) {
     Instrument::AllInformation(chopper_ctrl, wobbler_ctrl,
                                housekeeping_ctrl, frontend_ctrl,
                                spectrometer_ctrls, backend_data);

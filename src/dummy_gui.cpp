@@ -11,10 +11,6 @@
 #include "wobbler.h"
 
 int run() try {
-  constexpr size_t height_of_window = 7;  // Any size larger than part_for_plot
-  constexpr size_t part_for_plot = 6;     // multiple of 2 and 3
-  static_assert(part_for_plot % 6 == 0, "part_of_plot must be a multiple of 6");
-  
   // Start a python interpreter in case python code will be executed
   auto py = Python::createPython();
 
@@ -43,9 +39,6 @@ int run() try {
 
   // Frontend declaration
   Instrument::Frontend::Controller frontend_ctrl{Instrument::Frontend::Dummy("filename?"), "some-server", 1234};
-
-  // Spectrometers declarations
-  constexpr std::size_t N = 2;
   
   Instrument::Spectrometer::Controllers spectrometer_ctrls{
     std::vector<Instrument::Spectrometer::SingleController>{
@@ -61,12 +54,11 @@ int run() try {
           (Eigen::VectorXi(2) << 1000, 1000).finished(), 100, 1, false)
     }
   };
-  std::array<Instrument::Data, N> backend_data;
-  std::array<GUI::Plotting::CAHA<height_of_window, part_for_plot>, N>
-      backend_frames{GUI::Plotting::CAHA<height_of_window, part_for_plot>{
-                         spectrometer_ctrls.backends[0].name, spectrometer_ctrls.backends[0].f},
-                     GUI::Plotting::CAHA<height_of_window, part_for_plot>{
-                         spectrometer_ctrls.backends[1].name, spectrometer_ctrls.backends[1].f}};
+  const std::size_t N = spectrometer_ctrls.size();
+  std::vector<Instrument::Data> backend_data(spectrometer_ctrls.backends.size());
+  std::vector<GUI::Plotting::CAHA76> backend_frames{
+    GUI::Plotting::CAHA76{spectrometer_ctrls.backends[0].name, spectrometer_ctrls.backends[0].f},
+    GUI::Plotting::CAHA76{spectrometer_ctrls.backends[1].name, spectrometer_ctrls.backends[1].f}};
 
   // Files chooser
   auto directoryBrowser = ImGui::FileBrowser(
@@ -78,7 +70,7 @@ int run() try {
   directoryBrowser.SetTypeFilters({"[D]"});
   
   // Housekeeping data for long-term view
-  GUI::Plotting::ListOfLines<height_of_window, part_for_plot> hk_frames(100'000, "Housekeeping", "Time");
+  GUI::Plotting::ListOfLines76 hk_frames(100'000, "Housekeeping", "Time");
 
   // Start the operation of the instrument on a different thread
   Instrument::DataSaver datasaver(save_path, "IRAM");
@@ -89,7 +81,7 @@ int run() try {
 
   // Start interchange between output data and operations on yet another thread
   auto saver = AsyncRef(
-      &Instrument::ExchangeData<N, height_of_window, part_for_plot>,
+      &Instrument::ExchangeData,
       spectrometer_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl,
       backend_data, datasaver, backend_frames, hk_frames);
 
@@ -99,9 +91,9 @@ int run() try {
   }
   config.tabs.push_back(" All ");
   config.tabs.push_back(" Retrieval ");
-  constexpr std::size_t ret_tab = N + 1;
+  const std::size_t ret_tab = N + 1;
   config.tabs.push_back(" Housekeeping ");
-  constexpr std::size_t house_tab = N + 2;
+  const std::size_t house_tab = N + 2;
   config.tabspos = 0;
 
   // Helpers
@@ -138,9 +130,7 @@ int run() try {
   }
 
   // Control tool
-  if (GUI::Windows::sub<5, height_of_window, 0, part_for_plot, 2,
-                        height_of_window - part_for_plot>(window, startpos,
-                                                          "CTRL Tool 1")) {
+  if (GUI::Windows::sub<5, 7, 0, 6, 2, 1>(window, startpos, "CTRL Tool 1")) {
     Instrument::AllControl(config, save_path, directoryBrowser, datasaver,
                            chopper_ctrl, wobbler_ctrl,
                            housekeeping_ctrl, frontend_ctrl, spectrometer_ctrls);
@@ -148,9 +138,7 @@ int run() try {
   GUI::Windows::end();
 
   // Information tool
-  if (GUI::Windows::sub<5, height_of_window, 2, part_for_plot, 3,
-                        height_of_window - part_for_plot>(window, startpos,
-                                                          "DATA Tool 1")) {
+  if (GUI::Windows::sub<5, 7, 2, 6, 3, 1>(window, startpos, "DATA Tool 1")) {
     Instrument::AllInformation(chopper_ctrl, wobbler_ctrl,
                                housekeeping_ctrl, frontend_ctrl,
                                spectrometer_ctrls, backend_data);
