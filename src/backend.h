@@ -13,6 +13,7 @@
 #include "mathhelpers.h"
 #include "python_interface.h"
 #include "timeclass.h"
+#include "xml_config.h"
 
 // #if HAS_ACS2020
 //   #include "ACS2020-FM/acs_2020.h"
@@ -156,6 +157,10 @@ struct Controllers {
 };
 
 void GuiSetup(Controllers &ctrls);
+
+SingleController single_parse(const File::ConfigParser& parser, const std::string &controller_name, int integration_time, int blank_time);
+
+Controllers parse(const File::ConfigParser& parser);
 }  // namespace Instrument::Spectrometer
 
 #endif  // backend_h

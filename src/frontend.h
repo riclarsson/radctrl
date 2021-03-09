@@ -8,6 +8,7 @@
 
 #include "gui.h"
 #include "python_interface.h"
+#include "xml_config.h"
 
 #include "frontend/frontend_cfg.h"
 
@@ -116,6 +117,8 @@ struct Controller {
 };
 
 void GuiSetup(Controller &ctrl);
+
+Controller parse(const File::ConfigParser& parser);
 }  // namespace Frontend::Instrument
 
 #endif  // frontend_h

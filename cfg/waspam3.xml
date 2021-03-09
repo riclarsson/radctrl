@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <RADCTRL>
-<WASPAM3 name="WASPAM 3" host="waspam3" tcp="1788" udp="-1" Nboards="1" Nchannels="4096" mirror="true">
-1330e6 1370e6
-</WASPAM3>
+<Waspam3 type="RCTS104" name="WASPAM 3" host="waspam3" tcp="1788" udp="-1" Nboards="1" Nchannels="4096" mirror="true" path="../python/backend/rcts104.py">
+4096 1330e6 1370e6
+</Waspam3>
 </RADCTRL>

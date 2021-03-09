@@ -24,52 +24,29 @@ int run(File::ConfigParser parser) try {
   Instrument::Chopper::Controller chopper_ctrl = Instrument::Chopper::parse(parser);
 
   // Wobbler declaration
-  Instrument::Wobbler::Controller wobbler_ctrl{
-      Instrument::Wobbler::Dummy(parser("Wobbler", "path")),
-      parser("Wobbler", "dev"), std::stoi(parser("Wobbler", "baudrate")),
-      parser("Wobbler", "address")[0]};
-  wobbler_ctrl.pos = {std::stoi(parser("Wobbler", "start")),
-                      std::stoi(parser("Wobbler", "end")),
-                      std::stoi(parser("Wobbler", "start")),
-                      std::stoi(parser("Wobbler", "end"))};
+  Instrument::Wobbler::Controller wobbler_ctrl = Instrument::Wobbler::parse(parser);
 
   // Housekeeping declaration
-  Instrument::Housekeeping::Controller housekeeping_ctrl{
-      Instrument::Housekeeping::PythonSensors(parser("Housekeeping", "path")),
-      parser("Housekeeping", "dev"),
-      std::stoi(parser("Housekeeping", "baudrate"))};
+  Instrument::Housekeeping::Controller housekeeping_ctrl = Instrument::Housekeeping::parse(parser);
 
   // Frontend declaration
-  Instrument::Frontend::Controller frontend_ctrl{
-      Instrument::Frontend::DBR(parser("Frontend", "path")),
-      parser("Frontend", "server"), std::stoi(parser("Frontend", "port"))};
+  Instrument::Frontend::Controller frontend_ctrl = Instrument::Frontend::parse(parser);
 
-  // Spectrometers declarations
-  int integration_time_microseconds =
-      std::stoi(parser("Operations", "integration_time"));
-  int blank_time_microseconds = std::stoi(parser("Operations", "blank_time"));
-  
-  Instrument::Spectrometer::Controllers spectrometer_ctrls{
-    std::vector<Instrument::Spectrometer::SingleController>{
-      Instrument::Spectrometer::SingleController(
-        Instrument::Spectrometer::dFFTS(parser("Backends", "spectormeter1"), parser("Backends", "path1")),
-        parser("Backends", "spectormeter1"), parser("Backends", "config1"),
-        integration_time_microseconds, blank_time_microseconds)
-    }
-  };
+  // Backend declarations
+  Instrument::Spectrometer::Controllers spectrometer_ctrls = Instrument::Spectrometer::parse(parser);
+  std::vector<Instrument::Data> backend_data = Instrument::init_spectrometer_data(spectrometer_ctrls);
+  std::vector<GUI::Plotting::CAHA76> backend_frames = Instrument::init_plotting_data(spectrometer_ctrls);
   const std::size_t N = spectrometer_ctrls.size();
-  std::vector<Instrument::Data> backend_data(spectrometer_ctrls.backends.size());
-  std::vector<GUI::Plotting::CAHA76> backend_frames{GUI::Plotting::CAHA76{
-        spectrometer_ctrls.backends[0].name, spectrometer_ctrls.backends[0].f}};
-  if (size_t(std::stoi(parser("Backends", "size"))) not_eq N)
-    throw std::runtime_error("Bad backend count");
 
-  // Files chooser
-  auto directoryBrowser = ImGui::FileBrowser(
-      ImGuiFileBrowserFlags_SelectDirectory | ImGuiFileBrowserFlags_CloseOnEsc |
-      ImGuiFileBrowserFlags_CreateNewDir);
-  directoryBrowser.SetTitle("Select Directory");
+  // Save system
   std::filesystem::path save_path{parser("Savepath", "path")};
+  Instrument::DataSaver datasaver(save_path, "IRAM");
+  
+  // Imgui saver
+  auto directoryBrowser = ImGui::FileBrowser(
+    ImGuiFileBrowserFlags_SelectDirectory | ImGuiFileBrowserFlags_CloseOnEsc |
+    ImGuiFileBrowserFlags_CreateNewDir);
+  directoryBrowser.SetTitle("Select Directory");
   directoryBrowser.SetPwd(save_path);
   directoryBrowser.SetTypeFilters({"[D]"});
   
@@ -77,7 +54,6 @@ int run(File::ConfigParser parser) try {
   GUI::Plotting::ListOfLines76 hk_frames(100'000, "Housekeeping", "Time");
 
   // Start the operation of the instrument on a different thread
-  Instrument::DataSaver datasaver(save_path, "IRAM");
   auto runner = AsyncRef(
       &Instrument::RunExperiment,
       chopper_ctrl, wobbler_ctrl, housekeeping_ctrl,

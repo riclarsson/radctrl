@@ -12,6 +12,7 @@
 #include "gui.h"
 #include "python_interface.h"
 #include "timeclass.h"
+#include "xml_config.h"
 
 #include "housekeeping/housekeeping_agilent.h"
 #include "housekeeping/housekeeping_pysensors.h"
@@ -107,6 +108,7 @@ struct Controller {
 
 void GuiSetup(Controller &ctrl, const std::vector<std::string> &devs);
 
+Controller parse(const File::ConfigParser& parser);
 }  // namespace Instrument::Housekeeping
 
 #endif  // housekeeping_h

@@ -74,6 +74,7 @@ struct Controller {
 
   ChopperPos lasttarget;
   std::array<ChopperPos, N> pos;
+  
   Controller(Interface&& iface, const std::string &d, int o, double s,
              ChopperPos pos1, ChopperPos pos2, ChopperPos pos3, ChopperPos pos4
   ) noexcept

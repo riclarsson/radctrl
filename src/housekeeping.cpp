@@ -117,4 +117,28 @@ void GuiSetup(Controller &ctrl, const std::vector<std::string> &devs) {
   } else
     ctrl.error = false;
 }
+
+Controller parse(const File::ConfigParser& parser) try {
+  const std::string_view type = parser("Housekeeping", "type");
+  
+  if (type == "AgilentPython") {
+    throw std::runtime_error("AgilentPython house-keeping data is not working presently");
+  } else if (type == "Agilent34970A") {
+    std:: string dev = std::string(parser("Housekeeping", "dev"));
+    int br = std::stoi(std::string(parser("Housekeeping", "baudrate")));
+    return Controller{Agilent34970A(parser("Housekeeping", "path")), dev, br};
+  } else if (type == "PythonSensors") {
+    std:: string dev = std::string(parser("Housekeeping", "dev"));
+    int br = std::stoi(std::string(parser("Housekeeping", "baudrate")));
+    return Controller{PythonSensors(parser("Housekeeping", "path")), dev, br};
+  } else {
+    std::ostringstream os;
+    os << "Cannot understand type: " << type;
+    throw std::runtime_error(os.str());
+  }
+} catch (std::exception& e) {
+  std::ostringstream os;
+  os << "Cannot parse Housekeeping with error:\n" << e.what();
+  throw std::runtime_error(os.str());
+}
 }  // namespace Instrument::Housekeeping

@@ -1154,4 +1154,14 @@ bool AllErrors(GUI::Config& config,
   
   return true;
 }
+
+std::vector<Instrument::Data> init_spectrometer_data(Spectrometer::Controllers &spectrometer_ctrls) {
+  return std::vector<Instrument::Data>(spectrometer_ctrls.size());
+}
+
+std::vector<GUI::Plotting::CAHA76> init_plotting_data(Spectrometer::Controllers &spectrometer_ctrls) {
+  std::vector<GUI::Plotting::CAHA76> out;
+  for (auto& spec: spectrometer_ctrls.backends) out.emplace_back(spec.name, spec.f);
+  return out;
+}
 }

@@ -32,7 +32,7 @@ SingleController::SingleController(Interface && iface, const std::string &contro
 }
 
 SingleController::SingleController(Interface && iface, const std::string &controller_name,
-             const std::filesystem::path &path, int intus, int blaus)
+                                   const std::filesystem::path &path, int intus, int blaus)
     : backend(iface),
       init(false),
       error(false),
@@ -310,5 +310,154 @@ bool Controllers::has_any_errors() {
   bool error = false;
   for (auto& spec : backends) error = error or spec.has_error();
   return error;
+}
+
+SingleController single_parse(const File::ConfigParser& parser, const std::string &controller_name, int integration_time, int blank_time) {
+  const std::string_view type = parser(controller_name, "type");
+  if (type.size() == 0) {
+    std::ostringstream os;
+    os << "No \"type\" found in: " << controller_name << '\n';
+    throw std::runtime_error(os.str());
+  }
+  
+  if (type == "AFFTS") {
+    const std::string host = std::string(parser(controller_name, "host"));
+    const int tcp_port = std::stoi(std::string(parser(controller_name, "tcp")));
+    const int udp_port = std::stoi(std::string(parser(controller_name, "udp")));
+    const int N = std::stoi(std::string(parser(controller_name, "Nboards")));
+    Eigen::MatrixXd freq_limits(N, 2);
+    Eigen::VectorXi freq_counts(N);
+    std::istringstream is(std::string(parser(controller_name, controller_name + std::string(" data"))));
+    for (int i = 0; i < N; i++) {
+      is >> freq_counts(i) >> freq_limits(i, 0) >> freq_limits(i, 1);
+    }
+    const bool mirror = parser(controller_name, "mirror") == "true";
+    const std::string path = std::string(parser(controller_name, "path"));
+    
+    return SingleController(
+      AFFTS(std::string(" ") + controller_name + std::string(" "), path),
+      controller_name, host, tcp_port, udp_port, freq_limits, freq_counts, integration_time, blank_time, mirror);
+  } else if (type == "XFFTS") {
+    const std::string host = std::string(parser(controller_name, "host"));
+    const int tcp_port = std::stoi(std::string(parser(controller_name, "tcp")));
+    const int udp_port = std::stoi(std::string(parser(controller_name, "udp")));
+    const int N = std::stoi(std::string(parser(controller_name, "Nboards")));
+    Eigen::MatrixXd freq_limits(N, 2);
+    Eigen::VectorXi freq_counts(N);
+    std::istringstream is(std::string(parser(controller_name, controller_name + std::string(" data"))));
+    for (int i = 0; i < N; i++) {
+      is >> freq_counts(i) >> freq_limits(i, 0) >> freq_limits(i, 1);
+    }
+    const bool mirror = parser(controller_name, "mirror") == "true";
+    const std::string path = std::string(parser(controller_name, "path"));
+    
+    return SingleController(
+      XFFTS(std::string(" ") + controller_name + std::string(" "), path),
+                            controller_name, host, tcp_port, udp_port, freq_limits, freq_counts, integration_time, blank_time, mirror);
+  } else if (type == "dFFTS") {
+    const std::string host = std::string(parser(controller_name, "host"));
+    const int tcp_port = std::stoi(std::string(parser(controller_name, "tcp")));
+    const int udp_port = std::stoi(std::string(parser(controller_name, "udp")));
+    const int N = std::stoi(std::string(parser(controller_name, "Nboards")));
+    Eigen::MatrixXd freq_limits(N, 2);
+    Eigen::VectorXi freq_counts(N);
+    std::istringstream is(std::string(parser(controller_name, controller_name + std::string(" data"))));
+    for (int i = 0; i < N; i++) {
+      is >> freq_counts(i) >> freq_limits(i, 0) >> freq_limits(i, 1);
+    }
+    const bool mirror = parser(controller_name, "mirror") == "true";
+    const std::string path = std::string(parser(controller_name, "path"));
+    
+    return SingleController(
+      dFFTS(std::string(" ") + controller_name + std::string(" "), path),
+                            controller_name, host, tcp_port, udp_port, freq_limits, freq_counts, integration_time, blank_time, mirror);
+  } else if (type == "RCTS104") {
+    const std::string host = std::string(parser(controller_name, "host"));
+    const int tcp_port = std::stoi(std::string(parser(controller_name, "tcp")));
+    const int udp_port = std::stoi(std::string(parser(controller_name, "udp")));
+    const int N = std::stoi(std::string(parser(controller_name, "Nboards")));
+    Eigen::MatrixXd freq_limits(N, 2);
+    Eigen::VectorXi freq_counts(N);
+    std::istringstream is(std::string(parser(controller_name, controller_name + std::string(" data"))));
+    for (int i = 0; i < N; i++) {
+      is >> freq_counts(i) >> freq_limits(i, 0) >> freq_limits(i, 1);
+    }
+    const bool mirror = parser(controller_name, "mirror") == "true";
+    const std::string path = std::string(parser(controller_name, "path"));
+    
+    return SingleController(
+      RCTS104(std::string(" ") + controller_name + std::string(" "), path),
+                            controller_name, host, tcp_port, udp_port, freq_limits, freq_counts, integration_time, blank_time, mirror);
+  } else if (type == "PC104") {
+    const std::string host = std::string(parser(controller_name, "host"));
+    const int tcp_port = std::stoi(std::string(parser(controller_name, "tcp")));
+    const int udp_port = std::stoi(std::string(parser(controller_name, "udp")));
+    const int N = std::stoi(std::string(parser(controller_name, "Nboards")));
+    Eigen::MatrixXd freq_limits(N, 2);
+    Eigen::VectorXi freq_counts(N);
+    std::istringstream is(std::string(parser(controller_name, controller_name + std::string(" data"))));
+    for (int i = 0; i < N; i++) {
+      is >> freq_counts(i) >> freq_limits(i, 0) >> freq_limits(i, 1);
+    }
+    const bool mirror = parser(controller_name, "mirror") == "true";
+    const std::string path = std::string(parser(controller_name, "path"));
+    
+    return SingleController(
+      PC104(std::string(" ") + controller_name + std::string(" "), path),
+                            controller_name, host, tcp_port, udp_port, freq_limits, freq_counts, integration_time, blank_time, mirror);
+  } else if (type == "SWICTS") {
+    const std::string host = std::string(parser(controller_name, "host"));
+    const int tcp_port = std::stoi(std::string(parser(controller_name, "tcp")));
+    const int udp_port = std::stoi(std::string(parser(controller_name, "udp")));
+    const int N = std::stoi(std::string(parser(controller_name, "Nboards")));
+    Eigen::MatrixXd freq_limits(N, 2);
+    Eigen::VectorXi freq_counts(N);
+    std::istringstream is(std::string(parser(controller_name, controller_name + std::string(" data"))));
+    for (int i = 0; i < N; i++) {
+      is >> freq_counts(i) >> freq_limits(i, 0) >> freq_limits(i, 1);
+    }
+    const bool mirror = parser(controller_name, "mirror") == "true";
+    const std::string path = std::string(parser(controller_name, "path"));
+    
+    return SingleController(
+      SWICTS(std::string(" ") + controller_name + std::string(" "), path),
+                            controller_name, host, tcp_port, udp_port, freq_limits, freq_counts, integration_time, blank_time, mirror);
+  } else {
+    std::ostringstream os;
+    os << "Cannot understand type \"" << type << "\" for \"" << controller_name << '\"' << '\n';;
+    throw std::runtime_error(os.str());
+  }
+}
+
+Controllers parse(const File::ConfigParser& parser) try {
+  const std::vector<std::string> specs = parser.keys("Backends");
+  
+  // Get universal data
+  const int size = std::stoi(std::string(parser("Backends", "size")));
+  const int integration_time = std::stoi(std::string(parser("Operations", "integration_time")));
+  const int blank_time = std::stoi(std::string(parser("Operations", "blank_time")));
+  
+  std::vector<SingleController> ctrls;
+  ctrls.reserve(size);
+  for (int i=0; i<size; i++) {
+    for (auto& key: specs) {
+      if (key.find(" pos") not_eq std::string::npos) {
+        const int pos = std::stoi(std::string(parser("Backends", key)));
+        if (pos == i) {
+          // At the right spectrometer
+          const std::string controller_name{begin(key), end(key)-4};
+          const File::ConfigParser internal_parser(std::string(parser("Backends", controller_name)),
+                                                   std::vector<std::string>{controller_name});
+          ctrls.push_back(single_parse(internal_parser, controller_name, integration_time, blank_time));
+        }
+      }
+    }
+  }
+  
+  return Controllers{std::move(ctrls)};
+} catch (std::exception& e) {
+  std::ostringstream os;
+  os << "Cannot parse Backend(s) with error:\n" << e.what();
+  throw std::runtime_error(os.str());
 }
 }  // namespace Instrument::Spectrometer

@@ -161,4 +161,36 @@ void GuiSetup(Controller &ctrl,
   } else
     ctrl.error = false;
 }
+
+Controller parse(const File::ConfigParser& parser) try {
+  const std::string_view type = parser("Wobbler", "type");
+  
+  if (type == "PythonOriginalWASPAM") {
+    Controller wobbler_ctrl{PythonOriginalWASPAM(parser("Wobbler", "path")),
+      std::string(parser("Wobbler", "dev")), std::stoi(std::string(parser("Wobbler", "baudrate"))),
+      parser("Wobbler", "address")[0]};
+    wobbler_ctrl.pos = {std::stoi(std::string(parser("Wobbler", "end"))),
+      std::stoi(std::string(parser("Wobbler", "end"))),
+      std::stoi(std::string(parser("Wobbler", "start"))),
+      std::stoi(std::string(parser("Wobbler", "end")))};
+    return wobbler_ctrl;
+  } else if (type == "PythonOriginalIRAM") {
+    Controller wobbler_ctrl{PythonOriginalIRAM(parser("Wobbler", "path")),
+      std::string(parser("Wobbler", "dev")), std::stoi(std::string(parser("Wobbler", "baudrate"))),
+      parser("Wobbler", "address")[0]};
+    wobbler_ctrl.pos = {std::stoi(std::string(parser("Wobbler", "end"))),
+      std::stoi(std::string(parser("Wobbler", "end"))),
+      std::stoi(std::string(parser("Wobbler", "start"))),
+      std::stoi(std::string(parser("Wobbler", "end")))};
+    return wobbler_ctrl;
+  } else {
+    std::ostringstream os;
+    os << "Cannot understand type: " << type;
+    throw std::runtime_error(os.str());
+  }
+} catch (std::exception& e) {
+  std::ostringstream os;
+  os << "Cannot parse Wobbler with error:\n" << e.what();
+  throw std::runtime_error(os.str());
+}
 }  // namespace Instrument::Wobbler

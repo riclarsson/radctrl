@@ -4,7 +4,11 @@
 <Wobbler type="PythonOriginalIRAM" path="../python/wobbler/IRAM.py" dev="/dev/ttyS0" baudrate="9600" address="0" start="3000" end="7000" />
 <Housekeeping type="PythonSensors" path="../python/housekeeping/sensors.py" dev="/dev/ttyUSB0" baudrate="-1" />
 <Frontend type="DBR" path="../python/frontend/dbr.py" server="dbr" port="1080" />
-<Backends size="3" spectormeter1=" dFFTS " spectormeter2=" CTS 210 " spectormeter3="ACS FM" config1="dFFTS.xml" config2="rcts104-sofia4.xml" config3="acs-fm-2020.xml" path1="../python/backend/dFW.py" path2="../python/backend/rcts104.py" path3="/home/larsson/" />
+<Backends size="3" type="VectorOfConfig">
+  Waspam3 waspam3.xml
+  dFFTS dFFTS.xml
+  XFFTS xffts-v2-500.xml
+</Backends>
 <Operations integration_time="5000" blank_time="50" />
 <Savepath path="/home/larsson/xmldata/" />
 </RADCTRL>

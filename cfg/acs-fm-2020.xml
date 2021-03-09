@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <RADCTRL>
-<ACSFM name="ACS Flight Model" host="/dev/ttyACM0" tcp="-1" udp="-1" Nboards="2" mirror="false">
+<ACSFM type="ACSFM" name="ACS Flight Model" host="/dev/ttyACM0" tcp="-1" udp="-1" Nboards="2" mirror="false">
 3089 4400e6 17673e6
 3089 4400e6 17673e6
 </ACSFM>

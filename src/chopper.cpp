@@ -156,22 +156,22 @@ void GuiSetup(Controller &ctrl,
 }
 
 Controller parse(const File::ConfigParser& parser) try {
-  std::string type = parser("Chopper", "type");
+  const std::string_view type = parser("Chopper", "type");
   
   if (type == "PythonOriginal") {
-    return  Controller{
+    return  Controller(
       PythonOriginal(parser("Chopper", "path")),
-      parser("Chopper", "dev"),
-      std::stoi(parser("Chopper", "offset")),
-      std::stod(parser("Chopper", "sleeptime")),
+      std::string(parser("Chopper", "dev")),
+      std::stoi(std::string(parser("Chopper", "offset"))),
+      std::stod(std::string(parser("Chopper", "sleeptime"))),
       ChopperPos::Cold,
       ChopperPos::Antenna,
       ChopperPos::Hot,
       ChopperPos::Antenna
-    };
+    );
   } else {
     std::ostringstream os;
-    os << "Cannot undestand type: " << type;
+    os << "Cannot understand type: " << type;
     throw std::runtime_error(os.str());
   }
 } catch (std::exception& e) {

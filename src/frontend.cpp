@@ -154,4 +154,26 @@ void GuiSetup(Controller &ctrl) {
   } else
     ctrl.error = false;
 }
+
+
+
+Controller parse(const File::ConfigParser& parser) try {
+  const std::string_view type = parser("Frontend", "type");
+  
+  if (type == "Waspam") {
+    int port = std::stoi(std::string(parser("Frontend", "port")));
+    return Controller{Waspam(parser("Frontend", "path")), std::string(parser("Frontend", "server")), port};
+  } else if (type == "DBR") {
+    int port = std::stoi(std::string(parser("Frontend", "port")));
+    return Controller{DBR(parser("Frontend", "path")), std::string(parser("Frontend", "server")), port};
+  } else {
+    std::ostringstream os;
+    os << "Cannot understand type: " << type;
+    throw std::runtime_error(os.str());
+  }
+} catch (std::exception& e) {
+  std::ostringstream os;
+  os << "Cannot parse Frontend with error:\n" << e.what();
+  throw std::runtime_error(os.str());
+}
 }  // namespace Instrument::Frontend

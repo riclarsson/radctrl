@@ -202,6 +202,10 @@ bool AllErrors(GUI::Config& config,
                Housekeeping::Controller &housekeeping_ctrl,
                Frontend::Controller &frontend_ctrl,
                Spectrometer::Controllers &spectrometer_ctrls);
+
+std::vector<Instrument::Data> init_spectrometer_data(Spectrometer::Controllers &spectrometer_ctrls);
+
+std::vector<GUI::Plotting::CAHA76> init_plotting_data(Spectrometer::Controllers &spectrometer_ctrls);
 }  // namespace Instrument
 
 #endif  // instrument_h

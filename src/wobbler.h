@@ -9,13 +9,13 @@
 #include "gui.h"
 #include "python_interface.h"
 #include "timeclass.h"
+#include "xml_config.h"
 
 #include "wobbler/wobbler_waspam_orig.h"
 #include "wobbler/wobbler_iram_orig.h"
 
 namespace Instrument {
 namespace Wobbler {
-
 class Dummy {
   bool manual;
   bool error_found;
@@ -71,6 +71,16 @@ struct Controller {
   
   Controller(Interface&& iface, const std::string &d, int b, char a) noexcept;
   
+  //! Explicit copy
+  Controller(const Controller& c) noexcept :
+  wob(c.wob), init(c.init.load()), error(c.error.load()), quit(c.quit.load()), run(c.run.load()), operating(c.operating.load()), waiting(c.waiting.load()), dev(c.dev), baudrate(c.baudrate), address(c.address), pos(c.pos)
+  {}
+  
+  //! Explicit move
+  Controller(Controller&& c) noexcept :
+  wob(std::move(c.wob)), init(c.init.load()), error(c.error.load()), quit(c.quit.load()), run(c.run.load()), operating(c.operating.load()), waiting(c.waiting.load()), dev(std::move(c.dev)), baudrate(c.baudrate), address(c.address), pos(std::move(c.pos))
+  {}
+  
   void startup();
   
   void initialize(int pos, bool manual);
@@ -92,6 +102,8 @@ struct Controller {
 
 void GuiSetup(Controller &ctrl,
               const std::vector<std::string> &devs);
+
+Controller parse(const File::ConfigParser& parser);
 }  // namespace Wobbler
 }  // namespace Instrument
 

@@ -118,7 +118,7 @@ add_subdirectory(chopper)
 add_library (wobbler STATIC
              wobbler.cpp
              )
-target_link_libraries(wobbler PUBLIC wobbler_impl)
+target_link_libraries(wobbler PUBLIC wobbler_impl files)
 add_subdirectory(wobbler)
 ########################################################################################
 
@@ -140,7 +140,7 @@ add_subdirectory(backend)
 add_library (frontend STATIC
              frontend.cpp
              )
-target_link_libraries(frontend PUBLIC frontend_impl)
+target_link_libraries(frontend PUBLIC frontend_impl files)
 add_executable (frontend_cli frontend_cli.cpp)
 target_link_libraries(frontend_cli PUBLIC frontend cli)
 add_subdirectory(frontend)
@@ -151,7 +151,7 @@ add_subdirectory(frontend)
 add_library (housekeeping STATIC
              housekeeping.cpp
              )
-target_link_libraries(housekeeping PUBLIC housekeeping_impl)
+target_link_libraries(housekeeping PUBLIC housekeeping_impl files)
 add_executable (housekeeping_cli housekeeping_cli.cpp)
 target_link_libraries(housekeeping_cli PUBLIC housekeeping cli)
 add_subdirectory(housekeeping)
@@ -274,6 +274,12 @@ install (TARGETS waspam-kiruna RUNTIME DESTINATION bin)
 add_executable (iram iram.cpp)
 target_link_libraries(iram PUBLIC instrument)
 install (TARGETS iram RUNTIME DESTINATION bin)
+########################################################################################
+
+########################################################################################
+# Display and check XML configuration
+add_executable(test_xml_config test_xml_config.cpp)
+target_link_libraries(test_xml_config PUBLIC instrument)
 ########################################################################################
 
 ########################################################################################
