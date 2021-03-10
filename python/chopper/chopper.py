@@ -73,7 +73,14 @@ class chopper:
         assert not old_pos[0]==b'E'[0], "Must reset the chopper controller"
 
         order=b"RAHC"
-        a, b=order.index(old_pos[0]), order.index(new_pos[0])
+        try: a,b=order.index(old_pos[0]),order.index(new_pos[0])
+        except:
+            print("Old: ",old_pos)
+            print("New: ",new_pos)
+            with open("/home/dabrowski/error.msg","w") as file: file.write("Chopper error!")
+            assert 0, "Chopper error"
+
+
 
         d=-1 if a>b else 1
         if old_pos[0]==new_pos[0]==b'A'[0]: r=[1]
@@ -95,16 +102,20 @@ class chopper:
     def get_pos(self):
         """Gets the device pointing"""
         assert self._initialized, "Must first initialize the chopper"
-        answ=self._ask('?')
+        try:
+            answ=self._ask('?')
 
 
 # Quick fix for the chopper issue
-        if answ[0]==b'E'[0]:
-            answ=self._oldpos
-            print("Problem with chopper, adjusting")
+            if answ[0]==b'E'[0]:
+                answ=self._oldpos
+                print("Problem with chopper, adjusting")
+#            with open("~/chopper.msg","ab") as file: file.write(b"%c\n"%answ)
 
-
-        return answ
+            print (answ)
+            return answ
+        except:
+            return "Cold"
 
     def init(self):
         """Connection with the chopper and set the device access
