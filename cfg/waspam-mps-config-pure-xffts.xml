@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <RADCTRL>
-<Chopper type="PythonOriginal" path="../python/chopper/chopper.py" dev="/dev/ttyUSB0" offset="1000" sleeptime="0.2" />
+<Chopper type="PythonTony" path="../python/chopper/tony_chopper.py" ip="192.168.22.100" offset="1000" sleeptime="0.2" />
 <Wobbler type="PythonOriginalWASPAM" path="../python/wobbler/WVR.py" dev="/dev/ttyUSB1" baudrate="115200" address="0" start="3000" end="13000" />
 <Housekeeping type="Agilent34970A" path="../python/housekeeping/Agilent.py" dev="/dev/ttyS0" baudrate="57600" />
 <Frontend type="Waspam" path="None" server="None" port="12345" />

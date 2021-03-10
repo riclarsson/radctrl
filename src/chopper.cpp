@@ -2,7 +2,7 @@
 
 namespace Instrument::Chopper {
 void Controller::startup() {
-  std::visit([this](auto&& chop){chop.startup(dev, offset, sleeptime);}, chop);
+  std::visit([this](auto&& chop){chop.startup(dev_or_ip, offset, sleeptime);}, chop);
 }
 
 void Controller::initialize(bool manual) {
@@ -37,6 +37,10 @@ const std::string& Controller::error_string() const {
 
 void Controller::delete_error() {
   std::visit([](auto&& chop){chop.delete_error();}, chop);
+}
+
+bool Controller::uses_ip() const {
+  return std::visit([](auto&& chop){return not chop.using_device;}, chop);
 }
 
 void GuiSetup(Controller &ctrl,
@@ -77,25 +81,34 @@ void GuiSetup(Controller &ctrl,
     }
   }
 
-  auto dev = ctrl.dev.c_str();
-  if (ImGui::BeginCombo("Device", dev)) {
-    bool newselection = false;
-    for (auto &d : devs) {
-      auto dev2 = d.c_str();
-      bool is_selected =
-          (dev == dev2);  // You can store your selection however you want,
-                          // outside or inside your objects
-      if (ImGui::Selectable(dev2, is_selected)) {
-        newselection = true;
-        dev = dev2;
+  if (ctrl.uses_ip()) {
+    auto dev = ctrl.dev_or_ip;
+    if (ImGui::InputText("IP", &ctrl.dev_or_ip, ImGuiInputTextFlags_EnterReturnsTrue)) {
+      if (not ctrl.init) {
+        ctrl.dev_or_ip = dev;
       }
     }
-
-    ImGui::EndCombo();
-
-    if (not ctrl.init) {
-      if (newselection) {
-        ctrl.dev = dev;
+  } else {
+    auto dev = ctrl.dev_or_ip.c_str();
+    if (ImGui::BeginCombo("Device", dev)) {
+      bool newselection = false;
+      for (auto &d : devs) {
+        auto dev2 = d.c_str();
+        bool is_selected =
+        (dev == dev2);  // You can store your selection however you want,
+        // outside or inside your objects
+        if (ImGui::Selectable(dev2, is_selected)) {
+          newselection = true;
+          dev = dev2;
+        }
+      }
+      
+      ImGui::EndCombo();
+      
+      if (not ctrl.init) {
+        if (newselection) {
+          ctrl.dev_or_ip = dev;
+        }
       }
     }
   }
@@ -162,6 +175,17 @@ Controller parse(const File::ConfigParser& parser) try {
     return  Controller(
       PythonOriginal(parser("Chopper", "path")),
       std::string(parser("Chopper", "dev")),
+      std::stoi(std::string(parser("Chopper", "offset"))),
+      std::stod(std::string(parser("Chopper", "sleeptime"))),
+      ChopperPos::Cold,
+      ChopperPos::Antenna,
+      ChopperPos::Hot,
+      ChopperPos::Antenna
+    );
+  } else if (type == "PythonTony") {
+    return  Controller(
+      PythonTony(parser("Chopper", "path")),
+      std::string(parser("Chopper", "ip")),
       std::stoi(std::string(parser("Chopper", "offset"))),
       std::stod(std::string(parser("Chopper", "sleeptime"))),
       ChopperPos::Cold,

@@ -1,5 +1,5 @@
-#ifndef chopper_orig_h
-#define chopper_orig_h
+#ifndef chopper_tony_orig_h
+#define chopper_tony_orig_h
 
 #include <filesystem>
 #include <string>
@@ -8,7 +8,7 @@
 #include "../python_interface.h"
 
 namespace Instrument::Chopper {
-class PythonOriginal {
+class PythonTony {
   bool manual;
   ChopperPos pos;
 
@@ -26,13 +26,13 @@ class PythonOriginal {
   std::string error;
 
  public:
-  static constexpr bool using_device=false;
+  static constexpr bool using_device=true;
   
   using DataType = ChopperPos;
 
-  PythonOriginal(const std::filesystem::path &path);
+  PythonTony(const std::filesystem::path &path);
 
-  void startup(const std::string &dev, int offset, double sleeptime);
+  void startup(const std::string &ip, int offset, double sleeptime);
 
   void init(bool manual_press = false);
 
@@ -51,7 +51,7 @@ class PythonOriginal {
   bool has_error();
   
   void delete_error();
-};  // PythonOriginal
+};  // PythonTony
 }  // Instrument::Chopper
 
-#endif  // chopper_orig_h
+#endif  // chopper_tony_orig_h

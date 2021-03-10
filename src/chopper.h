@@ -15,6 +15,7 @@
 #include "xml_config.h"
 
 #include "chopper/chopper_orig.h"
+#include "chopper/chopper_tony_orig.h"
 
 namespace Instrument {
 namespace Chopper {
@@ -25,6 +26,8 @@ class Dummy {
   std::string error;
 
  public:
+  static constexpr bool using_device=false;
+  
   using DataType = ChopperPos;
   template <typename... Whatever>
   constexpr Dummy(Whatever...)
@@ -53,7 +56,7 @@ class Dummy {
   }
 };  // Dummy
 
-typedef std::variant<Dummy, PythonOriginal> Interface;
+typedef std::variant<Dummy, PythonOriginal, PythonTony> Interface;
 
 struct Controller {
   static constexpr size_t N = 4;
@@ -68,7 +71,7 @@ struct Controller {
   std::atomic<bool> waiting;
   std::atomic<bool> newdata;
 
-  std::string dev;
+  std::string dev_or_ip;
   int offset;
   double sleeptime;
 
@@ -86,7 +89,7 @@ struct Controller {
         operating(false),
         waiting(false),
         newdata(false),
-        dev(d),
+        dev_or_ip(d),
         offset(o),
         sleeptime(s),
         lasttarget(ChopperPos::FINAL),
@@ -109,6 +112,8 @@ struct Controller {
   const std::string& error_string() const;
   
   void delete_error();
+  
+  bool uses_ip() const;
 };
 
 void GuiSetup(Controller &ctrl,
