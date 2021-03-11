@@ -64,13 +64,16 @@ int run(const File::ConfigParser& parser) try {
       &Instrument::ExchangeData,
       spectrometer_ctrls, chopper_ctrl, housekeeping_ctrl, frontend_ctrl,
       backend_data, datasaver, backend_frames, hk_frames);
-
+  
   // Setup of the tabs
   for (auto& spec : spectrometer_ctrls.backends) {
     config.tabs.push_back(spec.name);
   }
   config.tabs.push_back(" All ");
   config.tabs.push_back(" Retrieval ");
+  const std::size_t ret_tab = N + 1;
+  config.tabs.push_back(" Housekeeping ");
+  const std::size_t house_tab = N + 2;
   config.tabspos = 0;
 
   // Our style
@@ -83,6 +86,7 @@ int run(const File::ConfigParser& parser) try {
   GUI::MainMenu::fullscreen(config, window);
   GUI::MainMenu::quitscreen(config, window);
   GUI::Plotting::caha_mainmenu(backend_frames);
+  hk_frames.mainmenu();
   const size_t current_tab = GUI::MainMenu::tabselect(config);
 
   // Drawer helper
@@ -92,9 +96,15 @@ int run(const File::ConfigParser& parser) try {
   for (size_t i = 0; i < N; i++)
     if (current_tab == i) backend_frames[i].plot(window, startpos);
 
+
   // Draw the combined backends
-  if (current_tab == N)
+  if (current_tab == N) {
     GUI::Plotting::caha_plot_combined(window, startpos, backend_frames);
+  } else if (current_tab == ret_tab) {
+    // plot retrieval
+  } else if (current_tab == house_tab) {
+    hk_frames.plot(window, startpos);
+  }
 
   // Control tool
   if (GUI::Windows::sub<5, 7, 0, 6, 2, 1>(window, startpos, "CTRL Tool 1")) {

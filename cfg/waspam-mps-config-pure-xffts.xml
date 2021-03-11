@@ -1,11 +1,13 @@
 <?xml version="1.0"?>
 <RADCTRL>
-<Chopper type="PythonTony" path="../python/chopper/tony_chopper.py" ip="192.168.22.100" offset="1000" sleeptime="0.2" />
-<Wobbler type="PythonOriginalWASPAM" path="../python/wobbler/WVR.py" dev="/dev/ttyUSB1" baudrate="115200" address="0" start="3000" end="13000" />
+<Chopper type="PythonTony" path="../python/chopper/tony_chopper_new.py" ip="192.168.22.100" offset="1000" sleeptime="0.2" />
+<Wobbler type="PythonOriginalWASPAM" path="../python/wobbler/WVR.py" dev="/dev/ttyUSB0" baudrate="115200" address="0" start="3000" end="13000" />
 <Housekeeping type="Agilent34970A" path="../python/housekeeping/Agilent.py" dev="/dev/ttyS0" baudrate="57600" />
 <Frontend type="Waspam" path="None" server="None" port="12345" />
-<Backends size="1" spectormeter1=" XFFTS-V2 " config1="xffts-v2-500.xml" path1="../python/backend/XFW.py" />
+<Backends size="1" type="VectorOfConfig">
+  XFFTS xffts-v2-500.xml
+</Backends>
 <Operations integration_time="5000" blank_time="50" />
-<Savepath path="/mnt/Data/xmldata/" />
+<Savepath path="/home/dabrowski/xmldata/" />
 </RADCTRL>
 

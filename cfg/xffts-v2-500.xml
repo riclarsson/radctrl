@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <RADCTRL>
-  <XFFTS type="XFFTS" name="XFFTS-V2" host="localhost" tcp="25144" udp="16210" Nboards="2" mirror="false" path="../python/backend/XFW.py">
+<XFFTS type="XFFTS" name="XFFTS-V2" host="localhost" tcp="25144" udp="16210" Nboards="2" mirror="false" path="../python/backend/XFW.py">
 65536 0 500e6
 65536 0 500e6
 </XFFTS>

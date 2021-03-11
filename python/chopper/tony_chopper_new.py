@@ -132,11 +132,9 @@ class chopper:
 		"""Sets the device pointing towards the hot load"""
 		return self.set_pos(self._pos_array['H'])
 
-	def set_ant(self,offset=None):
+	def set_ant(self):
 		"""Sets the device pointing towards the atmosphere"""
-		if offset is None: offset=self._offset
-		pos=(self._pos_array['C']+offset)%360
-		return self.set_pos(pos)
+		return self.set_pos(self._pos_array['A'])
 
 	def set_pos(self,new_pos):
 		"""Sets the device pointing towards selected direction
@@ -152,15 +150,19 @@ class chopper:
 		self._device.run(int(new_pos*10000/360))	# degrees to encoder counts
 		return 0
 
+	def get_pos_deg(self):
+		"""Gets current pointing towards selected direction in deg"""
+		return self._device.pos()*360./10000
+
 	def get_pos(self,tolerance=0.5):
 		"""Gets the device pointing (tolerance [deg])"""
 		assert self._initialized, "Must first initialize the chopper"
-		pos=self._device.pos()*360./10000	# current position in deg
+		pos=self.get_pos_deg()						# current position in deg
 		dd=lambda pos,p: abs(pos-self._pos_array[p])%360
 		dist=lambda pos,p: min([dd(pos,p),360-dd(pos,p)])
 		if   dist(pos,'C')<tolerance: return 'C'
-		elif dist(pos,'H')<tolerance: return 'H'
 		elif dist(pos,'R')<tolerance: return 'R'
+		elif dist(pos,'H')<tolerance: return 'H'
 		elif dist(pos,'A')<tolerance: return 'A'
 		else: return 'E'
 
@@ -168,6 +170,7 @@ class chopper:
 		"""Reads predefined positions for Hot, Cold, Ref and Ant from controller memory"""
 		i2a=lambda idx: int(self._device.get(0x2701,idx),16)*1e-3	# milideg string to deg float
 		self._pos_array={'H':i2a(1),'C':i2a(2),'R':i2a(3),'A':i2a(4)}
+		return self._pos_array
 
 	def set_pos_arr(self,angs=None):
 		"""Stores predefined positions for Hot, Cold, Ref and Ant from controller memory"""
@@ -178,11 +181,17 @@ class chopper:
 		self._device.set(0x2701,2,a2i('C'))
 		self._device.set(0x2701,3,a2i('R'))
 		self._device.set(0x2701,4,a2i('A'))
-		self._device.set(0x1010,4,1)					# save controller memory
+		self._device.set(0x1010,4,0x65766173)			# save controller memory
 
 	def wait_for_ready(self):
 		"""Check if controller is ready and wait if it's not"""
 		ready=lambda: (int(self._device.get(0x60FD),16)>>16)&0b10
+
+
+
+		ready=lambda: True
+
+
 
 		if ready(): return								# controller ready, return
 		while not ready(): time.sleep(.1)				# not ready, wait until ready
@@ -239,4 +248,3 @@ class chopper:
 		self._initialized=False
 
 	close=_close_and_restore
-

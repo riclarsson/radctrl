@@ -110,7 +110,7 @@ class chopper:
             if answ[0]==b'E'[0]:
                 answ=self._oldpos
                 print("Problem with chopper, adjusting")
-#            with open("~/chopper.msg","ab") as file: file.write(b"%c\n"%answ)
+#            with open("/home/dabrowski/chopper.msg","ab") as file: file.write(b"%c\n"%answ)
 
             print (answ)
             return answ
